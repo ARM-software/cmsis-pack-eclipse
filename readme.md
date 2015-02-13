@@ -25,4 +25,4 @@ ARM licensees may contact ARM directly via their partner managers.
 
 _Copyright (c) 2013-2015, ARM Limited and Contributors. All rights reserved._
 
-[License]:                  ./license.md "Apache License, Version 2.0 for ARM CMSIS-Pack Eclipse plug-in"
+[License]: ./license.md "Apache License, Version 2.0 for ARM CMSIS-Pack Eclipse plug-in"
