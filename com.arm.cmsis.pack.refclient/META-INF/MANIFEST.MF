@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ReferenceClient
+Bundle-SymbolicName: com.arm.cmsis.pack.refclient;singleton:=true
+Bundle-Version: 0.9.0.qualifier
+Bundle-Activator: com.arm.cmsis.pack.refclient.RefClient
+Bundle-Vendor: ARM
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ com.arm.cmsis.pack,
+ org.eclipse.ui.ide;bundle-version="3.10.0",
+ org.eclipse.core.resources;bundle-version="3.9.0",
+ com.arm.cmsis.pack.ui,
+ org.eclipse.jface.text,
+ org.eclipse.ui.editors
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy

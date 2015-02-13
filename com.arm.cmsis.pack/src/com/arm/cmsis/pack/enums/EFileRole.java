@@ -1,0 +1,46 @@
+package com.arm.cmsis.pack.enums;
+
+import com.arm.cmsis.pack.data.ICpFile;
+/*******************************************************************************
+ * Copyright (c) 2014 ARM Ltd and others.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
+
+/**
+ * 	Enumeration value corresponding <code>"attr"</code> attribute in pdsc file
+ *  @see ICpFile
+ */
+public enum EFileRole {
+	NONE,
+	COPY,
+	CONFIG,
+	TEMPLATE,
+	INTERFACE;
+
+	/**
+	 * @param str value of <code>"attr"</code> attribute 
+	 * @return corresponding enumeration value
+	 */
+	public static EFileRole fromString(final String str) {
+		if(str == null)
+			return NONE;
+		switch(str) {
+		case  "copy":
+			return COPY;
+		case  "config":
+			return CONFIG;
+		case  "tempate":
+			return TEMPLATE;
+		case  "interface":
+			return INTERFACE;
+		default:
+			return NONE;
+		}
+	}
+}
