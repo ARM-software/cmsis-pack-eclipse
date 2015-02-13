@@ -43,6 +43,7 @@ Getting Started
 
 Download and install packs from [Keil Pack page]. 
 Alternatively on Windows you can install [Keil-MDK-ARM Version 5] and run its PackInstaller to install required packs.
+
 The packs can be installed using MDK-Lite license, included in Keil-MDK-ARM installation.
 
 ### Get plug-in sources 
@@ -50,15 +51,20 @@ Pull the ARM CMSIS-Pack for Eclipse source code from [GitHub].
 Add projects to an Eclipse workspace and build them.
 
 ### Run reference client application
-Launch RefClient project as an Eclipse application.
-Specify location of installed CMSIS-Packs using Eclipse preferences: 
-Window->Preferences->CMSIS Packs->CMSIS Pack root folder
-To watch installed packs open PackView: Window->Show View->Other...->CMSIS->CMSIS-Packs .
-To create an RTE configuration ensure you have an open project in your workspace, then use New file wizard: File->New->Other...->CMSIS-RTE Configuration.
-Follow the wizard pages.
-The created configuration will open in an RTE Configuration editor.
-You can select components and save the configuration.
-Open Window->Show View->Other...->CMSIS->RTE Configuration view to see the configuration data.
+* Launch RefClient project as an Eclipse application.
+
+* Specify CMSIS-Packs location: Window->Preferences->CMSIS Packs->CMSIS Pack root folder
+
+* To watch installed packs open PackView: Window->Show View->Other...->CMSIS->CMSIS-Packs
+
+* Create an empty project.
+
+* Create an RTE configuration using File->New->Other...->CMSIS-RTE Configuration wizard.
+ 
+* The created configuration will open in an RTE Configuration editor.
+  You can select components and save the configuration.
+
+* Open Window->Show View->Other...->CMSIS->RTE Configuration view to see the configuration data.
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,4 +77,4 @@ _Copyright (c) 2014-2015, ARM Limited and Contributors. All rights reserved._
 
 [CMSIS-Pack]:		    http://www.keil.com/pack/doc/CMSIS/Pack/html/index.html
 [Keil Pack page]:		http://www.keil.com/dd2/Pack/
-[Keil-MDK-ARM Version 5] http://www2.keil.com/mdk5/install
+[Keil-MDK-ARM Version 5]:    http://www2.keil.com/mdk5/install
