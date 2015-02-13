@@ -51,7 +51,7 @@ import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 
 
 /**
- *
+ *  Widget to select a CMSIS device 
  */
 public class RteDeviceSelectorWidget extends Composite {
 	private Text text;
