@@ -20,7 +20,7 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 
 ##Usage and Pre-Built Plug-In
 
-Refer to the [pre-built plug-in] of the CMSIS-Pack Management for detailed usage information.
+Refer to [Hands-on section] of the pre-built plug-in of the CMSIS-Pack Management for detailed usage information.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -30,7 +30,7 @@ _Copyright (c) 2014-2015, ARM Limited and Contributors. All rights reserved._
 [Apache License]:           ./license.md "Apache License for CMSIS-Pack Management for Eclipse"
 
 [CMSIS-Pack Management for Eclipse]: https://www.github.com/ARM-software/cmsis-pack-eclipse 
-[pre-built plug-in]:        https://github.com/ARM-software/cmsis-pack-eclipse-prebuilt#hands-on
+[Hands-on section]:         https://github.com/ARM-software/cmsis-pack-eclipse-prebuilt#hands-on
 [CMSIS Pack Repository]:	  http://www.keil.com/pack/
 [Keil-MDK-ARM Version 5]:   http://www2.keil.com/mdk5/install
 [Eclipse]:                  http://www.eclipse.org
