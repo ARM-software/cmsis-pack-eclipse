@@ -30,8 +30,8 @@ _Copyright (c) 2014-2015, ARM Limited and Contributors. All rights reserved._
 [Apache License]:           ./license.md "Apache License for CMSIS-Pack Management for Eclipse"
 
 [CMSIS-Pack Management for Eclipse]: https://www.github.com/ARM-software/cmsis-pack-eclipse 
-[pre-built plug-in]:        https://www.github.com/ARM-software/cmsis-pack-eclipse-prebuilt 
-[CMSIS Pack Repository]:	  	http://www.keil.com/pack/
+[pre-built plug-in]:        https://github.com/ARM-software/cmsis-pack-eclipse-prebuilt#hands-on
+[CMSIS Pack Repository]:	  http://www.keil.com/pack/
 [Keil-MDK-ARM Version 5]:   http://www2.keil.com/mdk5/install
 [Eclipse]:                  http://www.eclipse.org
 [CMSIS-Pack specification]: http://www.keil.com/pack/doc/CMSIS/Pack/html/index.html
