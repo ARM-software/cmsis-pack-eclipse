@@ -12,6 +12,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources;bundle-version="3.9.0",
  com.arm.cmsis.pack.ui,
  org.eclipse.jface.text,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ org.eclipse.ui.views
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy

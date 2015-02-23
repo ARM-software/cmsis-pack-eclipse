@@ -31,8 +31,6 @@ public class CmsisConstants {
 	static public final String CBUNDLE 		= "Cbundle";
 	static public final String CCLASS 		= "Cclass";
 
-
-	
-	
+	static public final String PROCESSOR_TAG = "processor"; 
 	
 }

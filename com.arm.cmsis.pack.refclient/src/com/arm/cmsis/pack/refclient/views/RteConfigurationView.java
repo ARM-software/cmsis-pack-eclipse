@@ -57,22 +57,31 @@ public class RteConfigurationView extends ViewPart implements IRteEventListener{
 			return null;
 		}
 		public Object [] getChildren(Object parent) {
-			
-			if (parent instanceof ICpDeviceInfo) {
-				ICpDeviceItem item = ((ICpDeviceInfo)parent).getDevice();
-					return item.getEffectiveProperties("").getChildArray();
-			} 
-			if (parent instanceof ICpItem)
-				return ((ICpItem)parent).getChildArray();
+			ICpItem item = getCpItem(parent);
+			if(item != null) {
+				if (item instanceof ICpDeviceInfo) {
+					ICpDeviceItem di = ((ICpDeviceInfo)parent).getDevice();
+					String processor = item.getProcessorName();
+					return di.getEffectiveProperties(processor).getChildArray();
+				} else { 
+					return ((ICpItem)parent).getChildArray();
+				}
+			}
 			return new Object[0];
 		}
 		public boolean hasChildren(Object parent) {
-			if (parent instanceof ICpDeviceInfo) {
-				ICpDeviceItem item = ((ICpDeviceInfo)parent).getDevice();
-				return item != null && item.getEffectiveProperties("").hasChildren();
-			} 
-			if (parent instanceof ICpItem)
-				return ((ICpItem)parent).hasChildren();
+			ICpItem item = getCpItem(parent);
+			if(item != null) {
+				if (item instanceof ICpDeviceInfo) {
+					ICpDeviceItem di = ((ICpDeviceInfo)parent).getDevice();
+					if(di == null)
+						return false;
+					String processor = item.getProcessorName();
+					return di.getEffectiveProperties(processor).hasChildren();
+				} else { 
+					return ((ICpItem)parent).hasChildren();
+				}
+			}
 			return false;
 		}
 	}

@@ -322,7 +322,7 @@ public class RteDeviceSelectorWidget extends Composite {
 			fDeviceInfo = null;
 			ICpItem props = fSelectedItem.getEffectiveProperties();
 			if(props != null) {
-				fDeviceInfo = new CpDeviceInfo(null, fSelectedDevice);
+				fDeviceInfo = new CpDeviceInfo(null, fSelectedItem);
 			}
 		} else {
 			fSelectedDevice = null;

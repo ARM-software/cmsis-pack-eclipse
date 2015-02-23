@@ -104,20 +104,27 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		return null;
 	}
 	
+	
+	@Override
+	public String getProcessorName() {
+		int i = getName().indexOf(':');
+		if (i >= 0) {
+			return getName().substring(i + 1);
+		}
+		return IAttributes.EMPTY_STRING;
+	}
+
 	@Override
 	public ICpItem getEffectiveProperties() {
 		ICpDeviceItem device = getDevice();
 		if(device != null){
-			String processorName = IAttributes.EMPTY_STRING;
-			int i = getName().indexOf(':');
-			if (i >= 0) {
-				processorName = getName().substring(i + 1);
-			}
+			String processorName = getProcessorName();
 			return device.getEffectiveProperties(processorName);
 		}
 		return null;
 	}
-
+	
+	
 	@Override
 	public boolean isDevice() {
 		if(getLevel() < EDeviceHierarchyLevel.DEVICE.ordinal())

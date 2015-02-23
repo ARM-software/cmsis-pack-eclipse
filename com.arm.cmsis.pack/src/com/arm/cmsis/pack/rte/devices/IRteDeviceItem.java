@@ -49,8 +49,15 @@ public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem>  {
 	ICpDeviceItem getDevice();
 
 	/**
-	 * Returns effective properties of the first device stored in the item
+	 * Returns processor name associated with the item (for end-leaves only)
+	 * @return processor name if associated with the item
+	 */
+	String getProcessorName();
+	
+	/**
+	 * Returns effective properties of the first device stored in the item or properties with associated processor
 	 * @return effective device properties if any 
+	 * @see #getProcessorName()
 	 */
 	ICpItem getEffectiveProperties();
 		

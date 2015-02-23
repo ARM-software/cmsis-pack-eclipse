@@ -61,6 +61,9 @@
             icon="icons/RteManager.gif"
             id="com.arm.cmsis.pack.refclient.editors.RteConfigurationEditor"
             name="RTE Configuration Editor">
+         <contentTypeBinding
+               contentTypeId="com.arm.cmsis.pack.refclient.editors.xml">
+         </contentTypeBinding>
       </editor>
    </extension>
 

@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.arm.cmsis.pack.base.CmsisConstants;
 import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
 import com.arm.cmsis.pack.generic.IAttributes;
 
@@ -27,7 +28,6 @@ import com.arm.cmsis.pack.generic.IAttributes;
  */
 public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem {
 
-	static public final String PROCESSOR_TAG = "processor"; 
 	private EDeviceHierarchyLevel level = null;
 	protected List<ICpDeviceItem> deviceItems = null;
 	protected Map<String, ICpItem > effectiveProperties = null;
@@ -105,7 +105,7 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 				if(children == null)
 					continue;
 				for(ICpItem item : children) {
-					if(item.getTag().equals(PROCESSOR_TAG)) {
+					if(item.getTag().equals(CmsisConstants.PROCESSOR_TAG)) {
 						ICpDeviceProperty p = (ICpDeviceProperty)item;
 						String pname = p.getProcessorName();
 						

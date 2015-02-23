@@ -56,10 +56,10 @@ public interface ICpDeviceItem extends ICpItem {
 	
 	/**
 	 * Returns list of effective properties for this device merged with properties from upper levels in device description hierarchy 
-	 * @param pname processor name for which to get properties
+	 * @param processorName processor name for which to get properties
 	 * @return list of device effective properties for supplied processor name 
 	 */
-	ICpItem getEffectiveProperties(String processsorName); 
+	ICpItem getEffectiveProperties(String processorName); 
 
 	
 }

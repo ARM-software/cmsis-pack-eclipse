@@ -15,24 +15,27 @@
 
 package com.arm.cmsis.pack.info;
 
+import com.arm.cmsis.pack.base.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 
 /**
- *
+ * Default implementation of ICpDeviceInfo interface
  */
 public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 
 	protected ICpDeviceItem fDevice = null;
 	protected ICpPackInfo   fPackInfo = null;
 
+	
 	/**
 	 * Constructs CpDeviceInfo from supplied ICpDeviceItem 
 	 * @param parent parent ICpItem
-	 * @param device ICpDeviceItem to construct from 
+	 * @param device IRteDeviceItem to construct from 
 	 */
-	public CpDeviceInfo(ICpItem parent, ICpDeviceItem device) {
+	public CpDeviceInfo(ICpItem parent, IRteDeviceItem device) {
 		super(parent, "device");
 		setDevice(device);
 	}
@@ -66,11 +69,31 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 		return fPackInfo;  
 	}
 
+	
+	
+	@Override
+	public void setDevice(IRteDeviceItem device) {
+		setDevice(device.getDevice());
+		if(fDevice != null) {
+			attributes().setAttributes(fDevice.getEffectiveAttributes(null));
+			String processorName = device.getProcessorName();
+			ICpItem props = fDevice.getEffectiveProperties(processorName);
+			if(props != null) {
+				ICpItem proc = props.getFirstChild(CmsisConstants.PROCESSOR_TAG);
+				if(proc != null) {
+					attributes().mergeAttributes(proc.attributes());
+				}
+				if(processorName != null && !processorName.isEmpty())
+					attributes().setAttribute(CmsisConstants.PNAME, processorName);
+			}
+		}
+	}
+
+
 	@Override
 	public void setDevice(ICpDeviceItem device) {
 		fDevice = device;
 		if(fDevice != null) {
-			attributes().setAttributes(device.getEffectiveAttributes(null));
 			fPackInfo = new CpPackInfo(this, device.getPack());
 			replaceChild(fPackInfo);			
 		} else {

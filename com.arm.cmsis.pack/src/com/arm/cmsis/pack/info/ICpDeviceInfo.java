@@ -16,6 +16,7 @@
 package com.arm.cmsis.pack.info;
 
 import com.arm.cmsis.pack.data.ICpDeviceItem;
+import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 
 /**
  *
@@ -34,4 +35,12 @@ public interface ICpDeviceInfo extends ICpItemInfo {
 	 * @param device actual device to set
 	 */
 	void setDevice(ICpDeviceItem device);
+
+
+	/**
+	 * Sets actual device to this info using supplied IRteDeviceItem
+	 * @param IRteDeviceItem to access to actual device
+	 */
+	void setDevice(IRteDeviceItem device);
+
 }

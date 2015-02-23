@@ -347,13 +347,13 @@ public class RteConfiguration implements IRteConfiguration {
 			fComponentFilter.setAttributes(fDeviceInfo.attributes().getAttributesAsMap());
 			if(fDeviceInfo.getDevice() == null) {
 				IRteDeviceItem rteDevice = getDevices().findItem(fDeviceInfo.attributes());
+				ICpDeviceItem cpDevice = null;  
 				if(rteDevice != null) {
-					ICpDeviceItem device = rteDevice.getDevice();
-					fDeviceInfo.setDevice(device);
+					cpDevice = rteDevice.getDevice();
 				} else {
 					// TODO set error state: device not found
-					fDeviceInfo.setDevice(null);
 				}
+				fDeviceInfo.setDevice(cpDevice);
 			}
 		}
 		if(fToolchainInfo != null) {
