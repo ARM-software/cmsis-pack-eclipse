@@ -135,7 +135,7 @@ public class CpComponent extends CpItem implements ICpComponent {
 				if(item instanceof ICpFile) {
 					ICpFile f = (ICpFile)item;
 					if(f.getCategory() == EFileCategory.DOC)
-						return f.getUrl();
+						return f.getName();
 				}
 			}
 		}

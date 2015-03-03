@@ -375,7 +375,11 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			return "1";
 		else if(value.equals("false"))
 			return "0";
-		return value;
+		if(value.startsWith("\\\\")) // Windows \\server\share
+			return value; 
+		if(value.indexOf(':') == 1)  // Windows drive (e.g. c:\dir)
+			return value; 
+		return value.replace('\\', '/'); // convert all backslashes to slashes for consistency
 	}
 
 	@Override

@@ -21,6 +21,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+
 import com.arm.cmsis.pack.base.CmsisConstants;
 import com.arm.cmsis.pack.base.CmsisTreeItem;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
@@ -372,34 +375,52 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	@Override
 	public String getUrl() {
 		if(fURL == null) {
-			fURL = attributes().getAttribute("url");
-			if(fURL == null) {
+			String url = attributes().getAttribute("url");
+			if(url == null) {
 				ICpItem urlItem = getFirstChild("url");
 				if(urlItem != null)
-					fURL = urlItem.getText();
+					url = urlItem.getText();
 			}
-			if(fURL == null || fURL.isEmpty()) {
-				fURL = getDocLink();				
+			if(url == null || fURL.isEmpty()) {
+				url = getDocLink();				
 			}
-			if(fURL == null)
-				fURL = IAttributes.EMPTY_STRING;				
-
-			if(!fURL.isEmpty()) {
-				// check if it is a relative path and not an url  
-				if (fURL.indexOf(":") == -1 && fURL.indexOf("\\\\") != 0  &&// absolute
-					fURL.indexOf("www.") != 0)  { // url without http:  
-					ICpPack p = getPack();
-					if(p != null) {
-						String path = p.getInstallDir(null);
-						if(path != null)
-							fURL = path + fURL;
-					}
-				}
-			}
+			if(url == null || url.isEmpty())
+				fURL = IAttributes.EMPTY_STRING;
+			else 
+				fURL = getAbsolutePath(url);
 		}
 		return fURL;
 	}
 
+	/**
+	 * Returns absolute path of supplied relative one, if supplied path is an URL or absolute, returns it 
+	 * @param relPath path to convert to absolute
+	 * @return absolute path
+	 */
+	protected String getAbsolutePath(String relPath) {
+		if(relPath == null || relPath.isEmpty())
+			return IAttributes.EMPTY_STRING;
+			
+		if(relPath.startsWith("\\\\") || relPath.indexOf(":") == 1) { // Windows only: share or absolute with drive letter 
+			return relPath; // already absolute (windows)
+		}
+		// check if path is already absolute or is an URL
+		//   absolute                  url without http:         // http: or https: or file:    
+		if (relPath.startsWith("//")  || relPath.startsWith("www.") || relPath.indexOf(':') != -1 ) {  
+			return relPath;  // an URL => already absolute
+		}
+		// relative path => add pack installation directory
+		ICpPack pack = getPack();
+		if(pack != null) {
+			String packPath = pack.getInstallDir(null);
+			if(packPath != null) {
+				IPath path = new Path(relPath);
+				String absPath = packPath + path.toOSString(); // make path OS specific
+				return absPath; 
+			}
+		}
+		return relPath;
+	}
 	
 	/**
 	 * Returns link to an associated document or URL if any 
