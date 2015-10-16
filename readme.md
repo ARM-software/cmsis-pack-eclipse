@@ -13,11 +13,7 @@ For evaluation you need CMSIS-Pack compliant Software Packs that are available f
 
 **Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.4.0 (Luna).
 
-This **CMSIS-Pack Management for Eclipse** consists of eight plug-ins:
-
-
 ##Source Code 
-
 This repository contains the source code of the **CMSIS-Pack Management for Eclipse** that consists of eight plug-ins:
 * **com.arm.cmsis.pack** 	- core responsible for loading pack data and managing the RTE (Run-Time Environment) configurations
 * **com.arm.cmsis.pack.common** 	- generic base code, constants and utilities
