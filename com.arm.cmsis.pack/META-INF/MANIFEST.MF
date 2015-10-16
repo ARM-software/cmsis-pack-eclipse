@@ -1,22 +1,25 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Pack
+Bundle-Name: CMSIS Pack
 Bundle-SymbolicName: com.arm.cmsis.pack;singleton:=true
-Bundle-Version: 0.9.0.qualifier
+Bundle-Version: 1.0.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.CpPlugIn
 Bundle-Vendor: ARM
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack,
- com.arm.cmsis.pack.base,
  com.arm.cmsis.pack.data,
  com.arm.cmsis.pack.enums,
  com.arm.cmsis.pack.events,
- com.arm.cmsis.pack.generic,
  com.arm.cmsis.pack.info,
  com.arm.cmsis.pack.parser,
+ com.arm.cmsis.pack.preferences,
  com.arm.cmsis.pack.rte,
  com.arm.cmsis.pack.rte.components,
+ com.arm.cmsis.pack.rte.dependencies,
  com.arm.cmsis.pack.rte.devices,
- com.arm.cmsis.pack.utils
-Require-Bundle: org.eclipse.core.runtime
+ com.arm.cmsis.pack.rte.packs
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.core.variables,
+ com.arm.cmsis.pack.common

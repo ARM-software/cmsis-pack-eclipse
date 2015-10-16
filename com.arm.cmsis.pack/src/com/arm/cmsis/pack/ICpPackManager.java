@@ -1,24 +1,23 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack;
 
 import java.util.Collection;
+import java.util.Map;
 
+import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.events.IRteEventProxy;
+import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.parser.ICpXmlParser;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 
@@ -86,6 +85,21 @@ public interface ICpPackManager {
 	 */
 	IRteDeviceItem getDevices();
 
+	
+	/**
+	 * Returns collection of all board descriptions found in installed packs
+	 * @return map of boards - id to ICpBoard item
+	 */
+	Map<String, ICpBoard> getBoards();
+	
+	
+	/**
+	 * Returns collection of boards that contain mounted or compatible device matching suppled device attributes
+	 * @return collection of compatible boards
+	 */
+	Collection<ICpBoard> getCompatibleBoards(IAttributes deviceAttributes);
+	
+	
 	/**
 	 * Loads packs found in a supplied directory and sub-directories (up to 3 levels deep) 
 	 * @param rootDirectory directory to search for pdsc files 
@@ -108,21 +122,26 @@ public interface ICpPackManager {
 	 boolean loadPack(String file);
 
 	/**
-	 * Returns default CMSIS-Pack directory to load packs from 
+	 * Returns CMSIS-Pack directory to load packs from 
 	 * @return the defaultPackDirectory
 	 */
-	String getDefaultPackDirectory();
+	String getCmsisPackRootDirectory();
 
 	/**
-	 * Sets default CMSIS-Pack directory to load packs from
-	 * @param defaultPackDirectory default directory to load packs from
+	 * Sets CMSIS-Pack root directory to load packs from
+	 * @param packRootDirectory pack root directory 
 	 */
-	 void setDefaultPackDirectory(String defaultPackDirectory);
+	 void setCmsisPackRootDirectory(String packRootDirectory);
 
 	/**
 	 * Checks is packs are already loaded
 	 * @return true if packs are already loaded
 	 */
 	boolean arePacksLoaded();
+	
+	/**
+	 *  Triggers reload of the pack if the have already been loaded
+	 */
+	void reload();
 
 }

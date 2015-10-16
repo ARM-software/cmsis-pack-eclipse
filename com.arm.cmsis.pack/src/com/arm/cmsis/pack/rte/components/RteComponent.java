@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.components;
@@ -18,28 +14,23 @@ package com.arm.cmsis.pack.rte.components;
 import java.util.Collection;
 import java.util.LinkedList;
 
-import com.arm.cmsis.pack.base.CmsisConstants;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpTaxonomy;
 import com.arm.cmsis.pack.enums.EComponentAttribute;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
-import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
-import com.arm.cmsis.pack.rte.IRteDependency;
+import com.arm.cmsis.pack.rte.dependencies.IRteDependency;
 
 /**
- *  Class that represents component taxonomy level that can be selected.
- *  Contain collection of component vendor items.
- *  Contains reference to instantiated component
+ *  Class that represents component taxonomy level that can be selected.<br>
+ *  Contain collection of component variant items.
  */
 public class RteComponent extends RteComponentItem implements IRteComponent {
 
 	protected int nSelected = 0; // number of selected instances
 	
-	/**
-	 * @param parent
-	 */
 	public RteComponent(IRteComponentItem parent, String name) {
 		super(parent, name);
 		fComponentAttribute = EComponentAttribute.CVARIANT;
@@ -53,6 +44,14 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	@Override
 	public int getSelectedCount() {
 		return nSelected;
+	}
+
+
+	@Override
+	public boolean isUseLatestVersion() {
+		if(hasBundle())
+			return getParentBundle().isUseLatestVersion();
+		return super.isUseLatestVersion();
 	}
 	
 	@Override
@@ -79,7 +78,7 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	public int getMaxInstanceCount() {
 		ICpComponent c = getActiveCpComponent();
 		if(c != null)
-			return c.attributes().getAttributeAsInt("maxInstances", 1); 
+			return c.getMaxInstances(); 
 		return 0;
 	}
 	
@@ -89,12 +88,11 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 			return;
 		ICpComponentInfo ci = null;
 		if(cpComponent instanceof ICpComponentInfo) {
-			// consider error situation when components belong to different bundles  
 			ci = (ICpComponentInfo)cpComponent;
 		}
 		
 		// add variant, vendor and version items
-		String variant = cpComponent.attributes().getAttribute("Cvariant", IAttributes.EMPTY_STRING);
+		String variant = cpComponent.getAttribute(CmsisConstants.CVARIANT);
 		IRteComponentItem variantItem = getChild(variant);
 		if( variantItem == null) {
 			variantItem = new RteComponentVariant(this, variant);
@@ -111,34 +109,27 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 		String vendor = cpComponent.getVendor();
 		IRteComponentItem vendorItem = variantItem.getChild(vendor);
 		if( vendorItem == null) {
-			if(ci == null || ci.isVendorFixed() || variantItem.getFirstChild() == null) {
-				vendorItem = new RteComponentVendor(variantItem, vendor);
-				variantItem.addChild(vendorItem);
-			} else {
-				vendorItem = variantItem.getFirstChild();
-				vendor = variantItem.getFirstChildKey();
-			}
-			
-			if(ci != null && ci.isVendorFixed()) {
+			if(ci != null && variantItem.hasChildren()) {
+				// there are some vendors in the collection, but not what is needed 
 				ci.setEvaluationResult(EEvaluationResult.MISSING_VENDOR);
 			}
+			vendorItem = new RteComponentVendor(variantItem, cpComponent.getVendor());
+			variantItem.addChild(vendorItem);
 		}
 		
-		String version = cpComponent.getVersion();
+		String version = null;
+		if(ci == null || ci.isVersionFixed()) 
+			version = cpComponent.getVersion();
 		IRteComponentItem versionItem = vendorItem.getChild(version);
 		if( versionItem == null) {
-			if(ci == null || ci.isVersionFixed() || vendorItem.getFirstChild() == null) {
-				versionItem = new RteComponentVersion(vendorItem, version);
-				vendorItem.addChild(versionItem);
-			} else {
-				versionItem = vendorItem.getFirstChild();
-				version = vendorItem.getFirstChildKey();
-			}
-
-			if(ci != null && ci.isVersionFixed()) {
+			if(ci != null && ci.isVersionFixed() && vendorItem.hasChildren()) {
+				// there are some versions in the collection, but not what is needed
 				ci.setEvaluationResult(EEvaluationResult.MISSING_VERSION);
 			}
+			versionItem = new RteComponentVersion(vendorItem, cpComponent.getVersion());
+			vendorItem.addChild(versionItem);
 		}
+		
 		versionItem.addComponent(cpComponent);
 		if(ci != null) {
 			setSelected(ci.getInstanceCount());
@@ -153,13 +144,21 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 		if(cpItem instanceof ICpComponent ) {
 			addComponent((ICpComponent)cpItem);
 		} else if (cpItem instanceof ICpTaxonomy ){
-			String csub = cpItem.attributes().getAttribute(CmsisConstants.CGROUP, IAttributes.EMPTY_STRING);
+			String csub = cpItem.getAttribute(CmsisConstants.CGROUP);
 			if( csub.equals(getName())) {
 				if(getTaxonomy() == null)
 					fTaxonomy = cpItem; 
 				return;
 			}
 		}
+	}
+
+	
+	@Override
+	public void setActiveComponentInfo(ICpComponentInfo ci) {
+		if(ci == null)
+			return;
+		addComponent(ci);
 	}
 
 	@Override
@@ -186,7 +185,7 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	@Override
 	public String getActiveVendor() {
 		if(hasBundle())
-			return IAttributes.EMPTY_STRING;
+			return CmsisConstants.EMPTY_STRING;
 		return super.getActiveVendor();
 	}
 	
@@ -200,7 +199,7 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	@Override
 	public String getActiveVersion() {
 		if(hasBundle())
-			return IAttributes.EMPTY_STRING;
+			return CmsisConstants.EMPTY_STRING;
 		return super.getActiveVersion();
 	}
 
@@ -253,8 +252,11 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 			if(!isActive())
 				result = EEvaluationResult.INACTIVE;
 		}
-		if(!dependency.isDeny() || result == EEvaluationResult.FULFILLED)
+		if(dependency.isDeny() && result == EEvaluationResult.FULFILLED)
+			result = EEvaluationResult.INCOMPATIBLE;
+		if(!dependency.isDeny() || result == EEvaluationResult.INCOMPATIBLE) {
 			dependency.addComponent(this, result);
+		}
 		return result;
 	}
 
@@ -265,4 +267,6 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 			return ci.getInstanceCount();
 		return 0;
 	}
+	
+	
 }

@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.devices;
@@ -20,15 +16,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import com.arm.cmsis.pack.base.CmsisMapItem;
+import com.arm.cmsis.pack.DeviceVendor;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
 import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.item.CmsisMapItem;
 import com.arm.cmsis.pack.utils.AlnumComparator;
-import com.arm.cmsis.pack.utils.Vendor;
 
 /**
  * Default implementation of IRteDeviceItem 
@@ -71,7 +68,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		if(packs == null || packs.isEmpty())
 			return root;
 		for(ICpPack pack : packs) {
-			Collection<? extends ICpItem> devices = pack.getChildren("devices");
+			Collection<? extends ICpItem> devices = pack.getGrandChildren(CmsisConstants.DEVICES_TAG);
 			if(devices == null)
 				continue;
 			for(ICpItem item : devices) {
@@ -111,7 +108,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		if (i >= 0) {
 			return getName().substring(i + 1);
 		}
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
@@ -163,13 +160,13 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 				// add processor leaves
 				Map<String, ICpItem> processors = item.getProcessors();
 				for(Entry<String, ICpItem> e : processors.entrySet()) {
-					String procName = item.getName() + ":" + e.getKey();
+					String procName = item.getName() + ":" + e.getKey(); //$NON-NLS-1$
 					addDeviceItem(item, procName, EDeviceHierarchyLevel.PROCESSOR.ordinal());
 				}
 			}
 			return;
 		} else if(fLevel == EDeviceHierarchyLevel.ROOT.ordinal()) {
-			String vendorName = Vendor.getOfficialVendorName(item.getVendor());
+			String vendorName = DeviceVendor.getOfficialVendorName(item.getVendor());
 			addDeviceItem(item, vendorName, EDeviceHierarchyLevel.VENDOR.ordinal());
 			return;
 		} else if(fLevel > level) {// should not happen if algorithm is correct
@@ -193,7 +190,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	@Override
 	public IRteDeviceItem findItem(final String deviceName, final String vendor) {
 		if(fLevel == EDeviceHierarchyLevel.ROOT.ordinal() && vendor != null && !vendor.isEmpty()) {
-		    String vendorName = Vendor.getOfficialVendorName(vendor);
+		    String vendorName = DeviceVendor.getOfficialVendorName(vendor);
 		    IRteDeviceItem dti = getChild(vendorName);
 		    if(dti != null)
 		      return dti.findItem(deviceName, vendorName);
@@ -222,7 +219,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		if(deviceName == null || deviceName.isEmpty()) {
 			return null;
 		}
-		String vendor = attributes.getAttribute("Dvendor");
+		String vendor = attributes.getAttribute(CmsisConstants.DVENDOR);
 		return findItem(deviceName, vendor);
 	}
 
@@ -260,7 +257,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		}
 		if(getParent() != null)
 			return getParent().getDescription(); 
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
@@ -275,8 +272,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	public String getDoc() {
 		ICpDeviceItem device = getDevice();
 		if(device != null)
-			return device.getDoc(); // TODO: return a document
+			return device.getDoc(); // TODO: return a collection of documents
 		return null;
 	}
-	
 }

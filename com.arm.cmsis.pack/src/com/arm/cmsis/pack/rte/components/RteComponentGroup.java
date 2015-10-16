@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.components;
@@ -19,7 +15,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.TreeMap;
 
-import com.arm.cmsis.pack.base.CmsisConstants;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpTaxonomy;
@@ -34,8 +30,9 @@ import com.arm.cmsis.pack.utils.AlnumComparator;
  */
 public class RteComponentGroup extends RteComponentItem implements IRteComponentGroup{
 
-	private Map<String, ICpComponent> fApis = null; // api collection sorted by version 
-	private String fActiveApiVersion = null;
+	protected Map<String, ICpComponent> fApis = null; // api collection sorted by version 
+	protected String fActiveApiVersion = null;
+	protected boolean fbUseLatesApi = true;
 	/**
 	 * @param parent
 	 */
@@ -66,7 +63,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 	public String getEffectiveName() {
 		String name = super.getEffectiveName();
 		if(fApis != null && !fApis.isEmpty())
-			name += " (API)";
+			name += " (API)"; //$NON-NLS-1$
 		return name;
 	}
 
@@ -93,7 +90,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 			else 
 				addComponent(c);
 		} else if (cpItem instanceof ICpTaxonomy ){
-			String csub = cpItem.attributes().getAttribute(CmsisConstants.CSUB);
+			String csub = cpItem.getAttribute(CmsisConstants.CSUB);
 			if( csub != null) {
 				// add component using subName as a key    
 				IRteComponentItem component = getChild(csub);
@@ -112,7 +109,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 			addApi(cpComponent);
 			return;
 		}
-		String componentName = cpComponent.attributes().getAttribute("Csub", IAttributes.EMPTY_STRING);
+		String componentName = cpComponent.getAttribute(CmsisConstants.CSUB);
 		// add component using subName as a key    
 		IRteComponentItem component = getChild(componentName);
 		if(component == null) {
@@ -128,25 +125,33 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 	 * @param cpApi ICpApi item
 	 */
 	protected void addApi(ICpComponent cpApi) {
-		String groupName = cpApi.attributes().getAttribute(CmsisConstants.CGROUP, IAttributes.EMPTY_STRING); 
+		String groupName = cpApi.getAttribute(CmsisConstants.CGROUP); 
 		if(!groupName.equals(getName()))
 			return;
 
-		String version = cpApi.attributes().getAttribute("Capiversion", IAttributes.EMPTY_STRING);
+		ICpComponentInfo apiInfo = null;
+		if(cpApi instanceof ICpComponentInfo) {
+			apiInfo = (ICpComponentInfo)cpApi;
+		}
+		
+		String version = null;
+		if(apiInfo == null || apiInfo.isVersionFixed()) 
+			version = cpApi.getVersion();
+
 		ICpComponent existingApi = getApi(version);
 		if(existingApi == null) { 
 			if(fApis == null)
 				fApis = new TreeMap<String, ICpComponent>(new AlnumComparator());
-			fApis.put(version, cpApi);
+			fApis.put(cpApi.getVersion(), cpApi);
 		} 
-		if(cpApi instanceof ICpComponentInfo) {
-			ICpComponentInfo apiInfo = (ICpComponentInfo)cpApi;
+		if(apiInfo != null) {
 			if(existingApi == null || existingApi instanceof ICpComponentInfo) {
 				apiInfo.setComponent(null);
 				apiInfo.setEvaluationResult(EEvaluationResult.MISSING_API);
 			} else {
 				apiInfo.setComponent(existingApi);
 			}
+			setActiveApi(version);
 		}
 	}
 
@@ -154,6 +159,8 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 	@Override
 	public ICpComponent getApi( final String version){
 		if(fApis != null) {
+			if(version == null)
+				return fApis.entrySet().iterator().next().getValue();
 			return fApis.get(version);
 		}
 		return null;
@@ -179,17 +186,27 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 	}
 
 	@Override
-	public boolean setActiveApi(String version) {
-		String activeApiVersion = getActiveApiVersion();
-		if(activeApiVersion.equals(version))
+	public boolean setActiveApi(final String version) {
+		if(fApis == null)
 			return false;
-		fActiveApiVersion = version;
+		String newVersion = version;
+		if(version == null || version.equals(getDefaultVersion())) {
+			newVersion = fApis.entrySet().iterator().next().getKey();
+			fbUseLatesApi = true;
+		} else {
+			fbUseLatesApi = false;
+		}
+		
+		String activeApiVersion = getActiveApiVersion();
+		if(activeApiVersion.equals(newVersion))
+			return false;
+		fActiveApiVersion = newVersion;
 		return true;
 	}
 	
 	@Override
 	public IRteComponentGroup getGroup(IAttributes attributes) {
-		if(attributes.getAttribute(CmsisConstants.CGROUP, IAttributes.EMPTY_STRING).equals(getName()))
+		if(attributes.getAttribute(CmsisConstants.CGROUP, CmsisConstants.EMPTY_STRING).equals(getName()))
 			return this;
 		return null;
 	}
@@ -214,6 +231,14 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 			setActiveApi(version);
 		else 
 			super.setActiveVersion(version);
+	}
+
+
+	@Override
+	public boolean isUseLatestVersion() {
+		if(fApis != null && !fApis.isEmpty())
+			return fbUseLatesApi;
+		return super.isUseLatestVersion();
 	}
 	
 }

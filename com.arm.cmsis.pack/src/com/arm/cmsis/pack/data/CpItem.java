@@ -1,42 +1,40 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
-import com.arm.cmsis.pack.base.CmsisConstants;
-import com.arm.cmsis.pack.base.CmsisTreeItem;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.EVersionMatchMode;
-import com.arm.cmsis.pack.generic.Attributes;
 import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.item.CmsisTreeItem;
+import com.arm.cmsis.pack.utils.AlnumComparator;
 
 /**
  * Default implementation of ICpItem interface
  */
 public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	
-	protected IAttributes fAttributes = new Attributes(); 
+	protected IAttributes fAttributes = new CpAttributes(); 
 	
 	private ICpItem fCondition = null; // cached condition reference for quick access
 
@@ -49,7 +47,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 * @param parent parent ICpItem
 	 */
 	public CpItem(ICpItem parent){
-		setParent(parent);
+		super(parent);
 	}
 
 	/**
@@ -58,7 +56,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 * @param tag item's tag
 	 */
 	public CpItem(ICpItem parent, String tag) {
-		setParent(parent);
+		super(parent);
 		setTag(tag);
 	}
 	
@@ -69,40 +67,31 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		return fAttributes;
 	}
 
-	/**
-	 * Proxy method to get attribute from attributes 
-	 * @param key attribute key
-	 * @return attribute value
-	 */
-	protected String getAttribute(String key) {
-		return attributes().getAttribute(key);
+	@Override
+	public String getAttribute(String key) {
+		 // Proxy method to get attribute from attributes 
+		return attributes().getAttribute(key, CmsisConstants.EMPTY_STRING);
 	}
 
-	/**
-	 * Proxy method to get attribute from attributes 
-	 * @param key attribute key
-	 * @return true if the item has an attribute
-	 */
-	protected boolean hasAttribute(String key) {
+	@Override	
+	public boolean hasAttribute(String key) {
 		return attributes().hasAttribute(key);
 	}
 
 	
 	@Override
-	public String getId() {
+	public synchronized String getId() {
 		if (fId == null) {
 			fId = constructId();
 		}
 		return fId;
 	}
-	
-	
 
 	@Override
-	public String getName() {
-		if(hasAttribute("name"))
-			return getAttribute("name");
-		return super.getName();
+	protected String constructName() {
+		if(hasAttribute(CmsisConstants.NAME))
+			return getAttribute(CmsisConstants.NAME);
+		return super.constructName();
 	}
 
 	/**
@@ -113,13 +102,12 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 * @return constructed element Id
 	 */
 	public String constructId() {
-		String id = getAttribute("id");
-		if(id == null) {
-			// if not successful, returns "tag.name" 
-			id = getTag();
-			if(hasAttribute("name")) {
-				id += ":" + getAttribute("name");
-			}
+		if(hasAttribute(CmsisConstants.ID)) 
+			return getAttribute(CmsisConstants.ID);
+		// if not successful, returns "tag.name" 
+		String id = getTag();
+		if(hasAttribute(CmsisConstants.NAME)) {
+			id += ":" + getAttribute(CmsisConstants.NAME); //$NON-NLS-1$
 		}
 		return id;
 	}
@@ -135,6 +123,14 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	}
 	
 	
+	
+	@Override
+	public ICpComponent getParentComponent() {
+		if(getParent() != null) 
+			return getParent().getParentComponent();
+		return null;
+	}
+
 	@Override
 	public ICpPack getPack() {
 		if(getParent() != null) 
@@ -147,7 +143,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		ICpPack pack = getPack();
 		if(pack != null)
 			return pack.getId();
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
@@ -155,7 +151,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		ICpPack pack = getPack();
 		if(pack != null)
 			return pack.getPackFamilyId();
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 
@@ -179,11 +175,24 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	}
 
 	@Override
-	public Collection<? extends ICpItem> getChildren(String tag) {
+	public Collection<? extends ICpItem> getGrandChildren(String tag) {
 		ICpItem child = getFirstChild(tag);
 		if(child != null)
 			return child.getChildren();
 		return null;
+	}
+
+	
+	@Override
+	public Collection<ICpItem> getChildren(String tag) {
+		List<ICpItem> tagChildren = new LinkedList<ICpItem>();
+		Collection<? extends ICpItem> children = getChildren();
+		if(children != null)
+		for(ICpItem item: children) {
+			if(item.getTag().equals(tag))
+				tagChildren.add(item);
+		}
+		return tagChildren;
 	}
 
 	@Override
@@ -205,18 +214,20 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 */
 	protected ICpItem createChildItem(String tag) {
 		switch(tag) {
-		case "condition":
+		case CmsisConstants.CONDITION:
 			return new CpCondition(this, tag);
-		case "api":
-		case "component":
+		case CmsisConstants.API_TAG:
+		case CmsisConstants.COMPONENT_TAG:
 			return new CpComponent(this, tag);
-		case "file":
+		case CmsisConstants.BOARD_TAG:
+			return new CpBoard(this, tag);
+		case CmsisConstants.FILE_TAG:
 			return new CpFile(this, tag);
-		case "devices":
+		case CmsisConstants.DEVICES_TAG:
 			return new CpDeviceItemContainer(this, tag);
-		case "taxonomy":
+		case CmsisConstants.TAXONOMY_TAG:
 			return new CpTaxonomyContainer(this, tag);
-		case "bundle":
+		case CmsisConstants.BUNDLE_TAG:
 			return new CpItem(this, tag);
 		default:
 			break;
@@ -226,18 +237,18 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 	@Override
 	public boolean hasCondition() {
-		return hasAttribute("condition");
+		return hasAttribute(CmsisConstants.CONDITION);
 	}
 
 	
 	@Override
 	public String getConditionId() {
-		return attributes().getAttribute("condition", IAttributes.EMPTY_STRING);
+		return getAttribute(CmsisConstants.CONDITION);
 	}
 
 
 	@Override
-	public ICpItem getCondition() {
+	public synchronized ICpItem getCondition() {
 		if(fCondition == null) { // not cached yet
 			String conditionID = getConditionId();
 			if(conditionID != null && !conditionID.isEmpty()) {
@@ -249,6 +260,18 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		return fCondition;
 	}
 
+	@Override
+	public boolean isDeviceDependent() {
+		if(attributes().getAttributeAsBoolean(CmsisConstants.DEVICE_DEPENDENT, false))
+			return true;
+
+		ICpItem condition = getCondition();
+		if(condition != null)
+			return condition.isDeviceDependent();
+		return false; 
+	}
+
+	
 	@Override
 	public EEvaluationResult evaluate(ICpConditionContext context) {
 		ICpItem condition = getCondition();
@@ -342,10 +365,10 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	@Override
 	public String getVendor() {
 		String vendor = null;
-		if(hasAttribute("Dvendor")) 
-			vendor = getAttribute("Dvendor");
-		else if(hasAttribute("vendor"))
-			return getAttribute("vendor");	
+		if(hasAttribute(CmsisConstants.DVENDOR)) 
+			vendor = getAttribute(CmsisConstants.DVENDOR);
+		else if(hasAttribute(CmsisConstants.VENDOR))
+			return getAttribute(CmsisConstants.VENDOR);	
 		if(vendor != null && !vendor.isEmpty())
 			return vendor;
 		ICpItem parent = getParent();
@@ -356,8 +379,8 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 	@Override
 	public String getVersion() {
-		if(hasAttribute("version"))
-			return getAttribute("version");
+		if(hasAttribute(CmsisConstants.VERSION))
+			return getAttribute(CmsisConstants.VERSION);
 		ICpItem parent = getParent();
 		if(parent != null)
 			return parent.getVersion();
@@ -366,47 +389,41 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 	@Override
 	public String getDescription() {
-		ICpItem descr = getFirstChild("description");
+		ICpItem descr = getFirstChild(CmsisConstants.DESCRIPTION);
 		if(descr != null)
 			return descr.getText();
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
-	public String getUrl() {
+	public synchronized String getUrl() {
 		if(fURL == null) {
-			String url = attributes().getAttribute("url");
-			if(url == null) {
-				ICpItem urlItem = getFirstChild("url");
+			String url = getAttribute(CmsisConstants.URL);
+			if(url == null || url.isEmpty()) {
+				ICpItem urlItem = getFirstChild(CmsisConstants.URL);
 				if(urlItem != null)
 					url = urlItem.getText();
 			}
-			if(url == null || fURL.isEmpty()) {
-				url = getDocLink();				
-			}
-			if(url == null || url.isEmpty())
-				fURL = IAttributes.EMPTY_STRING;
-			else 
+			if(url == null || url.isEmpty()) {
+				fURL = getDoc();				
+			} else {   
 				fURL = getAbsolutePath(url);
+			}
 		}
 		return fURL;
 	}
 
-	/**
-	 * Returns absolute path of supplied relative one, if supplied path is an URL or absolute, returns it 
-	 * @param relPath path to convert to absolute
-	 * @return absolute path
-	 */
-	protected String getAbsolutePath(String relPath) {
+	@Override
+	public String getAbsolutePath(String relPath) {
 		if(relPath == null || relPath.isEmpty())
-			return IAttributes.EMPTY_STRING;
+			return CmsisConstants.EMPTY_STRING;
 			
-		if(relPath.startsWith("\\\\") || relPath.indexOf(":") == 1) { // Windows only: share or absolute with drive letter 
+		if(relPath.startsWith("\\\\") || relPath.indexOf(":") == 1) { // Windows only: share or absolute with drive letter  //$NON-NLS-1$ //$NON-NLS-2$
 			return relPath; // already absolute (windows)
 		}
 		// check if path is already absolute or is an URL
 		//   absolute                  url without http:         // http: or https: or file:    
-		if (relPath.startsWith("//")  || relPath.startsWith("www.") || relPath.indexOf(':') != -1 ) {  
+		if (relPath.startsWith("//")  || relPath.startsWith("www.") || relPath.indexOf(':') != -1 ) {   //$NON-NLS-1$ //$NON-NLS-2$
 			return relPath;  // an URL => already absolute
 		}
 		// relative path => add pack installation directory
@@ -414,29 +431,26 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		if(pack != null) {
 			String packPath = pack.getInstallDir(null);
 			if(packPath != null) {
-				IPath path = new Path(relPath);
-				String absPath = packPath + path.toOSString(); // make path OS specific
-				return absPath; 
+				String absPath = packPath + relPath; 
+				IPath path = new Path(absPath);
+				return path.toString(); 
 			}
 		}
 		return relPath;
 	}
 	
-	/**
-	 * Returns link to an associated document or URL if any 
-	 * @return url link or path to document  
-	 */
-	protected String getDocLink() {
-		String doc = getAttribute("doc");
-		if(doc == null) {
-			doc = getAttribute("name");
+	@Override
+	public String getDoc() {
+		String doc = getAttribute(CmsisConstants.DOC);
+		if(doc == null || doc.isEmpty()) {
+			doc = getAttribute(CmsisConstants.NAME);
 		}
-		if(doc == null) {
-			ICpItem docItem = getFirstChild("doc");
+		if(doc == null || doc.isEmpty()) {
+			ICpItem docItem = getFirstChild(CmsisConstants.DOC);
 			if(docItem != null)
 				doc = docItem.getText();
 		}
-		return doc;
+		return getAbsolutePath(doc);
 	}
 
 	@Override
@@ -450,7 +464,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 * @return processor name or empty string if "pname" attribute not found
 	 */
 	static public String getProcessorName(IAttributes attributes) {
-		return attributes.getAttribute(CmsisConstants.PNAME, IAttributes.EMPTY_STRING);
+		return attributes.getAttribute(CmsisConstants.PNAME, CmsisConstants.EMPTY_STRING);
 	}
 
 	
@@ -465,15 +479,15 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 */
 	static public String getDeviceName(IAttributes attributes) {
 		String deviceName = null;
-		if(attributes.hasAttribute("Dvariant"))
-			deviceName = attributes.getAttribute("Dvariant");
-		else if(attributes.hasAttribute("Dname"))
-			deviceName = attributes.getAttribute("Dname");
+		if(attributes.hasAttribute(CmsisConstants.DVARIANT))
+			deviceName = attributes.getAttribute(CmsisConstants.DVARIANT);
+		else if(attributes.hasAttribute(CmsisConstants.DNAME))
+			deviceName = attributes.getAttribute(CmsisConstants.DNAME);
 		
 		if(deviceName != null) {
 			String processorName = getProcessorName(attributes);
 			if(!processorName.isEmpty()) {
-				deviceName += ":" + processorName; 
+				deviceName += ":" + processorName;  //$NON-NLS-1$
 			}
 		}
 		return deviceName;
@@ -481,18 +495,18 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	
 	@Override
 	public String getBundleName() {
-		return attributes().getAttribute(CmsisConstants.CBUNDLE, IAttributes.EMPTY_STRING);
+		return getAttribute(CmsisConstants.CBUNDLE);
 	}
 
 	@Override
 	public EVersionMatchMode getVersionMatchMode() {
-		return EVersionMatchMode.fromString(attributes().getAttribute("versionMatchMode"));
+		return EVersionMatchMode.fromString(getAttribute(CmsisConstants.VERSION_MODE));
 	}
 
 	@Override
 	public void setVersionMatchMode(EVersionMatchMode mode) {
 		String strValue = EVersionMatchMode.toString(mode);
-		attributes().setAttribute("versionMatchMode", strValue);
+		attributes().setAttribute(CmsisConstants.VERSION_MODE, strValue);
 	}
 	
 
@@ -501,16 +515,25 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		return getVersionMatchMode() == EVersionMatchMode.FIXED;
 	}
 
+	
 	@Override
-	public boolean isVendorFixed() {
-		return attributes().getAttributeAsBoolean("vendorFixed", false);
+	public Collection<ICpItem> getBooks() {
+		Map<String, ICpItem> books = new TreeMap<String, ICpItem>(new AlnumComparator(false, false));
+		Collection<? extends ICpItem> children = getChildren();
+		if(children != null && ! children.isEmpty()) {
+			for(ICpItem book : children) {
+				if(!book.getTag().equals(CmsisConstants.BOOK_TAG))
+					continue;
+				String doc = book.getDoc();
+				if(doc.isEmpty())
+					continue;
+				if(doc == null || doc.isEmpty() || books.containsKey(doc))
+					continue;
+				String title = book.getAttribute(CmsisConstants.TITLE);
+				books.put(title, book);
+			}
+		}
+		return books.values();
 	}
 
-	@Override
-	public void setVendorFixed(boolean fixed) {
-		if(fixed)
-			attributes().setAttribute("vendorFixed", "1");
-		else
-			attributes().removeAttribute("vendorFixed");
-	}
 }

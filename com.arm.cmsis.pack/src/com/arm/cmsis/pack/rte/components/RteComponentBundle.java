@@ -1,25 +1,21 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.components;
 
 import java.util.Collection;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
-import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 
 /**
@@ -27,9 +23,6 @@ import com.arm.cmsis.pack.info.ICpComponentInfo;
  */
 public class RteComponentBundle extends RteComponentVariant implements IRteComponentBundle{
 
-	/**
-	 * @param parent
-	 */
 	public RteComponentBundle(IRteComponentItem parent, String name) {
 		super(parent, name);
 	}
@@ -43,27 +36,25 @@ public class RteComponentBundle extends RteComponentVariant implements IRteCompo
 		}
 		
 		// create bundle vendor and version items
-		String vendor = IAttributes.EMPTY_STRING;
-		String version = IAttributes.EMPTY_STRING;
+		String vendor = CmsisConstants.EMPTY_STRING;
+		String version = CmsisConstants.EMPTY_STRING;
 		if(!getName().isEmpty()) { // bundle or component in a bundle
 			vendor = cpComponent.getVendor();
-			version = cpComponent.getVersion();
+			if(ci == null || ci.isVersionFixed()) 
+				version = cpComponent.getVersion();
+			else 
+				version = null;
 		} 
 		
 		IRteComponentItem vendorItem = getChild(vendor);
 		if( vendorItem == null) {
-			if(ci == null || ci.isVendorFixed() || getFirstChild() == null) {
-				vendorItem = new RteComponentVendor(this, vendor);
-				addChild(vendorItem);
-			} else {
-				vendorItem = getFirstChild();
-				vendor = getFirstChildKey();
-			}
+			vendorItem = new RteComponentVendor(this, vendor);
+			addChild(vendorItem);
 		}
 
 		IRteComponentItem versionItem = vendorItem.getChild(version);
 		if( versionItem == null) {
-			if(ci == null || ci.isVersionFixed() || getFirstChild() == null) {
+			if(ci == null || ci.isVersionFixed() || vendorItem.getFirstChild() == null) {
 				versionItem = new RteComponentBundleVersion(vendorItem, version);
 				vendorItem.addChild(versionItem);
 			} else {

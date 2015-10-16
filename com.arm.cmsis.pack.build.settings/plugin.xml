@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="ToolChainAdapter" name="Toolchain Adapter for CMSIS RTE projects" schema="schema/ToolChainAdapter.exsd"/>
+   <extension-point id="ToolChainAdapterAssociation" name="Toolchain adapter associations" schema="schema/ToolChainAdapterAssociation.exsd"/>
+   <extension
+         point="com.arm.cmsis.pack.build.settings.ToolChainAdapter">
+      <toolChainAdapter
+            Description="Simple toolchain adapter that only sets include paths and macros. Other setting such as CPU type, FPU usage and endianess must be set manually."
+            class="com.arm.cmsis.pack.build.settings.RteToolChainAdapter"
+            id="com.arm.cmsis.pack.GenericToolChainAdapter"
+            name="Generic toolchain adapter">
+      </toolChainAdapter>
+   </extension>
+
+</plugin>

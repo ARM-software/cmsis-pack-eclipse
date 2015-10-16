@@ -1,24 +1,27 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.info;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpFile;
 import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.enums.EFileRole;
 
+/**
+ * Default implementation of ICpFileInfo interface
+ * @see ICpFileInfo
+ * @see CpFile
+ */
 /**
  *
  */
@@ -28,15 +31,10 @@ public class CpFileInfo extends CpFile implements ICpFileInfo {
 	
 	public CpFileInfo(ICpItem parent, ICpFile file) {
 		super(parent, file.getTag());
-		fFile = file;
-		attributes().setAttributes(file.attributes());
+		setFile(file);
+		updateInfo();
 	}
-
 	
-	/**
-	 * @param parent
-	 * @param tag
-	 */
 	public CpFileInfo(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
@@ -54,6 +52,22 @@ public class CpFileInfo extends CpFile implements ICpFileInfo {
 
 
 	@Override
+	public void updateInfo() {
+		if(fFile != null) {
+			attributes().setAttributes(fFile.attributes());
+			if(fFile.getRole() == EFileRole.CONFIG) {
+				// ensure we have the version for config files
+				String version = fFile.getVersion();
+				attributes().setAttribute(CmsisConstants.VERSION, version);
+			}
+			if(fFile.isDeviceDependent())
+				attributes().setAttribute(CmsisConstants.DEVICE_DEPENDENT, true);
+			else
+				attributes().removeAttribute(CmsisConstants.DEVICE_DEPENDENT);
+		}
+	}
+
+	@Override
 	public ICpComponentInfo getComponentInfo() {
 		for( ICpItem parent = getParent(); parent != null; parent = parent.getParent()){
 			if(parent instanceof ICpComponentInfo)
@@ -62,7 +76,14 @@ public class CpFileInfo extends CpFile implements ICpFileInfo {
 		return null;
 	}
 
-	
-	
 
+	@Override
+	public ICpPackInfo getPackInfo() {
+		ICpComponentInfo ci = getComponentInfo();
+		if(ci != null)
+			return ci.getPackInfo();
+		return null;
+	}
+
+	
 }

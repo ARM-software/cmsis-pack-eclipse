@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.parser;
@@ -52,6 +48,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+import com.arm.cmsis.pack.CpStrings;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 
 /**
@@ -136,23 +134,27 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	
 	private class XmlErrorHandler implements ErrorHandler {
 
+		public XmlErrorHandler() {
+			// TODO Auto-generated constructor stub
+		}
+
 		@Override
 		public void error(SAXParseException arg0) throws SAXException {
 
-			addErrorString(arg0, "Error");
+			addErrorString(arg0, CpStrings.CpXmlParser_Error);
 			nErrors++;
 		}
 
 		@Override
 		public void fatalError(SAXParseException arg0) throws SAXException {
-			addErrorString(arg0, "Fatal Error");
+			addErrorString(arg0, CpStrings.CpXmlParser_FatalError);
 			nErrors++;
 			throw arg0;
 		}
 
 		@Override
 		public void warning(SAXParseException arg0) throws SAXException {
-			addErrorString(arg0, "Error");
+			addErrorString(arg0, CpStrings.CpXmlParser_Warning);
 			nWarnings++;
 		}
 
@@ -161,13 +163,13 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			int line = arg0.getLineNumber();
 			int col = arg0.getColumnNumber();
 			if (line > 0) {
-				err += "(";
+				err += "("; //$NON-NLS-1$
 				err += line;
-				err += ",";
+				err += ","; //$NON-NLS-1$
 				err += col;
-				err += ")";
+				err += ")"; //$NON-NLS-1$
 			}
-			err += ": " + severity + ": ";
+			err += ": " + severity + ": "; //$NON-NLS-1$ //$NON-NLS-2$
 			err += arg0.getLocalizedMessage();
 			errorStrings.add(err);
 		}
@@ -193,16 +195,20 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			}
 			docBuilder.setErrorHandler(errorHandler);
 		} catch (ParserConfigurationException e) {
-			errorStrings.add("Error initializing XML parser: ");
-			errorStrings.add(e.toString());
+			String err = CpStrings.CpXmlParser_ErrorParserInit;
+			err += ": "; //$NON-NLS-1$
+			err += e.toString();
+			errorStrings.add(err);
 			nErrors++;
 			docBuilder = null;
 			e.printStackTrace();
 			return false;
 		} catch (SAXException e) {
-			String err = "Error initializing XML schema from '" + xsdFile + "' file: ";
+			String err = CpStrings.CpXmlParser_ErrorSchemaInit;
+			err += " " +  xsdFile; //$NON-NLS-1$
+			err += ": "; //$NON-NLS-1$
+			err += e.toString();
 			errorStrings.add(err);
-			errorStrings.add(e.toString());
 			nErrors++;
 			docBuilder = null;
 			e.printStackTrace();
@@ -224,9 +230,9 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			InputSource is = new InputSource(new StringReader(xml));			
 			domDoc = docBuilder.parse(is);
 		} catch (SAXException | IOException e ) {
-			String err = "Error parsing file '";
-			err += xmlFile;
-			err += "':";
+			String err = CpStrings.CpXmlParser_ErrorParsingFile;
+			err += " " + xmlFile; //$NON-NLS-1$
+			err += "': "; //$NON-NLS-1$
 			err += e.toString();
 			errorStrings.add(err);
 			nErrors++;
@@ -257,9 +263,9 @@ public abstract class CpXmlParser implements ICpXmlParser {
 		try {
 			domDoc = docBuilder.parse(xmlFile);
 		} catch (SAXException | IOException e ) {
-			String err = "Error parsing file '";
-			err += xmlFile;
-			err += "':";
+			String err = CpStrings.CpXmlParser_ErrorParsingFile;
+			err += " " + xmlFile; //$NON-NLS-1$
+			err += "': "; //$NON-NLS-1$
 			err += e.toString();
 			errorStrings.add(err);
 			nErrors++;
@@ -350,32 +356,32 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	
 	@Override
 	public String adjustAttributeValue(String key, String value) {
-		if(key.equals("Dfpu")) {
+		if(key.equals(CmsisConstants.DFPU)) {
 			switch(value){
-			case "1":				
-			case "FPU":
-				return "SP_FPU";
-			case "0":
-				return "NO_FPU";
+			case "1":				 //$NON-NLS-1$
+			case "FPU": //$NON-NLS-1$
+				return CmsisConstants.SP_FPU;
+			case "0": //$NON-NLS-1$
+				return CmsisConstants.NO_FPU;
 			default:
 				return value;
 			}
-		} else if(key.equals("Dmpu")){
+		} else if(key.equals(CmsisConstants.DMPU)){
 			switch(value){
-			case "1":				
-				return "MPU";
-			case "0":
-				return "NO_MPU";
+			case "1":				 //$NON-NLS-1$
+				return CmsisConstants.MPU;
+			case "0": //$NON-NLS-1$
+				return CmsisConstants.NO_MPU;
 			default:
 				return value;
 			}
 		}
 		// convert boolean values to 1 for consistency
-		if(value.equals("true")) 
-			return "1";
-		else if(value.equals("false"))
-			return "0";
-		if(value.startsWith("\\\\")) // Windows \\server\share
+		if(value.equals("true"))  //$NON-NLS-1$
+			return "1"; //$NON-NLS-1$
+		else if(value.equals("false")) //$NON-NLS-1$
+			return "0"; //$NON-NLS-1$
+		if(value.startsWith("\\\\")) // Windows \\server\share //$NON-NLS-1$
 			return value; 
 		if(value.indexOf(':') == 1)  // Windows drive (e.g. c:\dir)
 			return value; 
@@ -397,7 +403,7 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			fw.close();
 
 		} catch (IOException e) {
-			errorStrings.add("Error writting to '" + file + "' file:");
+			errorStrings.add("Error writting to '" + file + "' file:"); //$NON-NLS-1$ //$NON-NLS-2$
 			errorStrings.add(e.toString());
 			e.printStackTrace();
 			return false;
@@ -421,7 +427,7 @@ public abstract class CpXmlParser implements ICpXmlParser {
 		
 		try {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer();
-	        transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+	        transformer.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
 	        DOMSource source = new DOMSource(domDoc);
 	        StringWriter buffer = new StringWriter();
 	        StreamResult dest = new StreamResult(buffer);
@@ -430,8 +436,10 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	        xml = buffer.toString();
 		
 		} catch ( TransformerFactoryConfigurationError | TransformerException | IOException e) {
-			errorStrings.add("Error creating XML: ");
-			errorStrings.add(e.toString());
+			String error = CpStrings.CpXmlParser_ErrorCreatingXML;
+			error += ": "; //$NON-NLS-1$
+			error += e.toString();
+			errorStrings.add(error);
 			e.printStackTrace();
 			return null;
 		} 
@@ -444,10 +452,6 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	 * @return creates DOM 
 	 */
 	protected Document createDomDocument(ICpItem root){
-		clear();
-		if(!init()) // ensure initialized
-			return null;
-		
 		Document domDoc = docBuilder.newDocument(); 
         createElement(domDoc, null, root);
 		return domDoc;
@@ -475,11 +479,11 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			parentNode.appendChild(node);
 		} else {
 			doc.appendChild(node);
-			node.setAttribute("xmlns:xs", "http://www.w3.org/2001/XMLSchema-instance");
+			node.setAttribute("xmlns:xs", "http://www.w3.org/2001/XMLSchema-instance"); //$NON-NLS-1$ //$NON-NLS-2$
 			if (xsdFile != null && !xsdFile.isEmpty()) {
 				File f = new File(xsdFile);
 				String xsdName = f.getName();
-				node.setAttribute("xs:noNamespaceSchemaLocation", xsdName);
+				node.setAttribute("xs:noNamespaceSchemaLocation", xsdName); //$NON-NLS-1$
 			}
 		}
 		

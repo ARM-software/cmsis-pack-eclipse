@@ -1,26 +1,21 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.components;
 
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.arm.cmsis.pack.CpStrings;
 import com.arm.cmsis.pack.enums.EComponentAttribute;
 import com.arm.cmsis.pack.utils.VersionComparator;
 
@@ -30,8 +25,6 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class RteComponentVendor extends RteComponentItem {
 
-	public static final String LATEST = "<latest>"; 
-	
 	/**
 	 * @param parent
 	 */
@@ -52,19 +45,12 @@ public class RteComponentVendor extends RteComponentItem {
 		if(component != null && component.hasBundle() ) {
 			return null;
 		}
-		
-		Collection<String> keys = getKeys();
-		if(keys == null)
-			return null;
-		List<String> versions = new LinkedList<String>();
-		versions.addAll(keys);
-		versions.add(0, getImplicitChildName());
-		return versions;
+		return getKeys();
 	}
 
 	@Override
-	public String getImplicitChildName() {
-		return LATEST;
+	public String getDefaultChildName() {
+		return CpStrings.RteComponentVersionLatest;
 	}
 
 	@Override
@@ -80,7 +66,7 @@ public class RteComponentVendor extends RteComponentItem {
 
 	@Override
 	public boolean isUseLatestVersion() {
-		return isActiveChildImplicit();
+		return isActiveChildDefault();
 	}
 	
 }

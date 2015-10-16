@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
@@ -18,10 +14,10 @@ package com.arm.cmsis.pack.data;
 import java.util.Collection;
 import java.util.Map;
 
-import com.arm.cmsis.pack.base.ICmsisTreeItem;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.EVersionMatchMode;
 import com.arm.cmsis.pack.generic.IAttributedItem;
+import com.arm.cmsis.pack.item.ICmsisTreeItem;
 
 /**
  * Base for all items in CMSIS packs 
@@ -63,13 +59,41 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 */
 	ICpItem getParent(final String tag);
 
+	/**
+	 * Returns parent component or API item   
+	 * @return parent component item in the hierarchy if any 
+	 */
+	ICpComponent getParentComponent();
 	
 	/**
-	 * Returns children of a child with specified tag 
+	 * Returns grand children of a child with specified tag 
 	 * @param tag child's tag
 	 * @return collection of child's children or null if no child is found 
 	 */
-	Collection<? extends ICpItem> getChildren(final String tag);
+	Collection<? extends ICpItem> getGrandChildren(final String tag);
+	
+
+	/**
+	 * Returns collection of children that have specified tag 
+	 * @param tag child's tag
+	 * @return collection of children having specified tag 
+	 */
+	Collection<ICpItem> getChildren(final String tag);
+
+	
+	/**
+	 * Checks if an attribute exists in the internal collection
+	 * @param key attribute key to search for
+	 * @return true if attribute exists
+	 */
+	boolean hasAttribute(final String key);
+
+	/**
+	 * Retrieves an attribute value from internal collection
+	 * @param key attribute key to search for
+	 * @return attribute value or empty string if attribute not found
+	 */
+	String getAttribute(final String key);
 	
 	/**
 	 * Returns value of an attribute present in this element or in attributes of parent items.
@@ -123,6 +147,12 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 */
 	ICpItem getProperty(final String id);
 
+	
+	/**
+	 * Checks if availability of this item depends on selected device
+	 * @return true if item is device dependent
+	 */
+	boolean isDeviceDependent();
 	
 	/**
 	 * Merges property to the child list: adds if the property with same ID does not yet exist
@@ -206,15 +236,17 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	boolean isVersionFixed();
 
 	/**
-	 * Checks that only a pack or a component from certain vendor should be used when resolving an item 
-	 * @return true if only certain vendor should be considered 
+	 * Returns absolute path of supplied relative one, if supplied path is an URL or absolute, returns it 
+	 * @param relPath path to convert to absolute
+	 * @return absolute path
 	 */
-	boolean isVendorFixed();
+	String getAbsolutePath(String relPath);
+
 	
 	/**
-	 * Sets flag if only a pack or a component from certain vendor should be used when resolving an item  
-	 * @param fixed true if fixed vendor should be used 
+	 * Return collection of documents associated with the device or board (items with "book" tag) 
+	 * @return collection of ICpItem objects representing books  
 	 */
-	void setVendorFixed(boolean fixed);
+	Collection<ICpItem> getBooks();
 	
 }

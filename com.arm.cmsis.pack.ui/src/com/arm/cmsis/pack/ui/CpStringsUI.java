@@ -1,0 +1,86 @@
+package com.arm.cmsis.pack.ui;
+
+import org.eclipse.osgi.util.NLS;
+
+public class CpStringsUI extends NLS {
+	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.ui.CpStringsUI"; //$NON-NLS-1$
+	public static String PreferencesPackRootLabel;
+	public static String UseAllLatestPacks;
+	public static String UseAllLatestPacksTooltip;
+	public static String CollapseAll;
+	public static String CollapseAllNodes;
+	public static String CpConsolePreferencePage_AutoOpen;
+	public static String CpConsolePreferencePage_BgColor;
+	public static String CpConsolePreferencePage_ErrorColor;
+	public static String CpConsolePreferencePage_InfoColor;
+	public static String CpConsolePreferencePage_OutputColor;
+	public static String ExpandAll;
+	public static String ExpandAllNodes;
+	public static String DeviceTreeView_Name;
+	public static String DeviceTreeView_Type;
+	public static String DeviceTreeView_Attributes;
+	public static String DeviceTreeView_Property;
+	public static String RteComponentTreeWidget_CannotOpenURL;
+	public static String RteComponentTreeWidget_Description;
+	public static String RteComponentTreeWidget_Sel;
+	public static String RteComponentTreeWidget_SoftwareComponents;
+	public static String RteComponentTreeWidget_StickToFixedVersion;
+	public static String RteComponentTreeWidget_Variant;
+	public static String RteComponentTreeWidget_Vendor;
+	public static String RteComponentTreeWidget_Version;
+	public static String RteDeviceSelectorPage_SelectDevice;
+	public static String RteDeviceSelectorWidget_CPULabel;
+	public static String RteDeviceSelectorWidget_DeviceLabel;
+	public static String RteDeviceSelectorWidget_DeviceNotFound;
+	public static String RteDeviceSelectorWidget_DoublePrecision;
+	public static String RteDeviceSelectorWidget_Endian;
+	public static String RteDeviceSelectorWidget_FPULabel;
+	public static String RteDeviceSelectorWidget_NoDeviceSelected;
+	public static String RteDeviceSelectorWidget_none;
+	public static String RteDeviceSelectorWidget_SearchLabel;
+	public static String RteDeviceSelectorWidget_SearchTooltip;
+	public static String RteDeviceSelectorWidget_SinglePrecision;
+	public static String RteDeviceSelectorWidget_VendorLabel;
+	public static String RteDevicePage_Device;
+	public static String RteValidateWidget_Description;
+	public static String RteValidateWidget_ValidationOutput;
+	public static String RteComponentTreeWidget_ResolveComponentDependencies;
+	public static String RteComponentTreeWidget_UseLatestVersion;
+	public static String RteManagerWidget_ApplyAndSave;
+	public static String RteManagerWidget_Components;
+	public static String RteManagerWidget_ExpandAllSelected;
+	public static String PackView_Attributes;
+	public static String PackView_Tag;
+	public static String PackView_Text;
+	public static String RteConfigurationEditor_ComponentsTab;
+	public static String RteConfigurationEditor_PacksTab;
+	public static String RteConfigurationEditor_ErrorCreatingNestedEditor;
+	public static String RteConfigurationEditor_InvalidInput;
+	public static String RteConfigurationEditor_XmlTab;
+	public static String RteConsole_BaseName;
+	public static String RteDeviceSelectorWidget_lblUrl;
+	public static String RteDeviceSelectorWidget_lblMemory;
+	public static String RteDeviceSelectorWidget_lblPack_text;
+	public static String RteDeviceSelectorWidget_lblClocklabel_text;
+	public static String RteDeviceInfoWidget_btnChange_text;
+	public static String RteDeviceInfoWidget_lblFpu_text;
+	public static String RteDeviceInfoWidget_lblEndian_text;
+	public static String RteDeviceInfoWidget_lblDescription_text;
+	public static String RteDeviceInfoWidget_lblBooks_text;
+	public static String RteDeviceWizard_PageName;
+	public static String RteDeviceWizard_SelectDevice;
+	public static String RteDeviceInfoWidget_btnNewButton_text;
+	public static String RteDeviceInfoWidget_btnSelect_text;
+	public static String RteDeviceInfoWidget_lblMissing_text;
+	public static String RteDeviceInfoWidget_lblFamily_text;
+	public static String RteDeviceInfoWidget_lblSubFamily_text;
+	public static String RteDeviceInfoWidget_lblBoards_text;
+	
+	static {
+		// initialize resource bundle
+		NLS.initializeMessages(BUNDLE_NAME, CpStringsUI.class);
+	}
+
+	private CpStringsUI() {
+	}
+}

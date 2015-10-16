@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 ARM Ltd and others.
+ * Copyright (c) 2015 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.data;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 
 /**
@@ -41,7 +42,7 @@ public class CpExpression extends CpItem implements ICpExpression {
 
 	@Override
 	public String constructId() {
-		return getTag() + " " + attributes().getAttributesAsString();
+		return getTag() + " " + attributes().toString(); //$NON-NLS-1$
 	}
 
 	@Override
@@ -49,11 +50,11 @@ public class CpExpression extends CpItem implements ICpExpression {
 		if(expressionType == 0) {
 			if(hasCondition())
 				expressionType = 'R';
-			else if(attributes().containsAttribute("C*"))
+			else if(attributes().containsAttribute("C*")) //$NON-NLS-1$
 				expressionType = 'C';
-			else if(attributes().containsAttribute("D*"))
+			else if(attributes().containsAttribute("D*")) //$NON-NLS-1$
 				expressionType = 'D';
-			else if(attributes().containsAttribute("T*"))
+			else if(attributes().containsAttribute("T*")) //$NON-NLS-1$
 				expressionType = 'T';
 			else 
 				expressionType = 'U';
@@ -97,6 +98,17 @@ public class CpExpression extends CpItem implements ICpExpression {
 	@Override
 	public String toString() {
 		return getId();
+	}
+	
+	@Override
+	public boolean isDeviceDependent() {
+		char domain = getExpressionDomain();
+		if(domain == DEVICE_EXPRESSION) { 
+			return hasAttribute(CmsisConstants.DNAME); 
+		} else if(domain == REFERENCE_EXPRESSION) {
+			return super.isDeviceDependent();
+		}
+		return false; 
 	}
 	
 }

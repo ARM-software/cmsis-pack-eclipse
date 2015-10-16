@@ -1,0 +1,145 @@
+/*******************************************************************************
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+*
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
+*******************************************************************************/
+
+package com.arm.cmsis.pack.configuration;
+
+import java.util.Collection;
+import java.util.Map;
+
+
+import com.arm.cmsis.pack.build.settings.IBuildSettings;
+import com.arm.cmsis.pack.info.ICpComponentInfo;
+import com.arm.cmsis.pack.info.ICpConfigurationInfo;
+import com.arm.cmsis.pack.info.ICpDeviceInfo;
+import com.arm.cmsis.pack.info.ICpFileInfo;
+
+/**
+ * The interface provides data needed for project update and build system   
+ */
+public interface IRteConfiguration {
+	
+	/**
+	 * Returns underlying ICpConfigurationInfo object
+	 * @return underlying ICpConfigurationInfo
+	 */
+	ICpConfigurationInfo getConfigurationInfo();
+	
+	
+	/**
+	 * Sets ICpConfigurationInfo object, initializes model and collects settings
+	 * @return ICpConfigurationInfo read from .rteconfig file
+	 */
+	void setConfigurationInfo(ICpConfigurationInfo info);
+
+	/**
+	 * Returns device info stored in the configuration
+	 * @return ICpDeviceInfo stored in the configuration
+	 */
+	ICpDeviceInfo getDeviceInfo();
+
+	/**
+	 * Returns collection of files to add to project  
+	 * @return map of files to add to project: project relative path to ICpFileInfo 
+	 */
+	Map<String, ICpFileInfo> getProjectFiles();
+	
+	
+	/**
+	 * Returns ICpFileInfo associated with project file resource  
+	 * @param fileName project relative path of a file 
+	 * @return ICpFileInfo if exists
+	 */
+	ICpFileInfo getProjectFileInfo(String fileName);
+	
+	/**
+	 * Checks if file needs to be added to project (will appear in Project Explorer view) 
+	 * @param fi ICpFileInfo that represents file to check 
+	 * @return true if file is to be added to project
+	 */
+	boolean isAddToProject(ICpFileInfo fi);
+
+	
+	/**
+	 * Returns IBuildSettings to set IConfiguration build options via toolchain adapter 
+	 * @return IBuildSettings
+	 */
+	IBuildSettings getBuildSettings();
+	
+
+	/**
+	 * Returns paths to library sources (for use by debugger/indexer) 
+	 * @return collection of library source paths
+	 */
+	Collection<String> getLibSourcePaths();
+
+	/**
+	 * Return collection of strings to be placed in RteComponents.h file 
+	 * @return collection of strings to be copied to RteComponents.h
+	 */
+	Collection<String> getRteComponentsHCode();
+
+	/**
+	 * Returns collection of headers with component names they come from
+	 * @return map of header file names (without path) to comment
+	 */
+	Map<String, String> getHeaders();
+
+	/**
+	 * Documents and links relevant for the configuration
+	 * @return map of documents: url to title
+	 */
+	Map<String, String> getDocs();
+
+	/**
+	 * Returns device header name
+	 * @return device header name 
+	 */
+	String getDeviceHeader();
+	
+	/**
+	 * Returns SVD (System View Description) file
+	 * @return SVD file 
+	 */
+	String getSvdFile();
+	
+	/**
+	 * Returns startup component used by configuration (Cclass="Device", Cgroup="Startup", Csub="") 
+	 * @return startup ICpComponentInfo or null if not used 
+	 */
+	ICpComponentInfo getDeviceStartupComponent();
+	
+	/**
+	 * Returns CMSIS Core component used by configuration (Cclass="CMSIS", Cgroup="Core", CSub="") 
+	 * @return CMSIS Core ICpComponentInfo or null if not used
+	 */
+	ICpComponentInfo getCmsisCoreComponent();
+
+	/**
+	 * Returns CMSIS RTOS component used by configuration (Cclass="CMSIS", Cgroup="RTOS" ) 
+	 * @return CMSIS RTOS ICpComponentInfo  or null if not used
+	 */
+	ICpComponentInfo getCmsisRtosComponent();
+	
+	/**
+	 * Check if the configuration is valid - device and all components are resolved
+	 * @return true if configuration is valid
+	 * @see #validate()
+	 */
+	boolean isValid();
+	
+	/**
+	 * Validates loaded configuration and reports error messages
+	 * @return collection of error messages or null if validation is successful
+	 * @see #isValid()
+	 */
+	Collection<String> validate();
+	
+}

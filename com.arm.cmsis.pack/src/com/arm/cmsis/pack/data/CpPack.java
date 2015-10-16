@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
@@ -21,7 +17,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.arm.cmsis.pack.generic.IAttributes;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
@@ -30,6 +29,7 @@ import com.arm.cmsis.pack.utils.VersionComparator;
 public class CpPack extends CpItem implements ICpPack {
 
 	private String fileName = null;
+	private String installDir = null;
 	private String version = null;
 	private PackState state = PackState.UNKNOWN; 
 	private Map<String, ICpItem> conditions = null; // sorted map for quick access to conditions
@@ -67,7 +67,8 @@ public class CpPack extends CpItem implements ICpPack {
 	
 	@Override
 	public void setFileName(String fileName) {
-		this.fileName = fileName;
+		IPath p = new Path(fileName);
+		this.fileName = p.toString();
 	}
 
 	@Override
@@ -81,13 +82,13 @@ public class CpPack extends CpItem implements ICpPack {
 	}
 
 	@Override
-	public ICpItem getCondition(String conditionId) {
+	public synchronized ICpItem getCondition(String conditionId) {
 		if(conditionId == null || conditionId.isEmpty())
 			return null;
 		if(conditions == null) {
 			// fill conditions map for quick access
 			conditions = new HashMap<String, ICpItem>();
-			ICpItem conditionsItem = getFirstChild("conditions");
+			ICpItem conditionsItem = getFirstChild(CmsisConstants.CONDITIONS_TAG);
 			if(conditionsItem != null) {
 				Collection<? extends ICpItem> items = conditionsItem.getChildren();
 				for(ICpItem c : items) {
@@ -97,73 +98,79 @@ public class CpPack extends CpItem implements ICpPack {
 		}
 		return conditions.get(conditionId);
 	}
+	
 
 	@Override
-	public String getInstallDir(final String packRoot) {
-		
+	public synchronized String getInstallDir(final String packRoot) {
 		if(packRoot == null || state == PackState.INSTALLED || state == PackState.GENERATED) {
 		// installed and generator files are already located at their installation directories
-			try {
-				File f = new File(getFileName());
-				if(f.exists())
-					return f.getCanonicalFile().getParent() + File.separator;
-			} catch (IOException e) {
-				e.printStackTrace();
+			if(installDir == null) {
+				try {
+					File f = new File(getFileName());
+					if(f.exists()) {
+
+						IPath p = new Path( f.getCanonicalFile().getParent());
+						installDir = p.toString() + '/';
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
-			return null;
+			return installDir;
 		}
-		String dir = IAttributes.EMPTY_STRING;
+		String dir = CmsisConstants.EMPTY_STRING;
 		// construct installation path out of Pack properties
+		// use forward slashes
 		if(packRoot != null) {
-			dir += packRoot + File.pathSeparator;
+			dir += packRoot + '/';
 		}
-		dir += getVendor() + File.pathSeparator + getVersion();
+		dir += getVendor() + '/' + getVersion() + '/';
 		return dir;
 	}
 	
 
 	@Override
 	public String getName() {
-		ICpItem nameItem = getFirstChild("name");
+		ICpItem nameItem = getFirstChild(CmsisConstants.NAME);
 		if(nameItem != null)
 			return nameItem.getText();
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
 	public String getVendor() {
-		ICpItem vendorItem = getFirstChild("vendor");
+		ICpItem vendorItem = getFirstChild(CmsisConstants.VENDOR);
 		if(vendorItem != null)
 			return vendorItem.getText();
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
-	public String getVersion() {
+	public synchronized String getVersion() {
 		if( version == null) {
-			ICpItem releases = getFirstChild("releases");
+			ICpItem releases = getFirstChild(CmsisConstants.RELEASES_TAG);
 			if(releases != null && releases.hasChildren()) {
 				for(ICpItem r : releases.getChildren()){
-					String v = r.attributes().getAttribute("version");
+					String v = r.getAttribute(CmsisConstants.VERSION);
 					if( VersionComparator.versionCompare(v, version) > 0)
 						version = v;
 				}
 			}
 			if( version == null)
-				version = IAttributes.EMPTY_STRING;
+				version = CmsisConstants.EMPTY_STRING;
 		}
 		return version;
 	}
 
 	
 	@Override
-	public String getUrl() {
+	public synchronized String getUrl() {
 		if(fURL == null) {
-			ICpItem urlItem = getFirstChild("url");
+			ICpItem urlItem = getFirstChild(CmsisConstants.URL);
 			if(urlItem != null)
 				fURL = urlItem.getText();
 			else 
-				fURL = IAttributes.EMPTY_STRING;
+				fURL = CmsisConstants.EMPTY_STRING;
 		}
 		return fURL;
 	}
@@ -186,14 +193,14 @@ public class CpPack extends CpItem implements ICpPack {
 	 */
 	public static String versionFromId(final String id){ 
 		if(id == null)
-			return IAttributes.EMPTY_STRING;
+			return CmsisConstants.EMPTY_STRING;
 		int pos = id.indexOf('.'); // find first separator
 		if(pos > 0 ) {
 			pos = id.indexOf('.', pos+1); // find second separator
 			if(pos > 0 )
 				return id.substring(pos+1); // the rest is version (is any)
 		}
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 	
 	/**
@@ -203,7 +210,7 @@ public class CpPack extends CpItem implements ICpPack {
 	 */
 	public static String familyFromId(final String id){
 		if(id == null)
-			return IAttributes.EMPTY_STRING;
+			return CmsisConstants.EMPTY_STRING;
 		int pos = id.indexOf('.'); // find first separator
 		if(pos > 0 ) {
 			pos = id.indexOf('.', pos+1); // find second separator

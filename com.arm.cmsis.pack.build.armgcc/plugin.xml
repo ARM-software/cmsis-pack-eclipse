@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.arm.cmsis.pack.build.settings.ToolChainAdapter">
+      <toolChainAdapter
+            Description="Toolchain adapter for ARM GCC baremetal compiler"
+            class="com.arm.cmsis.pack.build.armgcc.ArmGccToolChainAdapter"
+            id="com.arm.cmsis.pack.build.armgcc.ArmGccToolChainAdapter"
+            name="Adapter for ARM GCC  toolchain "
+            toolChainFamily="GCC">
+         <toolChain
+               id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain">
+         </toolChain>
+      </toolChainAdapter>
+   </extension>
+
+</plugin>

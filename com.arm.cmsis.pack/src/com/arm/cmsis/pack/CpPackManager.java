@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack;
@@ -18,12 +14,23 @@ package com.arm.cmsis.pack;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpPackCollection;
+import com.arm.cmsis.pack.data.ICpBoard;
+import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.events.RteEvent;
+import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.parser.ICpXmlParser;
 import com.arm.cmsis.pack.parser.PdscParser;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
@@ -35,10 +42,11 @@ import com.arm.cmsis.pack.utils.Utils;
  */
 public class CpPackManager implements ICpPackManager {
 
-	protected ICpPackCollection packs = null; // global pack collection  
+	protected ICpPackCollection allPacks = null; // global pack collection  
 	protected ICpXmlParser pdscParser = null;
 	protected IRteDeviceItem allDevices = null;
-	protected String defaultPackDirectory = null;
+	protected Map<String, ICpBoard> allBoards = null;
+	protected String cmsisPackRootDirectory = null;
 	protected boolean bPacksLoaded = false;
 	protected IRteEventProxy fRteEventProxy = null;
 	
@@ -70,13 +78,24 @@ public class CpPackManager implements ICpPackManager {
 	}
 
 	@Override
-	public void clear() {
-		packs = null;
+	synchronized public void clear() {
+		allPacks = null;
 		allDevices = null;
+		allBoards = null;
+		bPacksLoaded = false;
 		if(pdscParser != null)
 			pdscParser.clear();
 	}
 	
+	
+	@Override
+	synchronized public void reload() {
+		clear();
+		getPacks(); // triggers load
+		if(fRteEventProxy != null)
+			fRteEventProxy.notifyListeners(new RteEvent(RteEvent.PACKS_RELOADED));
+	}
+
 	@Override
 	public void destroy() {
 		clear();
@@ -84,24 +103,68 @@ public class CpPackManager implements ICpPackManager {
 	}
 	
 	@Override
-	public ICpPackCollection getPacks() {
-		if(packs == null) {
-			bPacksLoaded = loadPacks(defaultPackDirectory);
+	synchronized public ICpPackCollection getPacks() {
+		if(allPacks == null) {
+			bPacksLoaded = loadPacks(cmsisPackRootDirectory);
 		}
-		return packs;
+		return allPacks;
 	}
-	
+
 	@Override
-	public IRteDeviceItem getDevices() {
-		getPacks(); // ensure packs are loade
-		if(allDevices == null && bPacksLoaded)  {
-			allDevices = RteDeviceItem.createTree(packs.getLatestPacks());
+	synchronized public IRteDeviceItem getDevices() {
+		getPacks(); // ensure allPacks are loaded
+		if(allDevices == null && bPacksLoaded && allPacks != null)  {
+			allDevices = RteDeviceItem.createTree(allPacks.getLatestPacks());
 		}
 		return allDevices;
 	}
 
 	@Override
-	public boolean loadPacks(final String rootDirectory){
+	synchronized public Map<String, ICpBoard> getBoards() {
+		getPacks(); // ensure allPacks are loaded
+		if(allBoards == null && bPacksLoaded && allPacks != null)  {
+			collectBoards();
+		}
+		return allBoards;
+	}
+
+	protected void collectBoards() {
+		allBoards = new HashMap<String, ICpBoard>();
+		Collection<ICpPack> packs = allPacks.getPacks();
+		for(ICpPack p: packs) {
+			Collection<? extends ICpItem> boards = p.getGrandChildren(CmsisConstants.BOARDS_TAG);
+			if(boards == null || boards.isEmpty())
+				continue;
+			
+			for(ICpItem item : boards) {
+				if(!(item instanceof ICpBoard))
+					continue;
+				ICpBoard b = (ICpBoard)item;
+				String id = b.getId();
+				if(allBoards.containsKey(id))
+					continue;
+				allBoards.put(id, b);
+			}
+		}
+	}
+	
+	
+	@Override
+	public Collection<ICpBoard> getCompatibleBoards(IAttributes deviceAttributes) {
+		List<ICpBoard> boards =  new LinkedList<ICpBoard>();
+		getBoards();
+		if(allBoards == null || allBoards.isEmpty())
+			return boards;
+		for(ICpBoard b : allBoards.values()){
+			if(b.hasCompatibleDevice(deviceAttributes))
+				boards.add(b);
+		}
+		return boards;
+	}
+
+
+	@Override
+	synchronized public boolean loadPacks(final String rootDirectory){
 		if(rootDirectory == null || rootDirectory.isEmpty())
 			return false;
 		
@@ -109,7 +172,7 @@ public class CpPackManager implements ICpPackManager {
 		if(root == null || !root.exists())
 			return false;
 		
-		setDefaultPackDirectory(rootDirectory);
+		setCmsisPackRootDirectory(rootDirectory);
 		
 		Collection<String> fileNames = Utils.findPdscFiles(root, null, 3); 
 		return loadPacks(fileNames);
@@ -126,31 +189,35 @@ public class CpPackManager implements ICpPackManager {
 	    	if(loadPack(f) == false)
 	    		success = false;
 	    }
-		if(fRteEventProxy != null)
-			fRteEventProxy.processRteEvent(new RteEvent(RteEvent.PACK_ALL_LOADED));
 		return success;
 	}
 	
 	@Override
 	public boolean loadPack(String file){
-		if(packs == null)
-			packs = new CpPackCollection();
+		if(allPacks == null)
+			allPacks = new CpPackCollection();
 		
 		ICpPack pack  = (ICpPack)pdscParser.parseFile(file);
 		if(pack != null) {
-			packs.addChild(pack);
+			allPacks.addChild(pack);
 		}
 		return pack != null;
 	}
 
 	@Override
-	public String getDefaultPackDirectory() {
-		return defaultPackDirectory;
+	public String getCmsisPackRootDirectory() {
+		return cmsisPackRootDirectory;
 	}
 
 	@Override
-	public void setDefaultPackDirectory(String defaultPackDirectory) {
-		this.defaultPackDirectory = defaultPackDirectory;
+	public void setCmsisPackRootDirectory(String packRootDirectory) {
+		if(packRootDirectory == null)
+			cmsisPackRootDirectory = null;
+		else {
+			// normalize and convert to Unix format 
+			IPath p = new Path(Utils.removeTrailingSlash(packRootDirectory));
+			cmsisPackRootDirectory = p.toString();
+		}
 	}
 
 	@Override

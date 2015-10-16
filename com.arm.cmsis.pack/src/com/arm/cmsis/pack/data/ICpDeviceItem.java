@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
@@ -21,7 +17,7 @@ import java.util.Map;
 import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
 
 /**
- * Interface that represent devise description hierarchy: family-subfamily-device-variant 
+ * Interface that represent device description hierarchy: family-subfamily-device-variant 
  */
 public interface ICpDeviceItem extends ICpItem {
 	/**
@@ -29,6 +25,12 @@ public interface ICpDeviceItem extends ICpItem {
 	 * @return device item parent or null if parent if not device item (family parent is not a device item)
 	 */
 	ICpDeviceItem getDeviceItemParent();
+	
+	/**
+	 * Check is this item has device item children
+	 * @return true if the item has device item children
+	 */
+	boolean hasDeviceItems();
 	
 	/** Returns list of child device items: sub-families, devices, variants
 	 * @return list of child device items
@@ -53,7 +55,6 @@ public interface ICpDeviceItem extends ICpItem {
 	 */
 	int getProcessorCount();
 
-	
 	/**
 	 * Returns list of effective properties for this device merged with properties from upper levels in device description hierarchy 
 	 * @param processorName processor name for which to get properties
@@ -61,5 +62,4 @@ public interface ICpDeviceItem extends ICpItem {
 	 */
 	ICpItem getEffectiveProperties(String processorName); 
 
-	
 }

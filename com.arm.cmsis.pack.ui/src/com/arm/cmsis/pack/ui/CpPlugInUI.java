@@ -1,16 +1,16 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* Eclipse Project - generation from template   
+* ARM Ltd and ARM Germany GmbH - application-specific implementation
+
+* Snippet to obtain resource from selection is taken from here:
+* https://wiki.eclipse.org/FAQ_How_do_I_access_the_active_project%3F
 *******************************************************************************/
 
 package com.arm.cmsis.pack.ui;
@@ -18,12 +18,20 @@ package com.arm.cmsis.pack.ui;
 import java.util.Collection;
 import java.util.HashMap;
 
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.RGB;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.osgi.framework.BundleContext;
 
 import com.arm.cmsis.pack.CpPlugIn;
@@ -35,52 +43,92 @@ import com.arm.cmsis.pack.ICpPackManager;
 public class CpPlugInUI extends AbstractUIPlugin {
 
 	private static HashMap<String, Image> images = new HashMap<String, Image>();
+	private static HashMap<String, ImageDescriptor> imageDescriptors = new HashMap<String, ImageDescriptor>();
 	
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.arm.cmsis.pack.ui"; //$NON-NLS-1$
-	public static final String CMSIS_PACK_ROOT_PREFERENCE = "com.arm.cmsis.pack.root"; //$NON-NLS-1$ 
-	
+		
+	public static final String ICONS_PATH  		= "icons/"; 		//$NON-NLS-1$
 	// icons
-	public static final String ICON_CHECKED = "checked.gif";
-	public static final String ICON_UNCHECKED = "unchecked.gif";
-	
-	public static final String ICON_RESOLVED = "resolved.gif";
-	public static final String ICON_DETAILS = "details.gif";
-	
-	public static final String ICON_INFO = "info.gif";
-	public static final String ICON_RTEWARNING = "rteWarning.gif";
-	public static final String ICON_RTEERROR = "rteError.gif";
-	
-	public static final String ICON_RTEFILTER = "rteFilter.gif";
-	public static final String ICON_RTEMANAGER = "rteManager.gif";
-	public static final String ICON_RTEMANAGER_WARNING = "rteManagerWarning.gif";
-	public static final String ICON_RTEMANAGER_ERROR = "rteManagerError.gif";
-	
-	public static final String ICON_GROUP = "group.gif";
-	public static final String ICON_COMPONENT = "component.gif";
-	public static final String ICON_COMPONENT_WARNING = "componentWarning.gif";
-	public static final String ICON_COMPONENT_ERROR = "componentError.gif";
-	public static final String ICON_MULTICOMPONENT = "multiComponent.gif";
-	public static final String ICON_MULTICOMPONENT_WARNING = "multiComponentWarning.gif";
-	public static final String ICON_MULTICOMPONENT_ERROR = "multiComponentError.gif";
-	
-	public static final String ICON_PACKINSTALLER = "packInstaller.gif";
-	public static final String ICON_CHECK4UPDATE = "check4Update.gif";
-	
-	public static final String ICON_DEVICE = "device.gif";
-	public static final String ICON_DEPRDEVICE = "deprDevice.gif";
 
-	public static final String ICON_RUN = "run.gif";
+	public static final String ICON_BOOK  		= "book.png"; 		//$NON-NLS-1$
+
+	public static final String ICON_CHECKED 	= "checked.gif"; 	//$NON-NLS-1$
+	public static final String ICON_UNCHECKED 	= "unchecked.gif"; 	//$NON-NLS-1$
+
+	public static final String ICON_CHECKED_GREY 	= "checkedGrey.gif"; 	//$NON-NLS-1$
+	public static final String ICON_UNCHECKED_GREY 	= "uncheckedGrey.gif"; 	//$NON-NLS-1$
 	
-	public static final String ICON_PACKAGE = "package.png";
-	public static final String ICON_PACKAGES = "packages.png";
-	public static final String ICON_PACKAGE_GREY = "packageGrey.png";
-	public static final String ICON_PACKAGE_EMPTY = "packageEmpty.png";
 	
-	public static final String ICON_EXPAND_ALL = "expandall.gif";
+	public static final String ICON_RESOLVE 		= "resolve.gif"; 	//$NON-NLS-1$
+	public static final String ICON_RESOLVE_DISABLED= "resolveDisabled.gif"; 	//$NON-NLS-1$
+	public static final String ICON_DETAILS 		= "details.gif"; 	//$NON-NLS-1$
+	
+	public static final String ICON_INFO 			= "info.gif"; 		//$NON-NLS-1$
+	public static final String ICON_WARNING 		= "warning.gif"; 	//$NON-NLS-1$
+	public static final String ICON_ERROR 			= "error.gif"; 		//$NON-NLS-1$
+	
+	public static final String ICON_RTEFILTER 		= "rteFilter.gif"; 	//$NON-NLS-1$
+	public static final String ICON_RTE 	  		= "rte.gif"; 		//$NON-NLS-1$
+	public static final String ICON_RTE_WARNING 	= "rteWarning.gif"; //$NON-NLS-1$
+	public static final String ICON_RTE_ERROR   	= "rteError.gif"; 	//$NON-NLS-1$
+
+	public static final String ICON_RTE_OVR 	  	= "rte_ovr.gif"; 		//$NON-NLS-1$
+	public static final String ICON_RTE_WARNING_OVR = "rteWarning_ovr.gif"; //$NON-NLS-1$
+	public static final String ICON_RTE_ERROR_OVR   = "rteError_ovr.gif"; 	//$NON-NLS-1$
+
+	public static final String ICON_RTE_CONSOLE   	= "rteConsole.gif"; 	//$NON-NLS-1$
+
+	
+	public static final String ICON_COMPONENT_CLASS			= "componentClass.gif"; 		//$NON-NLS-1$
+	public static final String ICON_COMPONENT 				= "component.gif"; 				//$NON-NLS-1$
+	public static final String ICON_COMPONENT_WARNING 		= "componentWarning.gif"; 		//$NON-NLS-1$
+	public static final String ICON_COMPONENT_ERROR 		= "componentError.gif"; 		//$NON-NLS-1$
+	public static final String ICON_MULTICOMPONENT 			= "multiComponent.gif"; 		//$NON-NLS-1$
+	public static final String ICON_MULTICOMPONENT_WARNING 	= "multiComponentWarning.gif"; 	//$NON-NLS-1$
+	public static final String ICON_MULTICOMPONENT_ERROR   	= "multiComponentError.gif"; 	//$NON-NLS-1$
+	
+	public static final String ICON_PACKINSTALLER 	= "packInstaller.gif"; 	//$NON-NLS-1$
+	public static final String ICON_CHECK4UPDATE 	= "check4Update.gif"; 	//$NON-NLS-1$
+	
+	public static final String ICON_DEVICE 			= "device.gif"; 		//$NON-NLS-1$
+	public static final String ICON_DEPRDEVICE 		= "deprDevice.gif"; 	//$NON-NLS-1$
+	public static final String ICON_DEVICE_32 		= "device32.png"; 		//$NON-NLS-1$
+	public static final String ICON_DEVICE_48 		= "device48.png"; 		//$NON-NLS-1$
+	
+	public static final String ICON_BOARD 			= "board.png";	 		//$NON-NLS-1$
+	public static final String ICON_BOARD_GREY		= "boardGrey.png";		//$NON-NLS-1$
+	
+	public static final String ICON_RUN 			= "run.gif"; 			//$NON-NLS-1$
+	
+	public static final String ICON_PACKAGE 		= "package.png"; 		//$NON-NLS-1$
+	public static final String ICON_PACKAGE_EMPTY 	= "packageEmpty.png"; 	//$NON-NLS-1$
+	public static final String ICON_PACKAGE_GREY 	= "packageGrey.png"; 	//$NON-NLS-1$
+	public static final String ICON_PACKAGE_RED		= "packageRed.png"; 	//$NON-NLS-1$
+	
+	public static final String ICON_PACKAGES 		= "packages.png"; 		//$NON-NLS-1$
+	public static final String ICON_PACKAGES_EMPTY 	= "packagesEmpty.png"; 	//$NON-NLS-1$
+	public static final String ICON_PACKAGES_GREY	= "packagesGrey.png"; 	//$NON-NLS-1$
+	public static final String ICON_PACKAGES_RED	= "packagesRed.png"; 	//$NON-NLS-1$
+
+	public static final String ICON_PACKAGES_FILTER	= "packagesFilter.png";	//$NON-NLS-1$
+	
+	public static final String ICON_EXPAND_ALL 		= "expandall.gif"; 		//$NON-NLS-1$
+	
+	public static final String ICON_PIN = "pin.png"; 						//$NON-NLS-1$
+	public static final String ERROR_OVR = "error_ovr.gif"; 				//$NON-NLS-1$
+	public static final String WARN_OVR = "warn_ovr.gif"; 					//$NON-NLS-1$
+	public static final String ASSUME_VALID_OVR = "assume_valid_ovr.gif"; 	//$NON-NLS-1$
+	public static final String CHECKEDOUT_OVR = "checkedout_ovr.gif"; 		//$NON-NLS-1$
+	public static final String MODIFIED_OVR = "modified_ovr.gif"; 			//$NON-NLS-1$
+	
+	public static final RGB GREEN = new RGB(189,249,181);
+	public static final RGB YELLOW = new RGB(252,200, 46);
 	
 	// The shared instance
 	private static CpPlugInUI plugin;
+
+	private IPreferenceStore fCorePreferenceStore = null;
 	
 	/**
 	 * The constructor
@@ -92,24 +140,21 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		IPreferenceStore store = getPreferenceStore();
-		String packRoot = store.getString(CMSIS_PACK_ROOT_PREFERENCE);  
+		IPreferenceStore store = getCorePreferenceStore();
 
 		store.addPropertyChangeListener(new IPropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent event) {
-				if (event.getProperty() == CMSIS_PACK_ROOT_PREFERENCE) {
+				if (event.getProperty() == CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE) {
 					String newPackRoot = event.getNewValue().toString();
-					ICpPackManager pm  = CpPlugIn.getDefault().getPackManager();
-					if(pm != null)
-						pm.setDefaultPackDirectory(newPackRoot);
+					ICpPackManager pm  = CpPlugIn.getPackManager();
+					if(pm != null && !pm.getCmsisPackRootDirectory().equals(newPackRoot) ) {
+						pm.setCmsisPackRootDirectory(newPackRoot);
+						pm.reload();
+					}
 				}
 			}
 		}); 
-
-		ICpPackManager pm  = CpPlugIn.getDefault().getPackManager();
-		if(pm != null)
-			pm.setDefaultPackDirectory(packRoot);
 
 	}
 
@@ -119,11 +164,44 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		for (Image image : values) {
 			image.dispose();
 		}
+		images.clear(); 
+		imageDescriptors.clear();
 		
 		plugin = null;
 		super.stop(context);
 	}
 
+	/**
+	 * Returns preference store of CpPlugIn, since that does not have GUI
+	 * @return IPreferenceStore
+	 */
+	public IPreferenceStore getCorePreferenceStore() {
+		if (fCorePreferenceStore == null) {
+			fCorePreferenceStore= new ScopedPreferenceStore(InstanceScope.INSTANCE, CpPlugIn.PLUGIN_ID);
+		}
+		return fCorePreferenceStore;
+	}
+
+	
+	static public void addPreferenceStoreListener(IPropertyChangeListener listener) {
+		if(plugin == null)
+			return;
+		IPreferenceStore store = plugin.getPreferenceStore();
+		if(store == null)
+			return;
+		store.addPropertyChangeListener(listener);
+	}
+
+	static public void removePreferenceStoreListener(IPropertyChangeListener listener) {
+		if(plugin == null)
+			return;
+		IPreferenceStore store = plugin.getPreferenceStore();
+		if(store == null)
+			return;
+		store.removePropertyChangeListener(listener);
+	}
+
+	
 	/**
 	 * Returns the shared instance
 	 *
@@ -141,9 +219,18 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	 * @return the image descriptor
 	 */
 	public static ImageDescriptor getImageDescriptor(String file) {
-		ImageDescriptor imageDescr = imageDescriptorFromPlugin(PLUGIN_ID, file);
-		if(imageDescr == null && !file.startsWith("icons/")) {
-			imageDescr = imageDescriptorFromPlugin(PLUGIN_ID, "icons/" + file);
+		String icons_file = null;
+		if(!file.startsWith(ICONS_PATH))
+			icons_file = ICONS_PATH + file;
+		else 
+			icons_file = file;
+		
+		if(imageDescriptors.containsKey(icons_file))
+			return imageDescriptors.get(icons_file);
+		
+		ImageDescriptor imageDescr = imageDescriptorFromPlugin(PLUGIN_ID, icons_file);
+		if(imageDescr != null) { 
+			imageDescriptors.put(icons_file, imageDescr);
 		}
 			
 		return imageDescr;
@@ -157,8 +244,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	 * @return Image object
 	 */
 	private static Image createImage(String file) {
-	  String path = "icons/" + file;
-	  ImageDescriptor image = getImageDescriptor(path);
+	  ImageDescriptor image = getImageDescriptor(file);
 	  if(image != null)
 		  return image.createImage();
 	  return null;
@@ -166,19 +252,58 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	}
 	
 	/**
-	 * @param imageName name of the image
+	 * @param file name of the image
 	 * @return an Image object
 	 */
-	public static Image getImage(String imageName) {
+	public static Image getImage(String file) {
+		String icons_file = null;
+		if(!file.startsWith(ICONS_PATH))
+			icons_file = ICONS_PATH + file;
+		else 
+			icons_file = file;
+		
 		Image image = null;
-		if (images.containsKey(imageName)) {
-			image = images.get(imageName);
+		if (images.containsKey(icons_file)) {
+			image = images.get(icons_file);
 		}
 		else {
-			image = createImage(imageName);
-			images.put(imageName, image);
+			image = createImage(icons_file);
+			images.put(icons_file, image);
 		}
 		
 		return image;
+	}
+	
+	/**
+	 * Returns first selected resource  
+	 * @param selection ISelection selection  
+	 * @return IResource or null if not selected
+	 */
+	public static IResource getResourceFromSelection(ISelection selection) {
+		if (!(selection instanceof IStructuredSelection))
+			return null;
+		IStructuredSelection structSel = (IStructuredSelection) selection;
+		Object element = structSel.getFirstElement();
+		if (element instanceof IResource)
+			return (IResource) element;
+		else if (element instanceof IAdaptable) {
+			IAdaptable adaptable = (IAdaptable)element;
+			Object adapter = adaptable.getAdapter(IResource.class);
+			return (IResource) adapter;
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * Returns first selected project  
+	 * @param selection ISelection selection  
+	 * @return IProject or null if not selected
+	 */
+	public static IProject getProjectFromSelection(ISelection selection) {
+		IResource res = getResourceFromSelection(selection);
+		if(res != null)
+			return res.getProject();
+		return null;
 	}
 }

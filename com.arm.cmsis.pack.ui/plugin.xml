@@ -3,18 +3,65 @@
 <plugin>
 
    <extension
-         point="org.eclipse.core.runtime.preferences">
-      <initializer
-            class="com.arm.cmsis.pack.ui.preferences.CpPreferenceInitializer">
-      </initializer>
-   </extension>
-   <extension
          point="org.eclipse.ui.preferencePages">
       <page
             class="com.arm.cmsis.pack.ui.preferences.CpPreferencePage"
             id="com.arm.cmsis.pack.ui.CpPreferencePage"
-            name="CMSIS Packs">
+            name="%CMSISpage.name">
       </page>
+      <page
+            category="com.arm.cmsis.pack.ui.CpPreferencePage"
+            class="com.arm.cmsis.pack.ui.preferences.CpConsolePreferencePage"
+            id="com.arm.cmsis.pack.ui.CpConsolePreferencePage"
+            name="%ConsolePage.name">
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="com.arm.cmsis.pack.ui.editors.RteEditor"
+            contributorClass="com.arm.cmsis.pack.ui.editors.RteEditorContributor"
+            extensions="rteconfig"
+            icon="icons/rte.gif"
+            id="com.arm.cmsis.pack.ui.editors.RteConfigurationEditor"
+            name="%editor.RteConfiguration">
+      </editor>
+   </extension>
+   <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="com.arm.cmsis.pack.category"
+            name="CMSIS">
+      </category>
+      <view
+            category="com.arm.cmsis.pack.category"
+            class="com.arm.cmsis.pack.ui.views.PackView"
+            icon="icons/packages.png"
+            id="com.arm.cmsis.pack.ui.views.PackView"
+            name="%view.CMSIS_Packs">
+      </view>
+      <view
+            category="com.arm.cmsis.pack.category"
+            class="com.arm.cmsis.pack.ui.views.DeviceTreeView"
+            icon="icons/device.gif"
+            id="com.arm.cmsis.pack.ui.DeviceTreeView"
+            name="%view.CMSIS_Devices "
+            restorable="true">
+      </view>
+   </extension>
+   <extension
+         point="org.eclipse.ui.console.consoleFactories">
+      <consoleFactory
+            class="com.arm.cmsis.pack.ui.console.RteConsoleFactory"
+            icon="icons/rteConsole.gif"
+            label="%console.CMSIS_RTE_Console">
+      </consoleFactory>
+   </extension>
+   <extension
+         point="org.eclipse.core.runtime.preferences">
+      <initializer
+            class="com.arm.cmsis.pack.ui.preferences.CpUIPreferenceInitializer">
+      </initializer>
    </extension>
 
 </plugin>

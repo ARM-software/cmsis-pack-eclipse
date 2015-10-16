@@ -1,23 +1,21 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.info;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
+import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
  *
@@ -34,17 +32,27 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	public CpPackInfo(ICpItem parent, ICpPack pack) {
 		super(parent, pack.getTag());
 		fPack = pack;
-		attributes().setAttribute("name", pack.getName());
-		attributes().setAttribute("url", pack.getUrl()); 
-		attributes().setAttribute("vendor", pack.getVendor());
-		attributes().setAttribute("version", pack.getVersion());
+		updateInfo();
 	}
+
+	public CpPackInfo(ICpItem parent, ICpPackInfo packInfo) {
+		super(parent, packInfo.getTag());
+		fPack = packInfo.getPack();
+		attributes().setAttributes(packInfo.attributes());
+	}
+
+	public CpPackInfo(ICpItem parent, IAttributes attributes) {
+		super(parent, CmsisConstants.PACKAGE_TAG);
+		fPack = null;
+		attributes().setAttributes(attributes);
+	}
+
 	
 	/**
 	 * @param parent parent item if any
 	 */
 	public CpPackInfo(ICpItem parent) {
-		super(parent, "package");
+		super(parent, CmsisConstants.PACKAGE_TAG);
 	}
 
 	/**
@@ -72,13 +80,23 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	}
 
 	@Override
+	public void updateInfo() {
+		if(fPack != null) {
+			attributes().setAttribute(CmsisConstants.NAME, fPack.getName());
+			attributes().setAttribute(CmsisConstants.URL, fPack.getUrl()); 
+			attributes().setAttribute(CmsisConstants.VENDOR, fPack.getVendor());
+			attributes().setAttribute(CmsisConstants.VERSION, fPack.getVersion());
+		}
+	}
+
+	@Override
 	public String getVendor() {
-		return attributes().getAttribute("vendor");
+		return getAttribute(CmsisConstants.VENDOR);
 	}
 
 	@Override
 	public String getVersion() {
-		return attributes().getAttribute("version");
+		return getAttribute(CmsisConstants.VERSION);
 	}
 
 	@Override
@@ -96,5 +114,13 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	public String getPackFamilyId() {
 		return getVendor() + '.' + getName();
 	}
+
+	@Override
+	public String getDescription() {
+		if(fPack != null)
+			return fPack.getDescription();
+		return null;
+	}
+	
 	
 }

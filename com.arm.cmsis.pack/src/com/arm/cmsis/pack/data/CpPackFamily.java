@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
@@ -26,21 +22,15 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class CpPackFamily extends CpItem implements ICpPackFamily {
 
-	Map<String, ICpPack> fPacks = null;
+	protected Map<String, ICpPack> fPacks = null;
 	
-	/**
-	 * @param parent
-	 */
 	public CpPackFamily(ICpItem parent) {
 		super(parent);
 	}
 
-	/**
-	 * @param parent
-	 * @param tag
-	 */
-	public CpPackFamily(ICpItem parent, String tag) {
-		super(parent, tag);
+	public CpPackFamily(ICpItem parent, String familyId) {
+		super(parent, familyId);
+		fId = familyId;
 	}
 
 	@Override
@@ -54,9 +44,10 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	@Override
 	public String getPackId() {
 		// get the latest pack ID
-		if(fPacks != null && !fPacks.isEmpty())
-			return fPacks.entrySet().iterator().next().getKey();
-		return null; // return 
+		ICpPack pack = getPack(); 
+		if(pack != null)
+			return pack.getId();
+		return null; 
 	}
 
 	
@@ -68,11 +59,15 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	@Override
 	public ICpPack getPack(final String packId) {
 		if(fPacks != null) {
+			if(packId.equals(getId())) // family id is supplied => return latest
+				return getPack();
 			// id or version ?
-			String version = CpPack.versionFromId(packId);
-			if(version.isEmpty())
-				version = packId;
-			return fPacks.get(version);
+			String familyId = CpPack.familyFromId(packId);
+			if(familyId.equals(getId())) { 
+				String version = CpPack.versionFromId(packId);
+				fPacks.get(version);
+			}
+			return fPacks.get(packId); // supplied packId is in fact version
 		}
 		return null;
 	}
@@ -113,6 +108,22 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 					return pack;
 			}
 		}
+		return null;
+	}
+
+	@Override
+	public String getDescription() {
+		ICpPack pack = getPack();
+		if(pack != null)
+			return pack.getDescription();
+		return null;
+	}
+
+	@Override
+	public String getUrl() {
+		ICpPack pack = getPack();
+		if(pack != null)
+			return pack.getUrl();
 		return null;
 	}
 }

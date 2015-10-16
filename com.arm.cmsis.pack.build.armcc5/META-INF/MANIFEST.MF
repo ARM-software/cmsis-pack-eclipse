@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Armcc5 Toolchain Adapter
+Bundle-SymbolicName: com.arm.cmsis.pack.build.armcc5;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Activator: com.arm.cmsis.pack.build.armcc5.Activator
+Bundle-Vendor: ARM
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.cdt.managedbuilder.core,
+ org.eclipse.cdt.core,
+ com.arm.cmsis.pack.common,
+ com.arm.cmsis.pack.build.settings
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy
+Export-Package: com.arm.cmsis.pack.build.armcc5

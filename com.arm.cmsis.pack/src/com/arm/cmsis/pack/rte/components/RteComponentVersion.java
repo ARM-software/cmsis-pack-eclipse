@@ -1,30 +1,24 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.components;
 
 import java.util.LinkedHashSet;
-import java.util.Map;
-import java.util.TreeMap;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
-import com.arm.cmsis.pack.rte.IRteDependency;
-import com.arm.cmsis.pack.utils.AlnumComparator;
+import com.arm.cmsis.pack.rte.dependencies.IRteDependency;
 
 /**
  * Class represent Cversion hierarchy level (the end-leaf), contains references to ICpComponents.
@@ -38,14 +32,28 @@ public class RteComponentVersion extends RteComponentItem {
 	public RteComponentVersion(IRteComponentItem parent, String name) {
 		super(parent, name);
 	}
-
+	
+	
 	@Override
-	public Map<String, IRteComponentItem> createMap() {
-		// entities are sorted by packs with versions in descending order  
-		return new TreeMap<String, IRteComponentItem>(new AlnumComparator());
+	public void destroy() {
+		super.destroy();
+		fComponents.clear();
+		fComponentInfo = null;
 	}
 
-	
+
+	@Override
+	public boolean purge() {
+		if(!isSelected()) {
+			fComponentInfo = null;
+			if(fComponents.isEmpty()) {
+				destroy();
+				return true;
+			}
+		}
+		return false;
+	}
+
 	@Override
 	public EEvaluationResult findComponents(IRteDependency dependency) {
 		if(getEntityCount() > 1)
@@ -62,6 +70,13 @@ public class RteComponentVersion extends RteComponentItem {
 			fComponents.add(cpComponent);
 		}
 	}
+
+//	@Override
+//	public EEvaluationResult resolveComponent(ICpComponentInfo componentInfo, int flags) {
+//		fComponentInfo = componentInfo;
+//		fComponentInfo.setComponent(getFirstCpComponent());
+//		return EEvaluationResult.FULFILLED;
+//	}
 
 
 	@Override
@@ -82,7 +97,6 @@ public class RteComponentVersion extends RteComponentItem {
 		return fComponentInfo;
 	}
 
-	
 	protected ICpComponent getFirstCpComponent(){
 		if(!fComponents.isEmpty())
 			return fComponents.iterator().next();
@@ -95,8 +109,8 @@ public class RteComponentVersion extends RteComponentItem {
 		IRteComponentGroup group = getParentGroup();
 		if(group != null) {
 			ICpItem cpItem = getCpItem();
-			if(cpItem != null && cpItem.attributes().hasAttribute("Capiversion"))
-				return group.getApi(cpItem.attributes().getAttribute("Capiversion")); // certain API version version
+			if(cpItem != null && cpItem.hasAttribute(CmsisConstants.CAPIVERSION))
+				return group.getApi(cpItem.getAttribute(CmsisConstants.CAPIVERSION)); // certain API version version
 			else
 				return group.getApi(); // active API version
 		}

@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
@@ -22,22 +18,21 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 
 /**
- *
+ *  Class to collect pack families
  */
 public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 	// fChildren from CpItem class is not used
-	private Map<String, ICpPackFamily> fPackFamilies = null; 
-	/**
-	 * @param parent
-	 */
-	public CpPackCollection() {
-		super(null);
-	}
+	private Map<String, ICpPackFamily> fPackFamilies = null;
+	private Set<String> fLatestPackIDs = null;
 
+	public CpPackCollection() {
+		super(null, CmsisConstants.PACKAGES_TAG);
+	}
 
 	@Override
 	public ICpPack getPack(String packId) {
@@ -46,6 +41,8 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 			ICpPackFamily f = fPackFamilies.get(familyId);
 			if(f != null) {
 				String version = CpPack.versionFromId(packId);
+				if(version == null || version.isEmpty())
+					return f.getPack();
 				return f.getPack(version);
 			}
 		}
@@ -108,7 +105,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 	@Override
 	public Collection<ICpPack> getFilteredPacks(ICpPackFilter packFilter) {
-		if(packFilter == null || packFilter.isUseAllLatestsPacks())
+		if(packFilter == null || packFilter.isUseAllLatestPacks())
 			return getLatestPacks();
 
 		Collection<ICpPack> packs = new LinkedList<ICpPack>();
@@ -151,14 +148,16 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 
 	@Override
-	public Set<String> getLatestPackIDs() {
-		Set<String> latestPacks = new HashSet<String>(); 
-		for(ICpPackFamily f : fPackFamilies.values()) {
-			String packId = f.getPackId();
-			if(packId != null && ! packId.isEmpty())
-				latestPacks.add(packId);
+	public synchronized Set<String> getLatestPackIDs() {
+		if(fLatestPackIDs == null) {
+			fLatestPackIDs = new HashSet<String>(); 
+			for(ICpPackFamily f : fPackFamilies.values()) {
+				String packId = f.getPackId();
+				if(packId != null && !packId.isEmpty())
+					fLatestPackIDs.add(packId);
+			}
 		}
-		return latestPacks;
+		return fLatestPackIDs;
 	}
 
 

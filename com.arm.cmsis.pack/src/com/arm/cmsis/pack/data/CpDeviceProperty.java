@@ -1,21 +1,19 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
+
+import com.arm.cmsis.pack.common.CmsisConstants;
 
 /**
  *
@@ -35,8 +33,15 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 	@Override
 	public boolean isUnique() {
 		// only a few properties are not unique
-		if(fTag.equals("feature") || fTag.equals("block") || fTag.equals("control") || fTag.equals("description"))
+		switch(fTag) {
+		case CmsisConstants.BLOCK_TAG:
+		case CmsisConstants.CONTROL_TAG:
+		case CmsisConstants.FEATURE_TAG:
+		case CmsisConstants.DESCRIPTION:
 			return false;
+		default: 
+			break;
+		}
 		return true;
 	}
 
@@ -48,7 +53,7 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 
 
 	@Override
-	public void mergeEffectiveContent(ICpItem property) {
+	public synchronized void mergeEffectiveContent(ICpItem property) {
 		attributes().mergeAttributes(property.attributes()); // always merge attributes
 		if(!providesEffectiveContent())  // merge content only if property needs it 
 			return;
@@ -69,7 +74,9 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 	@Override
 	public boolean providesEffectiveContent() {
 		// only a few properties collect the content 
-		if(fTag.equals("environment") || fTag.equals("trace") || fTag.equals("debug"))
+		if(fTag.equals(CmsisConstants.ENVIRONMENT_TAG) || 
+		   fTag.equals(CmsisConstants.TRACE_TAG) || 
+		   fTag.equals(CmsisConstants.DEBUG_TAG))
 			return true;
 		return false;
 	}

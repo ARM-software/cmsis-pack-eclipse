@@ -1,21 +1,15 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
-
-import java.util.Collection;
 
 /**
  * Interface describing a CMSIS component  
@@ -29,16 +23,40 @@ public interface ICpComponent extends ICpItem {
 	boolean isApi();
 
 	/**
+	 * Checks if this component is a device startup one (Cclass="Device" Cgroup="Startup" Csub="" )
+	 * @return true if this component is a startup one
+	 */
+	boolean isDeviceStartupComponent();
+
+	/**
+	 * Checks if this component is a Core one (Cclass="CMSIS" Cgroup="CoreS" Csub="")<br>
+	 * @return true if this component is a startup one
+	 */
+	boolean isCmsisCoreComponent();
+
+	/**
+	 * Checks if this component is an RTOS one (Cclass="CMSIS" Cgroup="RTOS")<br>
+	 * @return true if this component is a startup one
+	 */
+	boolean isCmsisRtosComponent();
+
+	
+	/**
+	 * Checks if component should be treated as multi-instance one, even if max instance count is 1
+	 * @return true if component is a multi-instance one  
+	 */
+	boolean isMultiInstance();
+
+	
+	/**
 	 * Returns number of maximum instances for the component 
 	 * @return true if the component is API
 	 */
 	int getMaxInstances();
 	
-	
 	/**
-	 * Returns collection of files filtered according to supplied condition context 
-	 * @param context condition context to use for filtering
-	 * @return collection of filtered files
+	 * Returns piece of code corresponding this component to copy to RteComponents.h file
+	 * @return code to copy to RteComponents.h file as string 
 	 */
-	Collection<ICpFile> getFilteredFiles(ICpConditionContext context);
+	String getRteComponentsHCode();
 }

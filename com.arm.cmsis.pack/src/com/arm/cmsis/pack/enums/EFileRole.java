@@ -1,8 +1,9 @@
 package com.arm.cmsis.pack.enums;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpFile;
 /*******************************************************************************
- * Copyright (c) 2014 ARM Ltd and others.
+ * Copyright (c) 2015 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,13 +32,13 @@ public enum EFileRole {
 		if(str == null)
 			return NONE;
 		switch(str) {
-		case  "copy":
+		case  CmsisConstants.COPY:
 			return COPY;
-		case  "config":
+		case  CmsisConstants.CONFIG:
 			return CONFIG;
-		case  "tempate":
+		case  CmsisConstants.TEMPLATE:
 			return TEMPLATE;
-		case  "interface":
+		case  CmsisConstants.INTERFACE:
 			return INTERFACE;
 		default:
 			return NONE;

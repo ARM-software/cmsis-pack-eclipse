@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 ARM Ltd and others.
+ * Copyright (c) 2015 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,12 +9,13 @@
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
  *******************************************************************************/
 package com.arm.cmsis.pack.info;
-import com.arm.cmsis.pack.base.IEvaluationResult;
 import com.arm.cmsis.pack.data.ICpComponent;
+import com.arm.cmsis.pack.data.ICpFile;
+import com.arm.cmsis.pack.enums.IEvaluationResult;
 
 
 /**
- * Interface that describes component that is instantiated in the project
+ * Interface that describes a component instantiated in the configuration
  */
 public interface ICpComponentInfo extends ICpComponent, ICpItemInfo, IEvaluationResult {
 
@@ -35,7 +36,15 @@ public interface ICpComponentInfo extends ICpComponent, ICpItemInfo, IEvaluation
 	 * Returns number of instantiated components
 	 * @return number of instantiated components
 	 */
-	int getInstanceCount(); 
+	int getInstanceCount();
+
+
+	/**
+	 * Searches for file info corresponding supplied ICpFile 
+	 * @param f ICpFile 
+	 * @return the resulting ICpFileInfo or null if not found
+	 */
+	ICpFileInfo getFileInfo(ICpFile f); 
 	
 	
 }

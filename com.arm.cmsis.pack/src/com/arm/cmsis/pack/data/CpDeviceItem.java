@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 ARM Ltd and others.
+ * Copyright (c) 2015 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,13 +18,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.arm.cmsis.pack.base.CmsisConstants;
+import com.arm.cmsis.pack.DeviceVendor;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
-import com.arm.cmsis.pack.generic.IAttributes;
 
 
 /**
- *
+ * Default implementation of ICpDeviceItem interface 
  */
 public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem {
 
@@ -54,12 +54,19 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	}
 
 	@Override
+	public boolean hasDeviceItems() {
+		return deviceItems != null && !deviceItems.isEmpty();
+	}	
+
+	
+	@Override
 	public List<ICpDeviceItem> getDeviceItems() {
 		return deviceItems;
 	}
 
 	@Override
 	public void addChild(ICpItem item) {
+		cachedChildArray = null; // invalidate
 		if(item instanceof ICpDeviceItem) {
 			if(deviceItems == null) 
 				deviceItems = new LinkedList<ICpDeviceItem>();
@@ -97,7 +104,7 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	}
 	
 	@Override
-	public Map<String, ICpItem> getProcessors() {
+	public synchronized Map<String, ICpItem> getProcessors() {
 		if(processors == null) {
 			processors = new HashMap<String, ICpItem>();
 			for(ICpDeviceItem deviceItem = this; deviceItem != null; deviceItem = deviceItem.getDeviceItemParent()){	 
@@ -124,7 +131,7 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	}
 
 	@Override
-	public ICpItem getEffectiveProperties(String processorName) {
+	public synchronized ICpItem getEffectiveProperties(String processorName) {
 		if(effectiveProperties == null) {
 			// ensure filled processor collection
 			getProcessors();
@@ -164,25 +171,97 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 
 
 	@Override
-	public String getName() {
+	protected String constructName() {
 		switch(getLevel()) {
 		case DEVICE:
-			return attributes().getAttribute("Dname",IAttributes.EMPTY_STRING);
+			return getAttribute(CmsisConstants.DNAME);
 		case FAMILY:
-			return attributes().getAttribute("Dfamily",IAttributes.EMPTY_STRING);
+			return getAttribute(CmsisConstants.DFAMILY);
 		case SUBFAMILY:
-			return attributes().getAttribute("DsubFamily",IAttributes.EMPTY_STRING);
+			return getAttribute(CmsisConstants.DSUBFAMILY);
 		case VARIANT:
-			return attributes().getAttribute("Dvariant", IAttributes.EMPTY_STRING);
+			return getAttribute(CmsisConstants.DVARIANT);
 		default:
 			break;
 		}
-		return super.getName();
+		return super.constructName();
 	}
 
 
 	@Override
 	public String constructId() {
 		return getName();
+	}
+
+	
+	@Override
+	public boolean hasChildren() {
+		return getEffectiveChildCount() > 0;
+	}
+
+	@Override
+	public boolean hasEffectiveChildren() {
+		return getEffectiveChildCount() > 0;
+	}
+
+	
+	@Override
+	public Collection<? extends ICpItem> getEffectiveChildren() {
+		// combination of direct properties and device children
+		List<ICpItem> effectiveChildren = new LinkedList<ICpItem>();
+		if(hasChildren()) {
+			effectiveChildren.addAll(getChildren());
+		}
+		if(hasDeviceItems()) {
+			effectiveChildren.addAll(getDeviceItems());
+		}
+		return effectiveChildren;
+	}
+
+	@Override
+	public int getEffectiveChildCount() {
+		int count = getChildCount(); // count of direct properties
+		if(hasDeviceItems())
+			count += getDeviceItems().size();
+		return count;
+	}
+	
+	
+	@Override
+	protected Object[] createChildArray() {
+		// use cached array for effective children, while direct children are rarely needed in GUI
+		Collection<? extends ICpItem> collection = getEffectiveChildren();
+		if(collection != null && !collection.isEmpty())
+			return collection.toArray();
+		return EMPTY_OBJECT_ARRAY;
+	}
+
+	@Override
+	protected Collection<? extends ICpItem> getItemsToVisit() {
+		return getEffectiveChildren();
+	}
+
+	@Override
+	public synchronized String getUrl() {
+		if(fURL == null) {
+			fURL = DeviceVendor.getVendorUrl(getVendor());
+			if(!fURL.isEmpty()) {
+				fURL += '/';
+				fURL += DeviceVendor.adjutsToUrl(getName());  
+			}
+		}
+		return fURL;
+	}
+
+	@Override
+	public String getDoc() {
+		//get first book
+		String doc = null;
+		ICpItem bookItem = getFirstChild(CmsisConstants.BOOK_TAG);
+		if(bookItem != null)
+			doc = bookItem.getDoc();
+		if(doc == null || doc.isEmpty())
+			doc = super.getDoc();
+		return doc;
 	}
 }

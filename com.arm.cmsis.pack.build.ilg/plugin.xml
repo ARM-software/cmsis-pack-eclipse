@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.arm.cmsis.pack.build.settings.ToolChainAdapter">
+      <toolChainAdapter
+            Description="Toolchain Adapter for GNU ARM C/C++ Cross Compiler"
+            class="com.arm.cmsis.pack.build.ilg.IlgToolChainAdapter"
+            id="com.arm.cmsis.pack.build.ilg.toolChainAdapter"
+            name="Cross ARM GCC Toolchain Adapter "
+            toolChainFamily="GCC">
+         <toolChain
+               id="ilg.gnuarmeclipse.managedbuild.cross.toolchain.base">
+         </toolChain>
+      </toolChainAdapter>
+   </extension>
+
+</plugin>

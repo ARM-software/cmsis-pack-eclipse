@@ -1,30 +1,26 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.components;
 
 import java.util.Collection;
 
-import com.arm.cmsis.pack.base.ICmsisMapItem;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EComponentAttribute;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
-import com.arm.cmsis.pack.rte.IRteDependency;
+import com.arm.cmsis.pack.item.ICmsisMapItem;
+import com.arm.cmsis.pack.rte.dependencies.IRteDependency;
 
 /**
  * Base interface for component hierarchy items  
@@ -94,7 +90,7 @@ public interface IRteComponentItem extends ICmsisMapItem<IRteComponentItem> {
 	 * @return true if active 
 	 */
 	boolean isActive();
-	
+
 	/**
 	 * Returns an active child (bundle, variant, vendor or version )
 	 * @return active child name or null for non-exclusive items 
@@ -117,17 +113,17 @@ public interface IRteComponentItem extends ICmsisMapItem<IRteComponentItem> {
 	boolean setActiveChild(final String name);
 	
 	/**
-	 * Returns implicit child name 
+	 * Returns default child name 
 	 * The name does not need to be an actual key, but a symbolic one, for instance component version can have "latest" special name  
 	 * @return special string name, otherwise null
 	 */
-	String getImplicitChildName();
+	String getDefaultChildName();
 
 	/**
-	 * Check if the active child is selected using implicit name 
-	 * @return true if active child is implicitly selected
+	 * Check if the active child is selected using default name 
+	 * @return true if active child is default one
 	 */
-	boolean isActiveChildImplicit();
+	boolean isActiveChildDefault();
 	
 
 	/**
@@ -230,10 +226,10 @@ public interface IRteComponentItem extends ICmsisMapItem<IRteComponentItem> {
 	
 
 	/**
-	 * Checks if component or bundle is configured to use any vendor
-	 * @return if any vendor is to be used 
-	 */	
-	boolean isUseAnyVendor();
+	 * Returns default version  
+	 * @return default version
+	 */
+	String getDefaultVersion();
 
 	
 	/**
@@ -285,10 +281,27 @@ public interface IRteComponentItem extends ICmsisMapItem<IRteComponentItem> {
 	
 	
 	/**
-	 * Searches the hierarchy for components matching supplied attributes
-	 * @param dependency dependency result  
+	 * Searches the hierarchy for components matching supplied criteria
+	 * @param dependency IRteDependency describing search criteria and accumulating results 
 	 * @return result of search as EEvaluationResult value 
 	 */
 	EEvaluationResult findComponents(IRteDependency dependency);
+
+	/**
+	 * Searches the component tree to find a component matching supplied info according to supplied flags   
+	 * @param componentInfo ICpComponentInfo to search for
+	 * @param flags ORed flags that define resolve behavior
+	 * @return result of search as EEvaluationResult value 
+	 */
+//	EEvaluationResult resolveComponent(ICpComponentInfo componentInfo, int flags);
+
+	
+	/**
+	 * Returns string key used by parent to insert into map<br>
+	 * Standard component representing component hierarchy ICpItems items must return getName()
+	 * Artificial item might return a different string to allow desirable sorting
+	 * @return item key 
+	 */
+	String getKey();
 
 }

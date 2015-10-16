@@ -1,25 +1,22 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.info;
 
 import java.util.Collection;
 
+import com.arm.cmsis.pack.CpStrings;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpComponent;
 import com.arm.cmsis.pack.data.ICpComponent;
-import com.arm.cmsis.pack.data.ICpConditionContext;
 import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -33,25 +30,24 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 	protected ICpComponent fComponent = null;
 	protected EEvaluationResult fResolveResult = EEvaluationResult.UNDEFINED;
 	protected ICpPackInfo  fPackInfo = null;
+	protected int fInstanceCount = -1;
 	/**
 	 * Creates info for the given component
 	 * @param parent parent item if any
-	 * @param component
+	 * @param component real component
+	 * @param instanceCount component selection count  
 	 */
 	public CpComponentInfo(ICpItem parent, ICpComponent component, int instanceCount) {
-		super(parent, component != null? component.getTag() : "component");
-		setComponent(component);
-		if(component != null) {
-			attributes().setAttributes(component.attributes());
-			attributes().setAttribute("Cvendor", component.getVendor());
-			if(instanceCount > 0 ) {
-				attributes().setAttribute("instances", instanceCount);
-			}
-		}
+		super(parent, component);
+		fComponent = component;
+		fInstanceCount = instanceCount;
+		setEvaluationResult(EEvaluationResult.FULFILLED);
+		updateInfo();
 	}
 
 	
 	/**
+	 * Constructor for parser
 	 * @param parent parent item if any
 	 * @param tag XML tag associated with the item 
 	 */
@@ -63,29 +59,68 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 	public ICpComponent getComponent() {
 		return fComponent;
 	}
-
+	
+	
 	@Override
 	public void setComponent(ICpComponent component) {
 		fComponent = component;
 		if(component != null) {
-			fPackInfo = new CpPackInfo(this, component.getPack());
-			replaceChild(fPackInfo);
 			setEvaluationResult(EEvaluationResult.FULFILLED);
+			fPackInfo.setPack(component.getPack());
 		} else {
 			if(fResolveResult == EEvaluationResult.FULFILLED || fResolveResult == EEvaluationResult.UNDEFINED)
 				fResolveResult = EEvaluationResult.MISSING;
 		}
 	}
 	
+	
 	@Override
-	public int getInstanceCount() {
-		return attributes().getAttributeAsInt("instances", 1);
+	public void updateInfo() {
+		if(fComponent != null) {
+			fPackInfo = new CpPackInfo(this, fComponent.getPack());
+			replaceChild(fPackInfo);
+			attributes().setAttributes(fComponent.attributes());
+			attributes().removeAttribute(CmsisConstants.CONDITION); // not needed in info 
+			attributes().setAttribute(CmsisConstants.CVENDOR, fComponent.getVendor());
+			attributes().setAttribute(CmsisConstants.CVERSION, fComponent.getVersion());
+			if(fComponent.isDeviceDependent()) {
+				deviceDependent = 1;
+				attributes().setAttribute(CmsisConstants.DEVICE_DEPENDENT, true);
+			} else {
+				attributes().removeAttribute(CmsisConstants.DEVICE_DEPENDENT);
+				deviceDependent = 0;
+			}
+				
+			if(fInstanceCount > 1 ) {
+				attributes().setAttribute(CmsisConstants.INSTANCES, fInstanceCount);
+			} else {
+				attributes().removeAttribute(CmsisConstants.INSTANCES);
+			}
+		}
 	}
 
+
 	@Override
-	public Collection<ICpFile> getFilteredFiles(ICpConditionContext context) {
-		if(fComponent != null)
-			return fComponent.getFilteredFiles(context);
+	public int getInstanceCount() {
+		if(fInstanceCount < 0)
+			fInstanceCount = attributes().getAttributeAsInt(CmsisConstants.INSTANCES, 1);
+		return fInstanceCount;
+	}
+
+	
+	@Override
+	public ICpFileInfo getFileInfo(ICpFile f) {
+		if(f == null)
+			return null;
+		String name = f.getName();
+		Collection<? extends ICpItem> children = getChildren();
+		if(children == null) {
+			return null;
+		}
+		for(ICpItem item : children) {
+			if(item instanceof ICpFileInfo && item.getName().equals(name))
+				return (ICpFileInfo)item;
+		}
 		return null;
 	}
 
@@ -151,7 +186,7 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 
 	@Override
 	public void setEvaluationResult(EEvaluationResult result) {
-		if(fResolveResult == EEvaluationResult.UNDEFINED || result.ordinal() < fResolveResult.ordinal()) 
+	//	if(fResolveResult == EEvaluationResult.UNDEFINED || result.ordinal() < fResolveResult.ordinal()) 
 			fResolveResult = result;
 	}
 
@@ -160,7 +195,7 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 	public String getDescription() {
 		if(fComponent != null)
 			return fComponent.getDescription();
-		return "component is missing"; 
+		return CpStrings.CpComponentInfo_ComponentMissing; 
 	}
 	
 }

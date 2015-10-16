@@ -1,21 +1,17 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.enums;
 
-import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.common.CmsisConstants;
 
 /**
  * Enumeration to describe device hierarchy from vendor to processor 
@@ -36,17 +32,17 @@ public enum EDeviceHierarchyLevel {
 		if(str == null)
 			return NONE;
 		switch(str) {
-		case  "vendor":
+		case  CmsisConstants.VENDOR:
 			return VENDOR;
-		case  "family":
+		case  CmsisConstants.FAMILY_TAG:
 			return FAMILY;
-		case  "subFamily":
+		case  CmsisConstants.SUBFAMILY_TAG:
 			return SUBFAMILY;
-		case  "device":
+		case  CmsisConstants.DEVICE_TAG:
 			return DEVICE;
-		case  "variant":
+		case  CmsisConstants.VARIANT_TAG:
 			return VARIANT;
-		case  "processor":
+		case  CmsisConstants.PROCESSOR_TAG:
 			return PROCESSOR;
 		default:
 			return NONE;
@@ -64,23 +60,23 @@ public enum EDeviceHierarchyLevel {
 	public static String toString(EDeviceHierarchyLevel level) {
 		switch( level) {
 		case VENDOR:
-			return "vendor";
+			return CmsisConstants.VENDOR;
 		case FAMILY:
-			return "family";
+			return CmsisConstants.FAMILY_TAG;
 		case SUBFAMILY:
-			return "subFamily";
+			return CmsisConstants.SUBFAMILY_TAG;
 		case DEVICE:
-			return "device";
+			return CmsisConstants.DEVICE_TAG;
 		case VARIANT:
-			return "variant";
+			return CmsisConstants.VARIANT_TAG;
 		case PROCESSOR:
-			return "processor";
+			return CmsisConstants.PROCESSOR_TAG;
 		case NONE:
 		case ROOT:
 		default:
 			break;
 		}
-		return IAttributes.EMPTY_STRING;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 	public static String toString(int nLevel) {

@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.components;
@@ -21,16 +17,16 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
 
-import com.arm.cmsis.pack.base.CmsisMapItem;
+import com.arm.cmsis.pack.CpStrings;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EComponentAttribute;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
-import com.arm.cmsis.pack.rte.IRteDependency;
+import com.arm.cmsis.pack.item.CmsisMapItem;
+import com.arm.cmsis.pack.rte.dependencies.IRteDependency;
 import com.arm.cmsis.pack.utils.AlnumComparator;
-
 
 
 /**
@@ -39,17 +35,11 @@ import com.arm.cmsis.pack.utils.AlnumComparator;
 public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements IRteComponentItem {
 	
 	protected String fActiveChildName = null;
-	protected boolean fbActiveChildImplicit = true;
+	protected boolean fbActiveChildDefault = true;
 	protected boolean fbExclusive = true; // default is true
 	protected EComponentAttribute fComponentAttribute = EComponentAttribute.CNONE;
 	protected ICpItem fTaxonomy = null;  
-	/**
-	 * Implicit constructor 
-	 */
-	public RteComponentItem() {
-		
-	}
-
+	
 	/**
 	 * Hierarchical constructor
 	 * @param parent parent item
@@ -59,6 +49,21 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 		
 	}
 
+	@Override
+	public void destroy() {
+		super.destroy();
+		fTaxonomy = null;
+	}
+	
+	@Override
+	public boolean purge() {
+		if(!hasChildren()) {
+			destroy(); // children were already purged
+			return true;
+		}
+		return super.purge();
+	}
+	
 
 	@Override
 	public void addComponent(ICpComponent cpComponent) {
@@ -71,6 +76,18 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 		return new TreeMap<String, IRteComponentItem>(new AlnumComparator(false));
 	}
 	
+	
+	@Override
+	public String getItemKey(IRteComponentItem item) {
+		if(item == null) 
+			return null;
+		return item.getKey();
+	}
+
+	@Override
+	public String getKey() {
+		return getName();
+	}
 	
 	@Override
 	public void addCpItem(ICpItem cpItem) {
@@ -110,8 +127,9 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 
 	@Override
 	public String getActiveChildName() {
-		if(isExclusive() && fActiveChildName == null && hasChildren() ) {
-			fActiveChildName = getFirstChildKey();
+		if(isExclusive() && hasChildren() ) {
+			if(fActiveChildName == null || !hasChild(fActiveChildName))
+				fActiveChildName = getFirstChildKey();
 		}
 		return fActiveChildName;
 	}
@@ -148,10 +166,9 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 		return parent.isActive();
 	}
 
-
 	@Override
 	public IRteComponentItem getActiveChild() {
-		if(isExclusive()) {
+		if(hasChildren() && isExclusive()) {
 			String activeChildName = getActiveChildName();
 			if(fActiveChildName != null)
 				return fChildMap.get(activeChildName);
@@ -163,11 +180,13 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 	public boolean setActiveChild(final String name) {
 		if(isExclusive()) {
 			String newName = name;
-			if(getImplicitChildName() != null && name.equals(getImplicitChildName())) {
+			String defaultName = getDefaultChildName();
+			
+			if(name == null || (defaultName != null && name.equals(defaultName))) {
 				newName = getFirstChildKey();
-				fbActiveChildImplicit = true;
+				fbActiveChildDefault = defaultName != null;
 			} else {
-				fbActiveChildImplicit = false;
+				fbActiveChildDefault = false;
 			}
 			String activeChildName = getActiveChildName();
 			if(activeChildName.equals(newName))
@@ -236,8 +255,8 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 	@Override
 	public IRteComponentGroup getGroup(IAttributes attributes) {
 		if(attributes != null) {
-			String childKey = attributes.getAttribute(getKeyAttributeString(), IAttributes.EMPTY_STRING);
-			if(childKey != null && ! childKey.isEmpty()) {
+			String childKey = attributes.getAttribute(getKeyAttributeString());
+			if(childKey != null && !childKey.isEmpty()) {
 				IRteComponentItem child = getChild(childKey);
 				if(child != null)
 					return child.getGroup(attributes);
@@ -297,11 +316,12 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 		}
 		
 		parent = getParentGroup();
-		if(parent != null && parent != this)
+		if(parent != null && parent != this && parent.getEffectiveItem() != this) {
 			return parent;
+		}
 		
 		parent = getParentClass();
-		if(parent != null && parent != this)
+		if(parent != null && parent.getEffectiveItem() != this)
 			return parent;
 		return getParent();
 	}
@@ -440,13 +460,6 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 			activeChild.setActiveVersion(version);
 	}
 
-	@Override
-	public boolean isUseAnyVendor() {
-		IRteComponentItem activeChild = getActiveChild();
-		if(activeChild != null)
-			return activeChild.isUseAnyVendor();
-		return false;
-	}
 
 	@Override
 	public String getActiveVersion() {
@@ -466,14 +479,14 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 
 		
 	@Override
-	public String getImplicitChildName() {
-		// base does not have implicit child name
+	public String getDefaultChildName() {
+		// base does not have default child name
 		return null;
 	}
 
 	@Override
-	public boolean isActiveChildImplicit() {
-		return fbActiveChildImplicit && getImplicitChildName() != null;
+	public boolean isActiveChildDefault() {
+		return fbActiveChildDefault && getDefaultChildName() != null;
 	}
 
 	@Override
@@ -571,5 +584,10 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 				
 		return keyAttribute.match(pattern, key);
 	}
-	
+
+	@Override
+	public String getDefaultVersion() {
+		return CpStrings.RteComponentVersionLatest;
+	}
+
 }

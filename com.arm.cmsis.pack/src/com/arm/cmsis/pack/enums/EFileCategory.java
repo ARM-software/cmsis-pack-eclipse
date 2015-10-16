@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.enums;
@@ -36,6 +32,8 @@ public enum EFileCategory {
 	LINKER_SCRIPT, 
 	UTILITY, 
 	IMAGE, 
+	SVD,
+	SRC, // library source paths
 	OTHER;
 
 	/**
@@ -46,33 +44,63 @@ public enum EFileCategory {
 		if(str == null)
 			return OTHER;
 		switch(str) {
-		case  "doc":
+		case  "doc": //$NON-NLS-1$
 			return DOC;
-		case  "header":
+		case  "header": //$NON-NLS-1$
 			return HEADER;
-		case  "include":
+		case  "include": //$NON-NLS-1$
 			return INCLUDE;
-		case  "library":
+		case  "library": //$NON-NLS-1$
 			return LIBRARY;
-		case  "object":
+		case  "object": //$NON-NLS-1$
 			return OBJECT;
-		case  "source":
+		case  "source": //$NON-NLS-1$
 			return SOURCE;
-		case  "sourceAsm":
+		case  "sourceAsm": //$NON-NLS-1$
 			return SOURCE_ASM;
-		case  "sourceC":
+		case  "sourceC": //$NON-NLS-1$
 			return SOURCE_C;
-		case  "sourceCpp":
+		case  "sourceCpp": //$NON-NLS-1$
 			return SOURCE_CPP;
-		case  "linkerScript":
+		case  "linkerScript": //$NON-NLS-1$
 			return LINKER_SCRIPT;
-		case  "utility":
+		case  "utility": //$NON-NLS-1$
 			return UTILITY;
-		case  "image":
+		case  "image": //$NON-NLS-1$
 			return IMAGE;
+		case  "svd": //$NON-NLS-1$
+			return SVD;
+		case  "src": //$NON-NLS-1$
+			return SRC;
 		default:
 			return OTHER;
 		}
+	}
+	
+	/**
+	 * Checks if file category is header 
+	 * @return true if header 
+	 */
+	public boolean isHeader() {
+		return this == HEADER; 
+	}
+
+	/**
+	 * Checks if file category is source 
+	 * @return true if source 
+	 */
+	public boolean isSource() {
+		switch(this) {
+		case SOURCE:
+		case SOURCE_ASM:
+		case SOURCE_C:
+		case SOURCE_CPP:
+			return true;
+		default:
+			break;
+			
+		}
+		return false; 
 	}
 
 }

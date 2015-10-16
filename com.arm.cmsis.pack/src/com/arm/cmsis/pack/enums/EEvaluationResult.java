@@ -1,19 +1,17 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.enums;
+
+import com.arm.cmsis.pack.CpStrings;
 
 /**
  * Enumeration for condition evaluation result and dependency resolve result:
@@ -203,40 +201,44 @@ public enum EEvaluationResult {
 	
 
 	
+	/**
+	 * Returns short evaluation result description
+	 * @return short description
+	 */
 	public String getDescription() {
 		switch(this) {
 		case CONFLICT:
-			return "Component conflicts with other selected components";
+			return CpStrings.EvalResult_Confilct;
 		case INCOMPATIBLE:
-			return "Component is incompatible with other selected components";
+			return CpStrings.EvalResult_Incompatible;
 		case INCOMPATIBLE_API:
-			return "Incompatible API version is selected";
+			return CpStrings.EvalResult_IncompatibleApi;
 		case INCOMPATIBLE_BUNDLE:
-			return "Incompatible bundle is selected";
+			return CpStrings.EvalResult_IncompatibleBundle;
 		case INCOMPATIBLE_VARIANT:
-			return "Incompatible variant is selected";
+			return CpStrings.EvalResult_IncompatibleVariant;
 		case INCOMPATIBLE_VENDOR:
-			return "Incompatible vendor is selected";
+			return CpStrings.EvalResult_IncompatibleVendor;
 		case INCOMPATIBLE_VERSION:
-			return "Incompatible version is selected";
+			return CpStrings.EvalResult_IncompatibleVersion;
 		case MISSING:
-			return "Required commponent is missing";
+			return CpStrings.EvalResult_MissingComponent;
 		case MISSING_API:
-			return "Required API is missing";
+			return CpStrings.EvalResult_MissingApi;
 		case MISSING_BUNDLE:
-			return "Required bundle is missing";
+			return CpStrings.EvalResult_MissingBundle;
 		case MISSING_VARIANT:
-			return "Required variant is missing";
+			return CpStrings.EvalResult_MissingVariant;
 		case MISSING_VENDOR:
-			return "Required vendor is missing";
+			return CpStrings.EvalResult_MissingVendor;
 		case MISSING_VERSION:
-			return "Required vendor is missing";
+			return CpStrings.EvalResult_MissingVersion;
 		case SELECTABLE:
-			return "Select required component";
+			return CpStrings.EvalResult_SelectComponent;
 		case UNAVAILABLE:
-			return "Required component is not available for current device or toolchain";
+			return CpStrings.EvalResult_UnavailableComponent;
 		case UNAVAILABLE_PACK:
-			return "Required pack is not selected";
+			return CpStrings.EvalResult_UnavaliablePack;
 
 		case UNDEFINED:
 		case ERROR:

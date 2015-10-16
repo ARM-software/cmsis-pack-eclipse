@@ -1,145 +1,210 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
-import java.util.HashSet;
 
-import com.arm.cmsis.pack.enums.EEvaluationResult;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.enums.EFileCategory;
-import com.arm.cmsis.pack.generic.IAttributes;
 
 
 /**
- *
+ * Default implementation of ICpComponent interface
  */
 public class CpComponent extends CpItem implements ICpComponent {
+	
+	protected int bApi = -1; // not initialized
+	protected int deviceDependent = -1; // not initialized
+	
 	/**
-	 * @param parent
-	 * @param tag
+	 * Public constructor
+	 * @param parent parent ICpItem 
+	 * @param tag XML tag associated with the item 
 	 */
 	public CpComponent(ICpItem parent, String tag) {
 		super(parent, tag);
-		ICpItem bundle = getParent("bundle");
+		ICpItem bundle = getParent(CmsisConstants.BUNDLE_TAG);
 		// inherit attributes from bundle
 		if(bundle != null)
 			attributes().mergeAttributes(bundle.attributes());
 	}
-
+	
+	/**
+	 * Constructor for derived CpComponentInfo class 
+	 * @param parent parent ICpItem 
+	 * @param component real ICpComponent object 
+	 */
+	protected CpComponent(ICpItem parent, ICpComponent component) {
+		super(parent, component != null? component.getTag() : CmsisConstants.COMPONENT_TAG);
+	}
+	
 	@Override
 	public String constructId() {
 		// construct Component ID in the form "PackId::Vendor::Cclass.Cgroup.Cvariant(condition).Version"
-		String id = IAttributes.EMPTY_STRING;
+		String id = CmsisConstants.EMPTY_STRING;
 		if(!isApi())
 			id += getPackId();
-		id += "::";
+		id += CmsisConstants.DOBLE_COLON;
 		id += getName();
 		if(hasCondition()){
-			id += "(";
+			id += "("; //$NON-NLS-1$
 			id += getConditionId();
-			id += ")";
+			id += ")"; //$NON-NLS-1$
 		}
-		id += ":";
+		id += ":"; //$NON-NLS-1$
 		id += getVersion();
 		return id; 
 	}
 
 
 	@Override
-	public String getName() {
-		
-		String name = IAttributes.EMPTY_STRING;
+	protected String constructName() {
+		String name = CmsisConstants.EMPTY_STRING;
 		if(!isApi())
 			name = getVendor();
-		name += "::";
-		if(hasAttribute("Cbundle")) {
-			name += ".";
-			name += getAttribute("Cbundle");
+		if(hasAttribute(CmsisConstants.CBUNDLE)) {
+			name += "."; //$NON-NLS-1$
+			name += getAttribute(CmsisConstants.CBUNDLE);
 		}
+		name += CmsisConstants.DOBLE_COLON;
 		
-		name += getAttribute("Cclass");
-		name += ".";
+		name += getAttribute(CmsisConstants.CCLASS);
+		name += "."; //$NON-NLS-1$
 		
-		name += getAttribute("Cgroup");
-		if(hasAttribute("Csub")) {
-			name += ".";
-			name += getAttribute("Csub");
+		name += getAttribute(CmsisConstants.CGROUP);
+		if(hasAttribute(CmsisConstants.CSUB)) {
+			name += "."; //$NON-NLS-1$
+			name += getAttribute(CmsisConstants.CSUB);
 		}
-		if(hasAttribute("Cvariant")) {
-			name += ".";
-			name += getAttribute("Cvariant");
+		if(hasAttribute(CmsisConstants.CVARIANT)) {
+			name += "."; //$NON-NLS-1$
+			name += getAttribute(CmsisConstants.CVARIANT);
 		}
 		return name;
 	}
 
 	@Override
 	public String getVendor() {
-		if(hasAttribute("Cvendor"))
-			return getAttribute("Cvendor");
+		if(hasAttribute(CmsisConstants.CVENDOR))
+			return getAttribute(CmsisConstants.CVENDOR);
 		return super.getVendor();
 	}
 
 	@Override
 	public String getVersion() {
 		if(isApi())
-			return attributes().getAttribute("Capiversion", IAttributes.EMPTY_STRING);
+			return getAttribute(CmsisConstants.CAPIVERSION);
 		else
-			return attributes().getAttribute("Cversion", IAttributes.EMPTY_STRING);
+			return getAttribute(CmsisConstants.CVERSION);
 	}
 
 
 	@Override
 	public boolean isApi() {
-		return getTag().equals("api");
+		if(bApi < 0) {
+			bApi = getTag().equals(CmsisConstants.API_TAG) ? 1 : 0;
+		}
+		return bApi > 0;
+	}
+
+	@Override
+	public boolean isDeviceStartupComponent() {
+		if(isApi())
+			return false;
+		if(getAttribute(CmsisConstants.CCLASS).equals(CmsisConstants.Device) && 
+		   getAttribute(CmsisConstants.CGROUP).equals(CmsisConstants.Startup)){ 
+			String sub = getAttribute(CmsisConstants.CSUB);
+			return sub == null || sub.isEmpty();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isCmsisCoreComponent() {
+		if(isApi())
+			return false;
+		if(getAttribute(CmsisConstants.CCLASS).equals(CmsisConstants.CMSIS) && 
+		   getAttribute(CmsisConstants.CGROUP).equals(CmsisConstants.Core)){ 
+			String sub = getAttribute(CmsisConstants.CSUB);
+			return sub == null || sub.isEmpty();
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isCmsisRtosComponent() {
+		if(isApi())
+			return false;
+		if(getAttribute(CmsisConstants.CCLASS).equals(CmsisConstants.CMSIS) && 
+		   getAttribute(CmsisConstants.CGROUP).equals(CmsisConstants.RTOS)){ 
+			return true;
+		}
+		return false;
 	}
 
 	
 	@Override
-	public int getMaxInstances() {
-		return attributes().getAttributeAsInt("maxInstances", 1);
-	}
-
-	@Override
-	public Collection<ICpFile> getFilteredFiles(ICpConditionContext context) {
-		Collection<ICpFile> filteredFiles = new HashSet<ICpFile>();
-		Collection<? extends ICpItem> allFiles = getChildren("files");
-		if(allFiles != null && ! allFiles.isEmpty()) {
-			for(ICpItem item : allFiles) {
-				if(item instanceof ICpFile) {
-					ICpFile f = (ICpFile)item;
-					if(f.evaluate(context) != EEvaluationResult.FAILED)
-						filteredFiles.add(f);
+	public boolean isDeviceDependent() {
+		if(deviceDependent < 0) {
+			if(isApi()) {
+				deviceDependent = 0;
+			} else {
+				String cClass = getAttribute(CmsisConstants.CCLASS);   
+				if(cClass.equals(CmsisConstants.Device) || super.isDeviceDependent()) {
+					deviceDependent = 1;	
+				} else {
+					deviceDependent = 0;
 				}
 			}
 		}
-		return filteredFiles;
+		return deviceDependent > 0;
 	}
 	
-	protected String getDocLink() {
-		Collection<? extends ICpItem> allFiles = getChildren("files");
+	@Override
+	public boolean isMultiInstance() {
+		return attributes().hasAttribute(CmsisConstants.MAX_INSTANCES); 
+	}
+	
+	@Override
+	public int getMaxInstances() {
+		return attributes().getAttributeAsInt(CmsisConstants.MAX_INSTANCES, 1); 
+	}
+
+	@Override
+	public String getDoc() {
+		Collection<? extends ICpItem> allFiles = getGrandChildren(CmsisConstants.FILES_TAG);
 		if(allFiles != null && ! allFiles.isEmpty()) {
 			for(ICpItem item : allFiles) {
 				if(item instanceof ICpFile) {
 					ICpFile f = (ICpFile)item;
 					if(f.getCategory() == EFileCategory.DOC)
-						return f.getName();
+						return getAbsolutePath(f.getName());
 				}
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public String getRteComponentsHCode() {
+		ICpItem child = getFirstChild(CmsisConstants.RTE_COMPONENTS_H);
+		if(child != null)
+			return child.getText();
+		return null;
+	}
+	
+	@Override
+	public ICpComponent getParentComponent(){
+		return this;
 	}
 	
 }

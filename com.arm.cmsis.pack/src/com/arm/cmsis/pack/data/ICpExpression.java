@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014 ARM Ltd and others.
+ * Copyright (c) 2015 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,7 +24,7 @@ public interface ICpExpression extends ICpItem {
 	final static char TOOLCHAIN_EXPRESSION 	= 'T';
 	final static char COMPONENT_EXPRESSION 	= 'C';
 	final static char REFERENCE_EXPRESSION 	= 'R';
-	final static char EREOR_EXPRESSION 		= 'E';
+	final static char ERROR_EXPRESSION 		= 'E';
 	
 	/**
 	 * Returns expression domain: 

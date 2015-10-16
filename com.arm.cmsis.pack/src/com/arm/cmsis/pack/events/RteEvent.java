@@ -1,16 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.events;
@@ -21,13 +17,22 @@ package com.arm.cmsis.pack.events;
 public class RteEvent {
 
 	// some predefined topics
-	public static final String CONFIGURATION_ACTIVATED = "com.arm.comsis.pack.rte.config.activated";
-	public static final String CONFIGURATION_MODIFIED = "com.arm.comsis.pack.rte.config.modified";
-	public static final String CONFIGURATION_APPLIED  = "com.arm.comsis.pack.rte.config.applied";
+	public static final String CONFIGURATION_MODIFIED  = "com.arm.comsis.pack.rte.config.modified"; //$NON-NLS-1$
+	public static final String CONFIGURATION_COMMITED  = "com.arm.comsis.pack.rte.config.commited"; //$NON-NLS-1$
 
-	public static final String COMPONENT_SHOW = "com.arm.comsis.pack.rte.component.show";
+	public static final String FILTER_MODIFIED = "com.arm.comsis.pack.rte.filter.modified"; //$NON-NLS-1$
 	
-	public static final String PACK_ALL_LOADED = "com.arm.comsis.pack.allloaded";
+	public static final String COMPONENT_SELECTION_MODIFIED = "com.arm.comsis.pack.rte.component.modified"; //$NON-NLS-1$
+	public static final String COMPONENT_SHOW = "com.arm.comsis.pack.rte.component.show"; //$NON-NLS-1$
+	
+	public static final String PACKS_RELOADED = "com.arm.comsis.pack.reloaded"; //$NON-NLS-1$
+
+	public static final String DEVICE_TRIGGER_SELECT  = "com.arm.comsis.pack.rte.device.select"; //$NON-NLS-1$
+
+	public static final String PROJECT_ADDED  	= "com.arm.comsis.pack.rte.project.added"; //$NON-NLS-1$
+	public static final String PROJECT_REMOVED  = "com.arm.comsis.pack.rte.project.removed"; //$NON-NLS-1$
+	public static final String PROJECT_UPDATED  = "com.arm.comsis.pack.rte.project.updated"; //$NON-NLS-1$
+
 	
 	protected String topic = null;
 	protected Object data  = null;

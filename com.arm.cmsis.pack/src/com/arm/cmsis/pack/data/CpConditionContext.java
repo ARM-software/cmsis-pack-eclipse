@@ -1,23 +1,22 @@
 /*******************************************************************************
-* Copyright (c) 2014 ARM Ltd.
-* Licensed under the Apache License, Version 2.0 (the "License");
-* you may not use this file except in compliance with the License.
-* You may obtain a copy of the License at
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
 *
-*    http://www.apache.org/licenses/LICENSE-2.0
-*
-* Unless required by applicable law or agreed to in writing, software
-* distributed under the License is distributed on an "AS IS" BASIS,
-* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-* See the License for the specific language governing permissions and
-* limitations under the License.
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.Attributes;
@@ -31,29 +30,20 @@ public class CpConditionContext extends Attributes implements ICpConditionContex
 	protected Map<ICpItem, EEvaluationResult> fResults = null;
 	
 	// temporary variables
+	protected Set<ICpCondition> tConditionsBeingEvaluated = new HashSet<ICpCondition>(); // to prevent recursion
 	protected EEvaluationResult tResultAccept = EEvaluationResult.UNDEFINED; // keeps last (the best) accept result
 	protected boolean tbDeny = false; // flag is set when deny expression is evaluated  
 	
-	
-	/**
-	 * 
-	 */
 	public CpConditionContext() {
 	}
-
-	/**
-	 * @param tag
-	 */
-	public CpConditionContext(String tag) {
-		super(tag);
-	}
-
-	
 	
 	@Override
 	public void resetResult() {
 		fResult = EEvaluationResult.IGNORED;
 		fResults = null;
+		tResultAccept = EEvaluationResult.UNDEFINED;
+		tbDeny = false;
+		tConditionsBeingEvaluated.clear();
 	}
 
 	@Override
@@ -135,6 +125,10 @@ public class CpConditionContext extends Attributes implements ICpConditionContex
 
 	@Override
 	public EEvaluationResult evaluateCondition(ICpCondition condition) {
+		if(tConditionsBeingEvaluated.contains(condition))
+			return EEvaluationResult.ERROR; // recursion
+		
+		tConditionsBeingEvaluated.add(condition);
 		EEvaluationResult resultRequire = EEvaluationResult.IGNORED;
 		EEvaluationResult resultAccept = EEvaluationResult.UNDEFINED;
 		// first check require and deny expressions
@@ -162,13 +156,30 @@ public class CpConditionContext extends Attributes implements ICpConditionContex
 				}	
 			}
 		}
+
+		tConditionsBeingEvaluated.remove(condition);
+
 		tResultAccept = resultAccept; 
-		
 		if(resultAccept != EEvaluationResult.UNDEFINED && 
 		   resultAccept.ordinal() < resultRequire.ordinal()) {  
 			return resultAccept;
 		}
+		
 		return resultRequire;
+	}
+
+
+	@Override
+	public Collection<ICpItem> filterItems(Collection<? extends ICpItem> sourceCollection) {
+		Collection<ICpItem> filtered = new LinkedList<ICpItem>();
+		if(sourceCollection != null && ! sourceCollection.isEmpty()) {
+			for(ICpItem item : sourceCollection) {
+				EEvaluationResult res = item.evaluate(this);
+				if(res.isFulfilled())
+					filtered.add(item);
+			}
+		}
+		return filtered;		
 	}
 	
 }
