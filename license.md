@@ -1,7 +1,10 @@
+Copyright (c) 2014-2015, ARM Limited and Contributors. All rights reserved.
+
+This program and the accompanying materials are made available under the terms of the 
+Eclipse Public License v1.0 which accompanies this distribution, and is available at
+https://www.eclipse.org/legal/epl-v10.html
 
 Eclipse Public License - v 1.0
-
-https://www.eclipse.org/legal/epl-v10.html
 
 THE ACCOMPANYING PROGRAM IS PROVIDED UNDER THE TERMS OF THIS ECLIPSE PUBLIC LICENSE ("AGREEMENT"). ANY USE, REPRODUCTION OR DISTRIBUTION OF THE PROGRAM CONSTITUTES RECIPIENT'S ACCEPTANCE OF THIS AGREEMENT.
 
