@@ -29,12 +29,12 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 Refer to [Hands-on section] of the pre-built plug-in of the CMSIS-Pack Management for detailed usage information.
 Note : The Hands-on section section still contains description of version 0.9, version 1.0 description will be available soon.
 
-###CMSIS-Pack Management Plug-In will be presented at the Eclipse Conference Europe 2015
+###CMSIS-Pack Management Plug-In has been presented at the Eclipse Conference Europe 2015
 
 ![EclipseConEurope2015] 
 
+The presentation slides are available:
 [Enhanced Project Management for Embedded C/C++ Programming using Software Components]
-
 
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
