@@ -33,7 +33,7 @@ Note : The Hands-on section section still contains description of version 0.9, v
 
 ![EclipseConEurope2015] 
 
-The presentation slides are available:
+The presentation is available on [YouTube], slides to download:
 [Enhanced Project Management for Embedded C/C++ Programming using Software Components]
 
 
@@ -52,8 +52,6 @@ _Copyright (c) 2014-2015, ARM Limited and Contributors. All rights reserved._
 [CMSIS-Pack specification]: http://www.keil.com/pack/doc/CMSIS/Pack/html/index.html
 
 [EclipseConEurope2015]:     ./images/EclipseConEurope2015.png
-[Eclipse Plug-In Overview]: ./images/EclipseOverview.png
-[Select the Device]:        ./images/Eclipse2.png
-[Component Selection]:      ./images/Eclipse4.png
+[YouTube]: https://www.youtube.com/watch?v=z8n2I1s6zgg&list=PLy7t4z5SYNaR0yp9EQ9txQhO-JgCLJAga&index=29
 [Enhanced Project Management for Embedded C/C++ Programming using Software Components]: https://www.eclipsecon.org/europe2015/session/enhanced-project-management-embedded-cc-programming-using-software-components
 
