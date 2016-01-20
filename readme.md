@@ -10,7 +10,7 @@ For evaluation you need CMSIS-Pack compliant Software Packs that are available f
 
 **License:** The software is provided under the [Eclipse Public License] Version 1.0. 
 
-**Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.4.0 (Luna).
+**Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.4.0 (Luna) and 4.5.1 (Mars).
 
 ##Source Code 
 This repository contains the source code of the **CMSIS-Pack Management for Eclipse** that consists of eight plug-ins:
