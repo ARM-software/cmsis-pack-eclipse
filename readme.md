@@ -21,12 +21,7 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 * **com.arm.cmsis.pack.build.settings** - Toolchain adapter extension point and generic adapter
 * **com.arm.cmsis.pack.build.setting.armcc5** - adapter for  ARMCC 5.x toolchain (DS-5 built-in)
 * **com.arm.cmsis.pack.build.setting.armgcc** - adapter for  ARM GCC toolchain (DS-5 built-in)
-* **com.arm.cmsis.pack.build.setting.ilg** - adapter for Cross ARM GNU toolchain: http://gnuarmeclipse.github.io/
-
-##Usage and Pre-Built Plug-In
-
-
-Refer to [Hands-on section] of the pre-built plug-in of the CMSIS-Pack Management for detailed usage information.
+* **com.arm.cmsis.pack.build.setting.gnuarmeclipse** - adapter for Cross ARM GNU toolchain: http://gnuarmeclipse.github.io/
 
 ###CMSIS-Pack Management Plug-In has been presented at the Eclipse Conference Europe 2015
 
@@ -35,20 +30,74 @@ Refer to [Hands-on section] of the pre-built plug-in of the CMSIS-Pack Managemen
 The presentation is available on [YouTube], slides to download:
 [Enhanced Project Management for Embedded C/C++ Programming using Software Components]
 
+##Hands-On  
+
+![Eclipse Plug-In Overview] 
+
+###Installing the CMSIS-Pack Management Plug-In
+
+1. **Install Software Packs**: Download and install Software Packs from [CMSIS Pack Repository] by extracting each pack into an individual sub-directory using any zip archive utility. Alternatively on Windows you can install [Keil-MDK-ARM Version 5] and run the **Pack Installer** to install a selection of packs or use the [GNU ARM Eclipse Packs Manager] available here: http://gnuarmeclipse.sourceforge.net/updates-test.
+
+2. **Install the Plug-ins** for the CMSIS-Pack Management. Download the **CMSISPackPlugin_x.x.zip** and use the Eclipse menu command: **Help - Install New Software...**. Click **Add...** and the **Archive...** and specify the location of the **CMSISPackPlugin_x.x.zip** file.
+
+###Using the CMSIS-Pack Management Plug-In:  
+1. Start Eclipse with installed **CMSIS-Pack Management Plug-In**.
+
+2. Specify the location of the installed Software Packs with the Eclipse menu command **Window - Preferences - CMSIS Packs**. The **CMSIS Pack root folder** is the base directory, for example *C:\Keil_v5\ARM\Pack*.
+
+3. Verify that the Software Packs are loaded using the Eclipse menu command **Window - Show View - Other... - CMSIS - CMSIS-Packs**. This window allows you to explore the raw data in all Software Packs.
+
+## Creating RTE project 
+1. Open New C/C++ Project wizard using Elipse menu command **File - New - Project... - C/C++ - C Project CMSIS - RTE Configuration**.
+2. In the first page specify Project name, select desired Toolchain and "CMSIS RTE C/C++ Project" type, press Next. ![NewProjectWizardTemplatePage]
+3. In the second page select a Toolchain Adapter and press next.
+![Select Adapter]
+
+ Note: CMSIS-Pack Eclipse plug-in contains adapters for the following toolchains:
+ * ARM Compiler 5 (ARM DS-5 built-in)
+ * Cross ARM GCC (http://gnuarmeclipse.github.io/)
+ 
+ If one of those toolchains is selected in the first page, the matching adapter is selected automatically.
+
+ For any other toolchain select Generic Toolchain Adapter and a toolchain family (defines component filtering).
+ That does not set all required compiler options, but allows to experiment with RTE Project management.
+4. In the third page select a device from the installed Software Packs and press Finish or continue to the next pages.
+![Select Device]
+
+5. New C/C++ will be created and the RTE configuration editor will open. The editor allows you to select the Software Components that are available based on your device and compiler selection. 
+You may change the component selection and use the **Resolve** toolbar button. 
+![Component Selection]
+
+6. Save the configuration by pressing **Save** toolbar button. This will trigger project update. You can now investigate project content, compiler settings and build the project.
+
+###Information Displays
+
+The Eclipse menu command **Window - Show View - Other... - CMSIS** allows you to open the following windows:
+
+* **CMSIS-Packs** displays the content of all installed Software Packs.
+* **CMSIS-Devices** displays the devices available in the installed Software Packs.
+
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-_Copyright (c) 2014-2015, ARM Limited and Contributors. All rights reserved._
+_Copyright (c) 2014-2016, ARM Limited and Contributors. All rights reserved._
 
 
 [Eclipse Public License]:   ./license.md "Eclipse Public License for CMSIS-Pack Management for Eclipse"
 
 [CMSIS-Pack Management for Eclipse]: https://www.github.com/ARM-software/cmsis-pack-eclipse 
-[Hands-on section]:         https://github.com/ARM-software/cmsis-pack-eclipse-prebuilt#hands-on
 [CMSIS Pack Repository]:	  http://www.keil.com/pack/
 [Keil-MDK-ARM Version 5]:   http://www2.keil.com/mdk5/install
 [Eclipse]:                  http://www.eclipse.org
 [CMSIS-Pack specification]: http://www.keil.com/pack/doc/CMSIS/Pack/html/index.html
+
+[Eclipse Plug-In Overview]:      ./images/EclipseOverview.png
+[NewProjectWizardTemplatePage]:  ./images/NewProjectWizardTemplatePage.png
+[Select Adapter]:             	./images/NewProjectWizardAdapterPage.png
+[Select Device]:             ./images/NewProjectWizardDevicePage.png
+[Component Selection]:           ./images/RteConfigEditor.png
+[GNU ARM Eclipse Packs Manager]: http://gnuarmeclipse.livius.net/blog/packs-manager/
+[http://gnuarmeclipse.github.io/]: http://gnuarmeclipse.github.io/ 
 
 [EclipseConEurope2015]:     ./images/EclipseConEurope2015.png
 [YouTube]: https://www.youtube.com/watch?v=z8n2I1s6zgg&list=PLy7t4z5SYNaR0yp9EQ9txQhO-JgCLJAga&index=29
