@@ -4,7 +4,7 @@ The **CMSIS-Pack Management for Eclipse** is created by ARM to provide a open-so
 
 ARM is commited to maintain this **CMSIS-Pack Management for Eclipse** to ensure consistency with future extensions and modifications to the [CMSIS-Pack Specification].  
 
-This release 1.0 is a good starting point for review and experiments. It allows creation and management of an CDT-based C/C++ project. We are now looking for feedback and the future versions will cover more features, improvements and optimizations.
+This release 1.1 allows creation and management of an CDT-based C/C++ project. We are now looking for feedback and the future versions will cover more features, improvements and optimizations.
 
 For evaluation you need CMSIS-Pack compliant Software Packs that are available for download from the [CMSIS Pack Repository].
 
