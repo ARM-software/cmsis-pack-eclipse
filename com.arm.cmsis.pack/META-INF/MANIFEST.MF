@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS Pack
 Bundle-SymbolicName: com.arm.cmsis.pack;singleton:=true
-Bundle-Version: 1.0.0.qualifier
+Bundle-Version: 1.1.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.CpPlugIn
 Bundle-Vendor: ARM
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
@@ -20,6 +20,4 @@ Export-Package: com.arm.cmsis.pack,
  com.arm.cmsis.pack.rte.devices,
  com.arm.cmsis.pack.rte.packs
 Require-Bundle: org.eclipse.core.runtime,
- org.eclipse.core.resources,
- org.eclipse.core.variables,
  com.arm.cmsis.pack.common

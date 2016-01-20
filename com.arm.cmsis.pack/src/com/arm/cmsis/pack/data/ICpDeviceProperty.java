@@ -18,4 +18,42 @@ package com.arm.cmsis.pack.data;
  */
 public interface ICpDeviceProperty extends ICpItem {
 
+	/**
+	 * Returns __dp (Debug Port) index  
+	 * @return __dp index  
+	 */
+	long getDP(); 
+	
+	/**
+	 * Returns __ap (Access Port) index  
+	 * @return __ap index  
+	 */
+	long getAP();
+	
+
+	/**
+	 * Returns item-depended start address (default is 0)
+	 * @return start address as long value
+	 */
+	long getStart();	
+
+	/**
+	 * Returns item-depended start address (default is 0)
+	 * @return start address as long value
+	 */
+	long getSize();	
+
+	/**
+	 * Checks if item is default one (memory, algorithm )
+	 * @return true if item is default one
+	 */
+	boolean isDefault();
+
+	/**
+	 * Checks if sequence block is atomic
+	 * @return true if atomic
+	 */
+	boolean isAtomic();
+	
+	
 }

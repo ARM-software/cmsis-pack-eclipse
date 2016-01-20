@@ -15,7 +15,9 @@ import java.util.Collection;
 import java.util.Map;
 
 
+
 import com.arm.cmsis.pack.build.settings.IBuildSettings;
+import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
@@ -45,6 +47,12 @@ public interface IRteConfiguration {
 	 */
 	ICpDeviceInfo getDeviceInfo();
 
+	/**
+	 * Returns device debug configuration for associated processor 
+	 * @return ICpDebugConfiguration 
+	 */
+	ICpDebugConfiguration getDebugConfiguration();
+	
 	/**
 	 * Returns collection of files to add to project  
 	 * @return map of files to add to project: project relative path to ICpFileInfo 

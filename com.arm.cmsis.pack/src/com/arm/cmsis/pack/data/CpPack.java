@@ -15,7 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -83,8 +85,9 @@ public class CpPack extends CpItem implements ICpPack {
 
 	@Override
 	public synchronized ICpItem getCondition(String conditionId) {
-		if(conditionId == null || conditionId.isEmpty())
+		if(conditionId == null || conditionId.isEmpty()) {
 			return null;
+		}
 		if(conditions == null) {
 			// fill conditions map for quick access
 			conditions = new HashMap<String, ICpItem>();
@@ -124,7 +127,7 @@ public class CpPack extends CpItem implements ICpPack {
 		if(packRoot != null) {
 			dir += packRoot + '/';
 		}
-		dir += getVendor() + '/' + getVersion() + '/';
+		dir += getVendor() + '/' + getName() + '/' + getVersion() + '/';
 		return dir;
 	}
 	
@@ -132,16 +135,18 @@ public class CpPack extends CpItem implements ICpPack {
 	@Override
 	public String getName() {
 		ICpItem nameItem = getFirstChild(CmsisConstants.NAME);
-		if(nameItem != null)
+		if(nameItem != null) {
 			return nameItem.getText();
+		}
 		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
 	public String getVendor() {
 		ICpItem vendorItem = getFirstChild(CmsisConstants.VENDOR);
-		if(vendorItem != null)
+		if(vendorItem != null) {
 			return vendorItem.getText();
+		}
 		return CmsisConstants.EMPTY_STRING;
 	}
 
@@ -152,12 +157,14 @@ public class CpPack extends CpItem implements ICpPack {
 			if(releases != null && releases.hasChildren()) {
 				for(ICpItem r : releases.getChildren()){
 					String v = r.getAttribute(CmsisConstants.VERSION);
-					if( VersionComparator.versionCompare(v, version) > 0)
+					if( VersionComparator.versionCompare(v, version) > 0) {
 						version = v;
+					}
 				}
 			}
-			if( version == null)
+			if( version == null) {
 				version = CmsisConstants.EMPTY_STRING;
+			}
 		}
 		return version;
 	}
@@ -167,10 +174,11 @@ public class CpPack extends CpItem implements ICpPack {
 	public synchronized String getUrl() {
 		if(fURL == null) {
 			ICpItem urlItem = getFirstChild(CmsisConstants.URL);
-			if(urlItem != null)
+			if(urlItem != null) {
 				fURL = urlItem.getText();
-			else 
+			} else {
 				fURL = CmsisConstants.EMPTY_STRING;
+			}
 		}
 		return fURL;
 	}
@@ -192,13 +200,16 @@ public class CpPack extends CpItem implements ICpPack {
 	 * @return version string if found, null otherwise
 	 */
 	public static String versionFromId(final String id){ 
-		if(id == null)
+		if(id == null) {
 			return CmsisConstants.EMPTY_STRING;
+		}
 		int pos = id.indexOf('.'); // find first separator
 		if(pos > 0 ) {
 			pos = id.indexOf('.', pos+1); // find second separator
 			if(pos > 0 )
+			 {
 				return id.substring(pos+1); // the rest is version (is any)
+			}
 		}
 		return CmsisConstants.EMPTY_STRING;
 	}
@@ -209,14 +220,62 @@ public class CpPack extends CpItem implements ICpPack {
 	 * @return family pack ID  
 	 */
 	public static String familyFromId(final String id){
-		if(id == null)
+		if(id == null) {
 			return CmsisConstants.EMPTY_STRING;
+		}
 		int pos = id.indexOf('.'); // find first separator
 		if(pos > 0 ) {
 			pos = id.indexOf('.', pos+1); // find second separator
 			if(pos > 0 )
+			 {
 				return id.substring(0, pos); // extract prefix (strip version)
+			}
 		}
 		return id; // id has already no version
 	}
+
+	@Override
+	public Set<String> getAllDeviceNames() {
+		Set<String> devices = new HashSet<String>();
+		Collection<? extends ICpItem> items = getGrandChildren(CmsisConstants.DEVICES_TAG);
+		if (items == null || items.isEmpty()) {
+			return devices;
+		}
+		for (ICpItem item : items) {
+			if (!(item instanceof ICpDeviceItem)) {
+				continue;
+			}
+			ICpDeviceItem device = (ICpDeviceItem) item;
+			devices.addAll(collectDeviceNames(device));
+		}
+		return devices;
+	}
+	
+	private Set<String> collectDeviceNames(ICpDeviceItem parent) {
+		Set<String> ret = new HashSet<String>();
+		if (parent == null || parent.getDeviceItems() == null) {
+			return ret;
+		}
+		for (ICpItem item : parent.getDeviceItems()) {
+			if (!(item instanceof ICpDeviceItem)) {
+				continue;
+			}
+			ICpDeviceItem d = (ICpDeviceItem) item;
+			ret.add(d.getName());
+			ret.addAll(collectDeviceNames(d));
+		}
+		return ret;
+	}
+
+	@Override
+	public boolean isDevicelessPack() {
+		// TODO check more
+		if (getGrandChildren(CmsisConstants.DEVICES_TAG) == null &&
+				getGrandChildren(CmsisConstants.BOARDS_TAG) == null) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 }

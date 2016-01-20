@@ -51,7 +51,7 @@ public class Utils {
         if(found) // do not search sub-directories, because they cannot contain other pdsc files  
         	return files;
 		
-        if(depth <=0 ) // max depth is reached 
+        if(depth <= 0) // max depth is reached 
         	return files;
         // search sub-directories
         // search dir for pdsc files 

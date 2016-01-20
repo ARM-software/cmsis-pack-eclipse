@@ -14,18 +14,19 @@ import org.eclipse.swt.widgets.Composite;
 
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.rte.IRteModelController;
-import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 
 public abstract class RteWidget implements IRteEventListener {
 
 	protected IRteModelController fModelController = null;		// contains RteComponents
-	protected IColumnAdvisor fColumnAdvisor = null;
+	protected IRteColumnAdvisor fColumnAdvisor = null;
 
 	/**
-	 * Sets an RTE model to bu used by the widget 
-	 * @param IRteModel
+	 * Sets an RTE model controller to be used by the widget 
+	 * @param IRteModelController controller to use
 	 */
 	public void setModelController(IRteModelController modelController) {
+		if(fColumnAdvisor != null)
+			fColumnAdvisor.setModelController(modelController);
 		if(fModelController == modelController)
 			return;
 		if(fModelController != null)
@@ -36,8 +37,8 @@ public abstract class RteWidget implements IRteEventListener {
 	}
 	
 	/**
-	 * Returns RTE model used by the widget
-	 * @return RTE model
+	 * Returns RTE model controller used by the widget
+	 * @return IRteModelController
 	 */
 	public IRteModelController getModelController() {
 		return fModelController;
@@ -47,7 +48,7 @@ public abstract class RteWidget implements IRteEventListener {
 	 * Returns Column adviser 
 	 * @return IColumnAdvisor
 	 */
-	public IColumnAdvisor getColumnAdvisor() {
+	public IRteColumnAdvisor getColumnAdvisor() {
 		return fColumnAdvisor;
 	}
 
@@ -55,11 +56,9 @@ public abstract class RteWidget implements IRteEventListener {
 	 * Sets column adviser
 	 * @param columnAdvisor IColumnAdvisor
 	 */
-	public void setColumnAdvisor(IColumnAdvisor columnAdvisor) {
+	public void setColumnAdvisor(IRteColumnAdvisor columnAdvisor) {
 		fColumnAdvisor = columnAdvisor;
 	}
-
-
 	
 	/**
 	 * Refresh UI without changing configuration 

@@ -56,8 +56,9 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public synchronized Collection<? extends T> getChildren() {
 		if(fChildren == null) {
-			if(fChildMap != null)
+			if(fChildMap != null) {
 				fChildren = fChildMap.values();
+			}
 		}
 		return fChildren;
 	}
@@ -66,8 +67,9 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public Collection<String> getKeys() {
 		Map<String, ? extends T> childMap = getChildMap();
-		if(childMap != null)
+		if(childMap != null) {
 			return childMap.keySet();
+		}
 		return null;
 	}
 
@@ -76,8 +78,9 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	public T getChild(String key) {
 		if(key != null) {
 			Map<String, ? extends T> childMap = getChildMap();
-			if(childMap != null)
+			if(childMap != null) {
 				return childMap.get(key);
+			}
 		} else {
 			return getFirstChild();
 		}
@@ -89,16 +92,18 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public T getFirstChild() {
 		Map<String, ? extends T> childMap = getChildMap();
-		if(childMap != null)
+		if(childMap != null) {
 			return fChildMap.entrySet().iterator().next().getValue();
+		}
 		return null;
 	}
 
 	@Override
 	public String getFirstChildKey() {
 		Map<String, ? extends T> childMap = getChildMap();
-		if(childMap != null)
+		if(childMap != null) {
 			return fChildMap.entrySet().iterator().next().getKey();
+		}
 		return null;
 	}
 
@@ -126,8 +131,9 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public boolean hasChild(String key) {
 		Map<String, ? extends T> childMap = getChildMap();
-		if(childMap != null)
+		if(childMap != null) {
 			return childMap.containsKey(key);
+		}
 		return false;
 	}
 
@@ -138,19 +144,22 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 			cachedChildArray = null; 
 			fChildren = null; 
 			String key = getItemKey(item);
-			if(key != null)
+			if(key != null) {
 				childMap().put(getItemKey(item), item);
+			}
 		}
 	}
 
 	
 	@Override
 	public T removeChild(String key) {
-		if(hasChild(key))
+		if(hasChild(key)) {
 			return childMap().remove(key);
+		}
 		return null;
 	}
 
+	@Override
 	public Map<String, ? extends T> getChildMap() {
 		return fChildMap;
 	}
@@ -171,8 +180,9 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	 * @return child map  
 	 */
 	protected Map<String, T> childMap() {
-		if(fChildMap == null )
+		if(fChildMap == null ) {
 			fChildMap = createMap();
+		}
 		return fChildMap;
 	}
 	
@@ -195,8 +205,9 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public int getChildCount() {
 		Map<String, ? extends T> children = getChildMap();
-		if(children != null)
+		if(children != null) {
 			return children.size();
+		}
 		return 0;
 	}
 	
@@ -208,24 +219,27 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public Collection<String> getEffectiveKeys() {
 		Map<String, ? extends T> childMap = getEffectiveChildMap();
-		if(childMap != null)
+		if(childMap != null) {
 			return childMap.keySet();
+		}
 		return null;
 	}
 	
 	@Override
 	public Collection<? extends T> getEffectiveChildren() {
 		Map<String, ? extends T> childMap = getEffectiveChildMap();
-		if(childMap != null)
+		if(childMap != null) {
 			return childMap.values();
+		}
 		return null;
 	}
 
 	@Override
 	public int getEffectiveChildCount() {
 		Map<String, ? extends T> children = getEffectiveChildMap();
-		if(children != null)
+		if(children != null) {
 			return children.size();
+		}
 		return 0;
 	}
 

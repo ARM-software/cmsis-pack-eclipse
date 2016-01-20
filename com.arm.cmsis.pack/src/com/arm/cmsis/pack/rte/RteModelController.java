@@ -48,7 +48,7 @@ import com.arm.cmsis.pack.rte.packs.RtePackCollection;
  * Default implementation of IRteModel interface 
  *    
  */
-public class RteModelController extends RteEventProxy implements IRteModelController {
+public abstract class RteModelController extends RteEventProxy implements IRteModelController {
 
 	protected IRteModel fModel = null;
 	// filtered Packs

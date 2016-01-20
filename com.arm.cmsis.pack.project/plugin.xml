@@ -89,6 +89,43 @@
             type="org.eclipse.core.runtime.IAdaptable">
       </propertyTester>
    </extension>
+   <extension
+         point="org.eclipse.core.resources.variableResolvers">
+      <variableResolver
+            class="com.arm.cmsis.pack.project.CpVariableResolver"
+            variable="cmsis_pack_root">
+      </variableResolver>
+      <variableResolver
+            class="com.arm.cmsis.pack.project.CpVariableResolver"
+            variable="${cmsis_pack_root}">
+      </variableResolver>
+   </extension>
+   <extension
+         point="org.eclipse.core.variables.dynamicVariables">
+      <variable
+            description="Poinst to the root directory containing CMSIS packs "
+            name="cmsis_pack_root"
+            resolver="com.arm.cmsis.pack.project.CpVariableResolver">
+      </variable>
+   </extension>
+   <extension
+         point="org.eclipse.ltk.core.refactoring.renameParticipants">
+      <renameParticipant
+            class="com.arm.cmsis.pack.project.ui.RteProjectRenameParticipant"
+            id="com.arm.cmsis.pack.project.renameParticipant1"
+            name="Rename RTE project participant">
+		<enablement>
+	      <with variable="affectedNatures">
+	        <iterate operator="or">
+	          <equals value="com.arm.cmsis.pack.project.RteNature"/>
+	        </iterate>
+	      </with>
+	      <with variable="element">
+        	<instanceof value="org.eclipse.core.resources.IResource"/>
+      	  </with>
+         </enablement>
+     </renameParticipant>
+   </extension>
 
 
 </plugin>

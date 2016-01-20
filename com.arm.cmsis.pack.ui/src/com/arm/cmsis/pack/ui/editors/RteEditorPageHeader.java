@@ -34,8 +34,8 @@ import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
-import org.eclipse.ui.services.IServiceLocator;
 
+import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 
 /**
@@ -183,9 +183,9 @@ public class RteEditorPageHeader extends Composite {
 	public IAction addSaveAction() {
 		Action saveAction = new Action("Save", IAction.AS_PUSH_BUTTON) { //$NON-NLS-1$
 			public void run() {
-				// Obtain IServiceLocator implementer from PlatformUI.getWorkbench():
-				IServiceLocator serviceLocator = PlatformUI.getWorkbench();
-				ICommandService commandService = (ICommandService) serviceLocator.getService(ICommandService.class);
+				ICommandService commandService = CpPlugInUI.getCommandService();
+				if(commandService == null)
+					return;
 				try  { 
 				    // Lookup csave ommand with its ID
 				    Command command = commandService.getCommand("org.eclipse.ui.file.save"); //$NON-NLS-1$

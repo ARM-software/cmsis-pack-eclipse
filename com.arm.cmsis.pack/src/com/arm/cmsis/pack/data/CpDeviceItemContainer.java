@@ -29,11 +29,41 @@ public class CpDeviceItemContainer extends CpItem {
 
 	@Override
 	protected ICpItem createChildItem(String tag) {
-		if(tag.equals(CmsisConstants.FAMILY_TAG) || tag.equals(CmsisConstants.SUBFAMILY_TAG) || 
-		   tag.equals(CmsisConstants.DEVICE_TAG) || tag.equals(CmsisConstants.VARIANT_TAG)){
+		switch(tag) {
+		// device hierarchy	
+		case CmsisConstants.FAMILY_TAG:
+		case CmsisConstants.SUBFAMILY_TAG:
+		case CmsisConstants.DEVICE_TAG:
+		case CmsisConstants.VARIANT_TAG:
 			return new CpDeviceItem(this, tag);
+		// device properties	
+		case CmsisConstants.DEBUG_TAG:
+			return new CpDebug(this, tag);
+		case CmsisConstants.DEBUGPORT_TAG:
+			return new CpDebugPort(this, tag);
+		case CmsisConstants.DEBUGVARS_TAG:
+			return new CpDebugVars(this, tag);
+		case CmsisConstants.DATAPATCH_TAG:
+			return new CpDataPatch(this, tag);
+		case CmsisConstants.SEQUENCE_TAG:
+			return new CpSequence(this, tag);
+		case CmsisConstants.CONTROL_TAG:
+			return new CpSequenceControl(this, tag);
+		case CmsisConstants.MEMORY_TAG:
+			return new CpMemory(this, tag);
+		case CmsisConstants.ALGORITHM_TAG:
+			return new CpAlgorithm(this, tag);
+		case CmsisConstants.TRACE_TAG:
+			return new CpTrace(this, tag);
+		
+		// debug port properties
+		case CmsisConstants.SWD:
+		case CmsisConstants.JTAG:
+		case CmsisConstants.CJTAG:
+			return new CpDebugProtocol(this, tag);
+		default:
+			return new CpDeviceProperty(this, tag);
 		}
-		return new CpDeviceProperty(this, tag);
 	}
 
 }

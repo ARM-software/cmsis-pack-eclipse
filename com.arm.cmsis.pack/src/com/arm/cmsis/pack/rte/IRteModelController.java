@@ -131,5 +131,13 @@ public interface IRteModelController extends ICommitable, IRteEventProxy, IRteMo
 	 * @param bUseLatest flag if to use latest 
 	 */
 	void setUseAllLatestPacks(boolean bUseLatest);
+	
+	
+	/**
+	 * Opens an URL in a browser or associated system editor 
+	 * @param url URL to open
+	 * @return null if successfully opened, otherwise reason why operation failed
+	 */
+	String openUrl(String url);
 
 }

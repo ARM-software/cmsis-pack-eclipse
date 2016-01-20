@@ -157,14 +157,16 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	/**
 	 * Merges property to the child list: adds if the property with same ID does not yet exist
 	 * @param property item to merge 
+	 * @param processorName only merge properties that have the same processor name  
 	 */
-	void mergeProperty(ICpItem property); 
+	void mergeProperty(ICpItem property, String processorName); 
 
 	/**
 	 * Merges content of supplied property to the child item whose ID equals to supplied property one 
 	 * @param property property which content to merge 
+	 * @param processorName only merge properties that have the same processor name  
 	 */
-	void mergeEffectiveContent(ICpItem property); 
+	void mergeEffectiveContent(ICpItem property, String processorName); 
 	
 	
 	/**

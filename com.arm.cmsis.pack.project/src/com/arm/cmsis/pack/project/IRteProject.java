@@ -57,11 +57,16 @@ public interface IRteProject {
 
 
 	/**
-	 * Returns active RTE configuration name
-	 * @return configuration filename or null if no active configuration exists 
+	 * Returns RTE configuration name associated with the project
+	 * @return configuration filename or null if no configuration exists 
 	 */
 	String getRteConfigurationName();
 
+	/**
+	 * Sets RTE configuration name associated with the project
+	 * @param rteConfigName new configuration name 
+	 */
+	void setRteConfigurationName(String rteConfigName);
 
 	/**
 	 * Sets RTE configuration 

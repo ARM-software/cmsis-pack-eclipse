@@ -30,12 +30,9 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 
 	private EDeviceHierarchyLevel level = null;
 	protected List<ICpDeviceItem> deviceItems = null;
+	protected Map<String, ICpItem> processors = null; // effective processors
 	protected Map<String, ICpItem > effectiveProperties = null;
-	/**
-	 * Effective processors (might be defined at family or sub-family level)
-	 */
-	protected Map<String, ICpItem> processors = null;
-
+	protected Map<String, ICpDebugConfiguration > debugConfigurations = null;
 	
 	/**
 	 * @param parent
@@ -48,8 +45,9 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	@Override
 	public ICpDeviceItem getDeviceItemParent() {
 		ICpItem parent = getParent();
-		if (parent != null && parent instanceof ICpDeviceItem)
+		if (parent != null && parent instanceof ICpDeviceItem) {
 			return (ICpDeviceItem) parent;
+		}
 		return null;
 	}
 
@@ -68,16 +66,18 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	public void addChild(ICpItem item) {
 		cachedChildArray = null; // invalidate
 		if(item instanceof ICpDeviceItem) {
-			if(deviceItems == null) 
+			if(deviceItems == null) {
 				deviceItems = new LinkedList<ICpDeviceItem>();
+			}
 			deviceItems.add((ICpDeviceItem) item);
 		} else { // property
 			List<ICpItem> children = children();
 			String pname = item.getProcessorName(); 
-			if(pname != null && !pname.isEmpty())
+			if(pname != null && !pname.isEmpty()) {
 				children.add(0, item);  // add properties with Pname attribute always to front ( makes collecting effective properties easier)
-			else 
+			} else {
 				children.add(item);
+			}
 		}
 	}
 
@@ -93,8 +93,9 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	@Override
 	public ICpItem getEffectiveParent() {
 		ICpItem parent = getParent();
-		if(parent != null && parent instanceof ICpDeviceItem)
+		if(parent != null && parent instanceof ICpDeviceItem) {
 			return parent;
+		}
 		return null;	
 	}
 
@@ -109,8 +110,9 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 			processors = new HashMap<String, ICpItem>();
 			for(ICpDeviceItem deviceItem = this; deviceItem != null; deviceItem = deviceItem.getDeviceItemParent()){	 
 				Collection<? extends ICpItem> children = deviceItem.getChildren();
-				if(children == null)
+				if(children == null) {
 					continue;
+				}
 				for(ICpItem item : children) {
 					if(item.getTag().equals(CmsisConstants.PROCESSOR_TAG)) {
 						ICpDeviceProperty p = (ICpDeviceProperty)item;
@@ -121,7 +123,7 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 							processors.put(pname,  p);
 						} else {
 							// add missing attributes, but do not replace existing ones (we go down-up)
-							inserted.mergeEffectiveContent(p);
+							inserted.mergeEffectiveContent(p, pname);
 						}
 					}
 				}
@@ -129,6 +131,7 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 		}
 		return processors;
 	}
+
 
 	@Override
 	public synchronized ICpItem getEffectiveProperties(String processorName) {
@@ -153,22 +156,46 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 		return effectiveProperties.get(processorName);
 	}
 	
-	protected void collectEffectiveProperties(String pname, ICpItem props) {
+	protected int collectEffectiveProperties(String pname, ICpItem props) {
+		int nseq = 0; 
 		// insert properties starting from this item and going up in parent chain 
 		for(ICpDeviceItem deviceItem = this; deviceItem != null; deviceItem = deviceItem.getDeviceItemParent()){
 			props.attributes().mergeAttributes(deviceItem.attributes());
 			Collection<? extends ICpItem> children = deviceItem.getChildren();
-			if(children == null)
+			if(children == null) {
 				continue;
+			}
 			for(ICpItem p : children) {
 				String itemPname = p.getProcessorName();
 				if(pname.isEmpty() || itemPname.isEmpty() || itemPname.equals(pname)) {
-					props.mergeProperty(p);
+					props.mergeProperty(p, pname);
 				}			
 			}
 		}
+		return nseq;
 	}
 
+	@Override
+	public synchronized ICpDebugConfiguration getDebugConfiguration(String processorName) {
+		if(debugConfigurations == null) {
+			// ensure filled processor collection
+			getProcessors();
+			// collect properties for all processors
+			debugConfigurations = new HashMap<String, ICpDebugConfiguration>();
+			for(Entry<String, ICpItem> e : processors.entrySet()) {
+				String pname = e.getKey();
+				CpDebugConfiguration debugConfig = new CpDebugConfiguration(this);
+				
+				// add processor attribute to the configuration
+				if(pname != null && !pname.isEmpty()) {
+					debugConfig.attributes().setAttribute(CmsisConstants.PNAME, pname);
+				}
+				debugConfigurations.put(pname, debugConfig);
+				debugConfig.init( getEffectiveProperties(pname));
+			}
+		}
+		return debugConfigurations.get(processorName);
+	}
 
 	@Override
 	protected String constructName() {
@@ -195,11 +222,6 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 
 	
 	@Override
-	public boolean hasChildren() {
-		return getEffectiveChildCount() > 0;
-	}
-
-	@Override
 	public boolean hasEffectiveChildren() {
 		return getEffectiveChildCount() > 0;
 	}
@@ -221,8 +243,9 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	@Override
 	public int getEffectiveChildCount() {
 		int count = getChildCount(); // count of direct properties
-		if(hasDeviceItems())
+		if(hasDeviceItems()) {
 			count += getDeviceItems().size();
+		}
 		return count;
 	}
 	
@@ -231,8 +254,9 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	protected Object[] createChildArray() {
 		// use cached array for effective children, while direct children are rarely needed in GUI
 		Collection<? extends ICpItem> collection = getEffectiveChildren();
-		if(collection != null && !collection.isEmpty())
+		if(collection != null && !collection.isEmpty()) {
 			return collection.toArray();
+		}
 		return EMPTY_OBJECT_ARRAY;
 	}
 
@@ -258,10 +282,31 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 		//get first book
 		String doc = null;
 		ICpItem bookItem = getFirstChild(CmsisConstants.BOOK_TAG);
-		if(bookItem != null)
+		if(bookItem != null) {
 			doc = bookItem.getDoc();
-		if(doc == null || doc.isEmpty())
+		}
+		if(doc == null || doc.isEmpty()) {
 			doc = super.getDoc();
+		}
 		return doc;
+	}
+
+	@Override
+	public ICpDeviceItem findDeviceByName(String deviceName, int eDeviceHierarchyLevel) {
+		if (getName().equals(deviceName) && level.ordinal() == eDeviceHierarchyLevel) {
+			return this;
+		}
+		if (level.ordinal() > eDeviceHierarchyLevel) {
+			return null;
+		}
+		if (getDeviceItems() != null) {
+			for (ICpDeviceItem device : getDeviceItems()) {
+				ICpDeviceItem d = device.findDeviceByName(deviceName, eDeviceHierarchyLevel);
+				if (d != null) {
+					return d;
+				}
+			}
+		}
+		return null;
 	}
 }

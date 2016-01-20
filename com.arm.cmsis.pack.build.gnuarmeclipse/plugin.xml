@@ -5,8 +5,8 @@
          point="com.arm.cmsis.pack.build.settings.ToolChainAdapter">
       <toolChainAdapter
             Description="Toolchain Adapter for GNU ARM C/C++ Cross Compiler"
-            class="com.arm.cmsis.pack.build.ilg.IlgToolChainAdapter"
-            id="com.arm.cmsis.pack.build.ilg.toolChainAdapter"
+            class="com.arm.cmsis.pack.build.gnuarmeclipse.GnuarmeclipseToolChainAdapter"
+            id="com.arm.cmsis.pack.build.gnuarmeclipse.toolChainAdapter"
             name="Cross ARM GCC Toolchain Adapter "
             toolChainFamily="GCC">
          <toolChain

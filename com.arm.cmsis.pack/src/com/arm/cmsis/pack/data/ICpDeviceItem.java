@@ -56,10 +56,24 @@ public interface ICpDeviceItem extends ICpItem {
 	int getProcessorCount();
 
 	/**
-	 * Returns list of effective properties for this device merged with properties from upper levels in device description hierarchy 
+	 * Returns item containing list of effective properties for this device merged with properties from upper levels in device hierarchy 
 	 * @param processorName processor name for which to get properties
-	 * @return list of device effective properties for supplied processor name 
+	 * @return ICpItem containing list of device effective properties for supplied processor name 
 	 */
 	ICpItem getEffectiveProperties(String processorName); 
 
+	/**
+	 * Returns device debug configuration for given processor 
+	 * @param processorName processor name for which to get debug configuration
+	 * @return ICpDebugConfiguration for supplied processor name 
+	 */
+	ICpDebugConfiguration getDebugConfiguration(String processorName);
+
+	/**
+	 * @param deviceName
+	 * @param eDeviceHierarchyLevel 
+	 * @return the {@link ICpDeviceItem}, or null if no such device exists
+	 */
+	ICpDeviceItem findDeviceByName(String deviceName, int eDeviceHierarchyLevel);
+	
 }

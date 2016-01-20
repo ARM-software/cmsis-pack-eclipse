@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.rte.devices;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -73,9 +74,10 @@ public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem>  {
 	 * Searches device tree for given device name and optional vendor name 
 	 * @param deviceName device name to search
 	 * @param vendor device vendor to search  
+	 * @param onlyDevice set to true if only searching for device or variant (no family, subfamily)
 	 * @return IRteDeviceItem if found or null otherwise 
 	 */
-	IRteDeviceItem findItem(final String deviceName, final String vendor);
+	IRteDeviceItem findItem(final String deviceName, final String vendor, final boolean onlyDevice);
 	
 	/**
 	 * Searches device tree for given attributes device name and optional vendor name 
@@ -97,5 +99,17 @@ public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem>  {
 	 * @return vendor item 
 	 */
 	IRteDeviceItem getVendorItem(final String vendor);
+	
+	/**
+	 * Get All the Pack IDs contained in this IRteDeviceItem
+	 * @return A set of Pack IDs
+	 */	
+	Set<String> getAllPackIds();
+
+	/**
+	 * Get All the {@link ICpDeviceItem} contained in this IRteDeviceItem
+	 * @return A set of {@link ICpDeviceItem} Names
+	 */
+	Set<String> getAllDeviceNames();
 	
 }

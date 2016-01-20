@@ -45,14 +45,14 @@ public class AlnumComparator implements Comparator<String> {
 
 	/**
 	 * Constructs default case insensitive comparator with descending sort order
-     *
+	 *
 	 */
 	public AlnumComparator() {
 	}
 
 	/**
 	 * Constructs case insensitive comparator
-     * @param descending - sorting order: true - descending, false - acceding
+	 * @param descending - sorting order: true - descending, false - acceding
 	 */
 	public AlnumComparator(boolean descending) {
 		this.descending = descending;
@@ -60,14 +60,14 @@ public class AlnumComparator implements Comparator<String> {
 
 	/**
 	 * Constructs comparator
-     * @param descending    sorting order: true - descending, false - acceding
+	 * @param descending    sorting order: true - descending, false - acceding
 	 * @param caseSensitive comparison 
 	 */
 	public AlnumComparator(boolean descending, boolean caseSensitive) {
 		this.descending = descending;
 		this.caseSensitive = caseSensitive;
 	}
-	
+
 	/**
 	 * Checks if this comparator is case sensitive
 	 * @return true if comparator is case sensitive
@@ -102,12 +102,13 @@ public class AlnumComparator implements Comparator<String> {
 
 	@Override
 	public int compare(String str1, String str2) {
-		if (isDescending())
+		if (isDescending()) {
 			return compare(str2, str1, isCaseSensitive());
-		else
+		} else {
 			return compare(str1, str2, isCaseSensitive());
+		}
 	}
-	
+
 	/**
 	 * Compares two strings 
 	 * @param str1 first string to compare
@@ -135,10 +136,11 @@ public class AlnumComparator implements Comparator<String> {
 	public static int alnumCompare(final String str1, final String str2, boolean cs) {
 		// allow comparison of null and empty strings 
 		if (str1 == null || str1.isEmpty()) {
-			if (str2 == null || str2.isEmpty())
+			if (str2 == null || str2.isEmpty()) {
 				return 0;
-			else
+			} else {
 				return -1;
+			}
 		} else if (str2 == null || str2.isEmpty()) {
 			return 1;
 		}
@@ -173,26 +175,32 @@ public class AlnumComparator implements Comparator<String> {
 				}  catch (NumberFormatException e) {
 					return s1.compareTo(s2);
 				}
-				if (val1 > val2)
+				if (val1 > val2) {
 					return 1;
-				else if (val1 < val2)
+				} else if (val1 < val2) {
 					return -1;
+				}
 			} else {
 				if (!cs) {
 					c1 = Character.toUpperCase(c1);
 					c2 = Character.toUpperCase(c2);
 				}
-				if (c1 > c2)
+				if ( (c1 == '*' && alnumCompareWildcardMatch(str1.substring(i1), str2.substring(i2))) ||
+						(c2 == '*' && alnumCompareWildcardMatch(str2.substring(i2), str1.substring(i1))) ) {
+					return 0;
+				}
+				if (c1 > c2) {
 					return 1;
-				else if (c1 < c2)
+				} else if (c1 < c2) {
 					return -1;
+				}
 				i1++;
 				i2++;
 			}
 		}
 		return (l1 - i1) - (l2 - i2);
 	}
-	
+
 	/**
 	 * Compares two strings alpha-numerically respecting case  
 	 * @param str1 - first string to compare
@@ -211,5 +219,45 @@ public class AlnumComparator implements Comparator<String> {
 	 */
 	public static int alnumCompareNoCase(final String str1, final String str2) {
 		return alnumCompare(str1, str2, false);
+	}
+
+	/**
+	 * Check if a String matches a Regex Pattern
+	 * @param pattern - the regex pattern
+	 * @param string - the string to match
+	 * @return  true if string matches pattern, false otherwise
+	 */
+	public static boolean alnumCompareWildcardMatch(String p, String s) {
+		int m = s.length(), n = p.length();
+        int count = 0;
+        for (int i = 0; i < n; i++) {
+            if (p.charAt(i) == '*') {
+				count++;
+			}
+        }
+        if (count==0 && m != n) {
+			return false;
+		} else if (n - count > m) {
+			return false;
+		}
+
+        boolean[] match = new boolean[m+1];
+        match[0] = true;
+        for (int i = 0; i < m; i++) {
+            match[i+1] = false;
+        }
+        for (int i = 0; i < n; i++) {
+            if (p.charAt(i) == '*') {
+                for (int j = 0; j < m; j++) {
+                    match[j+1] = match[j] || match[j+1]; 
+                }
+            } else {
+                for (int j = m-1; j >= 0; j--) {
+                    match[j+1] = (p.charAt(i) == '?' || p.charAt(i) == s.charAt(j)) && match[j];
+                }
+                match[0] = false;
+            }
+        }
+        return match[m];
 	}
 }

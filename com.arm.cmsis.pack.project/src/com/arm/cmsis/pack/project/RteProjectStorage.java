@@ -288,8 +288,8 @@ public class RteProjectStorage {
 
 	
 	/**
-	 * Loads RTE-related information from ICConfigurationDescription  
-	 * @param configDesc ICConfigurationDescription to load RTE info from
+	 * Saves RTE-related information to ICConfigurationDescription  
+	 * @param configDesc ICConfigurationDescription to store RTE info to
 	 * @throws CoreException
 	 */
 	public void save(ICProjectDescription projDesc) throws CoreException {

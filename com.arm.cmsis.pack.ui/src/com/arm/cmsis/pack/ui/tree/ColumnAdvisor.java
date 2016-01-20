@@ -37,8 +37,8 @@ import com.arm.cmsis.pack.ui.OpenURL;
 public abstract class ColumnAdvisor implements IColumnAdvisor {
 
 	protected ColumnViewer columnViewer;
-	private Control control;
-	private static final Cursor CURSOR_HAND = Display.getCurrent().getSystemCursor(SWT.CURSOR_HAND); 	// hand cursor for URL text
+	protected Control control;
+	protected static final Cursor CURSOR_HAND = Display.getCurrent().getSystemCursor(SWT.CURSOR_HAND); 	// hand cursor for URL text
 
 	/**
 	 * Constructs advisor for a viewer
@@ -78,9 +78,41 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 	 * @param e mouse event
 	 */
 	void handleMouseOver(MouseEvent e) {
-		Point pt = new Point(e.x, e.y);
+		String url = getUrl(e.x, e.y);
+		if (url != null && !url.isEmpty()) {
+			if(this.control.getCursor() != CURSOR_HAND)
+				this.control.setCursor(CURSOR_HAND);
+		} else if(this.control.getCursor() == CURSOR_HAND){
+			this.control.setCursor(null);
+		}
+	}
+	/**
+	 * Resets cursor 'hand'
+	 * @param e mouse event
+	 */
+	void handleMouseExit(MouseEvent e) {
+		String url = getUrl(e.x, e.y);
+		if (url == null || url.isEmpty()) {
+			if(this.control.getCursor() == CURSOR_HAND){
+				this.control.setCursor(null);
+			}
+		}
+	}
+
+	/**
+	 * Opens URL for an URL control
+	 * @param e mouse event
+	 */
+	void handleMouseUp(MouseEvent e) {
+		String url = getUrl(e.x, e.y);
+		if (url != null && !url.isEmpty()) {
+			openUrl(url);
+		}
+	}
+	
+	public String getUrl(int x, int y){
+		Point pt = new Point(x, y);
 		ViewerCell cell = getViewer().getCell(pt);
-		boolean cursorSet = false;
 
 		if (cell != null) {
 			int colIndex = cell.getColumnIndex();
@@ -92,46 +124,13 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 					cellBounds.x+=img.getBounds().width;
 				}
 				if(cellBounds.contains(pt)) {
-					if (getString(element, colIndex) != null) {
-						this.control.setCursor(CURSOR_HAND);
-						cursorSet = true;
-					}
+					return getUrl(element, colIndex);
 				}
 			}
 		}
+		return null;
+	}
 
-		if (!cursorSet) {
-			handleMouseExit(e);
-		}
-	}
-	/**
-	 * Resets cursor 'hand'
-	 * @param e mouse event
-	 */
-	void handleMouseExit(MouseEvent e) {
-		if (this.control.getCursor() == CURSOR_HAND) {
-			this.control.setCursor(null);
-		}
-	}
-	
-	/**
-	 * Opens URL for an URL control
-	 * @param e mouse event
-	 */
-	void handleMouseUp(MouseEvent e) {
-		Point pt = new Point(e.x, e.y);
-		ViewerCell cell = getViewer().getCell(pt);
-		if (cell != null && this.control.getCursor() == CURSOR_HAND) {
-			int colIndex = cell.getColumnIndex();
-			Object element = cell.getElement();
-			if (getCellControlType(element, colIndex) == CellControlType.URL) {
-				String url = getUrl(element, colIndex);
-				if (url != null && !url.isEmpty()) {
-					OpenURL.open(url, this.control.getShell());
-				}
-			}
-		}
-	}
 	
 	@Override
 	public ColumnViewer getViewer() {
@@ -148,12 +147,6 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		return false;
 	}
 
-//	@Override
-//	public String getString(Object obj, int columnIndex) {
-//		return null;
-//	}
-
-	
 	
 	@Override
 	public String getUrl(Object obj, int columnIndex) {
@@ -161,19 +154,21 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 	}
 	
 	@Override
+	public void openUrl(String url) {
+		OpenURL.open(url, this.control != null ? this.control.getShell() : null);
+	}
+
+	@Override
 	public boolean isEnabled(Object obj, int columnIndex) {
 		return true;
 	}
 
 	@Override
 	public void setString(Object obj, int columnIndex, String newVal) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override
 	public void setCurrentSelectedIndex(Object obj, int columnIndex, int newVal) {
-		// TODO Auto-generated method stub
 		
 	}
 

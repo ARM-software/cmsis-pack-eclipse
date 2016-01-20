@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
+import java.util.LinkedList;
 
 import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -39,26 +40,29 @@ public class CpBoard extends CpItem implements ICpBoard {
 		    id += CmsisConstants.DOBLE_COLON;
 		    id += name;
 		  }
-		  String rev = getAttribute(CmsisConstants.REVISION);
-		  if(rev != null && !rev.isEmpty()) {
-		    id += CmsisConstants.DOBLE_COLON;
-		    id += rev;
-		  }
+		  // TODO: commented out for easy filtering of examples
+		  //String rev = getAttribute(CmsisConstants.REVISION);
+		  //if(rev != null && !rev.isEmpty()) {
+		  //  id += CmsisConstants.DOBLE_COLON;
+		  //  id += rev;
+		  //}
 		  return id;
 	}
 
 	@Override
 	public boolean hasCompatibleDevice(IAttributes deviceAttributes) {
 		Collection<? extends ICpItem> children = getChildren();
-		if(children == null)
+		if(children == null) {
 			return false;
+		}
 		for(ICpItem item : children) {
 			String tag = item.getTag();
 			switch(tag) {
 			case CmsisConstants.MOUNTED_DEVICE_TAG:
 			case CmsisConstants.COMPATIBLE_DEVICE_TAG:
-				if(item.attributes().matchCommonAttributes(deviceAttributes))
+				if(item.attributes().matchCommonAttributes(deviceAttributes)) {
 					return true;
+				}
 			default:
 				break;
 			}
@@ -76,6 +80,37 @@ public class CpBoard extends CpItem implements ICpBoard {
 			}
 		}
 		return fURL;
-	}	
+	}
+
+	// TODO: check later
+	@Override
+	public Collection<ICpItem> getMountedDevices() {
+		return getDevices(CmsisConstants.MOUNTED_DEVICE_TAG);
+	}
+
+	// TODO: check later
+	@Override
+	public Collection<ICpItem> getCompatibleDevices() {
+		return getDevices(CmsisConstants.COMPATIBLE_DEVICE_TAG);
+	}
+
+	// TODO: check later
+	private Collection<ICpItem> getDevices(final String requiredTag) {
+
+		Collection<ICpItem> devices = new LinkedList<>();
+		Collection<? extends ICpItem> children = getChildren();
+		if (children == null) {
+			return devices;
+		}
+
+		for (ICpItem item : children) {
+			String tag = item.getTag();
+			if (tag.equals(requiredTag)) {
+				devices.add(item);
+			}
+		}
+
+		return devices;
+	}
 	
 }

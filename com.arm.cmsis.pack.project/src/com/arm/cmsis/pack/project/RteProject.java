@@ -109,6 +109,11 @@ public class RteProject implements IRteProject {
 		return fRteProjectStorage.getRteConfigurationName();
 	}
 
+	@Override
+	public void setRteConfigurationName(String rteConfigName) {
+		fRteProjectStorage.setRteConfigurationName(rteConfigName);
+	}
+
 	
 	@Override
 	public RteProjectStorage getProjectStorage() {

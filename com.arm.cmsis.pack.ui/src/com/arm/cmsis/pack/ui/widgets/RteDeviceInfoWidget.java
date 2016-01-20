@@ -36,12 +36,11 @@ import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.generic.ITreeObject;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
+import com.arm.cmsis.pack.rte.IRteModelController;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.OpenURL;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
-import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
-import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 
 import org.eclipse.swt.widgets.Link;
@@ -81,6 +80,8 @@ public class RteDeviceInfoWidget extends Composite {
 	private Tree tree;
 	private TreeViewer treeViewer;
 	private Label lblBoards;
+	protected IRteColumnAdvisor fBookColumnAdvisor = null;
+	protected IRteColumnAdvisor fBoardColumnAdvisor = null;
 
 
 	ICpItem getCpItem(Object obj) {
@@ -172,7 +173,7 @@ public class RteDeviceInfoWidget extends Composite {
 	/**  
 	 * Column label provider for books tree 
 	 */
-	class RteBookColumnAdvisor extends ColumnAdvisor {
+	class RteBookColumnAdvisor extends RteColumnAdvisor {
 		/**
 		 * Constructs advisor for a viewer
 		 * @param columnViewer ColumnViewer on which the advisor is installed
@@ -355,13 +356,13 @@ public class RteDeviceInfoWidget extends Composite {
 		table = tableViewer.getTable();
 		table.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1));
 	
-		IColumnAdvisor columnAdvisor = new RteBookColumnAdvisor(tableViewer);
+		fBookColumnAdvisor = new RteBookColumnAdvisor(tableViewer);
 		ColumnViewerToolTipSupport.enableFor(tableViewer);
 
 		
 		tableViewer.setContentProvider(new RteBookContentProvider());
 	//	tableViewer.setLabelProvider(new RteBookLabelProvider());
-		tableViewer.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 0));
+		tableViewer.setLabelProvider(new AdvisedCellLabelProvider(fBookColumnAdvisor, 0));
 		
 		text = new Text(this, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
 		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 3);
@@ -382,9 +383,9 @@ public class RteDeviceInfoWidget extends Composite {
 		treeViewer.setContentProvider(new RteBoardContentProvider());
 //		treeViewer.setLabelProvider(new RteBoardLabelProvider());
 
-		columnAdvisor = new RteBookColumnAdvisor(treeViewer);
+		fBoardColumnAdvisor = new RteBookColumnAdvisor(treeViewer);
 		ColumnViewerToolTipSupport.enableFor(treeViewer);
-		treeViewer.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 0));
+		treeViewer.setLabelProvider(new AdvisedCellLabelProvider(fBoardColumnAdvisor, 0));
 		
 	}
 	
@@ -495,4 +496,19 @@ public class RteDeviceInfoWidget extends Composite {
 		btnSelect.addSelectionListener(adapter);
 	}
 
+	@Override
+	public void dispose() {
+		fDeviceInfo = null;
+		super.dispose();
+	}
+
+	public void setModelController(IRteModelController modelController) {
+		if(fBoardColumnAdvisor != null)
+			fBoardColumnAdvisor.setModelController(modelController);
+		if(fBookColumnAdvisor != null)
+			fBookColumnAdvisor.setModelController(modelController);
+		
+	}
+
+	
 }

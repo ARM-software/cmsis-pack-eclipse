@@ -47,5 +47,9 @@ public interface ICpPackCollection extends ICpPackFamily {
 	 */
 	Collection<ICpPack> getFilteredPacks(ICpPackFilter packFilter);
 	
-	
+	/**
+	 * Returns pack collection of the packFamilyId
+	 * @return collection of packs that belong to this packFamilyId, or null if no such packFamilyId exists 
+	 */
+	Collection<? extends ICpItem> getPacksByPackFamilyId(String packFamilyId);
 }

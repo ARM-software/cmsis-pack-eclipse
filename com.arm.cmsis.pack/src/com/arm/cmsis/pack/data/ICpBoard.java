@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.data;
 
+import java.util.Collection;
+
 import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
@@ -26,4 +28,15 @@ public interface ICpBoard extends ICpItem {
 	 */
 	boolean hasCompatibleDevice(IAttributes deviceAttributes); 
 	
+	/**
+	 * @return mounted Devices on this board. return empty list if no mounted
+	 *         devices.
+	 */
+	Collection<ICpItem> getMountedDevices();
+
+	/**
+	 * @return compatible Devices on this board. return empty list if no
+	 *         compatible devices.
+	 */
+	Collection<ICpItem> getCompatibleDevices();
 }

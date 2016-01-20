@@ -443,11 +443,13 @@ public class ProjectUtils {
 		IProject project = r.getProject();
 		if(!RteProjectNature.hasRteNature(project))
 			return null;
+		if(r.getType() == IResource.PROJECT)
+			return r;
 		IPath path = r.getProjectRelativePath();
 		if(path == null || path.isEmpty())
 			return null;
 		if(r.getType() == IResource.FILE && path.segmentCount() == 1) {
-			if(r.getFileExtension().equals(CmsisConstants.RTECONFIG))
+			if(CmsisConstants.RTECONFIG.equals(r.getFileExtension()))
 				return r;
 		}
 		if(!path.segment(0).startsWith(CmsisConstants.RTE))

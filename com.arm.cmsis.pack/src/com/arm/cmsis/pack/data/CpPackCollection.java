@@ -41,8 +41,9 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 			ICpPackFamily f = fPackFamilies.get(familyId);
 			if(f != null) {
 				String version = CpPack.versionFromId(packId);
-				if(version == null || version.isEmpty())
+				if(version == null || version.isEmpty()) {
 					return f.getPack();
+				}
 				return f.getPack(version);
 			}
 		}
@@ -52,8 +53,9 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 	
 	@Override
 	public Collection<? extends ICpItem> getChildren() {
-		if(fPackFamilies != null)
+		if(fPackFamilies != null) {
 			return fPackFamilies.values();
+		}
 		return null;
 	}
 
@@ -66,13 +68,16 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 	@Override
 	public void addChild(ICpItem item) {
-		if(item == null)
+		if(item == null) {
 			return;
-		if(!(item instanceof ICpPack))
+		}
+		if(!(item instanceof ICpPack)) {
 			return;
+		}
 		ICpPack pack = (ICpPack)item;
-		if(fPackFamilies == null)
+		if(fPackFamilies == null) {
 			fPackFamilies = new TreeMap<String, ICpPackFamily>(new AlnumComparator(false, false));
+		}
 		
 		String familyId = pack.getPackFamilyId();
 		
@@ -90,12 +95,14 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 		Collection<ICpPack> packs = new LinkedList<ICpPack>();
 		for(ICpPackFamily f : fPackFamilies.values()) {
 			Collection<? extends ICpItem> children = f.getChildren();
-			if(children == null)
+			if(children == null) {
 				continue;
+			}
 
 			for(ICpItem item : children) {
-				if(item == null || !(item instanceof ICpPack))
+				if(item == null || !(item instanceof ICpPack)) {
 					continue;
+				}
 				ICpPack pack = (ICpPack)item;
 				packs.add(pack);
 			}
@@ -105,14 +112,16 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 	@Override
 	public Collection<ICpPack> getFilteredPacks(ICpPackFilter packFilter) {
-		if(packFilter == null || packFilter.isUseAllLatestPacks())
+		if(packFilter == null || packFilter.isUseAllLatestPacks()) {
 			return getLatestPacks();
+		}
 
 		Collection<ICpPack> packs = new LinkedList<ICpPack>();
 		for(ICpPackFamily f : fPackFamilies.values()) {
 			Collection<? extends ICpItem> children = f.getChildren();
-			if(children == null)
+			if(children == null) {
 				continue;
+			}
 			if(packFilter != null) {
 				String familyId = f.getPackFamilyId();
 				if(packFilter.isExcluded(familyId)) {
@@ -125,11 +134,13 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 			}
 			
 			for(ICpItem item : children) {
-				if(item == null || !(item instanceof ICpPack))
+				if(item == null || !(item instanceof ICpPack)) {
 					continue;
+				}
 				ICpPack pack = (ICpPack)item;
-				if(packFilter == null || packFilter.passes(pack))
+				if(packFilter == null || packFilter.passes(pack)) {
 					packs.add(pack);
+				}
 			}
 		}
 		return packs;
@@ -140,8 +151,9 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 		Collection<ICpPack> latestPacks = new LinkedList<ICpPack>();
 		for(ICpPackFamily f : fPackFamilies.values()) {
 			ICpPack pack = f.getPack();
-			if(pack != null)
+			if(pack != null) {
 				latestPacks.add(pack);
+			}
 		}
 		return latestPacks;
 	}
@@ -153,8 +165,9 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 			fLatestPackIDs = new HashSet<String>(); 
 			for(ICpPackFamily f : fPackFamilies.values()) {
 				String packId = f.getPackId();
-				if(packId != null && !packId.isEmpty())
+				if(packId != null && !packId.isEmpty()) {
 					fLatestPackIDs.add(packId);
+				}
 			}
 		}
 		return fLatestPackIDs;
@@ -166,10 +179,21 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 		if(fPackFamilies != null) {
 			for(ICpPackFamily f : fPackFamilies.values()){
 				ICpPack pack = f.getPackByFilename(pdscFile); 
-				if(pack != null)
+				if(pack != null) {
 					return pack;
+				}
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public Set<String> getContainedPackVersions() {
+		throw new RuntimeException("This method should not be called from this class"); //$NON-NLS-1$
+	}
+
+	@Override
+	public Collection<? extends ICpItem> getPacksByPackFamilyId(String packFamilyId) {
+		return fPackFamilies.get(packFamilyId).getChildren();
 	}
 }

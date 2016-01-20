@@ -17,6 +17,8 @@ package com.arm.cmsis.pack.ui;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
@@ -30,8 +32,14 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.services.IServiceLocator;
 import org.osgi.framework.BundleContext;
 
 import com.arm.cmsis.pack.CpPlugIn;
@@ -51,7 +59,11 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICONS_PATH  		= "icons/"; 		//$NON-NLS-1$
 	// icons
 
+	public static final String ICON_ITEM  		= "item.png"; 		//$NON-NLS-1$
 	public static final String ICON_BOOK  		= "book.png"; 		//$NON-NLS-1$
+	public static final String ICON_FILE  		= "file.gif"; 		//$NON-NLS-1$
+	public static final String ICON_FOLDER 		= "folder.gif"; 	//$NON-NLS-1$
+	public static final String ICON_FOLDER_DEVICES = "folderDevices.gif"; 		//$NON-NLS-1$
 
 	public static final String ICON_CHECKED 	= "checked.gif"; 	//$NON-NLS-1$
 	public static final String ICON_UNCHECKED 	= "unchecked.gif"; 	//$NON-NLS-1$
@@ -81,6 +93,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 
 	
 	public static final String ICON_COMPONENT_CLASS			= "componentClass.gif"; 		//$NON-NLS-1$
+	public static final String ICON_COMPONENT_GROUP			= "componentGroup.png"; 		//$NON-NLS-1$
 	public static final String ICON_COMPONENT 				= "component.gif"; 				//$NON-NLS-1$
 	public static final String ICON_COMPONENT_WARNING 		= "componentWarning.gif"; 		//$NON-NLS-1$
 	public static final String ICON_COMPONENT_ERROR 		= "componentError.gif"; 		//$NON-NLS-1$
@@ -114,6 +127,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_PACKAGES_FILTER	= "packagesFilter.png";	//$NON-NLS-1$
 	
 	public static final String ICON_EXPAND_ALL 		= "expandall.gif"; 		//$NON-NLS-1$
+	public static final String ICON_COLLAPSE_ALL 	= "collapseall.gif"; 	//$NON-NLS-1$
 	
 	public static final String ICON_PIN = "pin.png"; 						//$NON-NLS-1$
 	public static final String ERROR_OVR = "error_ovr.gif"; 				//$NON-NLS-1$
@@ -212,6 +226,38 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	}
 
 	/**
+	 * Utility method to get command service from workbench
+	 * @return ICommandService
+	 */
+	static public ICommandService getCommandService(){
+		if(!PlatformUI.isWorkbenchRunning())
+			return null;
+		IServiceLocator serviceLocator = PlatformUI.getWorkbench();
+		if(serviceLocator != null) {
+			return (ICommandService) serviceLocator.getService(ICommandService.class);
+		}
+		return null;
+	}
+	
+	/**
+	 * Utility method to get selection service from workbench
+	 * @return ISelectionService
+	 */
+	static public ISelectionService getSelectionService(){
+		if(!PlatformUI.isWorkbenchRunning())
+			return null;
+		IWorkbench wb = PlatformUI.getWorkbench();
+		if(wb != null) {
+			IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+			if(window != null) {
+				return window.getSelectionService();
+			}
+		}
+		return null;
+	}
+
+	
+	/**
 	 * Returns an image descriptor for the image file at the given
 	 * plug-in relative path
 	 *
@@ -284,14 +330,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 			return null;
 		IStructuredSelection structSel = (IStructuredSelection) selection;
 		Object element = structSel.getFirstElement();
-		if (element instanceof IResource)
-			return (IResource) element;
-		else if (element instanceof IAdaptable) {
-			IAdaptable adaptable = (IAdaptable)element;
-			Object adapter = adaptable.getAdapter(IResource.class);
-			return (IResource) adapter;
-		}
-		return null;
+		return getResourceFromSelectedObject(element);
 	}
 	
 	
@@ -306,4 +345,47 @@ public class CpPlugInUI extends AbstractUIPlugin {
 			return res.getProject();
 		return null;
 	}
+
+	
+	/**
+	 * Returns first selected projects  
+	 * @param selection ISelection   
+	 * @return collection of selected projects 
+	 */
+	public static Collection<IProject> getProjectsFromSelection(ISelection selection) {
+		if (!(selection instanceof IStructuredSelection))
+			return null;
+		Set<IProject> projects = new HashSet<IProject>();
+
+		IStructuredSelection structSel = (IStructuredSelection) selection;
+		for (Object element : structSel.toList()) {
+			IResource res = getResourceFromSelectedObject(element);
+			
+			IProject project = 	(res != null) ? res.getProject() : null;
+		    if (project != null && res == project) { // consider only selected projects 
+		    	projects.add(project);
+		    }
+		}
+		return projects;
+	}
+
+	
+	/**
+	 * Returns resource from a selected opject  
+	 * @param obj selected object  
+	 * @return IResource or null if not selected
+	 */
+	private static IResource getResourceFromSelectedObject(Object obj) {
+		if (obj instanceof IResource)
+			return (IResource) obj;
+		else if (obj instanceof IAdaptable) {
+			IAdaptable adaptable = (IAdaptable)obj;
+			Object adapter = adaptable.getAdapter(IResource.class);
+			return (IResource) adapter;
+		}
+		return null;
+	}
+	
+	
+	
 }

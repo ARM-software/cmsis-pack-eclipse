@@ -38,8 +38,6 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.AdvisedEditingSupport;
-import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
-import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 
 public class RteValidateWidget extends RteWidget {
@@ -68,7 +66,7 @@ public class RteValidateWidget extends RteWidget {
 		}
 	}
 	
-	public class RteValidateColumnAdvisor extends ColumnAdvisor {
+	public class RteValidateColumnAdvisor extends RteColumnAdvisor {
 		/**
 		 * Constructs advisor for a viewer
 		 * @param columnViewer ColumnViewer on which the advisor is installed
@@ -181,14 +179,14 @@ public class RteValidateWidget extends RteWidget {
 		tree.setHeaderVisible(true);
 		fViewer = new TreeViewer(tree);
 		ColumnViewerToolTipSupport.enableFor(fViewer);
-		IColumnAdvisor columnAdvisor = new RteValidateColumnAdvisor(fViewer);
+		fColumnAdvisor = new RteValidateColumnAdvisor(fViewer);
 		
 		TreeViewerColumn column0 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		tree.setLinesVisible(true);
 		column0.getColumn().setAlignment(SWT.LEFT);
 		column0.getColumn().setText(CpStringsUI.RteValidateWidget_ValidationOutput);
 		column0.getColumn().setWidth(400);
-		column0.setEditingSupport(new AdvisedEditingSupport(fViewer, columnAdvisor, 0));
+		column0.setEditingSupport(new AdvisedEditingSupport(fViewer, fColumnAdvisor, 0));
 		
 		fViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			public void selectionChanged(SelectionChangedEvent event) {
@@ -196,7 +194,7 @@ public class RteValidateWidget extends RteWidget {
 			}
 		});
 		
-		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(columnAdvisor, 0);
+		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, 0);
 		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
 		col0LabelProvider.setOwnerDrawEnabled(false);   
 		column0.setLabelProvider(col0LabelProvider);
@@ -205,8 +203,8 @@ public class RteValidateWidget extends RteWidget {
 		column1.getColumn().setAlignment(SWT.LEFT);
 		column1.getColumn().setText(CpStringsUI.RteValidateWidget_Description);
 		column1.getColumn().setWidth(500);
-		column1.setEditingSupport(new AdvisedEditingSupport(fViewer, columnAdvisor, 1));
-		column1.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 1));
+		column1.setEditingSupport(new AdvisedEditingSupport(fViewer, fColumnAdvisor, 1));
+		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 1));
 
 		RteValidateContentProvider validateProvider = new RteValidateContentProvider();
 		fViewer.setContentProvider(validateProvider);

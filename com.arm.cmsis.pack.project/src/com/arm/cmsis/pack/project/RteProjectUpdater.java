@@ -41,7 +41,6 @@ import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
 import com.arm.cmsis.pack.parser.ConfigParser;
-import com.arm.cmsis.pack.preferences.CpVariableResolver;
 import com.arm.cmsis.pack.project.ui.RteProjectDecorator;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
@@ -130,9 +129,18 @@ public class RteProjectUpdater extends WorkspaceJob {
 		} catch (Exception e) {
 			e.printStackTrace();
 			status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ErrorUpdatingRteProject, e);
+		} finally {
+			rteProject.setUpdateCompleted(true);
 		}
 		if(status != null) {
 			rteConsole.outputError(Messages.RteProjectUpdater_Fail);
+			rteConsole.outputInfo(status.getMessage());
+			IStatus[] statusArray = status.getChildren();
+			if(statusArray != null && statusArray.length > 0){
+				for(IStatus s : statusArray){
+					rteConsole.outputInfo(s.getMessage());
+				}
+			}
 		}else{
 			rteConsole.outputInfo(Messages.RteProjectUpdater_Success);
 			status = new Status(IStatus.OK, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ProjectUpdated);
@@ -150,12 +158,12 @@ public class RteProjectUpdater extends WorkspaceJob {
 	}
 
 	protected void loadConfigFile() throws CoreException {
-		String rteConfigName = rteProject.getRteConfigurationName();
-		IRteConfiguration rteConf = loadRteConfiguration(rteConfigName);
+		String savedRteConfigName = rteProject.getRteConfigurationName();
+		IRteConfiguration rteConf = loadRteConfiguration(savedRteConfigName);
 		Collection<String> errors = rteConf.validate();
 		if(errors == null || errors.isEmpty())
 			return;
-		String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + rteConfigName + "':";  //$NON-NLS-1$ //$NON-NLS-2$
+		String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + savedRteConfigName + "':";  //$NON-NLS-1$ //$NON-NLS-2$
 		rteConsole.outputError(msg);
 		for(String s : errors){
 			rteConsole.output(s);
@@ -165,18 +173,29 @@ public class RteProjectUpdater extends WorkspaceJob {
 		throw new CoreException(status); 
 	}
 	
-	protected IRteConfiguration loadRteConfiguration(String rteConfigName)  throws CoreException {
-		if(rteConfigName == null || rteConfigName.isEmpty())
+	protected IRteConfiguration loadRteConfiguration(String savedRteConfigName)  throws CoreException {
+		if(savedRteConfigName == null || savedRteConfigName.isEmpty())
 			return null;
-		
+
+		String rteConfigName = project.getName() + CmsisConstants.DOT_RTECONFIG;
+		// moving project can still left the old file
 		IFile iFile = project.getFile(rteConfigName);
 		if(!iFile.exists() || iFile.getLocation() == null) {
-			String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + 
-							" '" + rteConfigName +"' " +  //$NON-NLS-1$//$NON-NLS-2$
+			// ensure file has the project name (e.g. after rename)
+			if(!rteConfigName.equals(savedRteConfigName)) {
+				iFile = project.getFile(savedRteConfigName);
+				if(!iFile.exists() || iFile.getLocation() == null) {
+					String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + 
+							" '" + savedRteConfigName +"' " +  //$NON-NLS-1$//$NON-NLS-2$
 							Messages.RteProjectUpdater_ErrorConfigFileNotExist; 
-			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, msg);
-			throw new CoreException(status); 
+					Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, msg);
+					throw new CoreException(status); 
+				}
+				rteConfigName = savedRteConfigName;
+			}
 		}
+
+		
 		File file =  iFile.getLocation().toFile();
 		ConfigParser confParser = new ConfigParser();
 		ICpItem root = confParser.parseFile(file.getAbsolutePath());
@@ -186,6 +205,12 @@ public class RteProjectUpdater extends WorkspaceJob {
 			rteConf = new RteConfiguration(); 
 			rteConf.setConfigurationInfo(info);
 			rteProject.setRteConfiguration(rteConfigName, rteConf);
+
+			// finally update project storage and rename file if needed
+			if(!rteConfigName.equals(savedRteConfigName)) {
+				rteProject.setRteConfigurationName(rteConfigName);
+				bSaveProject = true;
+			}
 		} else {
 			String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + 
 					" '" + rteConfigName +"' " +  //$NON-NLS-1$//$NON-NLS-2$
@@ -193,6 +218,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, msg);
 			throw new CoreException(status); 
 		}
+
 		
 		return rteConf;
 	}
@@ -313,6 +339,17 @@ public class RteProjectUpdater extends WorkspaceJob {
 		if(rteConf == null)
 			return;
 
+		// write #define CMSIS_device_header
+		String deviceHeader = rteConf.getDeviceHeader();
+		if(deviceHeader != null && !deviceHeader.isEmpty()) {
+			String s = "#define " + CmsisConstants.CMSIS_device_header + " \"" + deviceHeader + "\""; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+			pw.println("/*"); //$NON-NLS-1$
+			pw.println(" * Define the Device Header File:"); //$NON-NLS-1$
+			pw.println("*/"); //$NON-NLS-1$
+			pw.println(s);
+			pw.println();
+		}
+		
 		Collection<String> code = rteConf.getRteComponentsHCode(); 
 		for(String s : code) {
 			pw.println(s);
@@ -329,8 +366,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 		pw.print  (" * RTE configuration: "); //$NON-NLS-1$
 		pw.println(rteProject.getRteConfigurationName());
 		pw.println("*/"); //$NON-NLS-1$
-		pw.println();
-		
+
 		pw.println("#ifndef RTE_COMPONENTS_H"); //$NON-NLS-1$
 		pw.println("#define RTE_COMPONENTS_H"); //$NON-NLS-1$
 		pw.println();

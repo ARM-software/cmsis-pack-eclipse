@@ -1,24 +1,27 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.rte.devices;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.TreeMap;
 
 import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
+import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -40,6 +43,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	 */
 	public RteDeviceItem() {
 		fLevel = EDeviceHierarchyLevel.ROOT.ordinal();
+		fName = "All Devices"; //$NON-NLS-1$
 	}
 
 	/**
@@ -51,7 +55,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		fName= name;
 	}
 
-	
+
 	@Override
 	protected Map<String, IRteDeviceItem> createMap() {
 		// create TreeMap with Alpha-Numeric case-insensitive ascending sorting 
@@ -65,23 +69,26 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	 */
 	public static IRteDeviceItem createTree(Collection<ICpPack> packs){
 		IRteDeviceItem root = new RteDeviceItem(); 
-		if(packs == null || packs.isEmpty())
+		if(packs == null || packs.isEmpty()) {
 			return root;
+		}
 		for(ICpPack pack : packs) {
 			Collection<? extends ICpItem> devices = pack.getGrandChildren(CmsisConstants.DEVICES_TAG);
-			if(devices == null)
+			if(devices == null) {
 				continue;
+			}
 			for(ICpItem item : devices) {
-				if(!(item instanceof ICpDeviceItem))
+				if(!(item instanceof ICpDeviceItem)) {
 					continue;
+				}
 				ICpDeviceItem deviceItem = (ICpDeviceItem)item;
 				root.addDevice(deviceItem);
 			}
 		}
 		return root;
 	}
-	
-	
+
+
 	@Override
 	public int getLevel() {
 		return fLevel;
@@ -89,19 +96,21 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 
 	@Override
 	public Collection<ICpDeviceItem> getDevices() {
-		if(fDevices != null)
+		if(fDevices != null) {
 			return fDevices.values();
+		}
 		return null;
 	}
-	
+
 	@Override
 	public ICpDeviceItem getDevice() {
-		if(fDevices != null && ! fDevices.isEmpty())
+		if(fDevices != null && ! fDevices.isEmpty()) {
 			return fDevices.entrySet().iterator().next().getValue();
+		}
 		return null;
 	}
-	
-	
+
+
 	@Override
 	public String getProcessorName() {
 		int i = getName().indexOf(':');
@@ -120,21 +129,24 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		}
 		return null;
 	}
-	
-	
+
+
 	@Override
 	public boolean isDevice() {
-		if(getLevel() < EDeviceHierarchyLevel.DEVICE.ordinal())
+		if(getLevel() < EDeviceHierarchyLevel.DEVICE.ordinal()) {
 			return false;
-		if(hasChildren())
+		}
+		if(hasChildren()) {
 			return false;
+		}
 		return getDevice() != null;
 	}
 
 	@Override
 	public void addDevice(ICpDeviceItem item) {
-		if(item == null)
+		if(item == null) {
 			return;
+		}
 
 		EDeviceHierarchyLevel eLevel = item.getLevel();
 		int level = eLevel.ordinal();
@@ -142,15 +154,17 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		if(fLevel == level || fLevel == EDeviceHierarchyLevel.PROCESSOR.ordinal()) {
 			ICpPack pack = item.getPack();
 			String packId = pack.getId();
-			if(fDevices == null)
+			if(fDevices == null) {
 				fDevices = new TreeMap<String, ICpDeviceItem>(new AlnumComparator());
-			
+			}
+
 			ICpDeviceItem device = fDevices.get(packId);
 			if(device == null) {
 				fDevices.put(packId,item);
 			}
-			if(fLevel == EDeviceHierarchyLevel.PROCESSOR.ordinal())
+			if(fLevel == EDeviceHierarchyLevel.PROCESSOR.ordinal()) {
 				return;
+			}
 			Collection<ICpDeviceItem> subItems = item.getDeviceItems();
 			if(subItems != null && !subItems.isEmpty()) {
 				for(ICpDeviceItem i : subItems ){
@@ -185,34 +199,51 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		}
 		di.addDevice(item);
 	}
-	
+
 
 	@Override
-	public IRteDeviceItem findItem(final String deviceName, final String vendor) {
+	public IRteDeviceItem findItem(final String deviceName, final String vendor, final boolean onlyDevice) {
 		if(fLevel == EDeviceHierarchyLevel.ROOT.ordinal() && vendor != null && !vendor.isEmpty()) {
-		    String vendorName = DeviceVendor.getOfficialVendorName(vendor);
-		    IRteDeviceItem dti = getChild(vendorName);
-		    if(dti != null)
-		      return dti.findItem(deviceName, vendorName);
-		  } else {
-			// check if device item can be found directly on this level   
+			String vendorName = DeviceVendor.getOfficialVendorName(vendor);
+			IRteDeviceItem dti = getChild(vendorName);
+			if(dti != null) {
+				return dti.findItem(deviceName, vendorName, onlyDevice);
+			}
+		} else {
+			// check if device item can be found directly on this level
 			IRteDeviceItem dti = getChild(deviceName); 
-		    if(dti != null && dti.getLevel() > EDeviceHierarchyLevel.SUBFAMILY.ordinal())
-		      return dti;
-		    // search in children
-		    Collection<? extends IRteDeviceItem> children = getChildren(); 
-		    if(children == null)
-		    	return null;
-		    for(IRteDeviceItem child : children){
-		    	dti = child.findItem(deviceName, vendor);
-		    	if(dti != null && dti.getLevel() > EDeviceHierarchyLevel.SUBFAMILY.ordinal())
-		    		return dti;
-		    }
-		  }
+			if(dti != null) {
+				if (!onlyDevice) {
+					if (deviceName.contains("*")) { //$NON-NLS-1$
+						// TODO: find a better criterion in this case
+						return dti.getParent();
+					} else {
+						return dti;
+					}
+				} else if (dti.getLevel() > EDeviceHierarchyLevel.SUBFAMILY.ordinal()) {
+					return dti;
+				}
+			}
+			// search in children
+			Collection<? extends IRteDeviceItem> children = getChildren(); 
+			if(children == null) {
+				return null;
+			}
+			for(IRteDeviceItem child : children){
+				dti = child.findItem(deviceName, vendor, onlyDevice);
+				if(dti != null) {
+					if (!onlyDevice) {
+						return dti;
+					} else if (dti.getLevel() > EDeviceHierarchyLevel.SUBFAMILY.ordinal()) {
+						return dti;
+					}
+				}
+			}
+		}
 		return null;
 	}
 
-	
+
 	@Override
 	public IRteDeviceItem findItem(final IAttributes attributes) {
 		String deviceName = CpItem.getDeviceName(attributes);
@@ -220,16 +251,17 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 			return null;
 		}
 		String vendor = attributes.getAttribute(CmsisConstants.DVENDOR);
-		return findItem(deviceName, vendor);
+		return findItem(deviceName, vendor, true);
 	}
 
 	@Override
 	public IRteDeviceItem getVendorItem() {
-		if(getLevel() == EDeviceHierarchyLevel.VENDOR.ordinal())
+		if(getLevel() == EDeviceHierarchyLevel.VENDOR.ordinal()) {
 			return this;
-		else if(getLevel() > EDeviceHierarchyLevel.VENDOR.ordinal()) { 
-			if(getParent() != null)
+		} else if(getLevel() > EDeviceHierarchyLevel.VENDOR.ordinal()) { 
+			if(getParent() != null) {
 				return getParent().getVendorItem();
+			}
 		}  
 		return null;
 	}
@@ -255,16 +287,18 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 				return description;
 			}
 		}
-		if(getParent() != null)
-			return getParent().getDescription(); 
+		if(getParent() != null) {
+			return getParent().getDescription();
+		} 
 		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
 	public String getUrl() {
 		ICpDeviceItem device = getDevice();
-		if(device != null)
+		if(device != null) {
 			return device.getUrl();
+		}
 		return null;
 	}
 
@@ -272,7 +306,50 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	public String getDoc() {
 		ICpDeviceItem device = getDevice();
 		if(device != null)
+		 {
 			return device.getDoc(); // TODO: return a collection of documents
+		}
 		return null;
+	}
+
+	@Override
+	public Set<String> getAllPackIds() {
+		if (fLevel == EDeviceHierarchyLevel.PROCESSOR.ordinal()) {
+			Set<String> ret = new HashSet<String>();
+			if (fDevices != null) {
+				for (String id : fDevices.keySet()) {
+					ret.add(CpPack.familyFromId(id));
+				}
+			}
+			return ret;
+		}
+		Set<String> ret = new HashSet<String>();
+		if (fChildMap != null) {
+			for (IRteDeviceItem item : fChildMap.values()) {
+				ret.addAll(item.getAllPackIds());
+			}
+		}
+		if (fDevices != null) {
+			for (String id : fDevices.keySet()) {
+				ret.add(CpPack.familyFromId(id));
+			}
+		}
+		return ret;
+	}
+
+	@Override
+	public Set<String> getAllDeviceNames() {
+		Set<String> ret = new HashSet<String>();
+		if (fChildMap != null) {
+			for (IRteDeviceItem item : fChildMap.values()) {
+				ret.addAll(item.getAllDeviceNames());
+			}
+		}
+		if (fDevices != null) {
+			for (ICpDeviceItem device : fDevices.values()) {
+				ret.add(device.getName());
+			}
+		}
+		return ret;
 	}
 }

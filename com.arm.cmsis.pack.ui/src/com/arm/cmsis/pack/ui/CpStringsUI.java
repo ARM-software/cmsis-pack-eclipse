@@ -20,7 +20,8 @@ public class CpStringsUI extends NLS {
 	public static String DeviceTreeView_Type;
 	public static String DeviceTreeView_Attributes;
 	public static String DeviceTreeView_Property;
-	public static String RteComponentTreeWidget_CannotOpenURL;
+	public static String CannotOpenURL;
+	public static String OperationNotSupported;
 	public static String RteComponentTreeWidget_Description;
 	public static String RteComponentTreeWidget_Sel;
 	public static String RteComponentTreeWidget_SoftwareComponents;

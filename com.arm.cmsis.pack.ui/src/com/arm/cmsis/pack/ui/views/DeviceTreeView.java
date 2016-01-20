@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.DrillDownAdapter;
@@ -60,7 +59,7 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 	/**
 	 * The ID of the view as specified by the extension.
 	 */
-	public static final String ID = "com.arm.cmsis.pack.ui.views.PackView"; //$NON-NLS-1$
+	public static final String ID = "com.arm.cmsis.pack.ui.views.DeviceTreeView"; //$NON-NLS-1$
 
 	TreeViewer viewer;
 	private DrillDownAdapter drillDownAdapter;
@@ -101,7 +100,14 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 						return props.getChildArray();
 					}
 				}
-			} 
+			}  
+			ICpItem item = getCpItem(parent);
+			if(item != null && item.providesEffectiveContent()){
+				ICpItem effective = item.getEffectiveContent();
+				if(effective != null)
+					return effective.getChildArray();
+			}
+			
 			return super.getChildren(parent);
 		}
 
@@ -117,6 +123,12 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 				}
 				return false;
 			} 
+			ICpItem item = getCpItem(parent);
+			if(item != null && item.providesEffectiveContent()){
+				ICpItem effective = item.getEffectiveContent();
+				if(effective != null)
+					return true;
+			}
 			return super.hasChildren(parent);
 		}
 	}
@@ -176,10 +188,22 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 			IRteDeviceItem rteDeviceItem = getDeviceTreeItem(obj); 
 			if(rteDeviceItem != null) {
 				if(rteDeviceItem.hasChildren())
-					return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE); 
 			}
-			return null;
+			ICpItem item = getCpItem(obj);
+			if(item != null) {
+				switch(item.getTag()) {
+				case CmsisConstants.ALGORITHM_TAG:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
+				case CmsisConstants.BOOK_TAG:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOOK);
+				default:
+					break;
+				}
+			}
+			
+			return  CpPlugInUI.getImage(CpPlugInUI.ICON_ITEM);
 		}
 	}
 
@@ -305,9 +329,7 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 		};
 		collapseAction.setText(CpStringsUI.CollapseAll);
 		collapseAction.setToolTipText(CpStringsUI.CollapseAllNodes);
-		collapseAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-					getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
-		
+		collapseAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
 		
 		doubleClickAction = new Action() {
 			public void run() {

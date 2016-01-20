@@ -32,8 +32,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
@@ -53,8 +51,6 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.AdvisedEditingSupport;
-import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
-import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 import com.arm.cmsis.pack.ui.tree.OverlayImage;
 import com.arm.cmsis.pack.ui.tree.OverlayImage.OverlayPos;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
@@ -97,7 +93,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 	/**  
 	 * Column label provider for RteComponentTreeWidget
 	 */
-	public class RteComponentColumnAdvisor extends ColumnAdvisor {
+	public class RteComponentColumnAdvisor extends RteColumnAdvisor {
 		/**
 		 * Constructs advisor for a viewer
 		 * @param columnViewer ColumnViewer on which the advisor is installed
@@ -327,7 +323,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 					} else if (item instanceof IRteComponentClass) {
 						baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
 					}else if (item instanceof IRteComponentGroup) {
-						baseImage = PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
+						baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_GROUP);
 					}else if (item instanceof IRteComponent) {
 						IRteComponent c = (IRteComponent)item;
 						ICpComponentInfo ci = c.getActiveCpComponentInfo();
@@ -600,15 +596,15 @@ public class RteComponentSelectorWidget extends RteWidget {
 		tree.setLinesVisible(true);
 		viewer = new TreeViewer(tree);
 		ColumnViewerToolTipSupport.enableFor(viewer);
-		IColumnAdvisor columnAdvisor = new RteComponentColumnAdvisor(viewer);
+		fColumnAdvisor = new RteComponentColumnAdvisor(viewer);
 
 		// Tree item name
 		TreeViewerColumn column0 = new TreeViewerColumn(viewer, SWT.LEFT);
 		column0.getColumn().setAlignment(SWT.LEFT);
 		column0.getColumn().setText(CpStringsUI.RteComponentTreeWidget_SoftwareComponents);
 		column0.getColumn().setWidth(180);
-		column0.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, 0));
-		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(columnAdvisor, 0);
+		column0.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 0));
+		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, 0);
 		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
 		col0LabelProvider.setOwnerDrawEnabled(false);   
 		column0.setLabelProvider(col0LabelProvider);
@@ -618,40 +614,40 @@ public class RteComponentSelectorWidget extends RteWidget {
 		column1.getColumn().setAlignment(SWT.CENTER);
 		column1.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Sel);
 		column1.getColumn().setWidth(35);
-		column1.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, 1));
-		column1.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 1));
+		column1.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 1));
+		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 1));
 
 		// Variant
 		TreeViewerColumn column2 = new TreeViewerColumn(viewer, SWT.RIGHT);
 		column2.getColumn().setAlignment(SWT.LEFT);
 		column2.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Variant);
 		column2.getColumn().setWidth(110);
-		column2.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, 2));
-		column2.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 2));
+		column2.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 2));
+		column2.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 2));
 
 		// Vendor
 		TreeViewerColumn column3 = new TreeViewerColumn(viewer, SWT.RIGHT);
 		column3.getColumn().setAlignment(SWT.LEFT);
 		column3.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Vendor);
 		column3.getColumn().setWidth(110);
-		column3.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, 3));
-		column3.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 3));
+		column3.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 3));
+		column3.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 3));
 		
 		// Version
 		TreeViewerColumn column4 = new TreeViewerColumn(viewer, SWT.RIGHT);
 		column4.getColumn().setAlignment(SWT.LEFT);
 		column4.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Version);
 		column4.getColumn().setWidth(70);
-		column4.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, 4));
-		column4.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 4));
+		column4.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 4));
+		column4.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 4));
 
 		// Description/URL
 		TreeViewerColumn column5 = new TreeViewerColumn(viewer, SWT.RIGHT);
 		column5.getColumn().setAlignment(SWT.LEFT);
 		column5.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Description);
 		column5.getColumn().setWidth(400);
-		column5.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, 5));
-		column5.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 5));
+		column5.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 5));
+		column5.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 5));
 
 		RteComponentContentProvider rteContentProvider = new RteComponentContentProvider();
 		viewer.setContentProvider(rteContentProvider);
@@ -778,8 +774,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 			}
 		};
 		collapseAll.setText(CpStringsUI.CollapseAll);
-		collapseAll.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-					getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
+		collapseAll.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
 		
 		expandAllSelected = new Action() {
 			public void run() {

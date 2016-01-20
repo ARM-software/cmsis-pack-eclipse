@@ -15,6 +15,7 @@ import java.util.Collection;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
+import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -138,7 +139,8 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 				}
 			}
 		} else {
-			fPackInfo.setPack(null);
+			if(fPackInfo != null)
+				fPackInfo.setPack(null);
 		}
 	}
 
@@ -197,7 +199,14 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 		return null;
 	}
 	
+	@Override
+	public ICpDebugConfiguration getDebugConfiguration() {
+		if(fDevice != null)
+			return fDevice.getDebugConfiguration(getProcessorName());
+		return null;
+	}
 
+	
 	@Override
 	public String getSummary() {
 		String summary = "ARM "  + getAttribute(CmsisConstants.DCORE) + ", " + getClockSummary();  //$NON-NLS-1$//$NON-NLS-2$

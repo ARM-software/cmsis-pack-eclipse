@@ -81,6 +81,11 @@ public interface IColumnAdvisor {
 	 */
 	String getUrl(Object obj, int columnIndex);
 
+	/**
+	 * Opens URL in an external browser or editor  
+	 * @param url URL to open 
+	 */
+	void openUrl(String url);
 	
 	/**
 	 * Return default object string for given column if any 

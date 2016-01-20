@@ -10,7 +10,7 @@
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
 * Liviu Ionescu - review and testing   
 *******************************************************************************/
-package com.arm.cmsis.pack.build.ilg;
+package com.arm.cmsis.pack.build.gnuarmeclipse;
 
 import org.eclipse.core.runtime.Plugin;
 import org.osgi.framework.BundleContext;
@@ -21,7 +21,7 @@ import org.osgi.framework.BundleContext;
 public class Activator extends Plugin {
 
 	// The plug-in ID
-	public static final String PLUGIN_ID = "com.arm.cmsis.pack.build.ilg"; //$NON-NLS-1$
+	public static final String PLUGIN_ID = "com.arm.cmsis.pack.build.gnuarmeclipse"; //$NON-NLS-1$
 
 	// The shared instance
 	private static Activator plugin;

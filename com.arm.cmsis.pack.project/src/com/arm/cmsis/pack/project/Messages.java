@@ -29,8 +29,14 @@ public class Messages extends NLS {
 	public static String ProjectUtils_ProjectfolderMustBeRelative;
 	public static String ProjectUtils_TheFile;
 	public static String ProjectUtils_to;
+	public static String RteConfigRenameResourceChange_RenamingFile;
 	public static String RteConfiguration_ComponentSelection;
 	public static String RteConfiguration_DeviceHeader;
+	public static String RteProjectRenameParticipant_CheckingPreconditions;
+	public static String RteProjectRenameParticipant_CMSIS_RTE_project_rename_handler;
+	public static String RteProjectRenameParticipant_CreatingChange;
+	public static String RteProjectRenameParticipant_RenameIsNotAllowed;
+	public static String RteProjectRenameParticipant_RenameOfRteFolderIsNotAllowed;
 	public static String RteProjectTemplate_CMSIS_RTE_Project;
 	public static String RteProjectUpdater_ErrorLoadinConfigFile;
 	public static String RteProjectUpdater_ErrorConfigFileNotExist;

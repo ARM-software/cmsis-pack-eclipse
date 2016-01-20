@@ -14,10 +14,15 @@
 
 package com.arm.cmsis.pack.project;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -28,20 +33,25 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.commands.ICommandService;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
+import com.arm.cmsis.pack.ui.CpPlugInUI;
 
 /**
  * Class that manages RTE projects and their associations to ICproject and IProject 
  */
-public class RteProjectManager extends RteEventProxy implements IRteEventListener, IResourceChangeListener{
+public class RteProjectManager extends RteEventProxy implements IRteEventListener, IResourceChangeListener, IExecutionListener{
 
 	private RteSetupParticipant rteSetupParticipant = null;
 	private Map<String, IRteProject> rteProjects = Collections.synchronizedMap(new HashMap<String, IRteProject>());
+	private boolean executionListenerRegistered = false;
 	
 	/**
 	 *  Default constructor
@@ -52,6 +62,7 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 		CpPlugIn.addRteListener(this);
 	}
 
+	
 	/**
 	 *  Clears internal collection of the projects 
 	 */
@@ -59,11 +70,27 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		workspace.removeResourceChangeListener(this);
 		CpPlugIn.removeRteListener(this);
+		if(executionListenerRegistered) {
+			ICommandService commandService = CpPlugInUI.getCommandService();
+			if(commandService != null)
+				commandService.removeExecutionListener(this);
+		}
+		
 		synchronized (rteProjects) { // do it as atomic operation
 			for(IRteProject rteProject : rteProjects.values()) {
 				rteProject.destroy();
 			}
 			rteProjects.clear();
+		}
+	}
+
+	private void registerExecutionListener() {
+		if(executionListenerRegistered)
+			return;
+		ICommandService commandService = CpPlugInUI.getCommandService();
+		if(commandService != null) {
+			commandService.addExecutionListener(this);
+			executionListenerRegistered = true;
 		}
 	}
 	
@@ -113,10 +140,11 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 	 * @return existing IRteProject if exists or new one
 	 */
 	synchronized public IRteProject createRteProject(IProject project) {
-	IRteProject rteProject = getRteProject(project);
+		IRteProject rteProject = getRteProject(project);
 		if(rteProject == null) {
 			rteProject = new RteProject(project);
 			addRteProject(rteProject);
+			registerExecutionListener(); // ensure refresh action is attached
 		}
 		return rteProject;
 	}
@@ -153,8 +181,8 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 	public void renameRteProject(String oldName, String newName) {
 		IRteProject rteProject = getRteProject(oldName);
 		if(rteProject != null) {
-			rteProject.setName(newName);
 			synchronized(rteProjects) { // do it as atomic operation
+				rteProject.setName(newName);
 				rteProjects.remove(oldName);
 				rteProjects.put(newName, rteProject);
 				emitRteEvent(RteEvent.PROJECT_UPDATED, rteProject);
@@ -250,5 +278,42 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public void preExecute(String commandId, ExecutionEvent event) {
+        if (!org.eclipse.ui.IWorkbenchCommandConstants.FILE_REFRESH.equals(commandId)) {
+        	return;
+        }
+        ISelectionService selService = CpPlugInUI.getSelectionService();
+        if(selService == null)
+        	return;
+        // refresh RTE project in the selection
+        ISelection selection = selService.getSelection();
+        Collection<IProject> projects = CpPlugInUI.getProjectsFromSelection(selection);
+        if(projects == null || projects.isEmpty())
+        	return;
+        for(IProject project : projects) {
+        	IRteProject rteProject = getRteProject(project);
+        	if(rteProject != null && rteProject.isUpdateCompleted()) {
+        		rteProject.reload();
+        	}
+        }
+	}
+
+	@Override
+	public void notHandled(String commandId, NotHandledException exception) {
+		// does nothing
+	}
+
+	@Override
+	public void postExecuteFailure(String commandId, ExecutionException exception) {
+		// does nothing		
+	}
+
+	@Override
+	public void postExecuteSuccess(String commandId, Object returnValue) {
+		// does nothing		
+	}
+
 
 }

@@ -7,20 +7,5 @@
             class="com.arm.cmsis.pack.preferences.CpPreferenceInitializer">
       </initializer>
    </extension>
-   <extension
-         point="org.eclipse.core.resources.variableResolvers">
-      <variableResolver
-            class="com.arm.cmsis.pack.preferences.CpVariableResolver"
-            variable="cmsis_pack_root">
-      </variableResolver>
-   </extension>
-   <extension
-         point="org.eclipse.core.variables.dynamicVariables">
-      <variable
-            description="Poinst to the root directory containing CMSIS packs "
-            name="cmsis_pack_root"
-            resolver="com.arm.cmsis.pack.preferences.CpVariableResolver">
-      </variable>
-   </extension>
 
 </plugin>

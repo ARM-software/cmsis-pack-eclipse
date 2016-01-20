@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.data;
 
+import java.util.Set;
+
 /**
  * Represents CMISIS Pack meta data read from pdsc file
  * Provides access method to underlying structure of the Pack  
@@ -31,8 +33,8 @@ public interface ICpPack extends ICpItem {
 	 */
 	enum PackState {
 		INSTALLED,	
-		AVAILABLE,  
 		DOWNLOADED, 
+		AVAILABLE,  
 		GENERATED,
 		UNKNOWN
 	}
@@ -77,5 +79,16 @@ public interface ICpPack extends ICpItem {
 	 */
 	ICpItem getCondition(String conditionId);
 
+	/**
+	 * Get all the Devices contained in this pack
+	 * @return A set of {@link ICpDeviceItem} names
+	 */
+	Set<String> getAllDeviceNames();
 	
+	/**
+	 * Check if this pack is generic or not
+	 * @return true if this pack is generic
+	 */
+	boolean isDevicelessPack();
+
 }

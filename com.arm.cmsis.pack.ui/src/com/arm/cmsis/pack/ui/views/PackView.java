@@ -34,7 +34,6 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.DrillDownAdapter;
@@ -43,6 +42,7 @@ import org.eclipse.ui.part.ViewPart;
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpFile;
@@ -74,11 +74,20 @@ public class PackView extends ViewPart implements IRteEventListener {
 	private Action collapseAction;
 	Action doubleClickAction;
 
+	ICpItem getCpItem(Object obj) {
+		if (obj instanceof ICpItem) {
+			return (ICpItem)obj;
+		}
+		return null;
+	}
+
+	
 	class PackViewContentProvider extends TreeObjectContentProvider {
 
 		public Object getParent(Object child) {
-			if (child instanceof ICpItem) {
-				return ((ICpItem)child).getParent();
+			ICpItem item = getCpItem(child); 
+			if(item != null) {
+				return item.getParent();
 			}
 			return null;
 		}
@@ -111,8 +120,8 @@ public class PackView extends ViewPart implements IRteEventListener {
 	
 		@Override
 		public String getColumnText(Object obj, int index){
-			if(obj instanceof ICpItem) {
-				ICpItem item = (ICpItem)obj;
+			ICpItem item = getCpItem(obj); 
+			if(item != null) {
 				switch(index) {
 				case 0:
 					return item.getTag();
@@ -136,6 +145,10 @@ public class PackView extends ViewPart implements IRteEventListener {
 
 		@Override
 		public Image getImage(Object obj){
+			ICpItem item = getCpItem(obj);
+			if(item == null) {
+				return null;
+			}
 			if (obj instanceof ICpPack) {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
 			} else if (obj instanceof ICpPackFamily) {
@@ -143,16 +156,34 @@ public class PackView extends ViewPart implements IRteEventListener {
 			} else if (obj instanceof ICpComponent) {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
 			} else if (obj instanceof ICpFile) {
-				return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FILE);
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
+			} else if (obj instanceof ICpBoard) {
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
 			} else if (obj instanceof ICpDeviceItem) {
-				ICpDeviceItem item = (ICpDeviceItem)obj;
-				if(item.getDeviceItems() == null) {
+				ICpDeviceItem di = (ICpDeviceItem)obj;
+				if(di.getDeviceItems() == null) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
 				} else {
-					return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
 				}
 			}
-			return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_ELEMENT);
+			switch(item.getTag()) {
+			case CmsisConstants.COMPONENTS_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
+			case CmsisConstants.DEVICES_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
+			case CmsisConstants.ALGORITHM_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
+			case CmsisConstants.BOOK_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOOK);
+			case CmsisConstants.COMPATIBLE_DEVICE_TAG:
+			case CmsisConstants.MOUNTED_DEVICE_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+			default:
+				break;
+			}
+			
+			return CpPlugInUI.getImage(CpPlugInUI.ICON_ITEM);
 		}
 	}
 
@@ -279,9 +310,7 @@ public class PackView extends ViewPart implements IRteEventListener {
 		};
 		collapseAction.setText(CpStringsUI.CollapseAll);
 		collapseAction.setToolTipText(CpStringsUI.CollapseAllNodes);
-		collapseAction.setImageDescriptor(PlatformUI.getWorkbench().getSharedImages().
-					getImageDescriptor(ISharedImages.IMG_ELCL_COLLAPSEALL));
-		
+		collapseAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
 		
 		doubleClickAction = new Action() {
 			public void run() {

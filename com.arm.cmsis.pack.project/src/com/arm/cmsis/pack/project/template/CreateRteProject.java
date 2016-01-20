@@ -34,6 +34,7 @@ import org.eclipse.ui.ide.IDE;
 
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterInfo;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.configuration.IRteConfiguration;
 import com.arm.cmsis.pack.configuration.RteConfiguration;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -74,7 +75,7 @@ public class CreateRteProject extends ProcessRunner {
 			msg += adapterId;
 			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg));
 		}
-		String rteConfigName = projectName + ".rteconfig"; //$NON-NLS-1$
+		String rteConfigName = projectName + CmsisConstants.DOT_RTECONFIG;
 		IRteConfiguration rteConf = createRteConfiguration(compiler, output);
 		try {
 			IFile iFile = ProjectUtils.createFile(project, rteConfigName, monitor);

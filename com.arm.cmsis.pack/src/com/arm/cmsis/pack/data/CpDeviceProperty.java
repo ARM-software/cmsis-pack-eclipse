@@ -29,7 +29,16 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 		super(parent, tag);
 	}
 
+	@Override
+	public long getDP() {
+		return attributes().getAttributeAsLong(CmsisConstants.__DP, 0);
+	}
 
+	@Override
+	public long getAP() {
+		return attributes().getAttributeAsLong(CmsisConstants.__AP, 0);
+	}
+	
 	@Override
 	public boolean isUnique() {
 		// only a few properties are not unique
@@ -53,7 +62,7 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 
 
 	@Override
-	public synchronized void mergeEffectiveContent(ICpItem property) {
+	public synchronized void mergeEffectiveContent(ICpItem property, String processorName) {
 		attributes().mergeAttributes(property.attributes()); // always merge attributes
 		if(!providesEffectiveContent())  // merge content only if property needs it 
 			return;
@@ -65,7 +74,9 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 			return;
 		for(ICpItem item : children) {
 			if(item instanceof ICpDeviceProperty) {
-				effectiveContent.mergeProperty(item);
+				String pname = item.getProcessorName();
+				if(processorName.isEmpty() || pname.isEmpty() || pname.equals(processorName))
+					effectiveContent.mergeProperty(item, processorName);
 			}
 		}						
 	}
@@ -75,8 +86,9 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 	public boolean providesEffectiveContent() {
 		// only a few properties collect the content 
 		if(fTag.equals(CmsisConstants.ENVIRONMENT_TAG) || 
-		   fTag.equals(CmsisConstants.TRACE_TAG) || 
-		   fTag.equals(CmsisConstants.DEBUG_TAG))
+				fTag.equals(CmsisConstants.TRACE_TAG) || 
+				fTag.equals(CmsisConstants.DEBUG_TAG) || 
+				fTag.equals(CmsisConstants.SEQUENCES_TAG))
 			return true;
 		return false;
 	}
@@ -90,4 +102,30 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 		return null;
 	}
 
+	
+	@Override
+	public boolean isAtomic() {
+		// TODO Auto-generated method stub
+		return attributes().getAttributeAsBoolean(CmsisConstants.ATOMIC, false);
+	}
+
+	@Override
+	public String getDescription() {
+		return getAttribute(CmsisConstants.INFO);
+	}
+
+	@Override
+	public long getStart() {
+		return attributes().getAttributeAsLong(CmsisConstants.START, 0);
+	}
+
+	@Override
+	public long getSize() {
+		return attributes().getAttributeAsLong(CmsisConstants.SIZE, 0);
+	}
+
+	@Override
+	public boolean isDefault() {
+		return attributes().getAttributeAsBoolean(CmsisConstants.DEFAULT, false);
+	}
 }

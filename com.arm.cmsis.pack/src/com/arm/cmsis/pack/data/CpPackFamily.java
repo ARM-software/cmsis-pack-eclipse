@@ -13,6 +13,7 @@ package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import com.arm.cmsis.pack.utils.VersionComparator;
@@ -36,8 +37,9 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	@Override
 	public ICpPack getPack() {
 		// get the latest pack
-		if(fPacks != null && !fPacks.isEmpty())
+		if(fPacks != null && !fPacks.isEmpty()) {
 			return fPacks.entrySet().iterator().next().getValue();
+		}
 		return null;
 	}
 
@@ -45,8 +47,9 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	public String getPackId() {
 		// get the latest pack ID
 		ICpPack pack = getPack(); 
-		if(pack != null)
+		if(pack != null) {
 			return pack.getId();
+		}
 		return null; 
 	}
 
@@ -59,8 +62,9 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	@Override
 	public ICpPack getPack(final String packId) {
 		if(fPacks != null) {
-			if(packId.equals(getId())) // family id is supplied => return latest
+			if(packId.equals(getId())) {
 				return getPack();
+			}
 			// id or version ?
 			String familyId = CpPack.familyFromId(packId);
 			if(familyId.equals(getId())) { 
@@ -74,8 +78,9 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 
 	@Override
 	public Collection<? extends ICpItem> getChildren() {
-		if(fPacks != null)
+		if(fPacks != null) {
 			return fPacks.values();
+		}
 		return null;
 	}
 
@@ -86,17 +91,23 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 
 	@Override
 	public void addChild(ICpItem item) {
-		if(item == null)
+		if(item == null) {
 			return;
-		if(!(item instanceof ICpPack))
+		}
+		if(!(item instanceof ICpPack)) {
 			return;
+		}
 		ICpPack pack = (ICpPack)item;
 		if(fPacks == null) {
 			fPacks = new TreeMap<String, ICpPack>(new VersionComparator());
 		}
-		if(pack.getParent() == null)
+		if(pack.getParent() == null) {
 			pack.setParent(this);
-		fPacks.put(pack.getVersion(), pack);
+		}
+		if (!fPacks.containsKey(pack.getVersion()) ||
+				fPacks.get(pack.getVersion()).getPackState().ordinal() > pack.getPackState().ordinal()) {
+			fPacks.put(pack.getVersion(), pack);
+		}
 	}
 
 	@Override
@@ -104,8 +115,9 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 		if(fPacks != null) {
 			for(ICpPack pack : fPacks.values()){
 				String fileName = pack.getFileName(); 
-				if(fileName != null && fileName.equals(pdscFile))
+				if(fileName != null && fileName.equals(pdscFile)) {
 					return pack;
+				}
 			}
 		}
 		return null;
@@ -114,17 +126,24 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	@Override
 	public String getDescription() {
 		ICpPack pack = getPack();
-		if(pack != null)
+		if(pack != null) {
 			return pack.getDescription();
+		}
 		return null;
 	}
 
 	@Override
 	public String getUrl() {
 		ICpPack pack = getPack();
-		if(pack != null)
+		if(pack != null) {
 			return pack.getUrl();
+		}
 		return null;
+	}
+
+	@Override
+	public Set<String> getContainedPackVersions() {
+		return fPacks.keySet();
 	}
 }
 

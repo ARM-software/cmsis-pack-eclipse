@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -28,9 +29,11 @@ import com.arm.cmsis.pack.build.settings.IRteToolChainAdapter;
 import com.arm.cmsis.pack.build.settings.MemorySettings;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpComponent;
+import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.data.ICpMemory;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.EFileCategory;
 import com.arm.cmsis.pack.enums.EFileRole;
@@ -40,7 +43,7 @@ import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
-import com.arm.cmsis.pack.preferences.CpVariableResolver;
+import com.arm.cmsis.pack.project.CpVariableResolver;
 import com.arm.cmsis.pack.project.Messages;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
 import com.arm.cmsis.pack.project.utils.RtePathComparator;
@@ -111,6 +114,15 @@ public class RteConfiguration implements IRteConfiguration {
 		return fConfigInfo != null ? fConfigInfo.getDeviceInfo() : null;
 	}
 
+	@Override
+	public ICpDebugConfiguration getDebugConfiguration()
+	{
+		ICpDeviceInfo di = getDeviceInfo();
+		if(di != null)
+			return di.getDebugConfiguration();
+		return null;
+	}
+	
 	@Override
 	public IBuildSettings getBuildSettings() {
 		return rteBuildSettings;
@@ -518,15 +530,17 @@ public class RteConfiguration implements IRteConfiguration {
 			return null;
 
 		Map<String, IAttributes> entries = new TreeMap<String, IAttributes>(); 		
+
 		
-		Collection<? extends ICpItem> children = props.getChildren();
-		for(ICpItem p : children) {
-			String tag = p.getTag();
-			if(!tag.equals(CmsisConstants.MEMORY_TAG))
-				continue;
-			String id = p.getId();
-			IAttributes a = new Attributes(p.attributes());
+		ICpDebugConfiguration dc = deviceInfo.getDebugConfiguration();
+		Map<String, ICpMemory> memoryItems = dc.getMemoryItems();
+		
+		for(Entry<String, ICpMemory> e: memoryItems.entrySet()){
+			String id = e.getKey();
+			ICpMemory m = e.getValue();
+			IAttributes a = new Attributes(m.attributes());
 			entries.put(id, a);
+			
 		}
 		
 		return new MemorySettings(entries);

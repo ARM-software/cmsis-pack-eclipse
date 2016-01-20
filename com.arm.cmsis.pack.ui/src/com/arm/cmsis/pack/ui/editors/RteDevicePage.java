@@ -42,6 +42,7 @@ public class RteDevicePage extends RteEditorPage {
 	@Override
 	public void setModelController(IRteModelController model) {
 		super.setModelController(model);
+		deviceWidget.setModelController(model);
 		update();
 	}
 

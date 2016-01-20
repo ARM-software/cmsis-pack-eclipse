@@ -11,6 +11,10 @@
 
 package com.arm.cmsis.pack.data;
 
+import java.util.Set;
+
+import com.arm.cmsis.pack.data.ICpPack.PackState;
+
 /**
  * Interface for pack family: collection of pack with the same name, but different versions
  * 
@@ -30,5 +34,11 @@ public interface ICpPackFamily extends ICpItem {
 	 * @return ICpPack object or null if not found
 	 */
 	ICpPack getPackByFilename(final String pdscFile);
+	
+	/**
+	 * Get All the {@link PackState#INSTALLED} and {@link PackState#DOWNLOADED} packs in this pack family
+	 * @return A set of the Installed and downloaded packs
+	 */
+	Set<String> getContainedPackVersions();
 	
 }

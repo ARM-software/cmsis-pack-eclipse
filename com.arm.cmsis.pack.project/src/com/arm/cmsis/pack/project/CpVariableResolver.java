@@ -9,7 +9,7 @@
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
-package com.arm.cmsis.pack.preferences;
+package com.arm.cmsis.pack.project;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.variableresolvers.PathVariableResolver;
@@ -27,12 +27,12 @@ import com.arm.cmsis.pack.common.CmsisConstants;
  */
 public class CpVariableResolver extends PathVariableResolver implements IDynamicVariableResolver {
 
-	public static final String[] supportedPathVariables = new String[] {CmsisConstants.CMSIS_PACK_ROOT};
+	public static final String[] supportedPathVariables = new String[] {CmsisConstants.CMSIS_PACK_ROOT_VAR, CmsisConstants.CMSIS_PACK_ROOT};
 	
 	@Override
 	public String getValue(String variable, IResource resource) {
-		if(variable.equals(CmsisConstants.CMSIS_PACK_ROOT)){
-			String packRoot =getCmsisPackRoot();
+		if(variable.equals(CmsisConstants.CMSIS_PACK_ROOT_VAR) || variable.equals(CmsisConstants.CMSIS_PACK_ROOT)){
+			String packRoot = getCmsisPackRoot();
 			if(packRoot != null && !packRoot.isEmpty()) {
 				packRoot = packRoot.replace('\\', '/'); // convert all backslashes to slashes for consistency
 				return  "file:/" + packRoot; //$NON-NLS-1$

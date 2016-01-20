@@ -16,8 +16,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -89,8 +89,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 	@Override
 	protected String constructName() {
-		if(hasAttribute(CmsisConstants.NAME))
+		if(hasAttribute(CmsisConstants.NAME)) {
 			return getAttribute(CmsisConstants.NAME);
+		}
 		return super.constructName();
 	}
 
@@ -102,8 +103,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 * @return constructed element Id
 	 */
 	public String constructId() {
-		if(hasAttribute(CmsisConstants.ID)) 
+		if(hasAttribute(CmsisConstants.ID)) {
 			return getAttribute(CmsisConstants.ID);
+		}
 		// if not successful, returns "tag.name" 
 		String id = getTag();
 		if(hasAttribute(CmsisConstants.NAME)) {
@@ -116,8 +118,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	@Override
 	public ICpItem getParent(String tag) {
 		for(ICpItem item = getParent(); item != null; item = item.getParent()) {
-			if(item.getTag().equals(tag))
+			if(item.getTag().equals(tag)) {
 				return item;
+			}
 		}
 		return null;
 	}
@@ -126,39 +129,44 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	
 	@Override
 	public ICpComponent getParentComponent() {
-		if(getParent() != null) 
+		if(getParent() != null) {
 			return getParent().getParentComponent();
+		}
 		return null;
 	}
 
 	@Override
 	public ICpPack getPack() {
-		if(getParent() != null) 
+		if(getParent() != null) {
 			return getParent().getPack();
+		}
 		return null;
 	}
 	
 	@Override
 	public String getPackId() {
 		ICpPack pack = getPack();
-		if(pack != null)
+		if(pack != null) {
 			return pack.getId();
+		}
 		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
 	public String getPackFamilyId() {
 		ICpPack pack = getPack();
-		if(pack != null)
+		if(pack != null) {
 			return pack.getPackFamilyId();
+		}
 		return CmsisConstants.EMPTY_STRING;
 	}
 
 
 	@Override
 	public String getItemKey(ICpItem item) {
-		if(item != null)
+		if(item != null) {
 			return item.getTag();
+		}
 		return null;
 	}
 
@@ -167,8 +175,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		Collection<? extends ICpItem> children = getChildren();
 		if(children != null) {
 			for(ICpItem item : children){
-				if(item.getId().equals(id))
+				if(item.getId().equals(id)) {
 					return item;
+				}
 			}
 		}
 		return null;
@@ -177,8 +186,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	@Override
 	public Collection<? extends ICpItem> getGrandChildren(String tag) {
 		ICpItem child = getFirstChild(tag);
-		if(child != null)
+		if(child != null) {
 			return child.getChildren();
+		}
 		return null;
 	}
 
@@ -187,10 +197,12 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	public Collection<ICpItem> getChildren(String tag) {
 		List<ICpItem> tagChildren = new LinkedList<ICpItem>();
 		Collection<? extends ICpItem> children = getChildren();
-		if(children != null)
-		for(ICpItem item: children) {
-			if(item.getTag().equals(tag))
-				tagChildren.add(item);
+		if(children != null) {
+			for(ICpItem item: children) {
+				if(item.getTag().equals(tag)) {
+					tagChildren.add(item);
+				}
+			}
 		}
 		return tagChildren;
 	}
@@ -227,6 +239,8 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			return new CpDeviceItemContainer(this, tag);
 		case CmsisConstants.TAXONOMY_TAG:
 			return new CpTaxonomyContainer(this, tag);
+		case CmsisConstants.EXAMPLE_TAG:
+			return new CpExample(this, tag);
 		case CmsisConstants.BUNDLE_TAG:
 			return new CpItem(this, tag);
 		default:
@@ -253,8 +267,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			String conditionID = getConditionId();
 			if(conditionID != null && !conditionID.isEmpty()) {
 				ICpPack pack = getPack();
-				if(pack != null)
+				if(pack != null) {
 					fCondition = pack.getCondition(conditionID);
+				}
 			}
 		}
 		return fCondition;
@@ -262,12 +277,14 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 	@Override
 	public boolean isDeviceDependent() {
-		if(attributes().getAttributeAsBoolean(CmsisConstants.DEVICE_DEPENDENT, false))
+		if(attributes().getAttributeAsBoolean(CmsisConstants.DEVICE_DEPENDENT, false)) {
 			return true;
+		}
 
 		ICpItem condition = getCondition();
-		if(condition != null)
+		if(condition != null) {
 			return condition.isDeviceDependent();
+		}
 		return false; 
 	}
 
@@ -287,8 +304,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			return getAttribute(key);
 		}
 		ICpItem effectiveParent = getEffectiveParent(); 
-		if(effectiveParent != null) 
+		if(effectiveParent != null) {
 			return effectiveParent.getEffectiveAttribute(key);
+		}
 		return null;
 	}
 
@@ -302,8 +320,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		if(attributesMap != null) {
 			for(Entry<String, String> e: attributesMap.entrySet()) {
 				String key = e.getKey();
-				if(!m.containsKey(key))
+				if(!m.containsKey(key)) {
 					m.put(key, e.getValue());
+				}
 			}
 		}
 		ICpItem effectiveParent = getEffectiveParent(); 
@@ -315,15 +334,18 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	}
 
 	@Override
-	public void mergeProperty(ICpItem p) {
+	public void mergeProperty(ICpItem p, String processorName) {
 		String id = p.getId();
 		ICpItem inserted = getProperty(id);
 		if(inserted == null || !p.isUnique()) {
 			addChild(p); // insert only unique properties or descriptions
+			if(p.providesEffectiveContent()) {
+				p.mergeEffectiveContent(p, processorName);
+			}
 		} else if (inserted  != null) {
 			// add missing attributes, but do not replace existing ones (we go down-up)
 			// process sub-properties as well
-			inserted.mergeEffectiveContent(p);
+			inserted.mergeEffectiveContent(p, processorName);
 		}
 	}
 	
@@ -335,15 +357,16 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 */
 	 public static ICpItem getItemFromList(String id, List<ICpItem> props) {
         for(ICpItem p : props){
-        	if(p.getId().equals(id))
-        		return p;
+        	if(p.getId().equals(id)) {
+				return p;
+			}
         }
 		return null;
 	}
 
 	
 	@Override
-	public void mergeEffectiveContent(ICpItem property) {
+	public void mergeEffectiveContent(ICpItem property, String processorName) {
 		attributes().mergeAttributes(property.attributes()); // always merge attributes
 	}
 
@@ -365,33 +388,39 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	@Override
 	public String getVendor() {
 		String vendor = null;
-		if(hasAttribute(CmsisConstants.DVENDOR)) 
+		if(hasAttribute(CmsisConstants.DVENDOR)) {
 			vendor = getAttribute(CmsisConstants.DVENDOR);
-		else if(hasAttribute(CmsisConstants.VENDOR))
-			return getAttribute(CmsisConstants.VENDOR);	
-		if(vendor != null && !vendor.isEmpty())
+		} else if(hasAttribute(CmsisConstants.VENDOR)) {
+			return getAttribute(CmsisConstants.VENDOR);
+		}	
+		if(vendor != null && !vendor.isEmpty()) {
 			return vendor;
+		}
 		ICpItem parent = getParent();
-		if(parent != null)
+		if(parent != null) {
 			return parent.getVendor();
+		}
 		return null;
 	}
 
 	@Override
 	public String getVersion() {
-		if(hasAttribute(CmsisConstants.VERSION))
+		if(hasAttribute(CmsisConstants.VERSION)) {
 			return getAttribute(CmsisConstants.VERSION);
+		}
 		ICpItem parent = getParent();
-		if(parent != null)
+		if(parent != null) {
 			return parent.getVersion();
+		}
 		return null;
 	}
 
 	@Override
 	public String getDescription() {
 		ICpItem descr = getFirstChild(CmsisConstants.DESCRIPTION);
-		if(descr != null)
+		if(descr != null) {
 			return descr.getText();
+		}
 		return CmsisConstants.EMPTY_STRING;
 	}
 
@@ -401,8 +430,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			String url = getAttribute(CmsisConstants.URL);
 			if(url == null || url.isEmpty()) {
 				ICpItem urlItem = getFirstChild(CmsisConstants.URL);
-				if(urlItem != null)
+				if(urlItem != null) {
 					url = urlItem.getText();
+				}
 			}
 			if(url == null || url.isEmpty()) {
 				fURL = getDoc();				
@@ -415,8 +445,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 	@Override
 	public String getAbsolutePath(String relPath) {
-		if(relPath == null || relPath.isEmpty())
+		if(relPath == null || relPath.isEmpty()) {
 			return CmsisConstants.EMPTY_STRING;
+		}
 			
 		if(relPath.startsWith("\\\\") || relPath.indexOf(":") == 1) { // Windows only: share or absolute with drive letter  //$NON-NLS-1$ //$NON-NLS-2$
 			return relPath; // already absolute (windows)
@@ -447,8 +478,9 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		}
 		if(doc == null || doc.isEmpty()) {
 			ICpItem docItem = getFirstChild(CmsisConstants.DOC);
-			if(docItem != null)
+			if(docItem != null) {
 				doc = docItem.getText();
+			}
 		}
 		return getAbsolutePath(doc);
 	}
@@ -479,10 +511,11 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 */
 	static public String getDeviceName(IAttributes attributes) {
 		String deviceName = null;
-		if(attributes.hasAttribute(CmsisConstants.DVARIANT))
+		if(attributes.hasAttribute(CmsisConstants.DVARIANT)) {
 			deviceName = attributes.getAttribute(CmsisConstants.DVARIANT);
-		else if(attributes.hasAttribute(CmsisConstants.DNAME))
+		} else if(attributes.hasAttribute(CmsisConstants.DNAME)) {
 			deviceName = attributes.getAttribute(CmsisConstants.DNAME);
+		}
 		
 		if(deviceName != null) {
 			String processorName = getProcessorName(attributes);
@@ -522,13 +555,16 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		Collection<? extends ICpItem> children = getChildren();
 		if(children != null && ! children.isEmpty()) {
 			for(ICpItem book : children) {
-				if(!book.getTag().equals(CmsisConstants.BOOK_TAG))
+				if(!book.getTag().equals(CmsisConstants.BOOK_TAG)) {
 					continue;
+				}
 				String doc = book.getDoc();
-				if(doc.isEmpty())
+				if(doc.isEmpty()) {
 					continue;
-				if(doc == null || doc.isEmpty() || books.containsKey(doc))
+				}
+				if(doc == null || doc.isEmpty() || books.containsKey(doc)) {
 					continue;
+				}
 				String title = book.getAttribute(CmsisConstants.TITLE);
 				books.put(title, book);
 			}

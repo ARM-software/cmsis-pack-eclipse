@@ -37,8 +37,6 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.AdvisedEditingSupport;
-import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
-import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 
 /**
@@ -126,7 +124,7 @@ public class RtePackSelectorWidget extends RteWidget {
 	/** 
 	 * Column label provider for RtePackSelectorWidget 
 	 */
-	public class RtePackSelectorColumnAdvisor extends ColumnAdvisor {
+	public class RtePackSelectorColumnAdvisor extends RteColumnAdvisor {
 		/**
 		 * Constructs advisor for a viewer
 		 * @param columnViewer ColumnViewer on which the advisor is installed
@@ -364,9 +362,9 @@ public class RtePackSelectorWidget extends RteWidget {
 		column0.getColumn().setAlignment(SWT.LEFT);
 		column0.getColumn().setText(CpStrings.Pack);
 		column0.getColumn().setWidth(180);
-		IColumnAdvisor columnAdvisor = new RtePackSelectorColumnAdvisor(viewer);
-		column0.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, COLPACK));
-		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(columnAdvisor, COLPACK);
+		fColumnAdvisor = new RtePackSelectorColumnAdvisor(viewer);
+		column0.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLPACK));
+		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, COLPACK);
 		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
 		col0LabelProvider.setOwnerDrawEnabled(false);   
 		column0.setLabelProvider(col0LabelProvider);
@@ -377,24 +375,24 @@ public class RtePackSelectorWidget extends RteWidget {
 		column1.getColumn().setAlignment(SWT.LEFT);
 		column1.getColumn().setText(CpStrings.Selection);
 		column1.getColumn().setWidth(100);
-		column1.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, COLSEL));
-		column1.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, COLSEL));
+		column1.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLSEL));
+		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLSEL));
 
 		// Version
 		TreeViewerColumn column2 = new TreeViewerColumn(viewer, SWT.RIGHT);
 		column2.getColumn().setAlignment(SWT.LEFT);
 		column2.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Version);
 		column2.getColumn().setWidth(70);
-		column2.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, COLVERSION));
-		column2.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, COLVERSION));
+		column2.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLVERSION));
+		column2.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLVERSION));
 
 		// Description/URL
 		TreeViewerColumn column3= new TreeViewerColumn(viewer, SWT.RIGHT);
 		column3.getColumn().setAlignment(SWT.LEFT);
 		column3.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Description);
 		column3.getColumn().setWidth(400);
-		column3.setEditingSupport(new AdvisedEditingSupport(viewer, columnAdvisor, COLDESCR));
-		column3.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, COLDESCR));
+		column3.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLDESCR));
+		column3.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLDESCR));
 
 		viewer.setContentProvider(new RtePackProvider());
     

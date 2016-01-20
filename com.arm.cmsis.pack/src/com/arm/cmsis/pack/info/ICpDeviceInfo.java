@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.info;
 
+import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.IEvaluationResult;
@@ -41,13 +42,17 @@ public interface ICpDeviceInfo extends ICpItemInfo, IEvaluationResult {
 
 	
 	/**
-	 * Returns effective properties of the first device stored in the item or properties with associated processor
+	 * Returns effective device properties for associated processor
 	 * @return effective device properties if any 
-	 * @see #getProcessorName()
 	 */
 	ICpItem getEffectiveProperties();
 
-
+	/**
+	 * Returns device debug configuration for associated processor 
+	 * @return ICpDebugConfiguration 
+	 */
+	ICpDebugConfiguration getDebugConfiguration();
+	
 	/**
 	 * Returns brief device description that includes core, clock and memory 
 	 * @return brief device description

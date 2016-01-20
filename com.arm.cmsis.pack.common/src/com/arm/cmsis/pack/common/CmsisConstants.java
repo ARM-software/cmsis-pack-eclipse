@@ -84,10 +84,15 @@ public class CmsisConstants {
 	static public final String ATTR 		= "attr";			//$NON-NLS-1$
 	static public final String SRC 			= "src";			//$NON-NLS-1$
 	static public final String SVD 			= "svd";			//$NON-NLS-1$
+	static public final String SDF 			= "sdf";			//$NON-NLS-1$
 	
 	static public final String VERSION_MODE	= "versionMatchMode";//$NON-NLS-1$
 	
+	static public final String FOLDER		= "folder";//$NON-NLS-1$
+	
 	// attribute values
+	static public final String DATE			= "date";		//$NON-NLS-1$
+	
 	static public final String BIGENDIAN	= "Big-endian";		//$NON-NLS-1$
 	static public final String LITTLENDIAN	= "Little-endian";	//$NON-NLS-1$
 	static public final String CONFIGENDIAN	= "Configurable";	//$NON-NLS-1$
@@ -129,6 +134,7 @@ public class CmsisConstants {
 	static public final String PACKAGE_TAG     	= "package";	//$NON-NLS-1$
 	static public final String PACKAGES_TAG    	= "packages";	//$NON-NLS-1$
 	static public final String PROCESSOR_TAG 	= "processor";	//$NON-NLS-1$ 
+	static public final String PREVIOUS_TAG 	= "previous";	//$NON-NLS-1$ 
 	static public final String TAXONOMY_TAG		= "taxonomy";	//$NON-NLS-1$
 	static public final String GENERATOR_TAG	= "generator";	//$NON-NLS-1$
 	static public final String EXAMPLE_TAG		= "example";	//$NON-NLS-1$
@@ -138,9 +144,11 @@ public class CmsisConstants {
 	static public final String RTEDIR			= "RTE/"; 		//$NON-NLS-1$
 	static public final String _RTE_			= "_RTE_"; 		//$NON-NLS-1$
 	static public final String RTECONFIG		= "rteconfig";	//$NON-NLS-1$
+	static public final String DOT_RTECONFIG	= ".rteconfig";	//$NON-NLS-1$	
 	
 	// device property tags and attributes	
 	static public final String DEBUG_TAG		= "debug";		//$NON-NLS-1$
+	static public final String DEBUGCONFIG_TAG	= "debugconfig";//$NON-NLS-1$
 	static public final String DEBUGVARS_TAG	= "debugvars";	//$NON-NLS-1$
 	static public final String ALGORITHM_TAG	= "algorithm";	//$NON-NLS-1$
 	static public final String ENVIRONMENT_TAG	= "environment";//$NON-NLS-1$
@@ -153,12 +161,49 @@ public class CmsisConstants {
 	static public final String CONTROL_TAG		= "control";	//$NON-NLS-1$
 	static public final String SEQUENCES_TAG	= "sequences";	//$NON-NLS-1$
 	static public final String SEQUENCE_TAG		= "sequence";	//$NON-NLS-1$
+	static public final String DATAPATCH_TAG	= "datapatch";	//$NON-NLS-1$
+	static public final String DEBUGPORT_TAG	= "debugport";	//$NON-NLS-1$
 
+	static public final String JTAG				= "jtag";		//$NON-NLS-1$
+	static public final String CJTAG			= "cjtag";		//$NON-NLS-1$
+	static public final String SWD				= "swd";		//$NON-NLS-1$
+	
+	static public final String IDCODE			= "idcode";		//$NON-NLS-1$
+	static public final String TARGETSEL		= "targetsel";	//$NON-NLS-1$
+	static public final String TAPINDEX			= "tapindex";	//$NON-NLS-1$
+	static public final String IRLEN			= "irlen";		//$NON-NLS-1$
+
+	static public final String SWJ				= "swj";		//$NON-NLS-1$
+
+	static public final String __DP				= "__dp";		//$NON-NLS-1$
+	static public final String __AP				= "__ap";		//$NON-NLS-1$
+	static public final String DP				= "AP";			//$NON-NLS-1$
+	static public final String AP				= "DP";			//$NON-NLS-1$
+	static public final String MEM				= "Mem";		//$NON-NLS-1$
+	
+	static public final String CONFIGFILE		= "configfile";	//$NON-NLS-1$
+	
+	static public final String ATOMIC			= "atomic";		//$NON-NLS-1$
+	static public final String IF				= "if";			//$NON-NLS-1$
+	static public final String WHILE			= "while";		//$NON-NLS-1$
+	static public final String DISABLE			= "disable";	//$NON-NLS-1$
+	static public final String TIMEOUT			= "timeout";	//$NON-NLS-1$
+	
 	static public final String START			= "start";		//$NON-NLS-1$
+	static public final String SIZE				= "size";		//$NON-NLS-1$
 	static public final String STARTUP			= "startup";	//$NON-NLS-1$
 	static public final String DEFAULT			= "default";	//$NON-NLS-1$
 	static public final String INIT				= "init";		//$NON-NLS-1$
-	static public final String SIZE				= "size";		//$NON-NLS-1$
+	static public final String ADDRESS			= "address";	//$NON-NLS-1$
+	static public final String VALUE			= "value";		//$NON-NLS-1$
+	static public final String MASK				= "mask";		//$NON-NLS-1$
+	static public final String INFO				= "info";		//$NON-NLS-1$
+	static public final String CLOCK			= "clock";		//$NON-NLS-1$
+	static public final String TYPE				= "type";		//$NON-NLS-1$
+	
+	static public final String RAMSTART			= "RAMstart";	//$NON-NLS-1$
+	static public final String RAMSIZE			= "RAMsize";	//$NON-NLS-1$
+	
 	
 	static public final String IRAM				= "IRAM";		//$NON-NLS-1$
 	static public final String IRAM1			= "IRAM1";		//$NON-NLS-1$
@@ -179,7 +224,8 @@ public class CmsisConstants {
 	static public final String IROM6			= "IROM6";		//$NON-NLS-1$
 	static public final String IROM7			= "IROM7";		//$NON-NLS-1$
 	static public final String IROM8			= "IROM8";		//$NON-NLS-1$
-
+	
+	
 	static public final String TITLE			= "title";		//$NON-NLS-1$
 	// 	board tags and attributes 
 	static public final String BOARD_TAG		= "board";		//$NON-NLS-1$
@@ -201,10 +247,14 @@ public class CmsisConstants {
 	static public final String CMSIS_PACK_ROOT = "cmsis_pack_root";   				//$NON-NLS-1$
 	static public final String CMSIS_PACK_ROOT_VAR = "${" + CMSIS_PACK_ROOT + "}" ; //$NON-NLS-1$ //$NON-NLS-2$
 
-	static public final String PROJECT_LOCAL_PATH = "${workspace_loc}/${ProjName}/"; //$NON-NLS-1$
+	static public final String PROJECT_LOCAL_PATH = "${workspace_loc:/${ProjName}}/"; //$NON-NLS-1$
 	static public final String PROJECT_RTE_PATH    = PROJECT_LOCAL_PATH + RTE; 
 	
 	static public final String RTE_RTE_Components_h = RTEDIR + "RTE_Components.h";  //$NON-NLS-1$
 
+	static public final String CMSIS_device_header = "CMSIS_device_header";  //$NON-NLS-1$
+	
+	static public final long DEFAULT_DEBUG_CLOCK = 10000000L;
+	static public final long DEFAULT_DATAPATCH_MASK = 0xFFFFFFFFFFFFFFFFL;
 	
 }

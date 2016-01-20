@@ -40,8 +40,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PlatformUI;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
@@ -98,8 +96,8 @@ public class RteDeviceSelectorWidget extends Composite {
 			if(element instanceof IRteDeviceItem) {
 				IRteDeviceItem item = (IRteDeviceItem)element;
 				if(item.hasChildren())
-				return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJ_FOLDER);
-			return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
 			}
 			return null;
 		}
