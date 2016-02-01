@@ -48,7 +48,7 @@ The presentation is available on [YouTube], slides to download:
 3. Verify that the Software Packs are loaded using the Eclipse menu command **Window - Show View - Other... - CMSIS - CMSIS-Packs**. This window allows you to explore the raw data in all Software Packs.
 
 ## Creating RTE project 
-1. Open New C/C++ Project wizard using Elipse menu command **File - New - Project... - C/C++ - C Project CMSIS - RTE Configuration**.
+1. Open New C/C++ Project wizard using Elipse menu command **File -> New -> Project... -> C/C++ -> C Project**.
 2. In the first page specify Project name, select desired Toolchain and "CMSIS RTE C/C++ Project" type, press Next. ![NewProjectWizardTemplatePage]
 3. In the second page select a Toolchain Adapter and press next.
 ![Select Adapter]
