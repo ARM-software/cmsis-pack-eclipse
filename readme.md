@@ -8,7 +8,7 @@ This release 1.1 allows creation and management of an CDT-based C/C++ project. W
 
 For evaluation you need CMSIS-Pack compliant Software Packs that are available for download from the [CMSIS Pack Repository].
 
-**License:** The software is provided under the [Eclipse Public License] Version 1.0. 
+**License:** The software is provided under the [Eclipse Public License] Version 1.0. See the [Contributing Guidelines] for information on how to contribute to this project.
 
 **Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.4.0 (Luna) and 4.5.1 (Mars).
 
@@ -84,6 +84,7 @@ _Copyright (c) 2014-2016, ARM Limited and Contributors. All rights reserved._
 
 
 [Eclipse Public License]:   ./license.md "Eclipse Public License for CMSIS-Pack Management for Eclipse"
+[Contributing Guidelines]:  ./contributing.md "Contribution Guidelines"
 
 [CMSIS-Pack Management for Eclipse]: https://www.github.com/ARM-software/cmsis-pack-eclipse 
 [CMSIS Pack Repository]:	  http://www.keil.com/pack/
