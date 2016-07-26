@@ -11,26 +11,29 @@
 
 package com.arm.cmsis.pack;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
 import com.arm.cmsis.pack.data.ICpBoard;
-import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpPackCollection;
+import com.arm.cmsis.pack.data.ICpPackFamily;
 import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.parser.ICpXmlParser;
+import com.arm.cmsis.pack.repository.CpRepositoryList;
+import com.arm.cmsis.pack.rte.boards.IRteBoardDeviceItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
+import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
 
 /**
- *  Interface to a Pack manager responsible for loading CMSIS-Packs  
- */ 
+ *  Interface to a Pack manager responsible for loading CMSIS-Packs
+ */
 public interface ICpPackManager {
 
-
 	/**
-	 * Sets IRteEventProxy to be used by this manger to fire notifications 
-	 * @param rteEventProxy IRteEventProxy object 
+	 * Sets IRteEventProxy to be used by this manger to fire notifications
+	 * @param rteEventProxy IRteEventProxy object
 	 */
 	void setRteEventProxy(IRteEventProxy rteEventProxy);
 
@@ -43,7 +46,22 @@ public interface ICpPackManager {
 
 
 	/**
-	 * Initializes XML parser, optionally sets XSD schema file to use  
+	 * Sets ICpPackInstaller to be used by this manger to install packs
+	 * @param packInstaller ICpPackInstaller object
+	 */
+	void setPackInstaller(ICpPackInstaller packInstaller);
+
+
+	/**
+	 * Returns ICpPackInstaller object set by setPackInstaller()
+	 * @return ICpPackInstaller object or null if none has been set
+	 * @see #setRteEventProxy(IRteEventProxy)
+	 */
+	ICpPackInstaller getPackInstaller();
+
+
+	/**
+	 * Initializes XML parser, optionally sets XSD schema file to use
 	 * @param xsdFile schema file or null if no schema check should be used
 	 * @return true if successful
 	 */
@@ -70,40 +88,64 @@ public interface ICpPackManager {
 
 
 	/**
-	 *  Clears the manager and deletes the parser 
+	 *  Clears the manager and deletes the parser
 	 */
 	void destroy();
 
 	/**
-	 * Returns collection of the installed packs
-	 * @return all installed packs as ICpPackCollection
+	 * Returns collection of all the packs
+	 * @return all packs as ICpPackCollection
 	 */
 	ICpPackCollection getPacks();
 
 	/**
 	 * Returns collection of the installed packs
-	 * @return all installed packs as ICpPackCollection
+	 * @return
+	 */
+	ICpPackCollection getInstalledPacks();
+
+	/**
+	 * Returns collection of the device-specific packs
+	 * @return all device specific installed packs as ICpPackCollection
 	 */
 	ICpPackCollection getDevicePacks();
 
 	/**
-	 * Returns collection of the installed packs
-	 * @return all installed packs as ICpPackCollection
+	 * Returns collection of the generic packs
+	 * @return all generic installed packs as ICpPackCollection
 	 */
 	ICpPackCollection getGenericPacks();
 
 	/**
-	 * Returns hierarchical collection of all devices found in installed packs 
+	 * Returns collection of the error packs
+	 * @return all error packs as ICpPackCollection
+	 */
+	ICpPackFamily getErrorPacks();
+
+	/**
+	 * Returns hierarchical collection of all devices found in all packs
 	 * @return device collection as IRteDeviceItem
 	 */
 	IRteDeviceItem getDevices();
 
+	/**
+	 * Returns hierarchical collection of all devices found in installed packs
+	 * @return
+	 */
+	IRteDeviceItem getInstalledDevices();
 
 	/**
 	 * Returns collection of all board descriptions found in installed packs
 	 * @return map of boards - id to ICpBoard item
 	 */
 	Map<String, ICpBoard> getBoards();
+
+	/**
+	 * Returns collection of all items, which contains
+	 * all mounted and compatible devices
+	 * @return IRteBoardDeviceItem root
+	 */
+	IRteBoardDeviceItem getRteBoardDevices();
 
 
 	/**
@@ -114,20 +156,20 @@ public interface ICpPackManager {
 
 
 	/**
-	 * Returns collection of all example descriptions found in installed packs
-	 * @return
+	 * Returns collection of all available example descriptions
+	 * @return IRteExampleItem
 	 */
-	Collection<ICpExample> getExamples();
+	IRteExampleItem getExamples();
 
 	/**
-	 * Loads packs found in a supplied directory and sub-directories (up to 3 levels deep) 
-	 * @param rootDirectory directory to search for pdsc files 
+	 * Loads packs found in a supplied directory and sub-directories (up to 3 levels deep)
+	 * @param rootDirectory directory to search for pdsc files
 	 * @return true if all packs loaded successfully
 	 */
 	boolean loadPacks(String rootDirectory);
 
 	/**
-	 * Loads a list of pdsc files 
+	 * Loads specified pdsc files
 	 * @param fileNames collection of pdsc files to load
 	 * @return true if all packs loaded successfully
 	 */
@@ -141,14 +183,26 @@ public interface ICpPackManager {
 	boolean loadPack(String file);
 
 	/**
-	 * Returns CMSIS-Pack directory to load packs from 
-	 * @return the defaultPackDirectory
+	 * Returns CMSIS-Pack directory to load packs from
+	 * @return the CMSIS-Pack directory
 	 */
 	String getCmsisPackRootDirectory();
 
 	/**
+	 * Returns CMSIS-Pack directory as URI
+	 * @return CMSIS-Pack directory as URI
+	 */
+	URI getCmsisPackRootURI();
+
+	/**
+	 * Returns the list of CMSIS-Pack repository
+	 * @return the list of CMSIS-Pack repository
+	 */
+	CpRepositoryList getCpRepositoryList();
+
+	/**
 	 * Sets CMSIS-Pack root directory to load packs from
-	 * @param packRootDirectory pack root directory 
+	 * @param packRootDirectory pack root directory
 	 */
 	void setCmsisPackRootDirectory(String packRootDirectory);
 
@@ -162,5 +216,4 @@ public interface ICpPackManager {
 	 *  Triggers reload of the pack if the have already been loaded
 	 */
 	void reload();
-
 }

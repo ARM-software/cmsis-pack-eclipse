@@ -8,19 +8,37 @@ public class CpStringsUI extends NLS {
 	public static String UseAllLatestPacks;
 	public static String UseAllLatestPacksTooltip;
 	public static String CollapseAll;
+	public static String CollapseSelected;
 	public static String CollapseAllNodes;
+	public static String CollapseSelectedNode;
 	public static String CpConsolePreferencePage_AutoOpen;
 	public static String CpConsolePreferencePage_BgColor;
 	public static String CpConsolePreferencePage_ErrorColor;
 	public static String CpConsolePreferencePage_InfoColor;
 	public static String CpConsolePreferencePage_OutputColor;
+	public static String CpPreferencePage_WrongUrlMessage;
+	public static String CpPreferencePage_WrongUrlTitle;
+	public static String CpRepoPreferencePage_Add;
+	public static String CpRepoPreferencePage_AddLinksToSites;
+	public static String CpRepoPreferencePage_Delete;
+	public static String CpRepoPreferencePage_Edit;
+	public static String CpRepoPreferencePage_NameColumnText;
+	public static String CpRepoPreferencePage_TypeColumnText;
+	public static String CpRepoPreferencePage_UrlColumnText;
 	public static String ExpandAll;
+	public static String ExpandSelected;
 	public static String ExpandAllNodes;
+	public static String ExpandSelectedNode;
 	public static String DeviceTreeView_Name;
 	public static String DeviceTreeView_Type;
 	public static String DeviceTreeView_Attributes;
 	public static String DeviceTreeView_Property;
 	public static String CannotOpenURL;
+	public static String NewRepoDialog_EditPackRepoTitle;
+	public static String NewRepoDialog_NameLabel;
+	public static String NewRepoDialog_NewPackRepoTitle;
+	public static String NewRepoDialog_TypeLabel;
+	public static String NewRepoDialog_UrlLabel;
 	public static String OperationNotSupported;
 	public static String RteComponentTreeWidget_Description;
 	public static String RteComponentTreeWidget_Sel;
@@ -46,6 +64,7 @@ public class CpStringsUI extends NLS {
 	public static String RteValidateWidget_Description;
 	public static String RteValidateWidget_ValidationOutput;
 	public static String RteComponentTreeWidget_ResolveComponentDependencies;
+	public static String RteComponentTreeWidget_Resolve;
 	public static String RteComponentTreeWidget_UseLatestVersion;
 	public static String RteManagerWidget_ApplyAndSave;
 	public static String RteManagerWidget_Components;
@@ -70,13 +89,13 @@ public class CpStringsUI extends NLS {
 	public static String RteDeviceInfoWidget_lblBooks_text;
 	public static String RteDeviceWizard_PageName;
 	public static String RteDeviceWizard_SelectDevice;
-	public static String RteDeviceInfoWidget_btnNewButton_text;
 	public static String RteDeviceInfoWidget_btnSelect_text;
 	public static String RteDeviceInfoWidget_lblMissing_text;
 	public static String RteDeviceInfoWidget_lblFamily_text;
 	public static String RteDeviceInfoWidget_lblSubFamily_text;
 	public static String RteDeviceInfoWidget_lblBoards_text;
-	
+	public static String RteEditorPageHeader_ShowHelp;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CpStringsUI.class);

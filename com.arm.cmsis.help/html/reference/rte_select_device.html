@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+   <head>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset="utf-8"/>
+   <link rel="Stylesheet" type="text/css" href="../help.css" />
+   <script language="javascript" src="../help.js"></script>
+
+      <title>RTE Configuration - Select Device</title>
+   </head>
+   <body>
+      <h2>RTE Configuration - Select Device</h2>
+      
+      <p>The <b>Select Device</b> view allows you to switch to another device and shows device properties.</p>
+      
+      <p>Expand the list and select a device. Enter the name of a device using wildcards in the <b>Search</b> field 
+      to narrow the list as you type.</p>
+
+      <p>You can select a new device and, when available, set the following properties:</p> 
+      <ul>
+        <li><b>FPU:</b> (only for devices with integrated FPU) tells the compiler whether floating point operations should be handled 
+                        via emulating floating point operations, or whether the floating point hardware instructions of the process should 
+                        be used instead (which will make the execution faster). If the hardware offers only single precision floating point operations, 
+                        then only double precision operation need emulation. If the hardware supports double precision, then the double precision instructions 
+                        can be generated and executed by the processor giving you the performance benefit for double precision computation.
+                        Refer to <a href="http://www.keil.com/support/man/docs/armlib/armlib_chr1358938940724.htm" target="_blank">Floating-point support</a> for details.
+           <br><br>
+           The options listed in the tables below depend on the device in
+           use and are shown for devices with an implemented
+           FPU.
+           <br><b>Floating Point Hardware options for Cortex-M7 with single precision FPU:</b>
+           <table class="kt" summary="CM4_SP Options">
+             <tr>
+               <th style="width:100pt">Options</th>
+               <th>Description</th>
+             </tr>
+             <tr>
+               <td><b>none</b></td>
+               <td>Code generated does not use any VFP instructions.</td>
+             </tr>
+             <tr>
+               <td><b>single precision</b></td>
+               <td>Code generated uses VFP single precision
+               instructions.</td>
+             </tr>
+           </table>
+           <br><b>Floating Point Hardware options for Cortex-M7 with double precision FPU:</b>
+           <table class="kt" summary="CM4_DP Options">
+             <tr>
+               <th style="width:100pt">Options</th>
+               <th>Description</th>
+             </tr>
+             <tr>
+               <td><b>none</b></td>
+               <td>Code generated does not use any VFP instructions.</td>
+             </tr>
+             <tr>
+               <td><b>single precision</b></td>
+               <td>Code generated uses VFP single precision
+               instructions.</td>
+             </tr>
+             <tr>
+               <td><b>double precision</b></td>
+               <td>Code generated uses VFP double precision
+               instructions.</td>
+             </tr>
+           </table>
+           
+           <br><b>Floating Point Hardware options for Cortex-M4 with FPU:</b>
+           <table class="kt" summary="CM4F Options">
+             <tr>
+               <th style="width:100pt">Options</th>
+               <th>Description</th>
+             </tr>
+             <tr>
+               <td><b>none</b></td>
+               <td>Code generated does not use any VFP instructions.</td>
+             </tr>
+             <tr>
+               <td><b>single precision</b></td>
+               <td>Code generated uses VFP single precision
+               instructions.</td>
+             </tr>
+           </table>
+        </li>
+        <li><b>Endian:</b> defines the method of accessing multi-byte data. Possible values are <i>Litte-endinan</i> and <i>Big-endinan</i>. 
+                    A selection is possible when the device supports both methods.
+        </li>
+      </ul>
+ 
+ <p><b>See also:</b></p>
+<ul>
+   <li><a href="rte_configuration.html">RTE Configuration</a></li>
+   <li><a href="pack_manager.html">CMSIS Pack Manager</a></li>
+</ul>
+
+ 
+   </body>
+</html>

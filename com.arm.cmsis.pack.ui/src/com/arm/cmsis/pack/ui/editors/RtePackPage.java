@@ -15,11 +15,13 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.rte.IRteModelController;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
+import com.arm.cmsis.pack.ui.IHelpContextIds;
 import com.arm.cmsis.pack.ui.widgets.RtePackSelectorWidget;
 
 /**
@@ -52,6 +54,7 @@ public class RtePackPage extends RteEditorPage {
 	public void createPageContent(Composite parent) {
 		rtePackSelectorTree.createControl(parent);
     	headerWidget.setFocusWidget(getFocusWidget());
+    	PlatformUI.getWorkbench().getHelpSystem().setHelp(getFocusWidget(), IHelpContextIds.PACKS_PAGE);
 	}
 
 	@Override
@@ -59,6 +62,7 @@ public class RtePackPage extends RteEditorPage {
     	headerWidget.setLabel(CpStringsUI.RteConfigurationEditor_PacksTab, CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_FILTER));
 
     	useLatestAction = new Action(CpStringsUI.UseAllLatestPacks, IAction.AS_CHECK_BOX) { 
+			@Override
 			public void run() {
 				setUseAllLatest(isChecked());
 			}
@@ -92,8 +96,6 @@ public class RtePackPage extends RteEditorPage {
 	public void handle(RteEvent event) {
 		switch(event.getTopic()) {
 		case RteEvent.FILTER_MODIFIED:
-		case RteEvent.CONFIGURATION_COMMITED:
-		case RteEvent.CONFIGURATION_MODIFIED:
 			update();
 			return;
 		default: 

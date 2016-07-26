@@ -4,10 +4,10 @@
    <extension
          point="com.arm.cmsis.pack.build.settings.ToolChainAdapter">
       <toolChainAdapter
-            Description="Toolchain adapter for ARM GCC baremetal compiler"
+            Description="Toolchain adapter for ARM GCC baremetal compiler [arm-none-eabi]"
             class="com.arm.cmsis.pack.build.armgcc.ArmGccToolChainAdapter"
             id="com.arm.cmsis.pack.build.armgcc.ArmGccToolChainAdapter"
-            name="Adapter for ARM GCC  toolchain "
+            name="Adapter for ARM GCC baremetal toolchain [arm-none-eabi]"
             toolChainFamily="GCC">
          <toolChain
                id="com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.toolchain">

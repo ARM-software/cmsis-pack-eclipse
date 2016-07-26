@@ -24,6 +24,7 @@ public class CpComponent extends CpItem implements ICpComponent {
 	
 	protected int bApi = -1; // not initialized
 	protected int deviceDependent = -1; // not initialized
+	protected int bGenerated = -1; // not initialized
 	
 	/**
 	 * Public constructor
@@ -32,10 +33,10 @@ public class CpComponent extends CpItem implements ICpComponent {
 	 */
 	public CpComponent(ICpItem parent, String tag) {
 		super(parent, tag);
-		ICpItem bundle = getParent(CmsisConstants.BUNDLE_TAG);
 		// inherit attributes from bundle
-		if(bundle != null)
-			attributes().mergeAttributes(bundle.attributes());
+		if(parent != null && parent.getTag().equals(CmsisConstants.BUNDLE_TAG)) {
+			attributes().mergeAttributes(parent.attributes(), CmsisConstants.C_ATTRIBUTE_PREFIX);
+		}
 	}
 	
 	/**
@@ -51,9 +52,10 @@ public class CpComponent extends CpItem implements ICpComponent {
 	public String constructId() {
 		// construct Component ID in the form "PackId::Vendor::Cclass.Cgroup.Cvariant(condition).Version"
 		String id = CmsisConstants.EMPTY_STRING;
-		if(!isApi())
+		if(!isApi()) {
 			id += getPackId();
-		id += CmsisConstants.DOBLE_COLON;
+		}
+		id += CmsisConstants.DOUBLE_COLON;
 		id += getName();
 		if(hasCondition()){
 			id += "("; //$NON-NLS-1$
@@ -69,13 +71,14 @@ public class CpComponent extends CpItem implements ICpComponent {
 	@Override
 	protected String constructName() {
 		String name = CmsisConstants.EMPTY_STRING;
-		if(!isApi())
+		if(!isApi()) {
 			name = getVendor();
+		}
 		if(hasAttribute(CmsisConstants.CBUNDLE)) {
 			name += "."; //$NON-NLS-1$
 			name += getAttribute(CmsisConstants.CBUNDLE);
 		}
-		name += CmsisConstants.DOBLE_COLON;
+		name += CmsisConstants.DOUBLE_COLON;
 		
 		name += getAttribute(CmsisConstants.CCLASS);
 		name += "."; //$NON-NLS-1$
@@ -94,17 +97,18 @@ public class CpComponent extends CpItem implements ICpComponent {
 
 	@Override
 	public String getVendor() {
-		if(hasAttribute(CmsisConstants.CVENDOR))
+		if(hasAttribute(CmsisConstants.CVENDOR)) {
 			return getAttribute(CmsisConstants.CVENDOR);
+		}
 		return super.getVendor();
 	}
 
 	@Override
 	public String getVersion() {
-		if(isApi())
+		if(isApi()) {
 			return getAttribute(CmsisConstants.CAPIVERSION);
-		else
-			return getAttribute(CmsisConstants.CVERSION);
+		} 
+		return getAttribute(CmsisConstants.CVERSION);
 	}
 
 
@@ -118,8 +122,9 @@ public class CpComponent extends CpItem implements ICpComponent {
 
 	@Override
 	public boolean isDeviceStartupComponent() {
-		if(isApi())
+		if(isApi()) {
 			return false;
+		}
 		if(getAttribute(CmsisConstants.CCLASS).equals(CmsisConstants.Device) && 
 		   getAttribute(CmsisConstants.CGROUP).equals(CmsisConstants.Startup)){ 
 			String sub = getAttribute(CmsisConstants.CSUB);
@@ -130,8 +135,9 @@ public class CpComponent extends CpItem implements ICpComponent {
 
 	@Override
 	public boolean isCmsisCoreComponent() {
-		if(isApi())
+		if(isApi()) {
 			return false;
+		}
 		if(getAttribute(CmsisConstants.CCLASS).equals(CmsisConstants.CMSIS) && 
 		   getAttribute(CmsisConstants.CGROUP).equals(CmsisConstants.Core)){ 
 			String sub = getAttribute(CmsisConstants.CSUB);
@@ -142,8 +148,9 @@ public class CpComponent extends CpItem implements ICpComponent {
 
 	@Override
 	public boolean isCmsisRtosComponent() {
-		if(isApi())
+		if(isApi()) {
 			return false;
+		}
 		if(getAttribute(CmsisConstants.CCLASS).equals(CmsisConstants.CMSIS) && 
 		   getAttribute(CmsisConstants.CGROUP).equals(CmsisConstants.RTOS)){ 
 			return true;
@@ -186,8 +193,9 @@ public class CpComponent extends CpItem implements ICpComponent {
 			for(ICpItem item : allFiles) {
 				if(item instanceof ICpFile) {
 					ICpFile f = (ICpFile)item;
-					if(f.getCategory() == EFileCategory.DOC)
+					if(f.getCategory() == EFileCategory.DOC) {
 						return getAbsolutePath(f.getName());
+					}
 				}
 			}
 		}
@@ -197,8 +205,9 @@ public class CpComponent extends CpItem implements ICpComponent {
 	@Override
 	public String getRteComponentsHCode() {
 		ICpItem child = getFirstChild(CmsisConstants.RTE_COMPONENTS_H);
-		if(child != null)
+		if(child != null) {
 			return child.getText();
+		}
 		return null;
 	}
 	
@@ -206,5 +215,31 @@ public class CpComponent extends CpItem implements ICpComponent {
 	public ICpComponent getParentComponent(){
 		return this;
 	}
+	
+	@Override
+	public boolean isGenerated() {
+		if(bGenerated == -1) {
+			bGenerated = super.isGenerated() ? 1 : 0;
+		}
+		return bGenerated == 1;	
+	}
+
+	@Override
+	public boolean isBootstrap() {
+		return !isGenerated() && hasAttribute(CmsisConstants.GENERATOR_TAG);
+	}
+	
+	
+	@Override
+	public ICpGenerator getGenerator() {
+		String generatorName = getAttribute(CmsisConstants.GENERATOR_TAG);
+		if(!generatorName.isEmpty()) {
+			ICpPack pack = getPack();
+			if(pack != null)
+				return pack.getGenerator(generatorName);
+		}
+		return null;
+	}
+
 	
 }

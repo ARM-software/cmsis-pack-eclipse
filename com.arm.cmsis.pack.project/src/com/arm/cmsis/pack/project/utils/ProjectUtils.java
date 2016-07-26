@@ -23,6 +23,8 @@ import java.util.List;
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.model.ICProject;
+import org.eclipse.cdt.core.settings.model.ICSourceEntry;
+import org.eclipse.cdt.core.settings.model.util.CDataUtil;
 import org.eclipse.cdt.managedbuilder.core.IConfiguration;
 import org.eclipse.cdt.managedbuilder.core.IManagedBuildInfo;
 import org.eclipse.cdt.managedbuilder.core.ManagedBuildManager;
@@ -64,11 +66,13 @@ public class ProjectUtils {
 			ICProject[] cProjects = CoreModel.getDefault().getCModel().getCProjects();
 			if (cProjects != null) {
 				for (ICProject cProject : cProjects) {
-					if (project.equals(cProject.getProject()))
+					if (project.equals(cProject.getProject())) {
 						return cProject;
+					}
 				}
 			}
 		} catch (CModelException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
@@ -82,7 +86,7 @@ public class ProjectUtils {
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		return project;
 	}
-	
+
 	/**
 	 * Return IProject of a project
 	 * @param projectName name of the project
@@ -98,7 +102,7 @@ public class ProjectUtils {
 		return project;
 	}
 
-	
+
 	/**
 	 * Creates an empty file if it does not exist
 	 * Folder is automatically created if not existing.
@@ -106,15 +110,15 @@ public class ProjectUtils {
 	 * @param dstFile project file name, e.g. src/package1/file.c
 	 * @param monitor IProgressMonitor
 	 * @return created or existing IFile
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
 	public static IFile createFile(IProject project, String dstFile, IProgressMonitor monitor) throws CoreException {
 		// create folder if not existing
 		String folder = removeLastPathSegment(dstFile);
 		createProjectFolder(project, folder, monitor);
-		
+
 		IFile file = project.getFile(dstFile);
-		if(file.isLinked()) { 
+		if(file.isLinked()) {
 			file.delete(true, null);
 			file = project.getFile(dstFile);
 		}
@@ -123,11 +127,11 @@ public class ProjectUtils {
 		}
 
 		file.create(null,  true, monitor);
-		
+
 		return file;
 	}
 
-	
+
 	/**
 	 * Copy a local file to a local project folder.
 	 * Destination file name can be different than the source one.
@@ -135,17 +139,19 @@ public class ProjectUtils {
 	 * @param projectName name of the project
 	 * @param srcFile source file name, e.g. C:/work/file.c
 	 * @param dstFile project file name, e.g. src/package1/file.c
+	 * @param index file index: >=0  for headers/sources of multi-instance project components -1 for others
 	 * @param monitor IProgressMonitor
-	 * @return true if the file has been copied, false if file already exists or there is an error    
-	 * @throws CoreException 
+	 * @param forceOverwrite set to true when updating component file
+	 * @return 1 if the file has been copied, -1 if file already exists or 0 if there is an error
+	 * @throws CoreException
 	 */
-	public static boolean copyFile(String projectName, String srcFile, String dstFile, int index, IProgressMonitor monitor) throws Exception {
-		
+	public static int copyFile(String projectName, String srcFile, String dstFile, int index, IProgressMonitor monitor, boolean forceOverwrite) throws Exception {
+
 		IProject project = getValidProject(projectName);
-		return copyFile(project, srcFile, dstFile, index, monitor);
+		return copyFile(project, srcFile, dstFile, index, monitor, forceOverwrite);
 	}
 
-	
+
 	/**
 	 * Copy a local file to a local project folder.
 	 * Destination file name can be different than the source one.
@@ -153,23 +159,26 @@ public class ProjectUtils {
 	 * @param project parent IProject
 	 * @param srcFile source file name, e.g. C:/work/file.c
 	 * @param dstFile destination file name, e.g. RTE/class/file.c
-	 * @param index file index: >=0  for headers/sources of multi-instance project components -1 for others 
+	 * @param index file index: >=0  for headers/sources of multi-instance project components -1 for others
 	 * @param monitor IProgressMonitor
-	 * @return true if the file has been copied, false if file already exists or there is an error    
-	 * @throws CoreException 
+	 * @param forceOverwrite set to true when updating component file
+	 * @return 1 if the file has been copied, -1 if file already exists or 0 if there is an error
+	 * @throws CoreException
 	 */
-	public static boolean copyFile(IProject project, String srcFile, String dstFile, int index, IProgressMonitor monitor) throws CoreException {
+	public static int copyFile(IProject project, String srcFile, String dstFile, int index, IProgressMonitor monitor, boolean forceOverwrite) throws CoreException {
 		IFile file = createFile(project, dstFile, monitor);
 
-		if(srcFile == null)
-			return false; // only create resource, do not copy the content
-		
+		if(srcFile == null) {
+			return 0; // only create resource, do not copy the content
+		}
+
 		IPath loc = file.getLocation();
 		File f = loc.toFile();
-		if(f != null && f.exists())
-			return false;		// destination file already exists
-	
-				
+		if(f != null && f.exists() && !forceOverwrite) {
+			return -1;		// destination file already exists
+		}
+
+
 		File inputfile = new File(srcFile);
 		if (!inputfile.exists()) {
 			String msg = Messages.ProjectUtils_TheFile + srcFile  + Messages.ProjectUtils_DoesNotExistsOrNotAccessible;
@@ -180,8 +189,9 @@ public class ProjectUtils {
 		try {
 			if(index < 0) {
 				FileInputStream fileStream = new FileInputStream(inputfile);
-				if(file.exists())
-					file.delete(true, null);
+				if(file.exists()) {
+					file.delete(true, true, null);
+				}
 				file.create(fileStream,  true, null);
 				fileStream.close();
 			} else {
@@ -197,6 +207,7 @@ public class ProjectUtils {
 				}
 				fr.close();
 				pw.close();
+				file.refreshLocal(IResource.DEPTH_INFINITE, null);
 			}
 		} catch ( IOException e) {
 			e.printStackTrace();
@@ -204,7 +215,7 @@ public class ProjectUtils {
 			Status status = new Status(IStatus.ERROR, CpProjectPlugIn.PLUGIN_ID, msg, e);
 			throw new CoreException(status);
 		}
-		return true;
+		return 1;
 	}
 
 	/**
@@ -213,70 +224,71 @@ public class ProjectUtils {
 	 * @param srcFile source file which is to be linked, may not be relative.
 	 * @param dstFile destination file in a virtual project folder. Folder(s) are created if not existing.
 	 * @param monitor IProgressMonitor
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
 	public static void createLink(String projectName, String srcFile, String dstFile, IProgressMonitor monitor) throws CoreException {
 		IProject project = getValidProject(projectName);
 		createLink(project, srcFile, dstFile, monitor);
 	}
 
-	
+
 	/**
 	 * Create a link in a local (if folder exists) or virtual folder if folder has to be created.
 	 * @param srcFile source file which is to be linked, may not be relative.
 	  * @param project parent IProject
 	 * @param dstFile destination file in a virtual project folder. Folder(s) are created if not existing.
 	 * @param monitor IProgressMonitor
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
 	public static void createLink(IProject project, String srcFile, String dstFile, IProgressMonitor monitor ) throws CoreException {
-		
-		// create folder if not existing 
+
+		// create folder if not existing
 		String folder = removeLastPathSegment(dstFile);	// retrieve only folder name
 		createProjectFolder(project, folder, monitor);
-		
+
 		// create link
 		IFile file = project.getFile(dstFile);
-		
+
 		IPath path = new Path(srcFile);
 		file.createLink(path, IResource.REPLACE, monitor);
 	}
 
 
-	
+
 	/**
 	 * Create folder (and sub-folders). Folder (and sub-folders) can be local or virtual.
 	 * @param projectName name of project
 	 * @param projectFolder project folder. E.g. src/package1/package2
 	 * @param monitor IProgressMonitor
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
 	public static void createProjectFolder(String projectName, String projectFolder, IProgressMonitor monitor) throws CoreException {
 		IProject project = getValidProject(projectName);
 		createProjectFolder(project, projectFolder, monitor);
 	}
-	
+
 	/**
 	 * Create folder (and sub-folders). Folder (and sub-folders) can be local or virtual.
 	 * @param project instance of IProject
 	 * @param projectFolder project folder. E.g. src/package1/package2
 	 * @param virtual true if folder (and sub-folders) are virtual
 	 * @param monitor IProgressMonitor
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
 	public static void createProjectFolder(IProject project, String projectFolder, IProgressMonitor monitor) throws CoreException {
-		
-		if(projectFolder.isEmpty())
+
+		if(projectFolder.isEmpty()) {
 			return;
-		
+		}
+
 		IPath path = new Path(projectFolder);
-		
+
 		if (path.isAbsolute()) {
 			String msg = Messages.ProjectUtils_ProjectfolderMustBeRelative;
 			Status status = new Status(IStatus.ERROR, CpProjectPlugIn.PLUGIN_ID, msg);
 			throw new CoreException(status);
 		}
-		
+
 		// create non-existing folders
 		for (int i=1;i<=path.segmentCount();i++) {
 			IFolder subfolder = project.getFolder(path.uptoSegment(i));
@@ -287,7 +299,7 @@ public class ProjectUtils {
 	}
 
 	/**
-	 * Remove the last segment of a path specification which can be a file or a sub-folder. 
+	 * Remove the last segment of a path specification which can be a file or a sub-folder.
 	 * @param filePath fully specified file/path name, e.g. src/package/file.c
 	 * @return path without last path segment, e.g. src/package
 	 */
@@ -296,7 +308,7 @@ public class ProjectUtils {
 		path = path.removeLastSegments(1);		// remove file
 		return path.toString();
 	}
-	
+
 	/**
 	 * Set a configuration as active one.
 	 * @param projectName IProject owning configuration
@@ -307,9 +319,10 @@ public class ProjectUtils {
 		IProject project = getProject(projectName);
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
 
-		if(buildInfo == null)
+		if(buildInfo == null) {
 			return false;
-			
+		}
+
 		IConfiguration activeConfig = buildInfo.getDefaultConfiguration();
 		if (activeConfig != null && configName.equals(activeConfig.getName())) {
 			return true;
@@ -318,7 +331,7 @@ public class ProjectUtils {
 	}
 
 
-	
+
 	/**
 	 * Returns IConfiguration for given name
 	 * @param project owning IProject
@@ -326,16 +339,18 @@ public class ProjectUtils {
 	 * @return IConfiguration
 	 */
 	public static IConfiguration getConfiguration(IProject project, String name) {
-		if(project == null)
+		if(project == null) {
 			return null;
+		}
 		try{
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
 		IConfiguration[] configs = buildInfo.getManagedProject().getConfigurations();
 		for(IConfiguration c : configs) {
-			if(c.getName().equals(name))
+			if(c.getName().equals(name)) {
 				return c;
+			}
 		}
-		
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;
@@ -343,21 +358,23 @@ public class ProjectUtils {
 		return null;
 	}
 
-	
+
 	/**
 	 * Returns active configuration
 	 * @param project owning IProject
 	 * @return active IConfiguration
 	 */
 	public static IConfiguration getDefaultConfiguration(IProject project) {
-		if(project == null)
+		if(project == null) {
 			return null;
+		}
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
-		if(buildInfo != null)
+		if(buildInfo != null) {
 			return buildInfo.getDefaultConfiguration();
+		}
 		return null;
 	}
-	
+
 	/**
 	 * Returns active configuration
 	 * @param projectName owning project name
@@ -365,7 +382,7 @@ public class ProjectUtils {
 	 */
 	public static IConfiguration getDefaultConfiguration(String projectName) {
 		IProject project = getProject(projectName);
-		
+
 		return getDefaultConfiguration(project);
 	}
 
@@ -376,60 +393,49 @@ public class ProjectUtils {
 	 */
 	public static String getDefaultConfigurationName(String projectName) {
 		IConfiguration activeConfig = getDefaultConfiguration(projectName);
-		if(activeConfig != null)
+		if(activeConfig != null) {
 			return activeConfig.getName();
+		}
 		return null;
 	}
 
 	/**
-	 * Removes all entries beginning with RTE or ${cmsis_pack_root} paths from supplied list  
-	 * @param paths list of paths/files to process  
+	 * Removes all entries beginning with RTE or ${cmsis_pack_root} paths from supplied list
+	 * @param paths list of paths/files to process
 	 * @return updated list
 	 */
 	static public List<String> removeRtePathEntries(List<String> paths) {
 
 		for (Iterator<String> iterator = paths.iterator(); iterator.hasNext();) {
 			String s = iterator.next();
-			if(s.startsWith(CmsisConstants.PROJECT_RTE_PATH) || 
+			if(s.startsWith(CmsisConstants.PROJECT_RTE_PATH) ||
 			   s.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR)) {
 					iterator.remove();
 			}
-		}	
+		}
 		return paths;
 	}
 
-	/**
-	 * Removes all entries in the list after truncateFrom string (inclusive truncateFrom entry) 
-	 * @param strings list of strings to truncate
-	 * @param truncateFrom
-	 * @return updated list
-	 */
-	static public List<String> truncateStringList(List<String> strings, String truncateFrom) {
-		if(strings == null)
-			return null;
-		int index = strings.indexOf(truncateFrom);
-		if(index >=0)
-			return strings.subList(0, index);
-		return strings;
-	}
 
 	/**
-	 * Returns IResource for the given object if any  
-	 * @param obj an object that is derived from IResource or adapts IResource 
+	 * Returns IResource for the given object if any
+	 * @param obj an object that is derived from IResource or adapts IResource
 	 * @return IResource if can be resolved or null
 	 */
 	static public IResource getResource(Object obj) {
-		if(obj instanceof IResource)
+		if(obj instanceof IResource) {
 			return (IResource)obj;
+		}
 		if(obj instanceof IAdaptable) {
 			IAdaptable a = (IAdaptable)obj;
 			Object o = a.getAdapter(IResource.class);
-			if(o != null)
+			if(o != null) {
 				return (IResource) o;
+			}
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Returns IReource object if it represents an RTE file or folder
 	 * @param obj an object that is derived from IResource or adapts IResource
@@ -437,24 +443,30 @@ public class ProjectUtils {
 	 */
 	static public IResource getRteResource(Object obj) {
 		IResource r = getResource(obj);
-		if(r == null)
+		if(r == null) {
 			return null;
+		}
 
 		IProject project = r.getProject();
-		if(!RteProjectNature.hasRteNature(project))
+		if(!RteProjectNature.hasRteNature(project)) {
 			return null;
-		if(r.getType() == IResource.PROJECT)
-			return r;
-		IPath path = r.getProjectRelativePath();
-		if(path == null || path.isEmpty())
-			return null;
-		if(r.getType() == IResource.FILE && path.segmentCount() == 1) {
-			if(CmsisConstants.RTECONFIG.equals(r.getFileExtension()))
-				return r;
 		}
-		if(!path.segment(0).startsWith(CmsisConstants.RTE))
+		if(r.getType() == IResource.PROJECT) {
+			return r;
+		}
+		IPath path = r.getProjectRelativePath();
+		if(path == null || path.isEmpty()) {
 			return null;
-		
+		}
+		if(r.getType() == IResource.FILE && path.segmentCount() == 1) {
+			if(CmsisConstants.RTECONFIG.equals(r.getFileExtension())) {
+				return r;
+			}
+		}
+		if(!path.segment(0).startsWith(CmsisConstants.RTE)) {
+			return null;
+		}
+
 		return r;
 	}
 
@@ -466,15 +478,16 @@ public class ProjectUtils {
 	static public IFile getRteFileResource(Object obj) {
 		IResource r = getRteResource(obj);
 		if(r instanceof IFile) {
-			return (IFile)r; 
+			return (IFile)r;
 		}
 		return null;
 	}
 
-	static public ICpFileInfo getCpFileInfo(IResource resource) { 
-		if(resource == null || resource.getType() != IResource.FILE)
+	static public ICpFileInfo getCpFileInfo(IResource resource) {
+		if(resource == null || resource.getType() != IResource.FILE) {
 			return null;
-		
+		}
+
 		IProject project = resource.getProject();
 		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
 		IRteProject rteProject = rteProjectManager.getRteProject(project);
@@ -484,4 +497,34 @@ public class ProjectUtils {
 		}
 		return null;
 	}
+
+	/**
+	 * Exclude the file with project relative path of "path" from build if bExclude is
+	 * set to true
+	 * @param project the project
+	 * @param path the resource's relative path to the project
+	 * @param bExclude set to true to exclude the resource from build
+	 * @throws CoreException
+	 */
+	static public void setExcludeFromBuild(IProject project, String path, boolean bExclude) throws CoreException {
+		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
+		IConfiguration activeConfig = buildInfo.getDefaultConfiguration();
+		ICSourceEntry[] sourceEntries = activeConfig.getSourceEntries();
+		sourceEntries = CDataUtil.setExcluded(new Path(path), false, bExclude, sourceEntries);
+		activeConfig.setSourceEntries(sourceEntries);
+	}
+
+	/**
+	 * Check if a folder or file is excluded from build
+	 * @param project the project
+	 * @param path the resource's relative path to the project
+	 * @return true if the folder or file is excluded from build
+	 */
+	static public boolean isExcludedFromBuild(IProject project, String path) {
+		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
+		IConfiguration activeConfig = buildInfo.getDefaultConfiguration();
+		ICSourceEntry[] sourceEntries = activeConfig.getSourceEntries();
+		return CDataUtil.isExcluded(new Path(path), sourceEntries);
+	}
+
 }

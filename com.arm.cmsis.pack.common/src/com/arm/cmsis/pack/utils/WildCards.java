@@ -69,8 +69,7 @@ public class WildCards {
 		if (str1 == null || str1.isEmpty()) {
 			if (str2 == null || str2.isEmpty())
 				return true;
-			else
-				return false;
+			return false;
 		} else if (str2 == null || str2.isEmpty()) {
 			return false;
 		}

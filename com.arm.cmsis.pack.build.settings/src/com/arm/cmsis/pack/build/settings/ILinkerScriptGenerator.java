@@ -13,6 +13,8 @@ package com.arm.cmsis.pack.build.settings;
 
 import org.eclipse.core.runtime.CoreException;
 
+import com.arm.cmsis.pack.build.IMemorySettings;
+
 /**
  *	Interface responsible for generating linker script/scatter file
  */
@@ -21,7 +23,7 @@ public interface ILinkerScriptGenerator {
 	/**
 	 * Generates linker script (scatter file) content 
 	 * @param memorySettings memory settings as input for generator
-	 * @return string representing content of linker script/ scatter file or null if eeeror is occured
+	 * @return string representing content of linker script/ scatter file or null if an error is occurred
 	 */
 	String generate(IMemorySettings memorySettings) throws CoreException;
 

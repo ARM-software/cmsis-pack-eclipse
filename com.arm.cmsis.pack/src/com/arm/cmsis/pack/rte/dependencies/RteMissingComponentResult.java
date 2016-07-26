@@ -19,7 +19,7 @@ import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 
 /**
- *  The class represent a result of missing component/API 
+ * The class represent a result of missing component/API
  */
 public class RteMissingComponentResult extends RteDependencyResult {
 
@@ -30,14 +30,17 @@ public class RteMissingComponentResult extends RteDependencyResult {
 	@Override
 	public String getDescription() {
 		EEvaluationResult res = getEvaluationResult();
-		ICpComponentInfo ci = fComponentItem.getActiveCpComponentInfo();  
+		ICpComponentInfo ci = fComponentItem.getActiveCpComponentInfo();
 		String component;
-		if(ci.isApi()) 
+		if (ci != null && ci.isApi()) {
 			component = CpStrings.API;
-		else
+		} else {
 			component = CpStrings.Component;
+		}
 		String state;
-		switch(res){
+		switch (res) {
+		case MISSING_API:
+			component = CpStrings.API;
 		case MISSING:
 			state = CpStrings.IsMissing;
 			break;
@@ -48,20 +51,20 @@ public class RteMissingComponentResult extends RteDependencyResult {
 		default:
 			return super.getDescription();
 		}
-		
+
 		String reason = CmsisConstants.EMPTY_STRING;
-		if(res != EEvaluationResult.UNAVAILABLE) {
+		if (ci != null && res != EEvaluationResult.UNAVAILABLE) {
 			reason = CpStrings.Pack + " "; //$NON-NLS-1$
 			ICpPackInfo pi = ci.getPackInfo();
 			String packId = pi.isVersionFixed() ? pi.getId() : pi.getPackFamilyId();
-			if(pi.getPack() == null) {
-				reason += CpStrings.IsNotInstalled;  
+			if (pi.getPack() == null) {
+				reason += CpStrings.IsNotInstalled;
 			} else {
 				reason += CpStrings.IsExcluded;
 			}
 			reason += ": " + packId; //$NON-NLS-1$
 		}
-		String s = component + " " + state + ". " +reason;  //$NON-NLS-1$//$NON-NLS-2$
+		String s = component + " " + state + ". " + reason; //$NON-NLS-1$//$NON-NLS-2$
 		return s;
 	}
 
@@ -70,5 +73,4 @@ public class RteMissingComponentResult extends RteDependencyResult {
 		return true;
 	}
 
-	
 }

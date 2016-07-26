@@ -11,6 +11,12 @@
 
 package com.arm.cmsis.pack.data;
 
+import java.util.Collection;
+import java.util.Map;
+
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -36,7 +42,7 @@ public class CpExample extends CpItem implements ICpExample {
 	}
 
 	@Override
-	public String getId() {
+	public String constructId() {
 		String id = getAttribute(CmsisConstants.NAME);
 		ICpItem board = getFirstChild(CmsisConstants.BOARD_TAG);
 		if (board != null) {
@@ -47,10 +53,7 @@ public class CpExample extends CpItem implements ICpExample {
 
 	@Override
 	public String getFolder() {
-		if (hasAttribute(CmsisConstants.FOLDER)) {
-			return getAttribute(CmsisConstants.FOLDER);
-		}
-		return null;
+		return getAttribute(CmsisConstants.FOLDER);
 	}
 
 	@Override
@@ -59,18 +62,48 @@ public class CpExample extends CpItem implements ICpExample {
 		if (board == null) {
 			return null;
 		}
+		Map<String, ICpBoard> allBoards = CpPlugIn.getPackManager().getBoards();
 		// Dvendor has precedence over vendor attribute. here should try both
-		if (CpPlugIn.getPackManager().getBoards().get(board.getId()) != null) {
-			return CpPlugIn.getPackManager().getBoards().get(board.getId());
-		} else {
+		if (allBoards != null) {
+			ICpBoard item = allBoards.get(board.getId());
+			if (item != null) {
+				return item;
+			}
 			String id = DeviceVendor.getOfficialVendorName(board.getAttribute(CmsisConstants.VENDOR));
 			String name = board.getAttribute(CmsisConstants.NAME);
 			if(name != null && !name.isEmpty()) {
-				id += CmsisConstants.DOBLE_COLON;
+				id += CmsisConstants.DOUBLE_COLON;
 				id += name;
 			}
-			return CpPlugIn.getPackManager().getBoards().get(id);
+			item = allBoards.get(id);
+			return item;
 		}
+		return null;
 	}
 
+	
+	@Override
+	public String getLoadPath(String environmentName) {
+		if(environmentName == null)
+			return null;
+		Collection<? extends ICpItem> environments = getGrandChildren(CmsisConstants.PROJECT_TAG);
+		if (environments != null) {
+			for (ICpItem environment : environments) {
+				if (environment.getName().equals(environmentName)){
+					return environment.getAttribute(CmsisConstants.LOAD);
+				}
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public String getAbsoluteLoadPath(String environmentName) {
+		String loadPath = getLoadPath(environmentName);
+		if(loadPath == null)
+			return null;
+		IPath examplePath = new Path(getAbsolutePath(getFolder())).append(loadPath);
+		return examplePath.toString();
+	}
+	
 }

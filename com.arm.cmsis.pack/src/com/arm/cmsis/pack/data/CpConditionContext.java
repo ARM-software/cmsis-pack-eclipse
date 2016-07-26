@@ -19,12 +19,11 @@ import java.util.Map;
 import java.util.Set;
 
 import com.arm.cmsis.pack.enums.EEvaluationResult;
-import com.arm.cmsis.pack.generic.Attributes;
 
 /**
  *  Default implementation of ICpConditionContext interface
  */
-public class CpConditionContext extends Attributes implements ICpConditionContext {
+public class CpConditionContext extends CpAttributes implements ICpConditionContext {
 
 	protected EEvaluationResult fResult = EEvaluationResult.IGNORED;
 	protected Map<ICpItem, EEvaluationResult> fResults = null;
@@ -73,7 +72,7 @@ public class CpConditionContext extends Attributes implements ICpConditionContex
 			fResults = new HashMap<ICpItem, EEvaluationResult>();
 
 		res = getCachedResult(item);
-		if(res == null || res == EEvaluationResult.UNDEFINED) {
+		if(isEvaluate(res)) {
 			res = item.evaluate(this);
 			putCachedResult(item, res);
 		}
@@ -81,7 +80,16 @@ public class CpConditionContext extends Attributes implements ICpConditionContex
 	}
 
 	
-	 /**
+	/**
+	 * Checks if result to be (re-)evaluated
+	 * @param res EEvaluationResult
+	 * @return true if result to be (re-)evaluated
+	 */
+	protected boolean isEvaluate(EEvaluationResult res) {
+		return res == null || res == EEvaluationResult.UNDEFINED;
+	}
+
+	/**
 	 * Retrieves cached result for the given item if already in cache
 	 * @param item ICpItem for which to retrieve result
 	 * @return cached result or null if not yet in cache

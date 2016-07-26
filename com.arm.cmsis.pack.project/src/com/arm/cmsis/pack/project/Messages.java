@@ -19,10 +19,42 @@ import org.eclipse.osgi.util.NLS;
  */
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.project.messages"; //$NON-NLS-1$
+	public static String CmsisCodeTemplate_Browse;
+	public static String CmsisCodeTemplate_Component;
+	public static String CmsisCodeTemplate_ContainerNotExist;
+	public static String CmsisCodeTemplate_CreatingFile;
+	public static String CmsisCodeTemplate_Description;
+	public static String CmsisCodeTemplate_Error;
+	public static String CmsisCodeTemplate_FileAlreadyExist;
+	public static String CmsisCodeTemplate_FileContainerNotExist;
+	public static String CmsisCodeTemplate_FileContainerNotSpecified;
+	public static String CmsisCodeTemplate_FileExtensionNotConsistent;
+	public static String CmsisCodeTemplate_FileName;
+	public static String CmsisCodeTemplate_FileNameNotSpecified;
+	public static String CmsisCodeTemplate_FileNameNotValid;
+	public static String CmsisCodeTemplate_FileUnderRTEFolder;
+	public static String CmsisCodeTemplate_Location;
+	public static String CmsisCodeTemplate_Name;
+	public static String CmsisCodeTemplate_OpeningFileForEditing;
+	public static String CmsisCodeTemplate_OverwriteExistingFile;
+	public static String CmsisCodeTemplate_ProjectNotWritable;
+	public static String CmsisCodeTemplate_RefreshRTEProject;
+	public static String CmsisCodeTemplate_SelectFolder;
+	public static String CmsisCodeTemplate_Title;
+	public static String CmsisCodeTemplate_WindowTitle;
+	public static String CmsisCodeTemplate_WizardPage;
+	public static String CmsisCodeTemplateNewWizardPage_LocationNotUnderProject;
+	public static String CmsisCodeTemplateNewWizardPage_Project;
+	public static String CmsisCodeTemplateNewWizardPage_ProjectMustBeSpecified;
+	public static String CmsisCodeTemplateNewWizardPage_ProjectMustExist;
 	public static String CreateRteProject_EclipseProjectNotExists;
 	public static String CreateRteProject_ErrorCreatingConfigFile;
 	public static String CreateRteProject_ErrorCreatingRteProject;
 	public static String CreateRteProject_ToolchainAdapterNotFound;
+	public static String MergeConfigFileHandler_Merge;
+	public static String ProjectSelectionDialog_NoRteProjectFound;
+	public static String ProjectSelectionDialog_RteProjectSelectionDialog;
+	public static String ProjectSelectionDialog_SelectRteProject;
 	public static String ProjectUtils_CannotCopyFile;
 	public static String ProjectUtils_DoesNotExistsOrNotAccessible;
 	public static String ProjectUtils_Project;
@@ -32,6 +64,8 @@ public class Messages extends NLS {
 	public static String RteConfigRenameResourceChange_RenamingFile;
 	public static String RteConfiguration_ComponentSelection;
 	public static String RteConfiguration_DeviceHeader;
+	public static String RteProjectManager_ReloadRteProjectMessage;
+	public static String RteProjectManager_ReloadRteProjectTitle;
 	public static String RteProjectRenameParticipant_CheckingPreconditions;
 	public static String RteProjectRenameParticipant_CMSIS_RTE_project_rename_handler;
 	public static String RteProjectRenameParticipant_CreatingChange;
@@ -50,6 +84,8 @@ public class Messages extends NLS {
 	public static String RteProjectUpdater_UpdatingResources;
 	public static String RteProjectUpdater_Success;
 	public static String RteProjectUpdater_Fail;
+	public static String RteProjectUpdater_InstallMissinPacksMessage;
+	public static String RteProjectUpdater_InstallMissinPacksTitle;
 	public static String RtePropertyPage_Component;
 	public static String RtePropertyPage_ComponentNotFound;
 	public static String RtePropertyPage_Description;
@@ -75,6 +111,9 @@ public class Messages extends NLS {
 	public static String RteTooolChainAdapterSelector_Toolchain;
 	public static String RteTooolChainAdapterSelector_ToolchainAdapter;
 	public static String RteTooolChainAdapterSelector_ToolChainAdapterIsReponsibleFor;
+	public static String UpdateConfigFileHandler_Downgrade;
+	public static String UpdateConfigFileHandler_UpdateSelectedFiles;
+	public static String UpdateConfigFileHandler_Upgrade;
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

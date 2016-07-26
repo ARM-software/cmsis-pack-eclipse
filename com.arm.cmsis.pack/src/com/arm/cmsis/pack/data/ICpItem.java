@@ -12,6 +12,8 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import com.arm.cmsis.pack.enums.EEvaluationResult;
@@ -25,7 +27,9 @@ import com.arm.cmsis.pack.item.ICmsisTreeItem;
  */
 public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem<ICpItem> {
 	
+	public static final ICpItem NULL_CPITEM = null; // to resolve ambiguity in constructors 
 	public static final ICpItem[] EMPTY_CPITEM_ARRAY = new ICpItem[0];
+	public static final List<ICpItem> EMPTY_CPITEM_LIST = new LinkedList<ICpItem>();
 	
 	/**
 	 * Items can have IDs constructed out of tag, text and attributes  
@@ -207,6 +211,19 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	String getProcessorName();
 
 	/**
+	 * Returns "Punit" attribute as integer 
+	 * @return processor unit index (0 is default) 
+	 */
+	int getPunitIndex();
+
+	/**
+	 * Returns "Punits" attribute as integer 
+	 * @return processor unit count (1 is default) 
+	 */
+	int getPunitsCount();
+
+	
+	/**
 	 * Returns full device name in form "Name:Pname" 
 	 * @return full device name or null if this element does not represent device
 	 */
@@ -237,6 +254,19 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 */
 	boolean isVersionFixed();
 
+	/**
+	 * Checks if this item represents a default variant or default bundle (effectively has "isDefaultVariant" attribute set to "1") 
+	 * @return true if default variant 
+	 */
+	boolean isDefaultVariant();
+	
+	/**
+	 * Checks if an item is generated (comes from gpdsc file) 
+	 * @return true if item is generated  
+	 */
+	boolean isGenerated();
+
+	
 	/**
 	 * Returns absolute path of supplied relative one, if supplied path is an URL or absolute, returns it 
 	 * @param relPath path to convert to absolute

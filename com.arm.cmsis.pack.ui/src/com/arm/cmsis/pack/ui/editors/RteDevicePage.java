@@ -17,12 +17,13 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 
-import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.rte.IRteModelController;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
+import com.arm.cmsis.pack.ui.IHelpContextIds;
 import com.arm.cmsis.pack.ui.widgets.RteDeviceInfoWidget;
 import com.arm.cmsis.pack.ui.wizards.RteDeviceSelectorWizard;
 import com.arm.cmsis.pack.ui.wizards.RteWizardDialog;
@@ -67,6 +68,7 @@ public class RteDevicePage extends RteEditorPage {
 	    });
 		
     	headerWidget.setFocusWidget(getFocusWidget());
+    	PlatformUI.getWorkbench().getHelpSystem().setHelp(getFocusWidget(), IHelpContextIds.DEVICE_PAGE);
 	}
 
 	@Override
@@ -91,18 +93,6 @@ public class RteDevicePage extends RteEditorPage {
 		}
 	}
 
-
-	@Override
-	public void handle(RteEvent event) {
-		switch(event.getTopic()) {
-		case RteEvent.CONFIGURATION_COMMITED:
-		case RteEvent.CONFIGURATION_MODIFIED:
-			update();
-			return;
-		default: 
-			super.handle(event);
-		}
-	}
 
 	@Override
 	public void update() {

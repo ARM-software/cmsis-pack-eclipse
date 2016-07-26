@@ -120,8 +120,9 @@ public class CmsisItem implements ICmsisItem {
 	@Override
 	public int getChildCount() {
 		Collection<? extends ICmsisItem> collection = getChildren();
-		if(collection != null)
+		if(collection != null) {
 			return collection.size();
+		}
 		return 0;
 	}
 
@@ -141,15 +142,17 @@ public class CmsisItem implements ICmsisItem {
 	 */
 	protected Object[] createChildArray() {
 		Collection<? extends ICmsisItem> collection = getChildren();
-		if(collection != null)
+		if(collection != null) {
 			return collection.toArray();
+		}
 		return EMPTY_OBJECT_ARRAY;
 	}	
 
 	@Override
 	public VisitResult accept(ICmsisVisitor visitor) {
-		if(visitor == null)
+		if(visitor == null) {
 			return VisitResult.CANCEL;
+		}
 		switch( visitor.visit(this)) {
 		case  CANCEL: 
 			return VisitResult.CANCEL;
@@ -184,10 +187,11 @@ public class CmsisItem implements ICmsisItem {
 		if(items != null) {
 			for(ICmsisItem item : items){
 				VisitResult result = VisitResult.CONTINUE;
-				if(item != null)
+				if(item != null) {
 					result = item.accept(visitor);
-				else
-					result = visitor.visit(null);				
+				} else {
+					result = visitor.visit(null);
+				}				
 				switch( result) {
 				case  CANCEL: 
 					return VisitResult.CANCEL;

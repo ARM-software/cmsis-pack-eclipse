@@ -12,8 +12,8 @@
 package com.arm.cmsis.pack.rte.components;
 
 /**
- *
+ * Interface for class level hierarchy items 
  */
 public interface IRteComponentClass extends IRteComponentItem {
-
+// used a a type 
 }

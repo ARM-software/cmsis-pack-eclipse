@@ -74,6 +74,7 @@ public class DeviceVendor {
 	public static String getOfficialVendorName(String vendor) {
 		String id = getVendorId(vendor);
 		if (id != null) {
+			id = getOfficialVendorId(id);
 			String name = getVendorName(id);
 			if (name == null) { // no such vendor known
 				int i = vendor.indexOf(':');
@@ -93,7 +94,7 @@ public class DeviceVendor {
 	 */
 	public static String getCanonicalVendorString(String vendor) {
 		String canonical = getOfficialVendorName(vendor);
-		String id = getOfficialVenorId(getVendorId(canonical));
+		String id = getOfficialVendorId(getVendorId(canonical));
 		if(id != null) {
 			return canonical + ":" + id; //$NON-NLS-1$
 		}	
@@ -105,7 +106,7 @@ public class DeviceVendor {
 	 * @param id vendor ID to convert
 	 * @return the official vendor ID if mapping exists, otherwise unchanged id  
 	 */
-	public static String getOfficialVenorId(String id) {
+	public static String getOfficialVendorId(String id) {
 		if (idToId == null)
 			fillMaps();
 		if(idToId.containsKey(id))
@@ -185,8 +186,8 @@ public class DeviceVendor {
 		if(v0.isEmpty() || v1.isEmpty())
 			return true;   
 		
-		String id0 = getOfficialVenorId(getVendorId(v0));
-		String id1 = getOfficialVenorId(getVendorId(v1));
+		String id0 = getOfficialVendorId(getVendorId(v0));
+		String id1 = getOfficialVendorId(getVendorId(v1));
 		if(id0 != null && id1 != null)
 			return id0.equals(id1);
 		
@@ -239,10 +240,11 @@ public class DeviceVendor {
 			if (ids.length < 1)
 				continue;
 
-			String id = tokens[0].trim();
+			String id = ids[0].trim();
 			if(id.isEmpty())
 				continue;
 			for(String oldId : ids) {
+				oldId = oldId.trim();
 				if(!oldId.isEmpty() && !oldId.equals(id))
 					idToId.put(oldId, id);
 			}

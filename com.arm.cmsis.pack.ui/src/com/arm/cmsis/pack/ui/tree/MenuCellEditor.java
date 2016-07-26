@@ -23,12 +23,12 @@ import org.eclipse.swt.widgets.Tree;
  */
 public class MenuCellEditor extends CellEditor {
 
-	Menu menu = null; 
+	Menu menu = null;
 	Button button;
 	String selectedItem;
 	ViewerCell viewerCell;
 	Composite parent;
-	
+
 	public MenuCellEditor(Composite parent) {
 		super(parent);
 		this.parent = parent;
@@ -36,7 +36,7 @@ public class MenuCellEditor extends CellEditor {
 
 	@Override
 	protected Control createControl(Composite parent) {
-		
+
 		button = new Button(parent, SWT.PUSH|SWT.LEFT);
 		return button;
 	}
@@ -57,7 +57,6 @@ public class MenuCellEditor extends CellEditor {
 
 	/**
 	 * This is the menu item selection listener used to apply the selected menu item.
-	 * 
 	 */
 	class MenuItemSelListener implements SelectionListener {
 
@@ -79,21 +78,22 @@ public class MenuCellEditor extends CellEditor {
 		@Override
 		public void widgetDefaultSelected(SelectionEvent e) {
 		}
-		
+
 	}
-	
+
 	@Override
 	protected void doSetValue(Object value) {
-		if (!(value instanceof Menu)) 
+		if (!(value instanceof Menu)) {
 			return;
-		
-		this.menu = (Menu)value; 
- 
+		}
+
+		this.menu = (Menu)value;
+
 		// Set menu item selection listener
 		for (int i = 0; i < menu.getItemCount(); ++i) {
 			menu.getItem(i).addSelectionListener(new MenuItemSelListener());
 		}
-		
+
 		menu.addMenuListener(new MenuListener() {
 			@Override
 			public void menuShown(MenuEvent e) {
@@ -114,20 +114,17 @@ public class MenuCellEditor extends CellEditor {
 		fireApplyEditorValue();
 		deactivate();
 	}
-	
+
 	/**
 	 * Show the drop down menu just under the selected cell.
 	 */
 	private void showMenu() {
 		Tree tree = (Tree)parent;;
-		if (viewerCell != null) {
-			viewerCell.getBounds();
-			Rectangle rc = viewerCell.getBounds();
-			Rectangle rc2 = Geometry.toDisplay(tree, rc);		// convert to screen coordinates
-			menu.setLocation(rc2.x, rc2.y + rc2.height);		// set menu position
-			menu.setVisible(true);
-			button.setVisible(false);
-		}
+		Rectangle rc = viewerCell.getBounds();
+		Rectangle rc2 = Geometry.toDisplay(tree, rc);		// convert to screen coordinates
+		menu.setLocation(rc2.x, rc2.y + rc2.height);		// set menu position
+		menu.setVisible(true);
+		button.setVisible(false);
 	}
 
 	@Override

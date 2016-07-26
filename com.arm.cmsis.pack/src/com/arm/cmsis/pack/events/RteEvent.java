@@ -21,18 +21,15 @@ public class RteEvent {
 	public static final String CONFIGURATION_COMMITED  = "com.arm.cmsis.pack.rte.config.commited"; //$NON-NLS-1$
 
 	public static final String FILTER_MODIFIED = "com.arm.cmsis.pack.rte.filter.modified"; //$NON-NLS-1$
-	
+
 	public static final String COMPONENT_SELECTION_MODIFIED = "com.arm.cmsis.pack.rte.component.modified"; //$NON-NLS-1$
 	public static final String COMPONENT_SHOW = "com.arm.cmsis.pack.rte.component.show"; //$NON-NLS-1$
-	
+
 	public static final String PACKS_RELOADED = "com.arm.cmsis.pack.reloaded"; //$NON-NLS-1$
 	public static final String PACK_INSTALL_JOB_FINISHED = "com.arm.cmsis.pack.installed"; //$NON-NLS-1$
 	public static final String PACK_REMOVE_JOB_FINISHED = "com.arm.cmsis.pack.removed"; //$NON-NLS-1$
 	public static final String PACK_DELETE_JOB_FINISHED = "com.arm.cmsis.pack.deleted"; //$NON-NLS-1$
 	public static final String PACK_UNPACK_JOB_FINISHED = "com.arm.cmsis.pack.unpacked"; //$NON-NLS-1$
-	
-	public static final String EXAMPLE_INSTALL_JOB_FINISHED = "com.arm.cmsis.pack.einstalled"; //$NON-NLS-1$
-	public static final String EXAMPLE_COPY_JOB_FINISHED = "com.arm.cmsis.pack.copied"; //$NON-NLS-1$
 
 	public static final String DEVICE_TRIGGER_SELECT  = "com.arm.cmsis.pack.rte.device.select"; //$NON-NLS-1$
 
@@ -40,11 +37,14 @@ public class RteEvent {
 	public static final String PROJECT_REMOVED  = "com.arm.cmsis.pack.rte.project.removed"; //$NON-NLS-1$
 	public static final String PROJECT_UPDATED  = "com.arm.cmsis.pack.rte.project.updated"; //$NON-NLS-1$
 
-	
+	public static final String PRE_IMPORT   = "com.arm.cmsis.pack.rte.project.pre_import"; //$NON-NLS-1$
+	public static final String POST_IMPORT  = "com.arm.cmsis.pack.rte.project.post_import"; //$NON-NLS-1$
+
+
 	protected String topic = null;
 	protected Object data  = null;
-	
-	
+
+
 	/**
 	 * Constructor with topic only
 	 * @param topic event topic
@@ -62,7 +62,7 @@ public class RteEvent {
 		this.topic = topic;
 		this.data = data;
 	}
-	
+
 	/**
 	 * Returns event topic
 	 * @return event topic
@@ -70,7 +70,7 @@ public class RteEvent {
 	public String getTopic() {
 		return topic;
 	}
-	
+
 	/**
 	 * Returns event data
 	 * @return event data
@@ -78,5 +78,5 @@ public class RteEvent {
 	public Object getData() {
 		return data;
 	}
-	
+
 }

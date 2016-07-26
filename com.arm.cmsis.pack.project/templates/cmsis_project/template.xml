@@ -25,6 +25,11 @@ and is available at http://www.eclipse.org/legal/epl-v10.html"
 
 		<process type="org.eclipse.cdt.core.AddNature">
 			<simple name="projectName" value="$(projectName)" />
+			<simple name="natureId" value="org.eclipse.cdt.core.cnature" />
+		</process>
+
+		<process type="org.eclipse.cdt.core.AddNature">
+			<simple name="projectName" value="$(projectName)" />
 			<simple name="natureId" value="com.arm.cmsis.pack.project.RteNature" />
 		</process>
 
@@ -57,6 +62,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html"
 			<simple name="compiler" value="$(Tcompiler)" />
 			<simple name="output" 	value="$(Toutput)" />
 			<simple name="toolChainAdapter" value="$(Tadapter)"  />
+			<simple name="lastStep" value="$(Tlast)"  />
 		</process>
 
 	</if>

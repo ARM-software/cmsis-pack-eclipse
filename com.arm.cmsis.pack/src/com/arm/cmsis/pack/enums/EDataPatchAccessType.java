@@ -1,7 +1,6 @@
 package com.arm.cmsis.pack.enums;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.ICpDataPatch;
 /*******************************************************************************
  * Copyright (c) 2015 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials

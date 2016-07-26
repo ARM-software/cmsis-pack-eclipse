@@ -32,63 +32,103 @@ import com.arm.cmsis.pack.project.utils.ProjectUtils;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 
 /**
- * Class to decorate RTE items in Project explorer for RTE projects 
+ * Class to decorate RTE items in Project explorer for RTE projects
  * 
  * @see ILightweightLabelDecorator
  */
 public class RteProjectDecorator implements ILightweightLabelDecorator {
 
 	static public final String ID = "com.arm.cmsis.pack.project.decorators.RteProjectDecorator"; //$NON-NLS-1$
+
 	@Override
 	public void decorate(Object element, IDecoration decoration) {
 		IResource resource = ProjectUtils.getRteResource(element);
-		if(resource == null)
+		if (resource == null) {
 			return;
+		}
 		int type = resource.getType();
-		if(type != IResource.FOLDER && type != IResource.FILE)
+		if (type != IResource.FOLDER && type != IResource.FILE) {
 			return;
-		
+		}
+
 		IPath path = resource.getProjectRelativePath();
 		IProject project = resource.getProject();
 		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
 		IRteProject rteProject = rteProjectManager.getRteProject(project);
-		
-		if(type == IResource.FOLDER || resource.getFileExtension().equals(CmsisConstants.RTECONFIG)) { 
-			if(path.segmentCount() == 1) { // RTE folder itself 
-				IRteConfiguration rteConf = rteProject != null ? rteProject.getRteConfiguration() : null;
-				if(rteConf == null  || !rteConf.isValid() )
+		if (rteProject == null) {
+			return;
+		}
+
+		String ext = resource.getFileExtension();
+		if (type == IResource.FOLDER || (ext != null && ext.equals(CmsisConstants.RTECONFIG))) {
+			if (path.segmentCount() == 1) { // RTE folder itself
+				IRteConfiguration rteConf = rteProject.getRteConfiguration();
+				if (rteConf == null || !rteConf.isValid()) {
 					addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
-				else if(type == IResource.FOLDER)
+				} else if (type == IResource.FOLDER) {
 					addOverlay(decoration, CpPlugInUI.ICON_RTE_OVR);
+				}
+			} else if (type == IResource.FOLDER) {
+				int overlayType = getOverlayType(rteProject, path);
+				if (overlayType == -1) {
+					addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
+				} else if (overlayType == 0) {
+					addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
+				}
 			}
 		}
-		
-		if(rteProject != null && type == IResource.FILE) {
+
+		if (type == IResource.FILE) {
 			ICpFileInfo fi = rteProject.getProjectFileInfo(path.toString());
-			if(fi != null) {
+			if (fi != null) {
 				ICpComponentInfo ci = fi.getComponentInfo();
-				String suffix = " [" + ci.getName() + "]";  //$NON-NLS-1$//$NON-NLS-2$
+				String suffix = " [" + ci.getName() + "]"; //$NON-NLS-1$//$NON-NLS-2$
 				decoration.addSuffix(suffix);
-				if(ci.getComponent() == null)
-					addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);	
+				if (ci.getComponent() == null) {
+					addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
+				}
+				int versionDiff = fi.getVersionDiff();
+				if (versionDiff > 2 || versionDiff < 0) {
+					addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
+				}
 				return;
 			}
-		} 
+		}
+	}
+
+	/**
+	 * return -1 if error, 0 if warning, 1 if correct
+	 */
+	private int getOverlayType(IRteProject rteProject, IPath path) {
+		ICpFileInfo[] fileInfos = rteProject.getProjectFileInfos(path.toString() + ".*"); //$NON-NLS-1$
+		for (ICpFileInfo fileInfo : fileInfos) {
+			if (fileInfo.getComponentInfo().getComponent() == null) {
+				return -1;
+			}
+			int versionDiff = fileInfo.getVersionDiff();
+			if (versionDiff > 2 || versionDiff < 0) {
+				return 0;
+			}
+		}
+		return 1;
 	}
 
 	private void addOverlay(IDecoration decoration, String iconFile) {
-		ImageDescriptor descriptor = CpPlugInUI.getImageDescriptor(iconFile); 
-		if (descriptor == null)
+		ImageDescriptor descriptor = CpPlugInUI.getImageDescriptor(iconFile);
+		if (descriptor == null) {
 			return;
+		}
 		decoration.addOverlay(descriptor, IDecoration.TOP_LEFT);
 	}
-	
+
 	@Override
 	public void addListener(ILabelProviderListener listener) {
+		// does nothing
 	}
 
 	@Override
 	public void dispose() {
+		// does nothing
 	}
 
 	@Override
@@ -98,21 +138,22 @@ public class RteProjectDecorator implements ILightweightLabelDecorator {
 
 	@Override
 	public void removeListener(ILabelProviderListener listener) {
+		// does nothing
 	}
-	
+
 	/**
-	 *  Refreshes decoration of all RTE resources 
+	 * Refreshes decoration of all RTE resources
 	 */
 	static public void refresh() {
 		// Decorate using current UI thread
-		Display.getDefault().asyncExec(new Runnable()
-		  {
-		    public void run()
-		    {
-		  	  IDecoratorManager decoratorManager = PlatformUI.getWorkbench().getDecoratorManager();
-		  	  if(decoratorManager != null)
-		  		decoratorManager.update(ID);
-		    }
-		  });
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				IDecoratorManager decoratorManager = PlatformUI.getWorkbench().getDecoratorManager();
+				if (decoratorManager != null) {
+					decoratorManager.update(ID);
+				}
+			}
+		});
 	}
 }

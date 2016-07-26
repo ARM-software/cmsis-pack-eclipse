@@ -46,6 +46,9 @@
          <simple
                name="toolChainAdapter">
          </simple>
+         <simple
+               name="lastStep">
+         </simple>
       </processType>
    </extension>
    <extension
@@ -88,6 +91,13 @@
             properties="rteFile"
             type="org.eclipse.core.runtime.IAdaptable">
       </propertyTester>
+      <propertyTester
+            class="com.arm.cmsis.pack.project.ui.RteUpdateConfigFileTester"
+            id="com.arm.cmsis.pack.project.RteUpdateConfigFileTester"
+            namespace="com.arm.cmsis.pack.project.update"
+            properties="canUpdate, canMerge"
+            type="org.eclipse.core.runtime.IAdaptable">
+      </propertyTester>
    </extension>
    <extension
          point="org.eclipse.core.resources.variableResolvers">
@@ -103,9 +113,16 @@
    <extension
          point="org.eclipse.core.variables.dynamicVariables">
       <variable
-            description="Poinst to the root directory containing CMSIS packs "
+            description="The root directory containing CMSIS packs "
             name="cmsis_pack_root"
-            resolver="com.arm.cmsis.pack.project.CpVariableResolver">
+            resolver="com.arm.cmsis.pack.project.CpVariableResolver"
+            supportsArgument="true">
+      </variable>
+      <variable
+            description="Path to DFP (Defive Family Pack) used in the project"
+            name="cmsis_dfp"
+            resolver="com.arm.cmsis.pack.project.CpVariableResolver"
+            supportsArgument="true">
       </variable>
    </extension>
    <extension
@@ -125,6 +142,170 @@
       	  </with>
          </enablement>
      </renameParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="com.arm.cmsis.pack.project.ui.updateConfigFileCategory"
+            name="RTE Configuration">
+      </category>
+      <command
+            categoryId="com.arm.cmsis.pack.project.ui.updateConfigFileCategory"
+            id="com.arm.cmsis.pack.project.ui.commands.updateConfigFile"
+            name="Update Config File">
+      </command>
+      <command
+            categoryId="com.arm.cmsis.pack.project.ui.updateConfigFileCategory"
+            id="com.arm.cmsis.pack.project.ui.commands.mergeConfigFile"
+            name="Merge Config File">
+      </command>
+      <command
+            id="com.arm.cmsis.pack.project.ui.commands.resetBuildSettings"
+            name="Reset Build Settings">
+      </command>
+      <command
+            id="com.arm.cmsis.pack.project.ui.commands.cleanup"
+            name="Remove Unused Files">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            locationURI="popup:org.eclipse.ui.navigator.ProjectExplorer#PopupMenu?after=group.build">
+         <menu
+               icon="icons/rte.gif"
+               id="com.arm.cmsis.pack.project.ui.cmsisSubmenu"
+               label="CMSIS C/C++ Project">
+            <command
+                  commandId="com.arm.cmsis.pack.project.ui.commands.updateConfigFile"
+                  label="Update Config File"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <iterate
+                        ifEmpty="false">
+                     <test
+                           forcePluginActivation="true"
+                           property="com.arm.cmsis.pack.project.update.canUpdate">
+                     </test>
+                  </iterate>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="com.arm.cmsis.pack.project.ui.commands.mergeConfigFile"
+                  label="Merge Config File"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <iterate
+                        ifEmpty="false">
+                     <test
+                           forcePluginActivation="true"
+                           property="com.arm.cmsis.pack.project.update.canMerge">
+                     </test>
+                  </iterate>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="com.arm.cmsis.pack.project.ui.commands.resetBuildSettings"
+                  label="Reset Build Settings"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeMenuSelection">
+                     <iterate
+                           ifEmpty="false"
+                           operator="or">
+                        <adapt
+                              type="org.eclipse.core.resources.IProject">
+                           <test
+                                 property="org.eclipse.core.resources.projectNature"
+                                 value="com.arm.cmsis.pack.project.RteNature">
+                           </test>
+                        </adapt>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
+                  commandId="com.arm.cmsis.pack.project.ui.commands.cleanup"
+                  label="Remove Unused Files"
+                  style="push">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeMenuSelection">
+                     <iterate
+                           ifEmpty="false"
+                           operator="or">
+                        <adapt
+                              type="org.eclipse.core.resources.IProject">
+                           <test
+                                 property="org.eclipse.core.resources.projectNature"
+                                 value="com.arm.cmsis.pack.project.RteNature">
+                           </test>
+                        </adapt>
+                     </iterate>
+                  </with>
+               </visibleWhen>
+            </command>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="com.arm.cmsis.pack.project.ui.handlers.UpdateConfigFileHandler"
+            commandId="com.arm.cmsis.pack.project.ui.commands.updateConfigFile">
+      </handler>
+      <handler
+            class="com.arm.cmsis.pack.project.ui.handlers.MergeConfigFileHandler"
+            commandId="com.arm.cmsis.pack.project.ui.commands.mergeConfigFile">
+      </handler>
+      <handler
+            class="com.arm.cmsis.pack.project.ui.handlers.ResetBuildSettingsHandler"
+            commandId="com.arm.cmsis.pack.project.ui.commands.resetBuildSettings">
+      </handler>
+      <handler
+            class="com.arm.cmsis.pack.project.ui.handlers.CleanupHandler"
+            commandId="com.arm.cmsis.pack.project.ui.commands.cleanup">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.navigator.navigatorContent">
+      <commonWizard
+            type="new"
+            wizardId="com.arm.cmsis.pack.project.wizards.cmsisCodeTemplateNewWizard">
+         <enablement>
+            <with
+                  variable="selection">
+               <iterate
+                     operator="or">
+                  <adapt
+                        type="org.eclipse.core.resources.IResource">
+                  </adapt>
+               </iterate>
+            </with></enablement>
+      </commonWizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="com.arm.cmsis.pack.project.cmsisCodeTemplateCategory"
+            name="CMSIS User Code Template">
+      </category>
+      <wizard
+            category="com.arm.cmsis.pack.project.cmsisCodeTemplateCategory"
+            class="com.arm.cmsis.pack.project.wizards.CmsisCodeTemplateNewWizard"
+            finalPerspective="org.eclipse.cdt.ui.CPerspective"
+            icon="icons/new_cmsis_templ.png"
+            id="com.arm.cmsis.pack.project.wizards.cmsisCodeTemplateNewWizard"
+            name="Files from CMSIS Template">
+         <selection
+               class="org.eclipse.core.resources.IResource">
+         </selection>
+      </wizard>
    </extension>
 
 

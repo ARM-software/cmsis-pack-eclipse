@@ -74,8 +74,7 @@ public class VersionComparator extends AlnumComparator{
 		if (ver1 == null) {
 			if (ver2 == null)
 				return 0;
-			else
-				return -4;
+			return -4;
 		} else if (ver2 == null) {
 			return 4;
 		}
@@ -132,8 +131,11 @@ public class VersionComparator extends AlnumComparator{
 		}
 		
 		if(verMin != null && !verMin.isEmpty()){
-			if(versionCompare(version, verMin) < 0)
+			int res = versionCompare(version, verMin);
+			if( res < 0) 
 				return false;
+			if(verMin.equals(verMax))
+				return res == 0;
 		}
 		if(verMax != null && !verMax.isEmpty()){
 			if(versionCompare(version, verMax) > 0)
@@ -150,8 +152,13 @@ public class VersionComparator extends AlnumComparator{
     	private static final String ZERO_STRING = "0"; //$NON-NLS-1$
     	private String[] segments = null; // first three version segments : MAJOR.MINOR.PATCH
     	private String   release = null;  // remainder (after '-'); 
- 		
+    	private int fLevel;
 		Version(String ver){
+			this(ver, 0);
+		}    	
+    	
+		Version(String ver, int level){
+			fLevel = level;
     		if(ver == null)
     			throw new IllegalArgumentException("Version can not be null"); //$NON-NLS-1$
     		
@@ -165,6 +172,21 @@ public class VersionComparator extends AlnumComparator{
     		if(pos >=0 ) {
     			release = ver.substring(pos + 1);
     			ver = ver.substring(0, pos);
+    		} else if( fLevel == 0 && !ver.isEmpty()) {
+    			// check for special ST case without dash like 1.2.3b < 1.2.3
+    			int lastIndex = ver.length() - 1;
+    			for(pos = lastIndex ; pos >=0 ; pos--) {
+    				char ch = ver.charAt(pos);
+    				if(ch == '.')
+    					break;
+    				if(!Character.isDigit(ch)) 
+    					continue;
+    				if(pos < lastIndex) {
+    					release = ver.substring(pos);
+    					ver = ver.substring(0, pos);
+    				}
+    				break;
+    			}
     		}
     		// 3. split segments 
     		if(ver != null) {
@@ -216,8 +238,11 @@ public class VersionComparator extends AlnumComparator{
 			else if(thatRelease == null)
 				return -1;
 			
-			// compare release
-			result = versionCompare(this.getRelease(), that.getRelease(), cs);
+			// compare releases
+			Version v1 = new Version(thisRelease, fLevel + 1);
+			Version v2 = new Version(thatRelease, fLevel + 1);
+			result = v1.compareTo(v2, false); // case insensitive compare for release revision   
+
 			if(result < 0){
 				return -1;
 			} else if(result > 0) {

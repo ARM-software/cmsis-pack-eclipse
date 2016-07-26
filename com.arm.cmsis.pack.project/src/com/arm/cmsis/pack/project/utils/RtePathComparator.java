@@ -35,8 +35,7 @@ public class RtePathComparator implements Comparator<String> {
 		if(arg0.startsWith(CmsisConstants.RTE)) {
 			if(arg1.startsWith(CmsisConstants.RTE))
 				return AlnumComparator.alnumCompare(arg0, arg1);
-			else 
-				return -1; 
+			return -1; 
 		} else if(arg1.startsWith(CmsisConstants.RTE))
 			return 1;
 

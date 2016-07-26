@@ -62,7 +62,7 @@ public class RteComponentVersion extends RteComponentItem {
 	}
 	
 	@Override
-	public void addComponent(ICpComponent cpComponent) {
+	public void addComponent(ICpComponent cpComponent, int flags) {
 		if(cpComponent instanceof ICpComponentInfo) {
 			fComponentInfo = (ICpComponentInfo)cpComponent;
 			fComponentInfo.setComponent(getFirstCpComponent());
@@ -111,8 +111,7 @@ public class RteComponentVersion extends RteComponentItem {
 			ICpItem cpItem = getCpItem();
 			if(cpItem != null && cpItem.hasAttribute(CmsisConstants.CAPIVERSION))
 				return group.getApi(cpItem.getAttribute(CmsisConstants.CAPIVERSION)); // certain API version version
-			else
-				return group.getApi(); // active API version
+			return group.getApi(); // active API version
 		}
 		return null;
 	}

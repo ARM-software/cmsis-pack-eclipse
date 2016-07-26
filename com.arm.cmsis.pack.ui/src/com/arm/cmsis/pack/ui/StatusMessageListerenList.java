@@ -17,5 +17,5 @@ import com.arm.cmsis.pack.generic.GenericListenerList;
  * Default implementation of listener list IStatusMessageListener listeners
  */
 public class StatusMessageListerenList extends GenericListenerList<IStatusMessageListener, String> {
-
+ // definesd forease of use
 }

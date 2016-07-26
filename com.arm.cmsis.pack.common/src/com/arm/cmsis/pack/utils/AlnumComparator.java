@@ -104,9 +104,8 @@ public class AlnumComparator implements Comparator<String> {
 	public int compare(String str1, String str2) {
 		if (isDescending()) {
 			return compare(str2, str1, isCaseSensitive());
-		} else {
-			return compare(str1, str2, isCaseSensitive());
 		}
+		return compare(str1, str2, isCaseSensitive());
 	}
 
 	/**
@@ -138,9 +137,8 @@ public class AlnumComparator implements Comparator<String> {
 		if (str1 == null || str1.isEmpty()) {
 			if (str2 == null || str2.isEmpty()) {
 				return 0;
-			} else {
-				return -1;
 			}
+			return -1;
 		} else if (str2 == null || str2.isEmpty()) {
 			return 1;
 		}
@@ -173,7 +171,7 @@ public class AlnumComparator implements Comparator<String> {
 					val1 = Integer.decode(s1);
 					val2 = Integer.decode(s2);
 				}  catch (NumberFormatException e) {
-					return s1.compareTo(s2);
+					return str1.compareTo(str2);
 				}
 				if (val1 > val2) {
 					return 1;

@@ -17,16 +17,20 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import org.eclipse.cdt.managedbuilder.core.IToolChain;
+import org.eclipse.cdt.managedbuilder.core.ManagedBuildManager;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.Platform;
 
 /**
  * Responsible for managing toolchain adapters contributed through the extension point
+ *
+ * @noextend This class is not intended to be subclassed by clients.
+ * @noinstantiate This class is not intended to be instantiated by clients.
  */
 public class RteToolChainAdapterFactory {
 
-	private static RteToolChainAdapterFactory theManager = null;
+	private static RteToolChainAdapterFactory theFactory = null;
 	
 	public static final String ID = "id"; //$NON-NLS-1$
 	public static final String TOOLCHAIN = "toolChain"; //$NON-NLS-1$
@@ -44,21 +48,21 @@ public class RteToolChainAdapterFactory {
 	}
 	
 	/**
-	 * Singleton method that returns RteToolChainAdapterManager instance
-	 * @return RteToolChainAdapterManager instance
+	 * Singleton method that returns RteToolChainAdapterFactory instance
+	 * @return RteToolChainAdapterFactory instance
 	 */
 	public static RteToolChainAdapterFactory getInstance() {
-		if(theManager == null)
-			theManager = new RteToolChainAdapterFactory();
-		return theManager; 
+		if(theFactory == null)
+			theFactory = new RteToolChainAdapterFactory();
+		return theFactory; 
 	}
 	
 	
 	/**
-	 *  Destroys RteToolChainAdapterManager singleton 
+	 *  Destroys RteToolChainAdapterFactory singleton 
 	 */
 	public static void destroy() {
-		theManager = null;
+		theFactory = null;
 	}
 	
 	
@@ -174,5 +178,24 @@ public class RteToolChainAdapterFactory {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * Checks if a toolchain (IToolchain) with given ID prefix is installed   
+	 * @param toolchainPrefix a toolchain ID prefix 
+	 * @return true if a toolchain is installed
+	 */
+	static public boolean isToolchainInstalled(String toolchainPrefix) {
+		IToolChain[] toolChains = ManagedBuildManager.getExtensionToolChains();
+		if(toolChains == null)
+			return false;
+		for(IToolChain tc : toolChains) {
+			for(; tc != null; tc = tc.getSuperClass()) {
+				String id = tc.getId();
+				if(id.startsWith(toolchainPrefix))
+					return true;
+			}
+		}
+		return false;
 	}
 }

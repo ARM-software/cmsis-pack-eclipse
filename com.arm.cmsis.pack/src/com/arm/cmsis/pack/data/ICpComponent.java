@@ -47,6 +47,17 @@ public interface ICpComponent extends ICpItem {
 	 */
 	boolean isMultiInstance();
 
+	/**
+	 * Checks if component is a bootstrap for generator (launches specified generator) 
+	 * @return true if component is bootstrap one  
+	 */
+	boolean isBootstrap();
+	
+	/**
+	 * Returns generator associated with the component (generated or bootstrap) 
+	 * @return ICpGenerator if component is bootstrap or generated, null otherwise  
+	 */
+	 ICpGenerator getGenerator();
 	
 	/**
 	 * Returns number of maximum instances for the component 

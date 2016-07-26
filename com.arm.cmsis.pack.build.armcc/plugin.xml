@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.arm.cmsis.pack.build.settings.ToolChainAdapter">
+      <toolChainAdapter
+            Description="Toolchain adapter for ARMCC 5.x and 6.x compilers"
+            class="com.arm.cmsis.pack.build.armcc.ArmccToolChainAdapter"
+            id="com.arm.cmsis.pack.build.armcc5.Armcc5ToolChainAdapter"
+            name="Adapter for ARM C/C++ 5.x and 6.x toolchains "
+            toolChainFamily="ARMCC">
+         <toolChain
+               id="com.arm.toolchain.baremetal.base">
+         </toolChain>
+         <toolChain
+               id="com.arm.toolchain.v6.base">
+         </toolChain>
+      </toolChainAdapter>
+   </extension>
+
+</plugin>

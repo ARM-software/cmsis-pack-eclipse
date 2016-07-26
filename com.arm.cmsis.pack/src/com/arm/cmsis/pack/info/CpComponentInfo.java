@@ -66,7 +66,12 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 		fComponent = component;
 		if(component != null) {
 			setEvaluationResult(EEvaluationResult.FULFILLED);
-			fPackInfo.setPack(component.getPack());
+			if(fPackInfo == null) {
+				fPackInfo = new CpPackInfo(this, fComponent.getPack());
+				replaceChild(fPackInfo);
+			} else {
+				fPackInfo.setPack(component.getPack());
+			}
 		} else {
 			if(fResolveResult == EEvaluationResult.FULFILLED || fResolveResult == EEvaluationResult.UNDEFINED)
 				fResolveResult = EEvaluationResult.MISSING;
@@ -80,7 +85,8 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 			fPackInfo = new CpPackInfo(this, fComponent.getPack());
 			replaceChild(fPackInfo);
 			attributes().setAttributes(fComponent.attributes());
-			attributes().removeAttribute(CmsisConstants.CONDITION); // not needed in info 
+			attributes().removeAttribute(CmsisConstants.CONDITION); // not needed in info
+			attributes().removeAttribute(CmsisConstants.IS_DEFAULT_VARIANT); // not needed in info
 			attributes().setAttribute(CmsisConstants.CVENDOR, fComponent.getVendor());
 			attributes().setAttribute(CmsisConstants.CVERSION, fComponent.getVersion());
 			if(fComponent.isDeviceDependent()) {

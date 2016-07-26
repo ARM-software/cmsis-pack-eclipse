@@ -15,5 +15,5 @@ package com.arm.cmsis.pack.data;
  * Interface represent condition that is used to describe item dependencies 
  */
 public interface ICpCondition extends ICpItem {
-
+	 // currently is only used for type matching
 }

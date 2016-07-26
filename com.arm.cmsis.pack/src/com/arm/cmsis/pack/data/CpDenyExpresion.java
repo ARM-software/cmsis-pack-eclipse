@@ -31,7 +31,8 @@ public class CpDenyExpresion extends CpExpression {
 		EEvaluationResult result = super.evaluate(context);
 		switch(result){
 		case FULFILLED:
-			return EEvaluationResult.INCOMPATIBLE;
+			if(getExpressionDomain() != ICpExpression.COMPONENT_EXPRESSION)
+				return EEvaluationResult.INCOMPATIBLE;
 		case UNDEFINED:
 		case ERROR:
 		case IGNORED:

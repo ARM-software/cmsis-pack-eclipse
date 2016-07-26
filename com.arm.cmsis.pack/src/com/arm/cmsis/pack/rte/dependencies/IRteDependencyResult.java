@@ -20,11 +20,16 @@ import java.util.Collection;
 public interface IRteDependencyResult extends IRteDependencyItem{
 	
 	/**
-	 * Adds dependency to the list of  dependencies
+	 * Adds dependency to the list of dependencies
 	 * @param dependency IRteDependency to add
 	 */
 	void addDependency(IRteDependency dependency);
 	
+	/**
+	 * Removes dependency from the list of dependencies
+	 * @param dependency IRteDependency to remove
+	 */
+	void removeDependency(IRteDependency dependency);
 	
 	/**
 	 * Returns list of unresolved and conflicting dependencies

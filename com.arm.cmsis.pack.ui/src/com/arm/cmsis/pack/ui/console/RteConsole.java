@@ -57,9 +57,12 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 
 
 	private void initStreams() {
-		for(int i = 0;  i < STREAM_COUNT; i++) {
-			getStream(i);
-		}
+		asyncExec(new Runnable() {
+			public void run() {
+				for(int i = 0;  i < STREAM_COUNT; i++) {
+					getStream(i);
+				}
+		}}); 
 	}
 
 	@Override
@@ -99,12 +102,15 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 	}
 
 	private void updateBackGround() {
-		IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
-		RGB rgb = PreferenceConverter.getColor( store, CpUIPreferenceConstants.CONSOLE_BG_COLOR);
-    	setBackground(new Color(Display.getCurrent(), rgb));
+		asyncExec(new Runnable() {
+			public void run() {
+				IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
+				RGB rgb = PreferenceConverter.getColor( store, CpUIPreferenceConstants.CONSOLE_BG_COLOR);
+		    	setBackground(new Color(Display.getCurrent(), rgb));
+			}}); 
 	}
 	
-	private MessageConsoleStream getStream(int streamType) {
+	MessageConsoleStream getStream(int streamType) {
 		MessageConsoleStream stream = fStreams.get(streamType); 
 		if(stream == null) {
 			stream = newMessageStream();
@@ -253,9 +259,14 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 	}
 
 	synchronized public static void showConsole(final RteConsole console) {
-		Display.getDefault().asyncExec(new Runnable() {
+		asyncExec(new Runnable() {
 			public void run() {
 				ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console);
 			}}); 
 	}
+	
+	protected static void asyncExec(Runnable runnable) {
+		Display.getDefault().asyncExec(runnable);
+	}
+	
 }

@@ -21,7 +21,7 @@ import org.eclipse.cdt.managedbuilder.core.IHoldsOptions;
 import org.eclipse.cdt.managedbuilder.core.IOption;
 import org.eclipse.cdt.managedbuilder.core.ManagedBuildManager;
 
-import com.arm.cmsis.pack.build.settings.IBuildSettings;
+import com.arm.cmsis.pack.build.IBuildSettings;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapter;
 import com.arm.cmsis.pack.common.CmsisConstants;
 
@@ -46,34 +46,34 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 		switch(id) {
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.option.cpu":  	//$NON-NLS-1$
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.option.cpu": 	//$NON-NLS-1$
-			return CPU_OPTION;
+			return IBuildSettings.CPU_OPTION;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.option.fpu": 	//$NON-NLS-1$
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.option.fpu":	//$NON-NLS-1$
-			return FPU_OPTION;
+			return IBuildSettings.FPU_OPTION;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.option.fabi": 	//$NON-NLS-1$
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.option.fabi":	//$NON-NLS-1$
-			return FLOAT_ABI_OPTION;
+			return IBuildSettings.FLOAT_ABI_OPTION;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.option.endian": //$NON-NLS-1$
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.option.endian"://$NON-NLS-1$
-			return ENDIAN_OPTION;
+			return IBuildSettings.ENDIAN_OPTION;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.option.thumb": //$NON-NLS-1$;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.option.thumb": //$NON-NLS-1$;
-			return THUMB_OPTION;
+			return IBuildSettings.THUMB_OPTION;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.compiler.option.other": //$NON-NLS-1$
-			return CMISC_OPTION;
+			return IBuildSettings.CMISC_OPTION;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.assembler.option.other": //$NON-NLS-1$
-			return AMISC_OPTION;
+			return IBuildSettings.AMISC_OPTION;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.linker.option.flags": //$NON-NLS-1$
-			return LMISC_OPTION;
+			return IBuildSettings.LMISC_OPTION;
 		case "com.arm.tool.librarion.options.misc": //$NON-NLS-1$
-			return ARMISC_OPTION;
+			return IBuildSettings.ARMISC_OPTION;
 		case "com.arm.eclipse.cdt.managedbuild.ds5.gcc.baremetal.tool.c.linker.option.script": 	//$NON-NLS-1$;
-			return LINKER_SCRIPT_OPTION;
+			return IBuildSettings.RTE_LINKER_SCRIPT;
 		
 		default: 
 			break;
 		}
-		return UNKNOWN_OPTION;
+		return IBuildSettings.UNKNOWN_OPTION;
 	}
 
 	
@@ -81,7 +81,7 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 	protected void updateRteOption(int oType, IConfiguration configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
 
 		switch(oType) {	
-		case  LMISC_OPTION:
+		case  IBuildSettings.LMISC_OPTION:
 			updateLinkerMiscOption(configuration, tool, option, buildSettings);
 			return;
 		default :
@@ -117,28 +117,28 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 	}
 
 	@Override
-	protected String getRteOptionValue(int oType, IBuildSettings buildSettings) {
+	protected String getRteOptionValue(int oType, IBuildSettings buildSettings, IOption option) {
 		switch(oType) {
-		case CPU_OPTION: 
+		case IBuildSettings.CPU_OPTION: 
 			return getCpuOptionValue(buildSettings);
-		case THUMB_OPTION:
+		case IBuildSettings.THUMB_OPTION:
 			return "1";  //$NON-NLS-1$
-		case ENDIAN_OPTION:
-			return null; // bug in DS-5 armgcc toolchain  
-		case FPU_OPTION:
+		case IBuildSettings.ENDIAN_OPTION:
+			return null; // armgcc toolchain does not support it yet  
+		case IBuildSettings.FPU_OPTION:
 			return getFpuOptionValue(buildSettings);
-		case FLOAT_ABI_OPTION:
+		case IBuildSettings.FLOAT_ABI_OPTION:
 			return getFloatAbiOptionValue(buildSettings);
 		default:
 			break;
  
 		}
-		return super.getRteOptionValue(oType, buildSettings);
+		return super.getRteOptionValue(oType, buildSettings, option);
 	}
 	
 	
 	protected String getCpuOptionValue(IBuildSettings buildSettings) {
-		String cpu = getDeviceAttribute(CPU_OPTION, buildSettings);
+		String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
 		int pos = cpu.indexOf('+');
 		if(pos > 0) {
 			// Cortex-M0+ -> Cortex-M0plus 
@@ -152,14 +152,14 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 
 	@Override
 	protected Collection<String> getStringListValue( IBuildSettings buildSettings, int type) {
-		if(type == IOption.LIBRARIES || type == IOption.LIBRARY_PATHS ) { 
+		if(type == IBuildSettings.RTE_LIBRARIES || type == IBuildSettings.RTE_LIBRARY_PATHS ) { 
 			return null; // we add libraries as objects => ignore libs and lib paths
-		} else if(type == IOption.OBJECTS) {
-			Collection<String> objs = buildSettings.getStringListValue(type);
+		} else if(type == IBuildSettings.RTE_OBJECTS) {
+			Collection<String> objs = buildSettings.getStringListValue(IBuildSettings.RTE_OBJECTS);
 			List<String> value = new LinkedList<String>();
 			if(objs != null && !objs.isEmpty())
 				value.addAll(objs);
-			Collection<String> libs = buildSettings.getStringListValue(IOption.LIBRARIES);
+			Collection<String> libs = buildSettings.getStringListValue(IBuildSettings.RTE_LIBRARIES);
 			if(libs != null && !libs.isEmpty())
 				value.addAll(libs);
 			return value;
@@ -170,8 +170,8 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 
 	
 	public String getFpuOptionValue(IBuildSettings buildSettings) {
-		String cpu = getDeviceAttribute(CPU_OPTION, buildSettings);
-		String fpu = getDeviceAttribute(FPU_OPTION, buildSettings);
+		String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
+		String fpu = getDeviceAttribute(IBuildSettings.FPU_OPTION, buildSettings);
 		if(cpu == null || fpu == null || fpu.equals(CmsisConstants.NO_FPU) || !coreHasFpu(cpu)) 
 			return CmsisConstants.EMPTY_STRING;
 		if(cpu.equals("Cortex-M7")) { //$NON-NLS-1$
@@ -186,8 +186,8 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 	}
 
 	private String getFloatAbiOptionValue(IBuildSettings buildSettings) {
-		String cpu = getDeviceAttribute(CPU_OPTION, buildSettings);
-		String fpu = getDeviceAttribute(FPU_OPTION, buildSettings);
+		String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
+		String fpu = getDeviceAttribute(IBuildSettings.FPU_OPTION, buildSettings);
 		if(cpu == null || fpu == null || fpu.equals(CmsisConstants.NO_FPU) || !coreHasFpu(cpu)) 
 			return CmsisConstants.EMPTY_STRING;
 		return "hard"; //$NON-NLS-1$

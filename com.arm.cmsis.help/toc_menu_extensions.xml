@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toc label="TOC Menu Extensions" link_to="toc.xml#a_menu_extensions" topic="html/reference/menu_extensions.html">
+   <topic href="html/reference/menu_ext_project.html" label="Project Context Menu">
+   </topic>
+   <topic href="html/reference/menu_ext_config_file.html" label="Configuration File Context Menu">
+   </topic>
+   <topic href="html/reference/menu_ext_template_file.html" label="Add Template File">
+   </topic>
+</toc>

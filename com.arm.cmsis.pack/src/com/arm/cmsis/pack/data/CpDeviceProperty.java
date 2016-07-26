@@ -75,7 +75,7 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 		for(ICpItem item : children) {
 			if(item instanceof ICpDeviceProperty) {
 				String pname = item.getProcessorName();
-				if(processorName.isEmpty() || pname.isEmpty() || pname.equals(processorName))
+				if(processorName == null || processorName.isEmpty() || pname.isEmpty() || pname.equals(processorName))
 					effectiveContent.mergeProperty(item, processorName);
 			}
 		}						
@@ -112,6 +112,13 @@ public class CpDeviceProperty extends CpDeviceItemContainer implements ICpDevice
 	@Override
 	public String getDescription() {
 		return getAttribute(CmsisConstants.INFO);
+	}
+
+	
+	
+	@Override
+	public long getAddress() {
+		return attributes().getAttributeAsLong(CmsisConstants.ADDRESS, 0);
 	}
 
 	@Override

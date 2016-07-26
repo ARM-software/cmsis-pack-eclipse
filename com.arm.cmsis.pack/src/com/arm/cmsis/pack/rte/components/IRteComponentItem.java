@@ -28,16 +28,25 @@ import com.arm.cmsis.pack.rte.dependencies.IRteDependency;
 public interface IRteComponentItem extends ICmsisMapItem<IRteComponentItem> {
 	
 	/**
-	 * Create hierarchy level for given component  
-	 * @param ICpComponent component to add
+	 * Adds a component to the hierarchy  
+	 * @param cpComponent ICpComponent or ICpComponentInfo object to add 
+	 * @param flags COMPONENT_IGNORE_* flags describing how to resolve components when adding ICpComponentInfo objects to the hierarchy
+	 * @see RteConstants 
+	 */
+	void addComponent(ICpComponent cpComponent, int flags);
+
+	/**
+	 * Adds a component to the hierarchy  
+	 * @param cpComponent ICpComponent object to add 
 	 */
 	void addComponent(ICpComponent cpComponent);
 
+	
 	/**
-	 * Add IcpItem (API or taxonomy) to already created component hierarchy.<br>
+	 * Add ICpItem (API or taxonomy) to already created component hierarchy.<br>
 	 * In contrast to addComponent() this function does not add new hierarchy items .   
 	 * @param cpItem item to add
-	 * @see #addComponent(ICpComponent)   
+	 * @see #addComponent(ICpComponent, int)   
 	 */
 	void addCpItem(ICpItem cpItem);
 	
@@ -149,7 +158,7 @@ public interface IRteComponentItem extends ICmsisMapItem<IRteComponentItem> {
 	 * @param pattern pattern to match
 	 * @param key child key to match to 
 	 * @return true if supplied pattern matches supplied child key
-	 * @see getKeyAttribute() 
+	 * @see #getKeyAttribute() 
 	 */
 	boolean matchKey(String pattern, String key);
 	

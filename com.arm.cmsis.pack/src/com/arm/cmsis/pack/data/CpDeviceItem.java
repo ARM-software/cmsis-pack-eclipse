@@ -103,6 +103,12 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 	public int getProcessorCount() {
 		return getProcessors().size();
 	}
+
+	@Override
+	public synchronized ICpItem getProcessor(String processorName) {
+		getProcessors(); // ensure processors map 
+		return processors.get(processorName);
+	}
 	
 	@Override
 	public synchronized Map<String, ICpItem> getProcessors() {
@@ -140,22 +146,33 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 			getProcessors();
 			// collect properties for all processors
 			effectiveProperties = new HashMap<String, ICpItem >();
-			for(Entry<String, ICpItem> e : processors.entrySet()) {
-				String pname = e.getKey();
-				ICpItem props = new CpItem(this);
-				// add processor attributes to the properties
-				ICpItem pItem = e.getValue();
-				props.attributes().setAttributes(pItem.attributes().getAttributesAsMap());
-				effectiveProperties.put(pname, props);
-				// directly insert processor property since it is already collected
-				props.addChild(e.getValue());
-				// add other properties
-				collectEffectiveProperties(pname, props);
+		}
+		if(processorName != null && processorName.isEmpty() && !processors.containsKey(processorName)) {
+			return null;
+		}
+		ICpItem props = effectiveProperties.get(processorName);
+		if(props != null) {
+			return props;
+		}
+		props = new CpItem(this);
+		effectiveProperties.put(processorName, props);
+		// add processor attributes to the properties
+		ICpItem pItem = getProcessor(processorName); 
+		if(pItem != null) { 
+			props.attributes().setAttributes(pItem.attributes().getAttributesAsMap());
+			// directly insert processor property since it is already collected
+			props.addChild(pItem);
+		} else {
+			for(ICpItem p : processors.values()) {
+				props.addChild(p);
 			}
 		}
-		return effectiveProperties.get(processorName);
+		// add other properties
+		collectEffectiveProperties(processorName, props);
+		return props;
 	}
-	
+
+
 	protected int collectEffectiveProperties(String pname, ICpItem props) {
 		int nseq = 0; 
 		// insert properties starting from this item and going up in parent chain 
@@ -167,7 +184,7 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 			}
 			for(ICpItem p : children) {
 				String itemPname = p.getProcessorName();
-				if(pname.isEmpty() || itemPname.isEmpty() || itemPname.equals(pname)) {
+				if(pname == null || pname.isEmpty() || itemPname.isEmpty() || itemPname.equals(pname)) {
 					props.mergeProperty(p, pname);
 				}			
 			}
@@ -185,10 +202,10 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 			for(Entry<String, ICpItem> e : processors.entrySet()) {
 				String pname = e.getKey();
 				CpDebugConfiguration debugConfig = new CpDebugConfiguration(this);
-				
+				ICpItem processor = getProcessor(pname); 
 				// add processor attribute to the configuration
-				if(pname != null && !pname.isEmpty()) {
-					debugConfig.attributes().setAttribute(CmsisConstants.PNAME, pname);
+				if(processor != null ) {
+					debugConfig.attributes().setAttributes(processor.attributes());
 				}
 				debugConfigurations.put(pname, debugConfig);
 				debugConfig.init( getEffectiveProperties(pname));

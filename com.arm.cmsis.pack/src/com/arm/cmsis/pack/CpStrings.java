@@ -4,12 +4,12 @@ import org.eclipse.osgi.util.NLS;
 
 public class CpStrings extends NLS {
 	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.CpStrings"; //$NON-NLS-1$
-	public static String API; 
-	public static String Component; 
-	public static String Device; 
-	public static String IsMissing; 
-	public static String IsNotAvailableFoCurrentConfiguration; 
-	public static String Latest; 
+	public static String API;
+	public static String Component;
+	public static String Device;
+	public static String IsMissing;
+	public static String IsNotAvailableFoCurrentConfiguration;
+	public static String Latest;
 	public static String Fixed;
 	public static String Excluded;
 	public static String Pack;
@@ -17,6 +17,9 @@ public class CpStrings extends NLS {
 	public static String Selection;
 	public static String Configuration;
 	public static String CpComponentInfo_ComponentMissing;
+	public static String CpPackManager_DefaultError;
+	public static String CpPackManager_ErrorWhileParsing;
+	public static String CpPackManager_UnrecognizedFileFormatError;
 	public static String CpXmlParser_Error;
 	public static String CpXmlParser_ErrorCreatingXML;
 	public static String CpXmlParser_ErrorParserInit;

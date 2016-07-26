@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 
+import com.arm.cmsis.pack.build.IBuildSettings;
+
 /**
  *  The class describes an entry defined by com.arm.cmsis.pack.project.ToolchainAdapter extension point 
  * 
@@ -46,7 +48,6 @@ public class RteToolChainAdapterInfo {
 	private String fTcompiler;
 	private String fDescription;
 	private String fPlugInId; // originating plug-in ID
-	private IRteToolChainAdapter fAdapter;
 
 	private static class NullAdapter implements IRteToolChainAdapter {
 		static final NullAdapter INSTANCE = new NullAdapter();
@@ -65,6 +66,12 @@ public class RteToolChainAdapterInfo {
 		public ILinkerScriptGenerator getLinkerScriptGenerator() {
 			return null;
 		}
+
+		@SuppressWarnings("rawtypes")
+		@Override
+		public Object getAdapter(Class adapter) {
+			return null;
+		}
 	}
 	
 	
@@ -79,7 +86,6 @@ public class RteToolChainAdapterInfo {
 		fTcompiler = element.getAttribute(TOOLCHAIN_FAMILY);
 		fDescription = element.getAttribute(DESCRIPTION);
 		fPlugInId = element.getNamespaceIdentifier();
-		fAdapter = null;
 	}
 
 	
@@ -88,27 +94,25 @@ public class RteToolChainAdapterInfo {
 	 * @return IRteToolChainAdapter
 	 */
 	public synchronized IRteToolChainAdapter getToolChainAdapter(){
-		if(fAdapter == null) {
-			try {
-				fAdapter = createAdapter();
-			} catch (CoreException e) {
-				CCorePlugin.log(e);
-			}
-			if(fAdapter == null){
-				fAdapter = NullAdapter.INSTANCE;
-			}		
+		IRteToolChainAdapter adapter = null; 
+		try {
+			adapter = createAdapter();
+		} catch (CoreException e) {
+			CCorePlugin.log(e);
 		}
-		return fAdapter;
+		if(adapter == null){
+			adapter = NullAdapter.INSTANCE;
+		}		
+		return adapter;
 	}
 	
 	private IRteToolChainAdapter createAdapter() throws CoreException{
 		Object obj = fConfigElement.createExecutableExtension(CLASS);
 		if(obj instanceof IRteToolChainAdapter){
 			return (IRteToolChainAdapter)obj;
-		} else {
-			Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Invalid toolchain adapter class specified"); //$NON-NLS-1$
-			throw new CoreException(status);
-		}
+		} 
+		Status status = new Status(IStatus.ERROR, Activator.PLUGIN_ID, "Invalid toolchain adapter class specified"); //$NON-NLS-1$
+		throw new CoreException(status);
 	}
 
 

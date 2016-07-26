@@ -76,8 +76,7 @@ public class CpPackFilter implements ICpPackFilter {
 		if(fbUseAllLatestPacks) {
 			if(familyId.equals(packId))
 				return true;
-			else 
-				return isLatest(packId);
+			return isLatest(packId);
 		}
 		
 		if(!fPackVersions.containsKey(familyId))

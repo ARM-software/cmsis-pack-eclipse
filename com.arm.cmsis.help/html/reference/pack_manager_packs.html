@@ -1,0 +1,85 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset="utf-8"/>
+      <link rel="Stylesheet" type="text/css" href="../help.css" />
+      <script language="javascript" src="../help.js"></script>
+
+      <title>CMSIS Pack Manager - Packs</title>
+   </head>
+   <body>
+
+<h2>CMSIS Pack Manager - Packs</h2>
+
+<p>The <b>Packs</b> view lists all available packs on the Internet or workstation that match your search criteria.</p>
+
+<p>You can narrow the list by:</p>
+<ul>
+<li>Selecting a device in the <b>Devices</b> view.</li>
+<li>Selecting a board in the <b>Boards</b> view.</li>
+<li>Typing the pack name using wildcards in <i>Search Pack</i>.</li>
+</ul>
+
+<p>Expand a selected pack to show all installed or previous versions.</p>
+
+<p>Hover over a pack name to display brief revision information.</p>
+
+<p>Execute an <b>Action</b> for a Software Pack:</p>
+<dl class="kd">
+  <dd class="kd">
+    <p>
+    <img class="uvicon" alt="Install" src="./images/pack_manager_install.png">
+    Install the Software Pack. Download the package from the Internet and install the software.</p>
+
+    <p>
+    <img class="uvicon" alt="Update" src="./images/pack_manager_update.png"> 
+    Update the Software Pack. A newer version is available on the Internet or the workstation. Projects that use
+    Software Components from this package get updated.</p>
+
+    <p>
+    <img class="uvicon" alt="Unpack" src="./images/pack_manager_unpack.png"> 
+    Install the Software Pack. The package has been downloaded already, but is not installed yet.</p>
+
+    <p>
+    <img class="uvicon" alt="Remove" src="./images/pack_manager_remove.png"> 
+    Remove the installed Software Pack and example projects. The Software Pack itself remains in the download area
+    of the folder <b>..\ARM\Pack</b> and can be reinstalled if needed. Removed Software Components that are used explicitly in
+    projects get flagged as missing.</p>
+
+    <p>
+    <img class="uvicon" alt="Up to date" src="./images/pack_manager_up_to_date.png"> 
+    The installed package is up to date. No further action required.</p>
+
+    <p>
+    <img class="uvicon" alt="Offline" src="./images/pack_manager_offline.png">
+    Software Pack is not maintained any longer. Hover the mouse over the button to view the recommended
+    Software Pack. Could also identify that you have no connection to the network.</p>
+
+    <p>
+    <img class="uvicon" alt="Deprecated" src="./images/pack_manager_deprecated.png">
+    Software Pack has been deprecated. The color of the icon reflects the current installation state.
+    Deprecated Software Packs can still be installed. Expand the Software Pack to select the version. 
+    The tooltip of a deprecated package can display the date of deprecation and a potential replacement package.</p>
+
+    <p>
+    <img class="uvicon" alt="Delete" src="./images/pack_manager_delete.png">
+    Delete Software Packs that could not be read due to errors in the file. Hover the mouse over the button to view
+    details. The button can remove files or entire folders. You may have to check for updates to reload Software Packs.</p>
+
+    <p>
+    <img class="uvicon" alt="Delete All" src="./images/pack_manager_deleteall.png">
+    Delete all Software Packs marked with the <b>Delete</b> button. Hover the mouse over the button to view details. 
+    The button can remove files or entire folders.</p>
+  </dd>
+
+</dl>
+
+<p><b>See also:</b></p>
+<ul>
+   <li><a href="pack_manager.html">CMSIS Pack Manager</a></li>
+   <li><a href="rte_packs.html">RTE Configuration - Packs</a></li>
+</ul>
+
+
+</body>
+</html>

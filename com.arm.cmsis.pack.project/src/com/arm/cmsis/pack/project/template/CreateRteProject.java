@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.project.template;
 
@@ -41,7 +41,7 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.info.CpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
-import com.arm.cmsis.pack.parser.ConfigParser;
+import com.arm.cmsis.pack.parser.CpConfigParser;
 import com.arm.cmsis.pack.project.CpProjectPlugIn;
 import com.arm.cmsis.pack.project.IRteProject;
 import com.arm.cmsis.pack.project.Messages;
@@ -49,17 +49,18 @@ import com.arm.cmsis.pack.project.RteProjectManager;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
 
 /**
- * Process runner that creates new RTE Project with default RTE configuration  
+ * Process runner that creates new RTE Project with default RTE configuration
  */
 public class CreateRteProject extends ProcessRunner {
-	
+
 	@Override
 	public void process(TemplateCore template, ProcessArgument[] args, String processId, IProgressMonitor monitor) throws ProcessFailureException {
 		String projectName 	= args[0].getSimpleValue();
 		String compiler 	= args[1].getSimpleValue();
 		String output	 	= args[2].getSimpleValue();
 		String adapterId 	= args[3].getSimpleValue();
-		
+		String lastStep		= args[4].getSimpleValue();
+
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		if(project == null) {
 			String msg = Messages.CreateRteProject_ErrorCreatingRteProject;
@@ -67,7 +68,7 @@ public class CreateRteProject extends ProcessRunner {
 			msg += projectName;
 			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg));
 		}
-		
+
 		RteToolChainAdapterInfo adapterInfo = createToolChainAdapter(adapterId);
 		if(adapterInfo == null){
 			String msg = Messages.CreateRteProject_ErrorCreatingRteProject;
@@ -82,24 +83,26 @@ public class CreateRteProject extends ProcessRunner {
 			iFile.refreshLocal(IResource.DEPTH_ONE, null);
 			project.refreshLocal(IResource.DEPTH_INFINITE, null);
 
-			ConfigParser confParser = new ConfigParser(); 
+			CpConfigParser confParser = new CpConfigParser();
 			IPath location = iFile.getLocation();
 			if(location!= null) {
 				File file =  location.toFile();
 				confParser.writeToXmlFile(rteConf.getConfigurationInfo(), file.getAbsolutePath());
 			}
-			// open Rte configuration file 
-			IWorkbench wb = PlatformUI.getWorkbench();		
-			if(wb != null) {
-				IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
-				if(window != null) {
-					IWorkbenchPage page = window.getActivePage();
-					if(page != null) {
-						try {
-							IDE.openEditor(page, iFile);
-						} catch (PartInitException e) {
-							// TODO Auto-generated catch block
-							e.printStackTrace();
+			// open Rte configuration file if this is the last step
+			if ("1".equals(lastStep)) { //$NON-NLS-1$
+				IWorkbench wb = PlatformUI.getWorkbench();
+				if(wb != null) {
+					IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+					if(window != null) {
+						IWorkbenchPage page = window.getActivePage();
+						if(page != null) {
+							try {
+								IDE.openEditor(page, iFile);
+							} catch (PartInitException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 						}
 					}
 				}
@@ -107,12 +110,16 @@ public class CreateRteProject extends ProcessRunner {
 		} catch (CoreException e) {
 			String msg = Messages.CreateRteProject_ErrorCreatingConfigFile;
 			msg += 	e.getMessage();
-			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg), e); 
+			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg), e);
 		}
 
 		IRteProject rteProject = createRteProject(project, adapterInfo); // never fails
 		rteProject.setRteConfiguration(rteConfigName, rteConf);
-		rteProject.update();
+		if ("1".equals(lastStep)) { //$NON-NLS-1$
+			// in some customised process, we should prevent the indexer from indexing at this point
+			// because it may still has some work to do (e.g. copy resources)
+			rteProject.init();
+		}
 	}
 
 	protected IRteProject createRteProject(IProject project, RteToolChainAdapterInfo adapterInfo) {
@@ -124,19 +131,19 @@ public class CreateRteProject extends ProcessRunner {
 	}
 
 	protected RteToolChainAdapterInfo createToolChainAdapter(String adapterId) {
-		RteToolChainAdapterFactory adapterFactory = RteToolChainAdapterFactory.getInstance(); 
+		RteToolChainAdapterFactory adapterFactory = RteToolChainAdapterFactory.getInstance();
 		return adapterFactory.getAdapterInfo(adapterId);
 	}
 
 	protected IRteConfiguration createRteConfiguration(String compiler, String output) {
-		
+
 		ICpDeviceInfo deviceInfo = RteProjectTemplate.getSelectedDeviceInfo();
 		ICpItem toolchainInfo = RteProjectTemplate.createToolChainInfo(compiler, output);
-		ICpConfigurationInfo cpInfo = new CpConfigurationInfo(deviceInfo, toolchainInfo);
+		ICpConfigurationInfo cpInfo = new CpConfigurationInfo(deviceInfo, toolchainInfo, true);
 
 		IRteConfiguration rteConf = new RteConfiguration();
 		rteConf.setConfigurationInfo(cpInfo);
-		
+
 		return rteConf;
 	}
 

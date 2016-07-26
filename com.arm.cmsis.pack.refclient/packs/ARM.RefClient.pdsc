@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<package schemaVersion="1.2" xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="PACK.xsd">
+  <vendor>ARM</vendor>
+  <url>http://www.keil.com/pack/</url>
+  <name>RefClient</name>
+  <description>Sample PACK to demonstrate CMSIS example filtering by environment supplied by com.arm.cmsis.pack.refclient plug-in.
+ </description>
+
+  <releases>
+    <release version="0.2.0">
+      Release to be used with version 2.0.0 of com.arm.cmsis.pack.refclient plug-in.
+    </release>
+  </releases>
+
+  <keywords>
+  <!-- keywords for indexing -->
+    <keyword>CMSIS</keyword>
+    <keyword>Example</keyword>
+  </keywords>
+
+  <boards>
+    <board name="build only" vendor="ARM">
+      <description>Dummy board for build-only examples</description>
+      <mountedDevice    deviceIndex="0" Dvendor="ARM:82" Dname="ARMCM0"/>
+      <compatibleDevice deviceIndex="0" Dvendor="ARM:82" Dname="ARMCM0P"/>
+      <compatibleDevice deviceIndex="0" Dvendor="ARM:82" Dname="ARMCM3"/>
+      <compatibleDevice deviceIndex="0" Dvendor="ARM:82" Dname="ARMCM4_FP"/>
+      <compatibleDevice deviceIndex="0" Dvendor="ARM:82" Dname="ARMCM7_DP"/>
+    </board>
+  </boards>
+
+  <examples>
+    <example name="RefClientExample" doc="Abstract.txt" folder="Examples/RefClientExample">
+      <description>ARM CortexM-4 example demonstarining PackInstaller functionality to install examples. Note: This example requires Cross ARM GCC toolchain to be installed</description>
+      <board name="build only" vendor="ARM"/>
+      <project>
+        <environment name="RefClient" load="RefClient/.project"/>
+      </project>
+      <attributes>
+        <component Cclass="CMSIS" Cgroup="CORE"/>
+        <component Cclass="Device" Cgroup="Startup"/>
+        <component Cclass="CMSIS" Cgroup="RTOS"/>
+      </attributes>
+    </example>
+  </examples>
+
+</package>
+

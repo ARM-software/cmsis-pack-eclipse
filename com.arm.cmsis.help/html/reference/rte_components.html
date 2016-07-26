@@ -1,0 +1,69 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset="utf-8"/>
+   <link rel="Stylesheet" type="text/css" href="../help.css" />
+   <script language="javascript" src="../help.js"></script>
+
+   <title>RTE Configuration - Components</title>
+</head>
+<body>
+   <h2>RTE Configuration - Components</h2>
+<p>
+The <b>Components</b> tab of the RTE configuration editor provides the following functionality: 
+</p>
+<ul>
+<li>Select from a list of pre-built software components.</li>
+<li>Identify other required software components. For example, a driver for a device peripheral.</li>
+<li>Identify conflicts between software components. For example, for some software components
+    it is not possible to select multiple driver interfaces.</li>
+<li>Access to documentation using the hyperlinks under Description.</li>
+</ul>
+
+<p>
+<img alt="RTE - Components" src="./images/rte_components1.png"> 
+</p>
+
+<h3>Select Components</h3>
+
+<p>
+<b>Sel.</b> allows you to add software components. If required, specify a component using 
+<b>Variant</b> or <b>Version</b> selections. 
+</p>
+
+<p>
+The <b>Validation Output</b> provides information about potential problems. 
+Use the <b>Resolve</b> button to select other software components in case of unambiguous requirements. 
+</p>
+
+      <p>The colors of selected components indicate:</p>
+      <table style="border:0px;">
+        <tr>
+          <td style="border:0px;"><img alt="" class="uvicon" src="images/resolved.png"></td>
+          <td style="border:0px;">The Software Component has been resolved.</td>
+        </tr>
+        <tr>
+          <td style="border:0px;"><img  alt="" class="uvicon"src="images/multi_inst.png"></td>
+          <td style="border:0px;">A Software Component allowing multiple instances has been resolved.</td>
+        </tr>
+        <tr>
+          <td style="border:0px;"><img alt=""  class="uvicon" src="images/unresolved.png"></td>
+          <td style="border:0px;">This Software Component is unresolved. Other components are required for correct operation and are listed in
+              the field <i>Validation Output</i>.</td>
+        </tr>
+        <tr>
+          <td style="border:0px;"><img alt=""  class="uvicon" src="images/conflict.png"></td>
+          <td style="border:0px;">The Software Component conflicts with other components or is not installed on the computer. Detailed
+              information is listed in the field <i>Validation Output</i>.</td>
+        </tr>
+      </table>
+
+<p><b>See also:</b></p>
+<ul>
+   <li><a href="rte_configuration.html">RTE Configuration</a></li>
+   <li><a href="pack_manager.html">CMSIS Pack Manager</a></li>
+</ul>
+
+
+</body>
+</html>

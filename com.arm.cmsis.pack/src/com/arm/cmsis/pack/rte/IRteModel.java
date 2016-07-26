@@ -32,7 +32,7 @@ import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
  * It can be considered as model controller that connects CMSIS-Pack items with  project model 
  *    
  */
-public interface IRteModel extends IEvaluationResult {
+public interface IRteModel extends IEvaluationResult  {
 
 	/**
 	 *  Clears the model
@@ -40,9 +40,17 @@ public interface IRteModel extends IEvaluationResult {
 	void clear();
 
 	/**
-	 *  Updates the model
+	 *  Updates the model with using default flags to resolve components by calling <code>update(RteConstants.NONE)</code>
 	 */
 	void update();
+
+	/**
+	 * Updates the model
+	 * @param flags a combination of RCF_* flags 
+	 * @see RteConstants
+	 */
+	void update(int flags);
+	
 	
 	/**
 	 * Returns pack filter associated with model  

@@ -22,7 +22,7 @@ import com.arm.cmsis.pack.generic.IGenericListenerList;
  * RTE model itself can register only one proxy that in turn should maintain its own listener list, or use other methods
  * to delivering the events to clients.  
  */
-public interface IRteEventProxy extends IGenericListenerList<IRteEventListener, RteEvent> {
+public interface IRteEventProxy extends IGenericListenerList<IRteEventListener, RteEvent>, IRteEventListener {
 
 	/**
 	 * Creates RteEnevnt and notifies listeners

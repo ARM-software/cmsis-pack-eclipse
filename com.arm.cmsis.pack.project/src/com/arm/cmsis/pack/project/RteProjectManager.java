@@ -1,16 +1,16 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-* 
-* Resource change listener snippet is taken from: 
-* https://www.eclipse.org/articles/Article-Resource-deltas/resource-deltas.html
-* *******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *
+ * Resource change listener snippet is taken from:
+ * https://www.eclipse.org/articles/Article-Resource-deltas/resource-deltas.html
+ * *******************************************************************************/
 
 package com.arm.cmsis.pack.project;
 
@@ -39,20 +39,20 @@ import org.eclipse.ui.commands.ICommandService;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 
 /**
- * Class that manages RTE projects and their associations to ICproject and IProject 
+ * Class that manages RTE projects and their associations to ICproject and IProject
  */
-public class RteProjectManager extends RteEventProxy implements IRteEventListener, IResourceChangeListener, IExecutionListener{
+public class RteProjectManager extends RteEventProxy implements IResourceChangeListener, IExecutionListener{
 
 	private RteSetupParticipant rteSetupParticipant = null;
 	private Map<String, IRteProject> rteProjects = Collections.synchronizedMap(new HashMap<String, IRteProject>());
 	private boolean executionListenerRegistered = false;
-	
+	boolean postponeRefresh = false;
+
 	/**
 	 *  Default constructor
 	 */
@@ -62,9 +62,9 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 		CpPlugIn.addRteListener(this);
 	}
 
-	
+
 	/**
-	 *  Clears internal collection of the projects 
+	 *  Clears internal collection of the projects
 	 */
 	public void destroy() {
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
@@ -72,10 +72,11 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 		CpPlugIn.removeRteListener(this);
 		if(executionListenerRegistered) {
 			ICommandService commandService = CpPlugInUI.getCommandService();
-			if(commandService != null)
+			if(commandService != null) {
 				commandService.removeExecutionListener(this);
+			}
 		}
-		
+
 		synchronized (rteProjects) { // do it as atomic operation
 			for(IRteProject rteProject : rteProjects.values()) {
 				rteProject.destroy();
@@ -85,23 +86,25 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 	}
 
 	private void registerExecutionListener() {
-		if(executionListenerRegistered)
+		if(executionListenerRegistered) {
 			return;
+		}
 		ICommandService commandService = CpPlugInUI.getCommandService();
 		if(commandService != null) {
 			commandService.addExecutionListener(this);
 			executionListenerRegistered = true;
 		}
 	}
-	
+
 	/**
-	 *  Initializes RteSetupParticipant does nothing if already initialized  
+	 *  Initializes RteSetupParticipant does nothing if already initialized
 	 */
 	public void initRteSetupParticipant() {
-		if(rteSetupParticipant == null)
+		if(rteSetupParticipant == null) {
 			rteSetupParticipant = new RteSetupParticipant();
+		}
 	}
-	
+
 	/**
 	 * Triggers project index update and notifies that project is updated
 	 * @param project IProject associated with an RTE project
@@ -112,28 +115,33 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 		}
 		emitRteEvent(RteEvent.PROJECT_UPDATED, getRteProject(project));
 	}
-	
+
 	/**
-	 * Returns IRteProject associated for given name  
-	 * @param project IProject object associated with IRteProject 
+	 * Returns IRteProject associated for given name
+	 * @param project IProject object associated with IRteProject
 	 * @return IRteProject
 	 */
 	synchronized public IRteProject getRteProject(String name) {
 		return rteProjects.get(name);
 	}
-	
-	
+
+
 	/**
-	 * Returns IRteProject associated with given IRteProject if any  
-	 * @param project IProject object associated with IRteProject 
+	 * Returns IRteProject associated with given IRteProject if any
+	 * @param project IProject object associated with IRteProject
 	 * @return IRteProject
 	 */
 	public IRteProject getRteProject(IProject project) {
-		if(project != null)
+		if(project != null) {
 			return getRteProject(project.getName());
+		}
 		return null;
 	}
-	
+
+	public Collection<IRteProject> getRteProjects() {
+		return rteProjects.values();
+	}
+
 	/**
 	 * Creates or returns existing IRteProject associated with given IRteProject
 	 * @param project IProject object to be associated with IRteProject
@@ -148,11 +156,11 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 		}
 		return rteProject;
 	}
-	
-	
+
+
 	/**
-	 * Adds RTE project to the internal collection 
-	 * @param rteProject IRteProject to add  
+	 * Adds RTE project to the internal collection
+	 * @param rteProject IRteProject to add
 	 */
 	synchronized public void addRteProject(IRteProject rteProject) {
 		if(rteProject != null) {
@@ -160,10 +168,10 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 			emitRteEvent(RteEvent.PROJECT_ADDED, rteProject);
 		}
 	}
-	
+
 	/**
 	 * Removes RTE project from internal collection
-	 * @param rteProject IRteProject to remove 
+	 * @param rteProject IRteProject to remove
 	 */
 	synchronized public void deleteRteProject(IRteProject rteProject) {
 		if(rteProject != null) {
@@ -172,11 +180,11 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 			emitRteEvent(RteEvent.PROJECT_REMOVED, rteProject);
 		}
 	}
-	
-	
+
+
 	/**
 	 * Renames RTE project and updates collection
-	 * @param rteProject IRteProject to remove 
+	 * @param rteProject IRteProject to remove
 	 */
 	public void renameRteProject(String oldName, String newName) {
 		IRteProject rteProject = getRteProject(oldName);
@@ -192,88 +200,125 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 
 	@Override
 	public void handle(RteEvent event) {
-		if(event.getTopic().equals(RteEvent.PACKS_RELOADED)){
-			synchronized(rteProjects) {
-				for(IRteProject rteProject : rteProjects.values())
-					rteProject.reload();
+		switch (event.getTopic()) {
+		case RteEvent.PACKS_RELOADED:
+		case RteEvent.PACK_INSTALL_JOB_FINISHED:
+		case RteEvent.PACK_REMOVE_JOB_FINISHED:
+		case RteEvent.PACK_UNPACK_JOB_FINISHED:
+		case RteEvent.PACK_DELETE_JOB_FINISHED:
+			refreshProjects();
+			break;
+		case RteEvent.PRE_IMPORT:
+			postponeRefresh = true;
+			break;
+		case RteEvent.POST_IMPORT:
+			postponeRefresh = false;
+			IProject project = (IProject) event.getData();
+			if (project != null) {
+				IRteProject rteProject = getRteProject(project);
+				if (rteProject != null) {
+					rteProject.refresh();
+				}
+			}
+		default:
+			return;
+		}
+	}
+
+	void refreshProjects() {
+		synchronized(rteProjects) {
+			for(IRteProject rteProject : rteProjects.values()) {
+				if (rteProject.getProject().isOpen()) {
+					rteProject.refresh();
+				}
 			}
 		}
 	}
 
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
-		 // consider only POST_CHANGE events
-        if (event.getType() != IResourceChangeEvent.POST_CHANGE)
-           return;
-        IResourceDelta resourseDelta = event.getDelta();
-        IResourceDeltaVisitor deltaVisitor = new IResourceDeltaVisitor() {
-           public boolean visit(IResourceDelta delta) {
-              IResource resource = delta.getResource();
-              int type = resource.getType();
-              if(type == IResource.ROOT)
-            	  return true; // workspace => visit children  
+		// consider only POST_CHANGE events
+		if (event.getType() != IResourceChangeEvent.POST_CHANGE) {
+			return;
+		}
+		IResourceDelta resourseDelta = event.getDelta();
+		IResourceDeltaVisitor deltaVisitor = new IResourceDeltaVisitor() {
+			@Override
+			public boolean visit(IResourceDelta delta) {
+				IResource resource = delta.getResource();
+				int type = resource.getType();
+				if (type == IResource.ROOT) {
+					return true; // workspace => visit children
+				}
 
-              IProject project = resource.getProject();
+				IProject project = resource.getProject();
 
-              int kind = delta.getKind();
-        	  int flags = delta.getFlags();
+				int kind = delta.getKind();
+				int flags = delta.getFlags();
 
-        	  if(type == IResource.PROJECT && kind == IResourceDelta.REMOVED) {
-    			  IRteProject rteProject = getRteProject(project);
-    			  if(rteProject == null)
-    				  return false; // not an RTE project or not loaded => ignore
-        		  if((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
-        			  // renamed
-        			  IPath newPath = delta.getMovedToPath();
-        			  String newName = newPath.lastSegment();
-        			  renameRteProject(project.getName(), newName);
-        			  return false;
-        		  } 
-        		  // removed
-        		  deleteRteProject(rteProject);
-        		  return false;
-        	  }
-              
-              // only consider RTE projects 
-              if(!RteProjectNature.hasRteNature(project))
-            	  return false; // skip children
-              
-              if(type == IResource.PROJECT) {
-            	  // is project renamed?
-            	  if (kind == IResourceDelta.REMOVED) {
-            		  if((flags & IResourceDelta.CHANGED )== 1) {
-            			  return false;
-            		  } else if((flags & IResourceDelta.MOVED_TO) == 1) {
-            			  return false;
-            		  }
-            		  return true;
-            	  }
-            	  
-              } else if (type == IResource.FILE) {
-                  // is resource changed? 
-                  if (kind != IResourceDelta.CHANGED)
-                     return true; 
-                  
-                  // is content changed?
-            	  if ((flags & IResourceDelta.CONTENT) == 0)
-            		  return true;
-            	  // check only RTE configuration files with ".rteconfig" extension  
-            	  if (CmsisConstants.RTECONFIG.equalsIgnoreCase(resource.getFileExtension())) { 
-            		  IRteProject rteProject = getRteProject(project);
-            		  if(rteProject != null){
-            			  String relName = resource.getProjectRelativePath().toString();
-            			  if(relName.equals(rteProject.getRteConfigurationName()))
-            				  rteProject.reload();
-            		  }
-            		  return false;
-            	  }
-              }
-        	  return true;
-           }
-        };
-        
-        try {
-        	resourseDelta.accept(deltaVisitor);
+				if (type == IResource.PROJECT && kind == IResourceDelta.REMOVED) {
+					IRteProject rteProject = getRteProject(project);
+					if (rteProject == null) {
+						return false; // not an RTE project or not loaded => ignore
+					}
+					if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
+						// renamed
+						IPath newPath = delta.getMovedToPath();
+						if(newPath == null)
+							return false;
+						String newName = newPath.lastSegment();
+						renameRteProject(project.getName(), newName);
+						return false;
+					}
+					// removed
+					deleteRteProject(rteProject);
+					return false;
+				}
+
+				// only consider RTE projects
+				if (!RteProjectNature.hasRteNature(project)) {
+					return false; // skip children
+				}
+
+				if (type == IResource.PROJECT) {
+					// is project renamed?
+					if (kind == IResourceDelta.REMOVED) {
+						if ((flags & IResourceDelta.CHANGED) != 0) {
+							return false;
+						} else if ((flags & IResourceDelta.MOVED_TO) != 0) {
+							return false;
+						}
+						return true;
+					}
+
+				} else if (type == IResource.FILE) {
+					// is resource changed?
+					if (kind != IResourceDelta.CHANGED) {
+						return true;
+					}
+
+					// is content changed?
+					if ((flags & IResourceDelta.CONTENT) == 0) {
+						return true;
+					}
+					// check only RTE configuration files with ".rteconfig" extension
+					if (CmsisConstants.RTECONFIG.equalsIgnoreCase(resource.getFileExtension())) {
+						IRteProject rteProject = getRteProject(project);
+						if (rteProject != null) {
+							String relName = resource.getProjectRelativePath().toString();
+							if (!postponeRefresh && relName.equals(rteProject.getRteConfigurationName())) {
+								rteProject.refresh();
+							}
+						}
+						return false;
+					}
+				}
+				return true;
+			}
+		};
+
+		try {
+			resourseDelta.accept(deltaVisitor);
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
@@ -281,23 +326,25 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 
 	@Override
 	public void preExecute(String commandId, ExecutionEvent event) {
-        if (!org.eclipse.ui.IWorkbenchCommandConstants.FILE_REFRESH.equals(commandId)) {
-        	return;
-        }
-        ISelectionService selService = CpPlugInUI.getSelectionService();
-        if(selService == null)
-        	return;
-        // refresh RTE project in the selection
-        ISelection selection = selService.getSelection();
-        Collection<IProject> projects = CpPlugInUI.getProjectsFromSelection(selection);
-        if(projects == null || projects.isEmpty())
-        	return;
-        for(IProject project : projects) {
-        	IRteProject rteProject = getRteProject(project);
-        	if(rteProject != null && rteProject.isUpdateCompleted()) {
-        		rteProject.reload();
-        	}
-        }
+		if (!org.eclipse.ui.IWorkbenchCommandConstants.FILE_REFRESH.equals(commandId)) {
+			return;
+		}
+		ISelectionService selService = CpPlugInUI.getSelectionService();
+		if(selService == null) {
+			return;
+		}
+		// refresh RTE project in the selection
+		ISelection selection = selService.getSelection();
+		Collection<IProject> projects = CpPlugInUI.getProjectsFromSelection(selection);
+		if(projects == null || projects.isEmpty()) {
+			return;
+		}
+		for(IProject project : projects) {
+			IRteProject rteProject = getRteProject(project);
+			if(rteProject != null && rteProject.isUpdateCompleted()) {
+				rteProject.refresh();
+			}
+		}
 	}
 
 	@Override
@@ -307,13 +354,12 @@ public class RteProjectManager extends RteEventProxy implements IRteEventListene
 
 	@Override
 	public void postExecuteFailure(String commandId, ExecutionException exception) {
-		// does nothing		
+		// does nothing
 	}
 
 	@Override
 	public void postExecuteSuccess(String commandId, Object returnValue) {
-		// does nothing		
+		// does nothing
 	}
-
 
 }

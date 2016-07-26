@@ -22,5 +22,9 @@ public class RteEventProxy extends GenericListenerList<IRteEventListener, RteEve
 	public void emitRteEvent(final String topic, Object data) {
 		notifyListeners(new RteEvent(topic, data));
 	}
-	
+
+	@Override
+	public void handle(RteEvent event) { // proxy method 
+		notifyListeners(event); 
+	}
 }

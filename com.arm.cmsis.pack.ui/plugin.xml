@@ -31,23 +31,8 @@
          point="org.eclipse.ui.views">
       <category
             id="com.arm.cmsis.pack.category"
-            name="CMSIS">
+            name="CMSIS Pack Manager">
       </category>
-      <view
-            category="com.arm.cmsis.pack.category"
-            class="com.arm.cmsis.pack.ui.views.PackView"
-            icon="icons/packages.png"
-            id="com.arm.cmsis.pack.ui.views.PackView"
-            name="%view.CMSIS_Packs">
-      </view>
-      <view
-            category="com.arm.cmsis.pack.category"
-            class="com.arm.cmsis.pack.ui.views.DeviceTreeView"
-            icon="icons/device.gif"
-            id="com.arm.cmsis.pack.ui.DeviceTreeView"
-            name="%view.CMSIS_Devices "
-            restorable="true">
-      </view>
    </extension>
    <extension
          point="org.eclipse.ui.console.consoleFactories">

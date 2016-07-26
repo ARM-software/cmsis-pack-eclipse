@@ -11,8 +11,10 @@
 package com.arm.cmsis.pack.ui.widgets;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
 import com.arm.cmsis.pack.events.IRteEventListener;
+import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.rte.IRteModelController;
 
 public abstract class RteWidget implements IRteEventListener {
@@ -82,5 +84,32 @@ public abstract class RteWidget implements IRteEventListener {
 	 * @return widget to set focus to 
 	 */
 	public abstract Composite getFocusWidget();
+	
+	@Override
+	public void handle(RteEvent event) {
+		switch(event.getTopic()) {
+		case RteEvent.CONFIGURATION_COMMITED:
+		case RteEvent.CONFIGURATION_MODIFIED:
+			asyncUpdate();
+			return;
+		default:
+			break;
+		}
+	}
+
+	/**
+	 *  Updates widget asynchronously, runs  in GUI thread 
+	 */
+	protected void asyncUpdate() {
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				update();
+			}
+		});			
+	}
+	
+
+	
 	
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="ToolChainAdapter" name="Toolchain Adapter for CMSIS RTE projects" schema="schema/ToolChainAdapter.exsd"/>
+   <extension-point id="ToolChainAdapter" name="Toolchain Adapter for CMSIS C/C++ projects" schema="schema/ToolChainAdapter.exsd"/>
    <extension-point id="ToolChainAdapterAssociation" name="Toolchain adapter associations" schema="schema/ToolChainAdapterAssociation.exsd"/>
    <extension
          point="com.arm.cmsis.pack.build.settings.ToolChainAdapter">

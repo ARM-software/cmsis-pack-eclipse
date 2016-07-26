@@ -1,7 +1,6 @@
 package com.arm.cmsis.pack.enums;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.ICpDataPatch;
 /*******************************************************************************
  * Copyright (c) 2015 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials
@@ -28,15 +27,13 @@ public enum ESequenceControlType {
 	public static ESequenceControlType fromString(final String str) {
 		if(CmsisConstants.WHILE.equals(str))
 			return WHILE;
-		else
-			return IF;
+		return IF;
 	}
 	
 	public static String toString(ESequenceControlType type) {
 		if(type == WHILE)
 			return CmsisConstants.WHILE;
-		else
-			return CmsisConstants.IF;
+		return CmsisConstants.IF;
 	}
 
 	@Override

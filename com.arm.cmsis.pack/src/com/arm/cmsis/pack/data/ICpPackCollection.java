@@ -19,14 +19,7 @@ import java.util.Set;
  * Interface to collection of pack families
  * @see ICpPackFamily
  */
-public interface ICpPackCollection extends ICpPackFamily {
-
-	/**
-	 * Returns full pack collection as sorted by ID (ascending and version descending) 
-	 * @return full pack collection 
-	 */
-	Collection<ICpPack> getPacks();
-	
+public interface ICpPackCollection extends ICpPackGroup {
 
 	/**
 	 * Returns pack collection of the latest installed packs  
@@ -40,7 +33,6 @@ public interface ICpPackCollection extends ICpPackFamily {
 	 */
 	Set<String> getLatestPackIDs();
 	
-	
 	/**
 	 * Returns pack collection of filtered packs according to supplied filter  
 	 * @return collection of filtered packs, if filter is null, the entire collection is returned 
@@ -51,5 +43,5 @@ public interface ICpPackCollection extends ICpPackFamily {
 	 * Returns pack collection of the packFamilyId
 	 * @return collection of packs that belong to this packFamilyId, or null if no such packFamilyId exists 
 	 */
-	Collection<? extends ICpItem> getPacksByPackFamilyId(String packFamilyId);
+	Collection<ICpPack> getPacksByPackFamilyId(String packFamilyId);
 }

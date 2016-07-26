@@ -1,3 +1,14 @@
+/*******************************************************************************
+* Copyright (c) 2015 ARM Ltd. and others
+* All rights reserved. This program and the accompanying materials
+* are made available under the terms of the Eclipse Public License v1.0
+* which accompanies this distribution, and is available at
+* http://www.eclipse.org/legal/epl-v10.html
+*
+* Contributors:
+* ARM Ltd and ARM Germany GmbH - Initial API and implementation
+*******************************************************************************/
+
 package com.arm.cmsis.pack.project.ui;
 
 import org.eclipse.core.resources.IFile;
@@ -27,21 +38,23 @@ public class RteProjectRenameParticipant extends RenameParticipant {
 	IProject  project;
 	IRteProject rteProject;
 	int type;
-	
+
 	@Override
 	protected boolean initialize(Object element) {
-	
+
 		resource = ProjectUtils.getRteResource(element);
-		if(resource == null)
+		if (resource == null) {
 			return false;
+		}
 
 		resource = (IResource)element;
 		type = resource.getType();
 		project = resource.getProject();
 		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
 		rteProject = rteProjectManager.getRteProject(project);
-		if(rteProject == null)
+		if (rteProject == null) {
 			return false;
+		}
 
 		return true;
 	}
@@ -55,10 +68,10 @@ public class RteProjectRenameParticipant extends RenameParticipant {
 	public RefactoringStatus checkConditions(IProgressMonitor pm,
 			CheckConditionsContext context) throws OperationCanceledException {
 		RefactoringStatus status = new RefactoringStatus();
-		try{
+		try {
 			pm.beginTask(Messages.RteProjectRenameParticipant_CheckingPreconditions, 1);
 			IPath path = resource.getProjectRelativePath();
-			if(type != IResource.PROJECT && path.segment(0).startsWith(CmsisConstants.RTE)) {
+			if(type != IResource.PROJECT && path.segment(0).equals(CmsisConstants.RTE)) {
 				String msg = Messages.RteProjectRenameParticipant_RenameOfRteFolderIsNotAllowed;
 				status.merge(RefactoringStatus.createFatalErrorStatus(msg));
 			}
@@ -71,9 +84,10 @@ public class RteProjectRenameParticipant extends RenameParticipant {
 	@Override
 	public Change createChange(IProgressMonitor pm) throws CoreException,
 			OperationCanceledException {
-		if(type != IResource.PROJECT)
+		if (type != IResource.PROJECT) {
 			return null;
-		try{
+		}
+		try {
 			pm.beginTask(Messages.RteProjectRenameParticipant_CreatingChange, 1);
 			String rteConfigName = project.getName() + CmsisConstants.DOT_RTECONFIG;
 			IFile iFile = project.getFile(rteConfigName);

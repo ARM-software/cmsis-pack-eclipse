@@ -23,6 +23,7 @@ import com.arm.cmsis.pack.enums.EComponentAttribute;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
+import com.arm.cmsis.pack.rte.RteConstants;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 
 /**
@@ -88,10 +89,10 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 			if( c.isApi())
 				addApi(c);
 			else 
-				addComponent(c);
+				addComponent(c, RteConstants.NONE);
 		} else if (cpItem instanceof ICpTaxonomy ){
 			String csub = cpItem.getAttribute(CmsisConstants.CSUB);
-			if( csub != null) {
+			if( csub != null && !csub.isEmpty()) {
 				// add component using subName as a key    
 				IRteComponentItem component = getChild(csub);
 				if(component != null) {
@@ -104,7 +105,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 	}
 
 	@Override
-	public void addComponent(ICpComponent cpComponent) {
+	public void addComponent(ICpComponent cpComponent, int flags) {
 		if(cpComponent.isApi()) {
 			addApi(cpComponent);
 			return;
@@ -116,7 +117,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 			component = new RteComponent(this, componentName); 
 			addChild(component);
 		}
-		component.addComponent(cpComponent);
+		component.addComponent(cpComponent, flags);
 	}
 		
 	

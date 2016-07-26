@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.arm.cmsis.pack.PackInstaller">
+      <PackInstaller
+            Description="Provides reference implementation of pack installer functionality"
+            class="com.arm.cmsis.pack.installer.CpPackInstaller"
+            id="com.arm.cmsis.pack.installer.CpPackInstaller"
+            name="Default CMSIS pack installer ">
+      </PackInstaller>
+   </extension>
+
+</plugin>

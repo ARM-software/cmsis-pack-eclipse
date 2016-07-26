@@ -32,6 +32,12 @@ public interface IAttributes {
 	
 
 	/**
+	 * Parses supplied string into collection of attributes and sets it to this element overwriting existing collection
+	 * @param attributesString string in the form <code>key1="value1", key2="vaule2", ...</code>
+	 */
+	void setAttributes(String attributesString);
+
+	/**
 	 * Puts collection of attributes to this element overwriting existing collection
 	 * @param attributes collection to set
 	 */
@@ -44,11 +50,19 @@ public interface IAttributes {
 	void setAttributes(final IAttributes attributes);
 	
 	/**
-	 * Merges attributes from supplied attributes his element, does not overwrite existing ones  
+	 * Merges attributes from supplied attributes to this element, does not overwrite existing ones  
 	 * @param attributes collection to merge
 	 */
 	void mergeAttributes(final IAttributes attributes);
 
+	/**
+	 * Merges attributes from supplied attributes to this element considering only attributes with given prefix  
+	 * @param attributes collection to merge
+	 * @param prefix attributes prefix, for instance "C"
+	 */
+	void mergeAttributes(final IAttributes attributes, final String prefix);
+	
+	
 	/**
 	 * Checks if element has attribute for given key
 	 * @param key attribute key
@@ -143,19 +157,36 @@ public interface IAttributes {
 	/**
 	 * Checks if all attributes of this element exist in supplied map and their values match. 
 	 * Wild card match is used  
-	 * @param otherAttributes to match to
+	 * @param otherAttributes attributes to match to
 	 * @return true if matches, false otherwise
 	 */
 	boolean matchAttributes(final IAttributes otherAttributes);
 
+	/**
+	 * Checks if all attributes with given prefix of this element exist in supplied map and their values match. 
+	 * Wild card match is used  
+	 * @param otherAttributes attributes to match to
+	 * @param prefix attribute key prefix 
+	 * @return true if matches, false otherwise
+	 */
+	boolean matchAttributes(final IAttributes otherAttributes, String prefix);
 
 	/**
 	 * Checks if attributes found in this item and supplied map match    
 	 * using wild card match  
-	 * @param attributes to match to
+	 * @param otherAttributes attributes to match to
 	 * @return true if matches, false otherwise
 	 */
 	boolean matchCommonAttributes(final IAttributes otherAttributes);
+
+	/**
+	 * Checks if attributes with given prefix found in this item and supplied map match    
+	 * using wild card match  
+	 * @param otherAttributes attributes to match to
+	 * @param prefix attribute key prefix 
+	 * @return true if matches, false otherwise
+	 */
+	boolean matchCommonAttributes(final IAttributes otherAttributes, String prefix);
 
 	
 	/**
@@ -168,6 +199,21 @@ public interface IAttributes {
 	boolean matchAttribute(final String key, final String value, final String pattern);
 
 
+	/**
+	 * Checks if attributes map contain at least one attribute with value exactly matching supplied string 
+	 * @param value attribute value
+	 * @return true if map contains attribute value  
+	 */
+	boolean containsValue(final String value);
+
+	/**
+	 * Checks if attributes map contain at least one attribute with value matching given pattern value 
+	 * @param pattern attribute value pattern
+	 * @return true if map contains attribute value pattern  
+	 */
+	boolean containsValuePattern(final String pattern);
+
+	
 	/**
 	 * Returns URL associated with the item if any
 	 * @return URL associated with the item

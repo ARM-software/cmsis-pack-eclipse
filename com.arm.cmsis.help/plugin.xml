@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.help.toc">
+      <toc
+            file="toc.xml"
+            primary="true">
+      </toc>
+      <toc
+            file="toc_pack_manager.xml">
+      </toc>
+      <toc
+            file="toc_rte_configuration.xml">
+      </toc>
+      <toc
+            file="toc_menu_extensions.xml">
+      </toc>
+   </extension>
+   <extension
+         point="org.eclipse.help.contexts">
+      <contexts
+            file="context_help/config_wizard.xml"
+            plugin="com.arm.cmsis.config">
+      </contexts>
+      <contexts
+            file="context_help/configuration_editor.xml"
+            plugin="com.arm.cmsis.pack.ui">
+      </contexts>
+      <contexts
+            file="context_help/project.xml"
+            plugin="com.arm.cmsis.pack.project">
+      </contexts>
+      <contexts
+            file="context_help/pack_manager.xml"
+            plugin="com.arm.cmsis.pack.installer.ui">
+      </contexts>
+   </extension>
+</plugin>

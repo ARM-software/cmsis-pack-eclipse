@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+ <extension
+         point="org.eclipse.ui.views">
+      <category
+            id="com.arm.cmsis.pack.refclient.category"
+            name="CMSIS Sample Views ">
+      </category>
+      <view
+            category="com.arm.cmsis.pack.refclient.category"
+            class="com.arm.cmsis.pack.refclient.ui.PackView"
+            icon="icons/packages.png"
+            id="com.arm.cmsis.pack.refclient.ui.PackView"
+            name="Installed CMSIS Packs (Sample view)">
+      </view>
+      <view
+            category="com.arm.cmsis.pack.refclient.category"
+            class="com.arm.cmsis.pack.refclient.ui.DeviceTreeView"
+            icon="icons/device.gif"
+            id="com.arm.cmsis.pack.refclient.ui.DeviceTreeView"
+            name="Installed CMSIS devices  (Sample view)"
+            restorable="true">
+      </view>
+      <view
+            category="com.arm.cmsis.pack.refclient.category"
+            class="com.arm.cmsis.pack.refclient.ui.ConfigView"
+            icon="icons/rte.gif"
+            id="com.arm.cmsis.pack.refclient.ui.ConfigView"
+            name="Active RTE Configuration (Sample view)">
+      </view>
+   </extension>
+ <extension
+       point="com.arm.cmsis.pack.EnvironmentProvider">
+    <EnvironmentProvider
+          class="com.arm.cmsis.pack.refclient.RefClientEnvironmentProvider"
+          id="com.arm.cmsis.pack.refclient.EnvironmentProvider"
+          name="RefClient">
+    </EnvironmentProvider>
+ </extension>
+
+</plugin>

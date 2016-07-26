@@ -28,7 +28,7 @@ public class RteComponentBundle extends RteComponentVariant implements IRteCompo
 	}
 
 	@Override
-	public void addComponent(ICpComponent cpComponent) {
+	public void addComponent(ICpComponent cpComponent, int flags) {
 		ICpComponentInfo ci = null;
 		if(cpComponent instanceof ICpComponentInfo) {
 			// consider error situation when components belong to different bundles  
@@ -66,7 +66,7 @@ public class RteComponentBundle extends RteComponentVariant implements IRteCompo
 				ci.setEvaluationResult(EEvaluationResult.MISSING_VERSION);
 			}
 		}
-		versionItem.addComponent(cpComponent);
+		versionItem.addComponent(cpComponent, flags);
 		if(ci != null){
 			setActiveChild(vendor);
 			vendorItem.setActiveChild(version);

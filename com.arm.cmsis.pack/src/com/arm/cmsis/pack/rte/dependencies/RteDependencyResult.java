@@ -58,6 +58,15 @@ public class RteDependencyResult extends RteDependencyItem implements IRteDepend
 		fDependencies.add(dependency);
 	}
 
+	@Override
+	public void removeDependency(IRteDependency dependency) {
+		if(dependency == null)
+			return;
+		if(!fDependencies.contains(dependency))
+			return;
+		fDependencies.remove(dependency);
+	}
+
 
 	@Override
 	public void setEvaluationResult(EEvaluationResult result) {
@@ -74,8 +83,6 @@ public class RteDependencyResult extends RteDependencyItem implements IRteDepend
 		for (Iterator<IRteDependency> iterator = fDependencies.iterator(); iterator.hasNext();) {
 			IRteDependency d = iterator.next();
 			EEvaluationResult r = d.getEvaluationResult();
-			if(d.isDeny() && r == EEvaluationResult.FULFILLED)
-				r = EEvaluationResult.INCOMPATIBLE;
 			if(r.ordinal() > thisOrdinal) {
 				iterator.remove();
 				cachedChildArray = null;
@@ -124,4 +131,5 @@ public class RteDependencyResult extends RteDependencyItem implements IRteDepend
 			return s;
 		return super.getDescription();
 	}
+
 }

@@ -30,10 +30,12 @@ public class RteProjectNature implements IProjectNature {
 	
 	@Override
 	public void configure() throws CoreException {
+		// does nothing
 	}
 
 	@Override
 	public void deconfigure() throws CoreException {
+		// does nothing
 	}
 
 	@Override

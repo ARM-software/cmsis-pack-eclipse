@@ -12,8 +12,8 @@
 package com.arm.cmsis.pack.data;
 
 /**
- *
+ * Interface for taxonomy items
  */
 public interface ICpTaxonomy extends ICpItem {
-
+ // currently is only used for type matching 
 }

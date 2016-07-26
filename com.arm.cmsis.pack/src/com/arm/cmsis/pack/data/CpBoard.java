@@ -37,7 +37,7 @@ public class CpBoard extends CpItem implements ICpBoard {
 
 		  String name = getAttribute(CmsisConstants.NAME);
 		  if(name != null && !name.isEmpty()) {
-		    id += CmsisConstants.DOBLE_COLON;
+		    id += CmsisConstants.DOUBLE_COLON;
 		    id += name;
 		  }
 		  // TODO: commented out for easy filtering of examples
@@ -60,9 +60,17 @@ public class CpBoard extends CpItem implements ICpBoard {
 			switch(tag) {
 			case CmsisConstants.MOUNTED_DEVICE_TAG:
 			case CmsisConstants.COMPATIBLE_DEVICE_TAG:
-				if(item.attributes().matchCommonAttributes(deviceAttributes)) {
-					return true;
+				String dName = item.getAttribute(CmsisConstants.DNAME);
+				if(!dName.isEmpty()) {
+					if(deviceAttributes.containsValue(dName)) { // covers Dvariant
+						return true;
+					}
+				} 
+				if(!dName.isEmpty() || item.hasAttribute(CmsisConstants.DFAMILY) || item.hasAttribute(CmsisConstants.DSUBFAMILY)) {
+					if(item.attributes().matchAttributes(deviceAttributes, CmsisConstants.D_ATTRIBUTE_PREFIX))
+						return true;
 				}
+					
 			default:
 				break;
 			}

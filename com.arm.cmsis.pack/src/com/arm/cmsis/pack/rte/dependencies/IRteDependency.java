@@ -63,4 +63,7 @@ public interface IRteDependency extends IRteDependencyItem {
 	 */
 	void addStopItem(IRteComponentItem item, EEvaluationResult result);
 	
+	
+	int getFlags();
+	
 }

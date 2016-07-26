@@ -12,33 +12,42 @@
 package com.arm.cmsis.pack.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.LinkedList;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 
 /**
- * Class for different utilities  
+ * Class for different utilities
  */
 public class Utils {
 
 	static public final String QUOTE = "\"";  //$NON-NLS-1$
 	/**
-	 * Find all pdsc recursively from given directory  
-	 * @param dir directory to start search  
+	 * Find all pdsc recursively from given directory
+	 * @param dir directory to start search
 	 * @param files list to collect items, if null the list will be allocated
-	 * @param depth number of sub-directory levels to search for: 0 - search current directory only 
+	 * @param depth number of sub-directory levels to search for: 0 - search current directory only
 	 * @return list of found pdsc files
 	 */
 	static public Collection<String> findPdscFiles(File dir, Collection<String> files, int depth){
-		if( files == null)
-			 files = new LinkedList<String>();
-		
+		if( files == null) {
+			files = new LinkedList<String>();
+		}
+
 		File[] list = dir.listFiles();
-        if (list == null) 
-        	return  files;
+        if (list == null) {
+			return  files;
+		}
         boolean found = false;
-        // search dir for pdsc files 
+        // search dir for pdsc files
         for ( File f : list ) {
             if( f.isFile() && !f.isHidden()) {
             	String name = f.getName();
@@ -48,13 +57,15 @@ public class Utils {
             	}
             }
         }
-        if(found) // do not search sub-directories, because they cannot contain other pdsc files  
-        	return files;
-		
-        if(depth <= 0) // max depth is reached 
-        	return files;
+        if(found) {
+			return files;
+		}
+
+        if(depth <= 0) {
+			return files;
+		}
         // search sub-directories
-        // search dir for pdsc files 
+        // search dir for pdsc files
         for ( File f : list ) {
             if( f.isDirectory() && !f.isHidden() && !f.getName().startsWith(".")) { //$NON-NLS-1$
             	findPdscFiles(f,  files, depth-1);
@@ -62,15 +73,16 @@ public class Utils {
         }
        	return  files;
 	}
-	
+
 	/**
-	 * Replaces all '*' and '?' to 'x'  and all non-alphanumeric chars to '_' in supplied string  
+	 * Replaces all '*' and '?' to 'x'  and all non-alphanumeric chars to '_' in supplied string
 	 * @param s source string
 	 * @return the resulting string
 	 */
 	static public String wildCardsToX(String s)	{
-		if(s == null || s.isEmpty())
+		if(s == null || s.isEmpty()) {
 			return s;
+		}
 
 		StringBuilder res = new StringBuilder();
 		for(int i = 0; i < s.length(); i++){
@@ -87,77 +99,86 @@ public class Utils {
 		}
 		return res.toString();
 	}
-	
+
 	/**
 	 * Adds trailing slash to path
-	 * @param path path to add slash 
-	 * @return the result string 
+	 * @param path path to add slash
+	 * @return the result string
 	 */
 	static public String addTrailingSlash(String path) {
-		if(path == null || path.isEmpty() || path.endsWith("/")) //$NON-NLS-1$
+		if(path == null || path.isEmpty() || path.endsWith("/")) { //$NON-NLS-1$
 			return path;
-		if(path.endsWith(File.separator)) 
+		}
+		if(path.endsWith(File.separator)) {
 			path = removeTrailingSlash(path);
+		}
 		return path + "/";  //$NON-NLS-1$
 	}
-	
+
 	/**
 	 * Removes trailing slash from path
-	 * @param path path to remove slash 
-	 * @return the result string 
+	 * @param path path to remove slash
+	 * @return the result string
 	 */
 	static public String removeTrailingSlash(String path) {
-		if(path == null || path.isEmpty())
+		if(path == null || path.isEmpty()) {
 			return path;
-		if(path.endsWith("/") || path.endsWith(File.separator))  //$NON-NLS-1$
+		}
+		if(path.endsWith("/") || path.endsWith(File.separator)) { //$NON-NLS-1$
 			return path.substring(0, path.length() - 1);
+		}
 		return path;
 	}
 
-	
+
 	/**
-	 * Extracts filename portion out of supplied pathname (leaves last segment only)  
+	 * Extracts filename portion out of supplied pathname (leaves last segment only)
 	 * @param path absolute or relative path with forward slashes as delimiters
-	 * @return the result filename 
+	 * @return the result filename
 	 */
 	static public String extractFileName(String path) {
-		if(path == null || path.isEmpty())
+		if(path == null || path.isEmpty()) {
 			return path;
+		}
 
 		int pos = path.lastIndexOf('/');
-		if(pos < 0)
+		if(pos < 0) {
 			pos = path.lastIndexOf('\\');
-		if(pos >= 0 )
+		}
+		if(pos >= 0 ) {
 			return path.substring(pos + 1);
+		}
 		return path;
 	}
 
-	
+
 	/**
-	 * Extracts base filename portion (without extension) out of supplied pathname  
+	 * Extracts base filename portion (without extension) out of supplied pathname
 	 * @param path absolute or relative path with forward slashes as delimiters
-	 * @return the result filename 
+	 * @return the result filename
 	 */
 	static public String extractBaseFileName(String path) {
-		if(path == null || path.isEmpty())
+		if(path == null || path.isEmpty()) {
 			return path;
+		}
 
-		String filename = extractFileName(path); 
+		String filename = extractFileName(path);
 		int pos = filename.lastIndexOf('.');
 		if(pos >= 0 ) {
 			return filename.substring(0, pos);
 		}
 		return filename;
 	}
-	
+
 	/**
-	 * Extracts file extension (leaves last segment only)  
+	 * Extracts file extension (leaves last segment only)
 	 * @param filename absolute or relative filename with forward slashes as delimiters
-	 * @return the result filename 
+	 * @return the result filename
 	 */
 	static public String extractFileExtension(String filename) {
-		if(filename == null || filename.isEmpty())
+		if(filename == null || filename.isEmpty()) {
 			return filename;
+		}
 
 		int pos = filename.lastIndexOf('.');
 		if(pos >= 0 ) {
@@ -166,43 +187,65 @@ public class Utils {
 		return null;
 	}
 
-	
+
 	/**
-	 * Extracts path portion out of supplied pathname (removes section out last slash)  
+	 * Extracts path portion out of supplied pathname (removes section out last slash)
 	 * @param path absolute or relative path with forward slashes as delimiters
+	 * @param keepSlash flag if to keep or remove trailing slash 
 	 * @return the result path
 	 */
 	static public String extractPath(String path, boolean keepSlash) {
-		if(path == null || path.isEmpty())
+		if(path == null || path.isEmpty()) {
 			return path;
+		}
 
 		int pos = path.lastIndexOf('/');
-		if(pos < 0)
+		if(pos < 0) {
 			pos = path.lastIndexOf('\\');
+		}
 		if(pos >= 0 ) {
-			if(keepSlash)
+			if(keepSlash) {
 				pos++;
+			}
 			return path.substring(0, pos);
 		}
 		return path;
 	}
-	
+
+	/**
+	 * Check if a URL string is valid
+	 * @param urlStr the URL string
+	 * @return true if the URL is valid
+	 */
+	static public boolean isValidURL(String urlStr) {
+		if (urlStr == null) {
+			return false;
+		}
+		try {
+			new URL(urlStr);
+			return true;
+		} catch (MalformedURLException e) {
+			return false;
+		}
+	}
+
 	/**
 	 * Surround supplied path with quotes if needed
 	 * @param path path to surround with quotes
 	 * @return quoted string
 	 */
 	static public String addQuotes(String path) {
-		if(path == null || path.isEmpty())
+		if(path == null || path.isEmpty()) {
 			return path;
+		}
 
-		String quoted = CmsisConstants.EMPTY_STRING; 
-		
+		String quoted = CmsisConstants.EMPTY_STRING;
+
 		if(!path.startsWith(QUOTE)) {
 			quoted = QUOTE;
 		}
 		quoted += path;
-		
+
 		if(!path.endsWith(QUOTE)) {
 			quoted += QUOTE;
 		}
@@ -210,10 +253,10 @@ public class Utils {
 	}
 
 	/**
-	 * Returns index of string in a string collection 
-	 * @param stringCollection collection of strings 
+	 * Returns index of string in a string collection
+	 * @param stringCollection collection of strings
 	 * @param str string to search for
-	 * @return index of the string if found, otherwise -1 
+	 * @return index of the string if found, otherwise -1
 	 */
 	static public int indexOf(Collection<String> stringCollection, String str) {
 		if (str != null && stringCollection != null) {
@@ -229,10 +272,10 @@ public class Utils {
 	}
 
 	/**
-	 * Returns index of string in a string array 
-	 * @param stringArray collection of strings 
+	 * Returns index of string in a string array
+	 * @param stringArray collection of strings
 	 * @param str string to search for
-	 * @return index of the string if found, otherwise -1 
+	 * @return index of the string if found, otherwise -1
 	 */
 	static public int indexOf(String[] stringArray, String str) {
 		if (str != null && stringArray != null) {
@@ -247,10 +290,10 @@ public class Utils {
 		return -1;
 	}
 
-	
+
 	/**
-	 * Returns clock value with suffix 
-	 * @param dclock String representing decimal clock frequency  
+	 * Returns clock value with suffix
+	 * @param dclock String representing decimal clock frequency
 	 * @return scaled string
 	 */
 	static public String getScaledClockFrequency(String dclock)
@@ -269,11 +312,11 @@ public class Utils {
 	  }
 	}
 
-	
+
 	/**
-	 * Returns readable representation of memory size  
+	 * Returns readable representation of memory size
 	 * @param size memory size in bytes
-	 * @return readable memory size string 
+	 * @return readable memory size string
 	 */
 	static public String getMemorySizeString(long size)
 	{
@@ -295,5 +338,88 @@ public class Utils {
 	  return Long.toString(size) + " MB"; //$NON-NLS-1$
 	}
 
-	
+	/**
+	 * Copy from one directory to another
+	 *
+	 * @param sourceLocation source directory
+	 * @param destLocation destination directory
+	 * @throws IOException
+	 */
+	public static void copyDirectory(File sourceLocation, File destLocation) throws IOException {
+		if(sourceLocation == null)
+			return;
+		if (sourceLocation.isDirectory()) {
+			String[] children = sourceLocation.list();
+			if(children == null)
+				return;
+			for (String child : children) {
+				copyDirectory(new File(sourceLocation, child), new File(destLocation, child));
+			}
+		} else {
+			if (!destLocation.getParentFile().exists()) {
+				destLocation.getParentFile().mkdirs();
+			}
+			copy(sourceLocation, destLocation);
+		}
+	}
+
+	/**
+	 * Copy sourceFile to destFile
+	 *
+	 * @param source source file
+	 * @param dest destination file
+	 */
+	public static void copy(File source, File dest) throws IOException {
+		InputStream input = null;
+		OutputStream output = null;
+		try {
+			input = new FileInputStream(source);
+			if (dest.exists()) {
+				dest.delete();
+			}
+			output = new FileOutputStream(dest);
+			byte[] buf = new byte[1024];
+			int bytesRead;
+			while ((bytesRead = input.read(buf)) > 0) {
+				output.write(buf, 0, bytesRead);
+			}
+			dest.setWritable(true, true);
+		} finally {
+			if (input != null) {
+				input.close();
+			}
+			if (output != null) {
+				output.close();
+			}
+		}
+	}
+
+	/**
+	 * Delete the folder recursively: first file, then folder
+	 *
+	 * @param folder the folder
+	 */
+	public static void deleteFolderRecursive(File folder) {
+		if (folder == null) {
+			return;
+		}
+		if (folder.exists()) {
+			File[] files = folder.listFiles();
+			if(files == null)
+				return;
+			for (File f : files) {
+				if (f.isDirectory()) {
+					deleteFolderRecursive(f);
+					f.setWritable(true, false);
+					f.delete();
+				} else {
+					f.setWritable(true, false);
+					f.delete();
+				}
+			}
+			folder.setWritable(true, false);
+			folder.delete();
+		}
+	}
+
 }

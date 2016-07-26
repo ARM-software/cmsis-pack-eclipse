@@ -1,15 +1,19 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* Eclipse Project - generation from template   
-* ARM Ltd and ARM Germany GmbH - application-specific implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Eclipse Project - generation from template
+ * ARM Ltd and ARM Germany GmbH - application-specific implementation
+ *******************************************************************************/
 package com.arm.cmsis.pack.ui.editors;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.nio.charset.Charset;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -23,8 +27,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.text.IDocument;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
@@ -33,11 +36,10 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.editors.text.TextEditor;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
-import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import com.arm.cmsis.pack.CpPlugIn;
@@ -46,11 +48,10 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
-import com.arm.cmsis.pack.parser.ConfigParser;
+import com.arm.cmsis.pack.parser.CpConfigParser;
 import com.arm.cmsis.pack.rte.IRteModelController;
 import com.arm.cmsis.pack.rte.RteModel;
 import com.arm.cmsis.pack.ui.CpStringsUI;
-import com.arm.cmsis.pack.ui.xmleditor.XMLEditor;
 
 /**
  * An example showing how to create an RTE configuration multi-page editor. This
@@ -59,7 +60,6 @@ import com.arm.cmsis.pack.ui.xmleditor.XMLEditor;
  * <li>page 0 contains an RteManagerWidget
  * <li>page 1 contains an RteDesviceInfo
  * <li>page 1 contains an RtePackSelectorWidget
- * <li>page 3 shows XML representation of saved configuration info
  * </ul>
  */
 public class RteEditor extends MultiPageEditorPart implements IResourceChangeListener, IRteEventListener {
@@ -71,44 +71,17 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 	private int componentPageIndex = 0;
 	private int devicePageIndex = 1;
 	private int packPageIndex = 2;
-	private int xmlPageIndex = 3;
 	private int activePageIndex = 0; // initially the page with index 0 is activated
-	
-	
-	/** The text editor used in XML page  */
-	TextEditor textEditor = null;
-	RteEditor  thisEditor = null;
 
 	IRteModelController fModelController = null;
-	ConfigParser parser = null;
+	CpConfigParser parser = null;
+	IFile iFile;
 
 	public RteEditor() {
 		super();
-		thisEditor = this;
-		parser = new ConfigParser();
+		parser = new CpConfigParser();
 		CpPlugIn.addRteListener(this);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-	}
-
-	@Override
-	protected void setInput(IEditorInput input) {
-		super.setInput(input);
-		if(textEditor != null) {
-			textEditor.setInput(input);
-			setPartName(textEditor.getTitle());
-		}
-	}
-
-	void createXmlPage() {
-		try {
-			textEditor = new XMLEditor();
-			xmlPageIndex = addPage(textEditor, getEditorInput());
-			setPageText(xmlPageIndex, CpStringsUI.RteConfigurationEditor_XmlTab);
-			setPartName(textEditor.getTitle());
-		} catch (PartInitException e) {
-			ErrorDialog.openError(getSite().getShell(),
-					CpStringsUI.RteConfigurationEditor_ErrorCreatingNestedEditor, null, e.getStatus());
-		}
 	}
 
 	void createRteManagerPage() {
@@ -134,23 +107,25 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		setPageText(devicePageIndex, CpStringsUI.RteDevicePage_Device);
 	}
 
-	
+	@Override
+	protected void setInput(IEditorInput input) {
+		super.setInput(input);
+		iFile = ResourceUtil.getFile(input);
+		String title= input.getName();
+		setPartName(title);
+	}
+
 	@Override
 	protected void createPages() {
 		createRteManagerPage();
 		createDeviceSelectorPage();
 		createPackSelectorPage();
-		createXmlPage();
 		createConfiguration();
 	}
 
 	protected void createConfiguration() {
-		// create configuration out of text read by text editor
-		IDocumentProvider dp = textEditor.getDocumentProvider();
-		IDocument doc = dp.getDocument(textEditor.getEditorInput());
-		String xml = doc.get();
-
-		ICpItem root = parser.parseXmlString(xml);
+		File file = iFile.getLocation().toFile();
+		ICpItem root = parser.parseFile(file.getAbsolutePath());
 
 		fModelController = new RteEditorController(new RteModel());
 		if (root != null) {
@@ -175,72 +150,41 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		super.dispose();
 	}
 
-	protected String getXmlString(){
+	protected String getXmlString() {
 		if (fModelController != null) {
 			ICpConfigurationInfo info = fModelController.getConfigurationInfo();
-			return  parser.writeToXmlString(info);
+			return parser.writeToXmlString(info);
 		}
 		return CmsisConstants.EMPTY_STRING;
 	}
-	
-	protected String getEditorXmlString(){
-		IDocumentProvider dp = textEditor.getDocumentProvider();
-		IDocument doc = dp.getDocument(textEditor.getEditorInput());
-		String xml = doc.get();
-		return xml;
-	}
 
-
-	protected void setXmlToEditor(String xml ){
-		if (xml != null) {
-			IDocumentProvider dp = textEditor.getDocumentProvider();
-			IDocument doc = dp.getDocument(textEditor.getEditorInput());
-			doc.set(xml);
-		}
-	}
-
-	
 	@Override
 	public void doSave(IProgressMonitor monitor) {
-		
-		if (textEditor == null) {
-			return;
-		}
-
-		if(!isDirty()) {
-			return;
-		}
-
 		fModelController.commit();
-		String xml = getXmlString();
-		if (xml != null) {
-			setXmlToEditor(xml);
-		}
 
-		IEditorPart editor = getEditor(xmlPageIndex);
-		editor.doSave(monitor);
+		String xml = getXmlString();
+		try {
+			iFile.setContents(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())),
+					true, true, monitor);
+			iFile.refreshLocal(IResource.DEPTH_ZERO, monitor);
+		} catch (CoreException e) {
+		}
+		firePropertyChange(IEditorPart.PROP_DIRTY);
 	}
 
 	@Override
 	public void doSaveAs() {
-		if (textEditor == null) {
-			return;
-		}
-
-		if(!isDirty()) {
-			return;
-		}
-
 		fModelController.commit();
+
 		String xml = getXmlString();
-		if (xml != null) {
-			setXmlToEditor(xml);
-		}		
-		
-		IEditorPart editor = getEditor(xmlPageIndex);
-		editor.doSaveAs();
-		setPageText(0, editor.getTitle());
-		setInput(editor.getEditorInput());
+		try {
+			IProgressMonitor monitor = new NullProgressMonitor();
+			iFile.setContents(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())),
+					true, true, monitor);
+			iFile.refreshLocal(IResource.DEPTH_ZERO, monitor);
+		} catch (CoreException e) {
+		}
+		firePropertyChange(IEditorPart.PROP_DIRTY);
 	}
 
 	public void gotoMarker(IMarker marker) {
@@ -253,8 +197,7 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 	 * checks that the input is an instance of <code>IFileEditorInput</code>.
 	 */
 	@Override
-	public void init(IEditorSite site, IEditorInput editorInput)
-			throws PartInitException {
+	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
 		if (!(editorInput instanceof IFileEditorInput)) {
 			throw new PartInitException(CpStringsUI.RteConfigurationEditor_InvalidInput);
 		}
@@ -269,25 +212,12 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 	@Override
 	protected void pageChange(int newPageIndex) {
 		super.pageChange(newPageIndex);
-		if(activePageIndex == newPageIndex) {
+		if (activePageIndex == newPageIndex) {
 			return;
 		}
 		activePageIndex = newPageIndex;
-		if (fModelController != null ) {
+		if (fModelController != null) {
 			fModelController.updateConfigurationInfo();
-			if(newPageIndex == xmlPageIndex) {
-				refreshXmlPage();
-			}
-		}
-	}
-	
-	protected void refreshXmlPage()	{
-		String modelXml = getXmlString();
-		String editorXml = getEditorXmlString();
-		if (modelXml != null) {
-			if(editorXml == null || !editorXml.equals(modelXml)) {
-				setXmlToEditor(modelXml);
-			}
 		}
 	}
 
@@ -296,27 +226,24 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		if (fModelController == null) {
 			return;
 		}
-		
-		switch(event.getTopic()) {
-		case RteEvent.CONFIGURATION_MODIFIED:
-		case RteEvent.COMPONENT_SELECTION_MODIFIED:
-		case RteEvent.FILTER_MODIFIED:
-			firePropertyChange(IEditorPart.PROP_DIRTY);
-			return;
-		case RteEvent.PACKS_RELOADED:
-			if(fModelController != null) {
-				fModelController.reloadPacks();
-				if(activePageIndex == xmlPageIndex) {
-					refreshXmlPage();
+
+		switch (event.getTopic()) {
+			case RteEvent.CONFIGURATION_MODIFIED:
+			case RteEvent.COMPONENT_SELECTION_MODIFIED:
+			case RteEvent.FILTER_MODIFIED:
+				firePropertyChange(IEditorPart.PROP_DIRTY);
+				return;
+			case RteEvent.PACKS_RELOADED:
+				if (fModelController != null) {
+					fModelController.reloadPacks();
 				}
-			}
-		default: 
+			default:
 		}
 	}
 
 	@Override
 	public boolean isDirty() {
-		if(fModelController != null) {
+		if (fModelController != null) {
 			return fModelController.isModified();
 		}
 		return false;
@@ -332,50 +259,46 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
 		if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
- 	                IFile f= ((FileEditorInput) textEditor.getEditorInput()).getFile();
- 	                IProject project = f.getProject();
-					IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
-					for (int i = 0; i < pages.length; i++) {
-						if (project.equals(event.getResource())) {
-							IEditorPart editorPart = pages[i].findEditor(textEditor.getEditorInput());
-							pages[i].closeEditor(editorPart, true);
-						}
+			Display.getDefault().asyncExec(() -> {
+				IProject project = iFile.getProject();
+				IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
+				for (int i = 0; i < pages.length; i++) {
+					if (project.equals(event.getResource())) {
+						IEditorPart editorPart = ResourceUtil.findEditor(pages[i], iFile);
+						pages[i].closeEditor(editorPart, true);
 					}
 				}
-			}
-			);
-		}   if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-			final IFile f= ((FileEditorInput) textEditor.getEditorInput()).getFile();
+			});
+		}
+		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
 			IResourceDelta resourseDelta = event.getDelta();
 			IResourceDeltaVisitor deltaVisitor = new IResourceDeltaVisitor() {
 				@Override
 				public boolean visit(IResourceDelta delta) {
 					IResource resource = delta.getResource();
 					int type = resource.getType();
-					if(type == IResource.ROOT || type == IResource.PROJECT)
-					 {
-						return true; // workspace or project => visit children  
+					if (type == IResource.ROOT || type == IResource.PROJECT) {
+						return true; // workspace or project => visit children
 					}
 
 					int kind = delta.getKind();
 					int flags = delta.getFlags();
 
-					if(type == IResource.FILE && kind == IResourceDelta.REMOVED && resource.equals(f)) {
-						if((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
+					if (type == IResource.FILE && kind == IResourceDelta.REMOVED && resource.equals(iFile)) {
+						if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
 							// renamed
 							IPath newPath = delta.getMovedToPath();
-							IFile r = (IFile)ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
+							IFile r = (IFile) ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
 							final FileEditorInput fileEditorInput = new FileEditorInput(r);
-							Display.getDefault().asyncExec(new Runnable() {
-								@Override
-								public void run() {
-									setInput(fileEditorInput);
-								}}); 
+							Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
 							return false;
-						} 
+						} else if (flags == 0) { // project deleted
+							Display.getDefault().asyncExec(() -> {
+								RteEditor.this.getEditorSite().getPage()
+										.closeEditor(RteEditor.this, true);
+							});
+							return false;
+						}
 						return false;
 					}
 					return true;
@@ -389,21 +312,21 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		}
 	}
 
-	
 	// bind to framework
 	@Override
 	@SuppressWarnings({ "rawtypes" })
 	public Object getAdapter(Class required) {
 		if (IContentOutlinePage.class.equals(required)) {
 			// two outline views for Components and xml views.
-			// These views must implements IContentOutlinePage or extends ContentOutlinePage
+			// These views must implements IContentOutlinePage or extends
+			// ContentOutlinePage
 			// OutlineView ov = new OutlineView();
 			// return ov;
 			if (getActivePage() == 1) {
-				//return new XMLContentOutlinePage(this);
+				// return new XMLContentOutlinePage(this);
 			}
-	    }
-		
+		}
+
 		return super.getAdapter(required);
 	}
 

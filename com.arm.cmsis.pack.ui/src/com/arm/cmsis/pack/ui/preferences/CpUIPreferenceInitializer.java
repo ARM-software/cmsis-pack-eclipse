@@ -7,7 +7,8 @@
 *
 * Contributors:
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/package com.arm.cmsis.pack.ui.preferences;
+*******************************************************************************/
+package com.arm.cmsis.pack.ui.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.core.runtime.preferences.DefaultScope;

@@ -12,11 +12,12 @@
 package com.arm.cmsis.pack.info;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPackFilter;
+import com.arm.cmsis.pack.data.ICpRootItem;
 
 /**
  * Interface representing root element of instantiated CMSIS pack data 
  */
-public interface ICpConfigurationInfo extends ICpItem {
+public interface ICpConfigurationInfo extends ICpRootItem {
 	
 	/**
 	 * Returns device info stored in the configuration
@@ -54,4 +55,10 @@ public interface ICpConfigurationInfo extends ICpItem {
 	 * @return ICpPackFilter
 	 */
 	ICpPackFilter createPackFilter();
+	
+	/**
+	 * Returns path to the directory where Device Family Pack is installed   
+	 * @return path to DFM installation directory or null if DFP is not installed  
+	 */
+	String getDfpPath();
 }

@@ -11,7 +11,7 @@
 
 package com.arm.cmsis.pack.configuration;
 
-import com.arm.cmsis.pack.build.settings.BuildSettings;
+import com.arm.cmsis.pack.build.BuildSettings;
 import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
@@ -19,7 +19,6 @@ import com.arm.cmsis.pack.generic.IAttributes;
  */
 public class RteBuildSettings extends BuildSettings {
 	protected IAttributes deviceAttributes = null;
-	
 
 	public RteBuildSettings() {
 	}
@@ -27,10 +26,8 @@ public class RteBuildSettings extends BuildSettings {
 	
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub
 		super.clear();
 	}
-
 
 
 	@Override
@@ -44,7 +41,4 @@ public class RteBuildSettings extends BuildSettings {
 	public void setDeviceAttributes(IAttributes deviceAttributes) {
 		this.deviceAttributes = deviceAttributes;
 	}
-
-	
-	
 }

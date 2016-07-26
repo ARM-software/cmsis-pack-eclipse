@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<toc label="TOC  for CMSIS Pack Manager" link_to="toc.xml#a_pack_manager">
+   <topic href="html/reference/pack_manager_packs.html" label="Packs">
+   </topic>
+   <topic href="html/reference/pack_manager_examples.html" label="Examples">
+   </topic>
+   <topic href="html/reference/pack_manager_devices.html" label="Devices">
+   </topic>
+   <topic href="html/reference/pack_manager_boards.html" label="Boards">
+   </topic>
+   <topic href="html/reference/pack_manager_properties.html" label="Pack Properties">
+   </topic>
+</toc>

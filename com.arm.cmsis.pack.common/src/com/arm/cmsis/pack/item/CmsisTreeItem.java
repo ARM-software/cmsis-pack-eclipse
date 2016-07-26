@@ -23,7 +23,7 @@ import com.arm.cmsis.pack.utils.WildCards;
  *  Generic tree of Cmsis items
  */
 public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implements  ICmsisTreeItem<T> {
-	
+
 	private T fParent = null;
 	protected String fName = null;
 	protected Collection<T> fChildren = null;
@@ -34,10 +34,10 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	public CmsisTreeItem() {
 	}
 
-	
+
 	/**
 	 * Hierarchical constructor
-	 * @param parent parent item in the hierarchy 
+	 * @param parent parent item in the hierarchy
 	 */
 	public CmsisTreeItem(T parent) {
 		fParent = parent;
@@ -46,13 +46,13 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	/**
 	 * Hierarchical constructor
 	 * @param parent parent item in the hierarchy
-	 * @param name item name 
+	 * @param name item name
 	 */
 	public CmsisTreeItem(T parent, String name) {
 		fParent = parent;
 		fName = name;
 	}
-	
+
 
 	@Override
 	public void clear() {
@@ -71,8 +71,9 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	@Override
 	public boolean purge() {
 		Collection<? extends T> children = getChildren();
-		if(children == null)
+		if(children == null) {
 			return false;
+		}
 
 		for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
 			T child = iterator.next();
@@ -80,7 +81,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 				iterator.remove();
 				cachedChildArray = null;
 			}
-		}	
+		}
 		if(children.isEmpty()) {
 			destroy();
 			return true;
@@ -91,10 +92,12 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 	@Override
 	public void setParent(T parent) {
-		if(fParent == parent)
+		if(fParent == parent) {
 			return;
-		if(fParent != null)
+		}
+		if(fParent != null) {
 			fParent.removeChild(getThisItem());
+		}
 		fParent = parent;
 	}
 
@@ -102,12 +105,13 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	public String getName() {
 		if(fName == null) {
 			fName = constructName();
-			if(fName == null && !fName.isEmpty())
+			if(fName == null && !fName.isEmpty()) {
 				fName = super.getName();
+			}
 		}
 		return fName;
 	}
-	
+
 	/**
 	 * Constructs item name
 	 * @return constructed item name
@@ -125,32 +129,34 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	public T getThisItem() {
 		return (T)this; // we know that this item type is T : T extends ICmsisTreeItem<T>
 	}
-	
+
 	@Override
 	public T getRoot() {
-		if(fParent == null)
+		if(fParent == null) {
 			return getThisItem();
+		}
 		return fParent.getRoot();
 	}
-	
+
 	@Override
 	public Object[] getHierachyPath() {
 		List<Object> segments =  new LinkedList<Object>();
 		segments.add(this);
 		for(T item = getParent(); item != null; item = item.getParent()){
-			if(item.getParent() != null)
+			if(item.getParent() != null) {
 				segments.add(0, item);
+			}
 		}
 		return segments.toArray();
 	}
-	
+
 
 	@Override
 	public Collection<? extends T> getChildren() {
 		return fChildren;
 	}
-	
-		
+
+
 	@Override
 	public void addChild(T item) {
 		if(item != null) {
@@ -160,26 +166,27 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	}
 
 	/**
-	 * Returns child collection, creates one if not created yet   
-	 * @return child  
+	 * Returns child collection, creates one if not created yet
+	 * @return child
 	 */
 	protected Collection<T> children() {
-		if(fChildren == null )
+		if(fChildren == null ) {
 			fChildren = createCollection();
+		}
 		return fChildren;
 	}
-	
+
 	/**
 	 * Creates collection suitable to store child items.
-	 * Implementation can use List, Set or their descendants     
+	 * Implementation can use List, Set or their descendants
 	 * @return created child collection
 	 */
 	protected Collection<T> createCollection(){
 		// default creates linkedList
 		return new LinkedList<T>();
 	}
-	
-	
+
+
 	@Override
 	public boolean hasChildren() {
 		Collection<? extends T> children = getChildren();
@@ -189,11 +196,12 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	@Override
 	public int getChildCount() {
 		Collection<? extends T> children = getChildren();
-		if(children != null)
+		if(children != null) {
 			return children.size();
+		}
 		return 0;
 	}
-	
+
 
 	@Override
 	public T getEffectiveItem() {
@@ -204,8 +212,8 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	public T getEffectiveParent() {
 		return getParent();
 	}
-	
-	
+
+
 	@Override
 	public T getEffectiveHierarchyItem() {
 		// default returns this item
@@ -217,8 +225,9 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	public Object[] getEffectiveHierachyPath() {
 		List<Object> segments =  new LinkedList<Object>();
 		for(T item = getEffectiveHierarchyItem(); item != null; item = item.getEffectiveParent()){
-			if(item.getParent() != null)
+			if(item.getParent() != null) {
 				segments.add(0, item);
+			}
 		}
 		return segments.toArray();
 	}
@@ -236,8 +245,9 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	@Override
 	public int getEffectiveChildCount() {
 		Collection<? extends T> children = getEffectiveChildren();
-		if(children != null)
+		if(children != null) {
 			return children.size();
+		}
 		return 0;	}
 
 	@Override
@@ -246,18 +256,19 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 		return children != null && !children.isEmpty();
 	}
 
-	
+
 	@Override
 	public String getItemKey(T item) {
-		if(item == null)
+		if(item == null) {
 			return null;
+		}
 		return item.getName(); // default returns item name
 	}
 
 
 	@Override
 	public T getFirstChild() {
-		Collection<? extends T> children = getChildren(); 
+		Collection<? extends T> children = getChildren();
 		if(children != null) {
 			for(T child : children) {
 				return child;
@@ -269,56 +280,70 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 	@Override
 	public String getFirstChildKey() {
-		Collection<? extends T> children = getChildren(); 
+		Collection<? extends T> children = getChildren();
 		if(children != null) {
 			for(T child : children) {
 				return getItemKey(child);
 			}
 		}
-		return null;	
+		return null;
 	}
 
 
 	@Override
 	public T getFirstChild(String key) {
-		if(key == null)
+		if(key == null) {
 			return null;
-		Collection<? extends T> children = getChildren();  
+		}
+		Collection<? extends T> children = getChildren();
 		if(children != null) {
 			for(T child : children) {
-				if(getItemKey(child).equals(key))
+				if(getItemKey(child).equals(key)) {
 					return child;
+				}
 			}
 		}
 		return null;
 	}
-	
-	
-	
+
+
+	@Override
+	public String getFirstChildText(String key) {
+		T item = getFirstChild(key);
+		if(item != null) {
+			return item.getText();
+		}
+		return null;
+	}
+
+
 	@Override
 	public void removeChild(T childToRemove) {
 		Collection<? extends T> children = getChildren();
-		if(children == null)
+		if(children == null) {
 			return;
+		}
 		for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
 			T child = iterator.next();
-			if(child == childToRemove) {
+			if(child.equals(childToRemove)) {
 				iterator.remove();
 				cachedChildArray = null;
 			}
-		}	
+		}
 	}
 
 
 	@Override
 	public T removeFirstChild(String key) {
-		if(key == null)
+		if(key == null) {
 			return null;
-		Collection<? extends T> children = getChildren();  
+		}
+		Collection<? extends T> children = getChildren();
 		if(children != null) {
 			for(T child : children) {
 				if(getItemKey(child).equals(key)) {
 					children.remove(child);
+					cachedChildArray = null;
 					return child;
 				}
 			}
@@ -329,47 +354,55 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 	@Override
 	public T removeAllChildren(String key) {
-		if(key == null)
+		if(key == null) {
 			return null;
+		}
 		Collection<? extends T> children = getChildren();
-		if(children == null)
+		if(children == null) {
 			return null;
+		}
 		T firstRemovedChild = null;
 		for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
 			T child = iterator.next();
 			if(getItemKey(child).equals(key)) {
-				if(firstRemovedChild == null)
+				if(firstRemovedChild == null) {
 					firstRemovedChild = child;
+				}
 				iterator.remove();
 				cachedChildArray = null;
 			}
-		}	
+		}
 		return firstRemovedChild;
 	}
 
 
 	@Override
 	public void replaceChild(T item) {
-		if(item == null)
+		if(item == null) {
 			return;
-		if(item == this)
+		}
+		if(item == this) {
 			return;
+		}
 		removeAllChildren(getItemKey(item));
 		addChild(item);
 	}
 
 	@Override
 	public T getFirstItem(String pattern) {
-		if(WildCards.matchNoCase(pattern, getName()))
+		if(WildCards.matchNoCase(pattern, getName())) {
 			return getThisItem();
-		
+		}
+
 		Collection<? extends T> children = getChildren();
-		if(children == null)
+		if(children == null) {
 			return null;
+		}
 		for(T item : children) {
 			T matchingItem = item.getFirstItem(pattern);
-			if(matchingItem != null)
+			if(matchingItem != null) {
 				return matchingItem;
+			}
 		}
 		return null;
 	}

@@ -14,19 +14,22 @@ package com.arm.cmsis.pack.configuration;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IAdaptable;
 
-
-import com.arm.cmsis.pack.build.settings.IBuildSettings;
+import com.arm.cmsis.pack.build.IBuildSettings;
+import com.arm.cmsis.pack.data.ICpCodeTemplate;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
+import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
+import com.arm.cmsis.pack.info.ICpPackInfo;
 
 /**
  * The interface provides data needed for project update and build system   
  */
-public interface IRteConfiguration {
+public interface IRteConfiguration extends IAdaptable {
 	
 	/**
 	 * Returns underlying ICpConfigurationInfo object
@@ -66,6 +69,13 @@ public interface IRteConfiguration {
 	 * @return ICpFileInfo if exists
 	 */
 	ICpFileInfo getProjectFileInfo(String fileName);
+	
+	/**
+	 * Returns ICpFileInfos associated with project file resource  
+	 * @param fileName project relative path of a file (can contain *)
+	 * @return ICpFileInfos if exists
+	 */
+	ICpFileInfo[] getProjectFileInfos(String fileName);
 	
 	/**
 	 * Checks if file needs to be added to project (will appear in Project Explorer view) 
@@ -119,6 +129,18 @@ public interface IRteConfiguration {
 	String getSvdFile();
 	
 	/**
+	 * Returns Device Family Pack used by configuration   
+	 * @return ICpPack if DFP is installed or null   
+	 */
+	ICpPack getDfp();
+
+	/**
+	 * Returns path to the directory where Device Family Pack is installed   
+	 * @return path to DFP installation directory or null if DFP is not installed  
+	 */
+	String getDfpPath();
+	
+	/**
 	 * Returns startup component used by configuration (Cclass="Device", Cgroup="Startup", Csub="") 
 	 * @return startup ICpComponentInfo or null if not used 
 	 */
@@ -137,6 +159,18 @@ public interface IRteConfiguration {
 	ICpComponentInfo getCmsisRtosComponent();
 	
 	/**
+	 * Returns the root of CMSIS User Code Template
+	 * @return Root of CMSIS User Code Template
+	 */
+	ICpCodeTemplate getCmsisCodeTemplate();
+	
+	/**
+	 * Returns a list of missing packs
+	 * @return A list of missing packs
+	 */
+	Collection<ICpPackInfo> getMissingPacks();
+	
+	/**
 	 * Check if the configuration is valid - device and all components are resolved
 	 * @return true if configuration is valid
 	 * @see #validate()
@@ -149,5 +183,6 @@ public interface IRteConfiguration {
 	 * @see #isValid()
 	 */
 	Collection<String> validate();
-	
+
+
 }

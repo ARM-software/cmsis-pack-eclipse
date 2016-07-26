@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.ui.widgets;
 
@@ -40,34 +40,34 @@ import com.arm.cmsis.pack.ui.tree.AdvisedEditingSupport;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 
 /**
- * Tree widget to select pack versions 
+ * Tree widget to select pack versions
  */
 public class RtePackSelectorWidget extends RteWidget {
 	protected final static String[] VERSION_MODES = new String[]{CpStrings.Latest, CpStrings.Fixed, CpStrings.Excluded};
 
 	static final Color GREEN = new Color(Display.getCurrent(), CpPlugInUI.GREEN);
 	static final Color YELLOW = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
-	
+
 	static final String[] PACK_ICONS = new String[]{CpPlugInUI.ICON_PACKAGE,
-													CpPlugInUI.ICON_PACKAGE_EMPTY, 
+													CpPlugInUI.ICON_PACKAGE_EMPTY,
 													CpPlugInUI.ICON_PACKAGE_GREY,
 													CpPlugInUI.ICON_PACKAGE_RED,
 													CpPlugInUI.ICON_PACKAGES,
-													CpPlugInUI.ICON_PACKAGES_EMPTY, 
+													CpPlugInUI.ICON_PACKAGES_EMPTY,
 													CpPlugInUI.ICON_PACKAGES_GREY,
 													CpPlugInUI.ICON_PACKAGES_RED};
 	public static final int ICON_INDEX_EMPTY = 1;
 	public static final int ICON_INDEX_GREY = 2;
 	public static final int ICON_INDEX_RED = 3;
 	public static final int ICON_INDEX_PACKAGES = 4;
-	
-	
+
+
 	TreeViewer viewer = null;					// the Tree Viewer
 	private static final int COLPACK	= 0;
 	private static final int COLSEL 	= 1;
 	private static final int COLVERSION = 2;
 	private static final int COLDESCR 	= 3;
-	
+
 	public RtePackSelectorWidget() {
 	}
 
@@ -77,7 +77,7 @@ public class RtePackSelectorWidget extends RteWidget {
 		}
 		return null;
 	}
-	
+
 	public IRtePackFamily getRtePackFamily(Object obj){
 		if(obj instanceof IRtePackFamily) {
 			return (IRtePackFamily)obj;
@@ -95,34 +95,36 @@ public class RtePackSelectorWidget extends RteWidget {
 	public int getIconIndex(IRtePackItem item) {
 		int index = 0;
 		if(!item.isInstalled()) {
-			if(item.isUsed())
+			if(item.isUsed()) {
 				index = ICON_INDEX_RED;
-			else 
+			} else {
 				index = ICON_INDEX_EMPTY;
+			}
 		} else if (item.isExcluded()) {
 			index = ICON_INDEX_GREY;
 		}
-		
-		if(item instanceof IRtePackFamily)
+
+		if(item instanceof IRtePackFamily) {
 			index += ICON_INDEX_PACKAGES;
+		}
 		return index;
 	};
-	
+
 	/**
-	 * 	Content provider for RteValidateWidget tree 
+	 * 	Content provider for RteValidateWidget tree
 	 */
 	public class RtePackProvider extends TreeObjectContentProvider {
 		@Override
 		public Object[] getElements(Object inputElement) {
 			if(inputElement == getModelController()) {
 				return getModelController().getRtePackCollection().getChildArray();
-			} 
+			}
 			return super.getElements(inputElement);
 		}
 	}
-	
-	/** 
-	 * Column label provider for RtePackSelectorWidget 
+
+	/**
+	 * Column label provider for RtePackSelectorWidget
 	 */
 	public class RtePackSelectorColumnAdvisor extends RteColumnAdvisor {
 		/**
@@ -136,28 +138,30 @@ public class RtePackSelectorWidget extends RteWidget {
 		@Override
 		public CellControlType getCellControlType(Object obj, int columnIndex) {
 			IRtePackItem item = getRtePackItem(obj);
-			if(item == null)
+			if(item == null) {
 				return CellControlType.NONE;
+			}
 			IRtePackFamily packFamily = getRtePackFamily(obj);
 			switch (columnIndex) {
-				case COLSEL:
-					if(packFamily != null)
-						return CellControlType.MENU;
-					else
-						return CellControlType.CHECK;
-				case COLDESCR:
-					if(packFamily != null) {
-						String url = item.getUrl();
-						if(url != null && ! url.isEmpty()) 
-							return CellControlType.URL;
+			case COLSEL:
+				if(packFamily != null) {
+					return CellControlType.MENU;
+				}
+				return CellControlType.CHECK;
+			case COLDESCR:
+				if(packFamily != null) {
+					String url = item.getUrl();
+					if(url != null && ! url.isEmpty()) {
+						return CellControlType.URL;
 					}
-					break;
-				case COLPACK: 
-				case COLVERSION: 
-				default: 
-					break;
+				}
+				break;
+			case COLPACK:
+			case COLVERSION:
+			default:
+				break;
 			}
-			
+
 			return CellControlType.TEXT;
 		}
 
@@ -176,17 +180,17 @@ public class RtePackSelectorWidget extends RteWidget {
 			IRtePackItem item = getRtePackItem(obj);
 			if(item != null) {
 				String id = item.getId();
-				IRtePackFamily packFamily =  getRtePackFamily(obj); 
+				IRtePackFamily packFamily =  getRtePackFamily(obj);
 				switch(index) {
 				case COLPACK: {
-					if(packFamily != null)
+					if(packFamily != null) {
 						return id;
-					else
-						return item.getVersion();
+					}
+					return item.getVersion();
 				}
 				case COLSEL:
 					if(packFamily != null) {
-						int i = getCurrentSelectedIndex(obj, index);
+						int i = (int) getCurrentSelectedIndex(obj, index);
 						return VERSION_MODES[i];
 					}
 					break;
@@ -196,8 +200,9 @@ public class RtePackSelectorWidget extends RteWidget {
 					}
 					break;
 				case COLDESCR:
-					if(packFamily != null || !item.isInstalled())
+					if(packFamily != null || !item.isInstalled()) {
 						return item.getDescription();
+					}
 				default:
 					break;
 				}
@@ -206,7 +211,7 @@ public class RtePackSelectorWidget extends RteWidget {
 		}
 
 		@Override
-		public int getCurrentSelectedIndex(Object element, int columnIndex) {
+		public long getCurrentSelectedIndex(Object element, int columnIndex) {
 			if(columnIndex == COLSEL) {
 				IRtePackFamily packFamily = getRtePackFamily(element);
 				if(packFamily != null)  {
@@ -226,7 +231,7 @@ public class RtePackSelectorWidget extends RteWidget {
 			}
 			return null;
 		}
-		
+
 		@Override
 		public boolean canEdit(Object obj, int columnIndex) {
 			if(columnIndex == COLSEL) {
@@ -235,12 +240,13 @@ public class RtePackSelectorWidget extends RteWidget {
 			return false;
 		}
 
-		
+
 		@Override
 		public boolean isEnabled(Object obj, int columnIndex) {
 			if(columnIndex == COLSEL ) {
-				if(getModelController().getRtePackCollection().isUseAllLatestPacks())
+				if(getModelController().getRtePackCollection().isUseAllLatestPacks()) {
 					return false;
+				}
 				IRtePack pack = getRtePack(obj);
 				if(pack != null) {
 					return pack.getVersionMatchMode() != EVersionMatchMode.LATEST;
@@ -250,7 +256,7 @@ public class RtePackSelectorWidget extends RteWidget {
 			return true;
 		}
 
-		
+
 		@Override
 		public Image getImage(Object obj, int columnIndex) {
 			IRtePackItem item = getRtePackItem(obj);
@@ -259,18 +265,18 @@ public class RtePackSelectorWidget extends RteWidget {
 					int iconIndex = getIconIndex(item);
 					Image baseImage = CpPlugInUI.getImage(PACK_ICONS[iconIndex]);
 					return getOverlayImage(baseImage, obj, columnIndex);
-				} else {
-					switch (columnIndex) {
-					case COLVERSION:
-						break;
-					default:
-						break;
-					}
+				}
+				switch (columnIndex) {
+				case COLVERSION:
+				case COLSEL:
+					break;
+				default:
+					break;
 				}
 			}
 			return null;
 		}
-		
+
 		@Override
 		public String getUrl(Object obj, int columnIndex) {
 			if(columnIndex == COLDESCR) {
@@ -289,9 +295,10 @@ public class RtePackSelectorWidget extends RteWidget {
 		@Override
 		public String getTooltipText(Object obj, int columnIndex) {
 			IRtePackItem item = getRtePackItem(obj);
-			if(item == null)
+			if(item == null) {
 				return null;
-			
+			}
+
 			switch(columnIndex) {
 			case COLPACK:
 				return item.getDescription();
@@ -299,8 +306,9 @@ public class RtePackSelectorWidget extends RteWidget {
 				return null; // TODO
 			case COLDESCR:
 				String url = item.getUrl();
-				if(url != null && !url.isEmpty())
+				if(url != null && !url.isEmpty()) {
 					return url;
+				}
 				break;
 			default:
 				break;
@@ -320,11 +328,13 @@ public class RtePackSelectorWidget extends RteWidget {
 
 		@Override
 		public void setString(Object obj, int columnIndex, String newVal) {
-			if(columnIndex != COLSEL)
+			if(columnIndex != COLSEL) {
 				return;
+			}
 			IRtePackFamily packFamily = getRtePackFamily(obj);
-			if(packFamily == null)
+			if(packFamily == null) {
 				return;
+			}
 			EVersionMatchMode mode = EVersionMatchMode.fromString(newVal);
 			packFamily.setVersionMatchMode(mode);
 			fModelController.setVesrionMatchMode(packFamily, mode);
@@ -332,23 +342,25 @@ public class RtePackSelectorWidget extends RteWidget {
 
 		@Override
 		public Color getBgColor(Object obj, int columnIndex) {
-			if(columnIndex != COLSEL)
+			if(columnIndex != COLSEL) {
 				return null;
+			}
 			IRtePackItem item = getRtePackItem(obj);
 			if(item != null && item.isUsed()) {
-				Device device = Display.getCurrent(); 
-				if(!item.isInstalled())
+				Device device = Display.getCurrent();
+				if(!item.isInstalled()) {
 					return device.getSystemColor(SWT.COLOR_RED);
-				else if (!item.isSelected())
+				} else if (!item.isSelected()) {
 					return YELLOW;
+				}
 				return GREEN;
 			}
 			return null;
 		}
-		
+
 	} /// end of ColumnAdviser
 
-	
+
 	@Override
 	public Composite createControl(Composite parent) {
 		Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL|SWT.BORDER);
@@ -359,57 +371,52 @@ public class RtePackSelectorWidget extends RteWidget {
 		// Tree item name
 		TreeViewerColumn column0 = new TreeViewerColumn(viewer, SWT.LEFT);
 		tree.setLinesVisible(true);
-		column0.getColumn().setAlignment(SWT.LEFT);
 		column0.getColumn().setText(CpStrings.Pack);
 		column0.getColumn().setWidth(180);
 		fColumnAdvisor = new RtePackSelectorColumnAdvisor(viewer);
 		column0.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLPACK));
 		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, COLPACK);
 		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
-		col0LabelProvider.setOwnerDrawEnabled(false);   
+		col0LabelProvider.setOwnerDrawEnabled(false);
 		column0.setLabelProvider(col0LabelProvider);
-		
+
 		// Check/menu box for selection
 		TreeViewerColumn column1 = new TreeViewerColumn(viewer, SWT.LEFT);
 		tree.setLinesVisible(true);
-		column1.getColumn().setAlignment(SWT.LEFT);
 		column1.getColumn().setText(CpStrings.Selection);
 		column1.getColumn().setWidth(100);
 		column1.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLSEL));
 		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLSEL));
 
 		// Version
-		TreeViewerColumn column2 = new TreeViewerColumn(viewer, SWT.RIGHT);
-		column2.getColumn().setAlignment(SWT.LEFT);
+		TreeViewerColumn column2 = new TreeViewerColumn(viewer, SWT.LEFT);
 		column2.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Version);
 		column2.getColumn().setWidth(70);
 		column2.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLVERSION));
 		column2.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLVERSION));
 
 		// Description/URL
-		TreeViewerColumn column3= new TreeViewerColumn(viewer, SWT.RIGHT);
-		column3.getColumn().setAlignment(SWT.LEFT);
+		TreeViewerColumn column3= new TreeViewerColumn(viewer, SWT.LEFT);
 		column3.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Description);
 		column3.getColumn().setWidth(400);
 		column3.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLDESCR));
 		column3.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLDESCR));
 
 		viewer.setContentProvider(new RtePackProvider());
-    
-    	GridData gridData = new GridData();
-    	gridData.horizontalAlignment = SWT.FILL;
-    	gridData.verticalAlignment = SWT.FILL;
-    	gridData.grabExcessHorizontalSpace = true;
-    	gridData.grabExcessVerticalSpace = true;
-    	gridData.horizontalSpan = 2;
-    	tree.setLayoutData(gridData);
 
-    	
+		GridData gridData = new GridData();
+		gridData.horizontalAlignment = SWT.FILL;
+		gridData.verticalAlignment = SWT.FILL;
+		gridData.grabExcessHorizontalSpace = true;
+		gridData.grabExcessVerticalSpace = true;
+		gridData.horizontalSpan = 2;
+		tree.setLayoutData(gridData);
+
 //		hookContextMenu();
-    	return tree;
-    }
+		return tree;
+	}
 
-	
+
 	@Override
 	public void setModelController(IRteModelController model) {
 		super.setModelController(model);
@@ -421,11 +428,9 @@ public class RtePackSelectorWidget extends RteWidget {
 		update();
 	}
 
-	
+
 	@Override
 	public void handle(RteEvent event) {
-		// TODO Auto-generated method stub
-		
 	}
 
 	@Override

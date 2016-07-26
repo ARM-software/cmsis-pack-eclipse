@@ -26,6 +26,19 @@ public class CpDebug extends CpDeviceProperty implements ICpDebug {
 		super(parent, tag);
 	}
 
+	
+	@Override
+	public String constructId() {
+		String id = super.constructId();
+		int index = getPunitIndex();
+		if(index > 0) {
+			String punit = getAttribute(CmsisConstants.PUNIT);
+			id += '.' + punit;
+		}
+		return id;
+	}
+
+
 	@Override
 	public String getSvdFile() {
 		return getAbsolutePath(attributes().getAttribute(CmsisConstants.SVD));

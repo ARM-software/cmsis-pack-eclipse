@@ -6,22 +6,20 @@
 * http://www.eclipse.org/legal/epl-v10.html
 *
 * Contributors:
-* Eclipse Project - generation from template   
+* Eclipse Project - generation from template
 * ARM Ltd and ARM Germany GmbH - application-specific implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack;
 
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.preferences.IPreferencesService;
 import org.osgi.framework.BundleContext;
 
-import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
+import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -30,13 +28,16 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.arm.cmsis.pack"; //$NON-NLS-1$
-	public static final String CMSIS_PACK_ROOT_PREFERENCE = "com.arm.cmsis.pack.root"; //$NON-NLS-1$ 
+	public static final String CMSIS_PACK_ROOT_PREFERENCE = "com.arm.cmsis.pack.root"; //$NON-NLS-1$
+	public static final String CMSIS_PACK_REPOSITORY_PREFERENCE = "com.arm.cmsis.pack.repository"; //$NON-NLS-1$
 	private static BundleContext context;
 	private static CpPlugIn plugin;
-	
-	IRteEventProxy rteEventProxy = new RteEventProxy();   
-	ICpPackManager packManager = null;
-	
+
+	private IRteEventProxy rteEventProxy = new RteEventProxy();
+	private ICpPackManager thePackManager = null;
+	private ICpEnvironmentProvider theEnvironmentProvider = null;
+	private ICpPackInstaller thePackInstaller = null;
+
 	public CpPlugIn() {
 		super();
 	}
@@ -45,23 +46,40 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	public void start(BundleContext bundleContext) throws Exception {
 		plugin = this;
 		CpPlugIn.context = bundleContext;
-		IPreferencesService prefs = Platform.getPreferencesService();
-		String packRoot = prefs.getString(PLUGIN_ID, CMSIS_PACK_ROOT_PREFERENCE, CmsisConstants.EMPTY_STRING, null);
-		DeviceVendor.fillMaps();
+
+		DeviceVendor.fillMaps(); // the maps can later be updated by ICpEnvironmentProvider 
 		
-		// The shared instance
-		packManager = new CpPackManager();
-		packManager.setRteEventProxy(this);
-		packManager.initParser(null);
-		packManager.setCmsisPackRootDirectory(packRoot);
+		// initialize environment provider first to let it change pack manager or/and installer   
+		initEnvironmentProvider();
+
+		if(thePackManager == null)
+			thePackManager = new CpPackManager();
+		thePackManager.setRteEventProxy(this);
+
+		if(thePackInstaller == null) { 
+			thePackInstaller = CpPackInstallerFactory.getInstance().getExtender();
+		}
+
+		if(thePackManager.getPackInstaller() == null) {
+			thePackManager.setPackInstaller(thePackInstaller);
+		}
+
+		String packRoot = CpPreferenceInitializer.getPackRoot();
+		thePackManager.initParser(null); 
+		thePackManager.setCmsisPackRootDirectory(packRoot); // will load packs and issue corresponding event
 	}
 
 	@Override
 	public void stop(BundleContext bundleContext) throws Exception {
 		CpPlugIn.context = null;
 		DeviceVendor.clear();
+		CpPackInstallerFactory.destroy();
+		CpEnvironmentProviderFactory.destroy();
+		CpPreferenceInitializer.destroy();
 		plugin = null;
-		packManager = null;
+		thePackManager = null;
+		theEnvironmentProvider = null;
+		thePackInstaller = null;
 		rteEventProxy.removeAllListeners();
 		rteEventProxy = null;
 		super.stop(bundleContext);
@@ -80,30 +98,91 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 		return context;
 	}
 
+	/**
+	 * Explicitly sets the environment provider
+	 * @param provider ICpEnvironmentProvider
+	 */
+	public void setEnvironmentProvider(ICpEnvironmentProvider provider) {
+		if(provider == theEnvironmentProvider)
+			return;
+		rteEventProxy.removeListener(theEnvironmentProvider);
+		theEnvironmentProvider = provider;
+		rteEventProxy.addListener(theEnvironmentProvider);
+	}
 
 	/**
-	 * Return the pack manager 
+	 * Returns the environment provider
+	 * @return ICpEnvironmentProvider
+	 */
+	static public ICpEnvironmentProvider getEnvironmentProvider() {
+		return plugin != null ? plugin.theEnvironmentProvider : new CpEnvironmentProvider();
+	}
+
+	
+	/**
+	 * Initializes an environment provider
+	 */
+	private void initEnvironmentProvider() {
+		if(theEnvironmentProvider == null) {
+			theEnvironmentProvider = CpEnvironmentProviderFactory.getInstance().getExtender();
+			if(theEnvironmentProvider == null) {
+				// create default one
+				theEnvironmentProvider = new CpEnvironmentProvider();
+			} 
+		}
+		rteEventProxy.addListener(theEnvironmentProvider);
+		theEnvironmentProvider.init();
+	}
+	
+		
+	/**
+	 * Returns the pack manager
 	 * @return ICpPackManager
 	 */
 	static public ICpPackManager getPackManager() {
-		return plugin != null ? plugin.packManager : null;
+		return plugin != null ? plugin.thePackManager : null;
 	}
-	
+
+	/**
+	 * Explicitly sets the pack manager
+	 * @param pm ICpPackManager
+	 */
 	public void setPackManager(ICpPackManager pm) {
-		packManager = pm;
+		thePackManager = pm;
 	}
 
-	static public void addRteListener(IRteEventListener listener) {
-		if(plugin != null) 
-			plugin.addListener(listener);
+	/**
+	 * Explicitly sets the pack installer and assigns it to the pack manager
+	 * @param pm ICpPackManager
+	 */
+	public void setPackInstaller(ICpPackInstaller pi) {
+		thePackInstaller = pi;
+		if(thePackManager != null)
+			thePackManager.setPackInstaller(thePackInstaller);
 	}
-
-	static public void removeRteListener(IRteEventListener listener) {
-		if(plugin != null) 
-			plugin.removeListener(listener);
-	}
-
 	
+	
+	/**
+	 * Adds an IRteEventListener to the internal listener list
+	 * @param listener IRteEventListener
+	 */
+	static public void addRteListener(IRteEventListener listener) {
+		if(plugin != null) {
+			plugin.addListener(listener);
+		}
+	}
+
+	/**
+	 * Removes an IRteEventListener from the internal listener list
+	 * @param listener
+	 */
+	static public void removeRteListener(IRteEventListener listener) {
+		if(plugin != null) {
+			plugin.removeListener(listener);
+		}
+	}
+
+
 	@Override
 	public void addListener(IRteEventListener listener) {
 		rteEventProxy.addListener(listener);
@@ -127,7 +206,12 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	@Override
 	public void emitRteEvent(String topic, Object data) {
 		rteEventProxy.emitRteEvent(topic, data);
-		
+
+	}
+
+	@Override
+	public void handle(RteEvent event) {
+		rteEventProxy.handle(event);
 	}
 
 }

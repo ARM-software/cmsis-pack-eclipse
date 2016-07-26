@@ -16,25 +16,25 @@ import com.arm.cmsis.pack.data.CpFile;
 import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EFileRole;
+import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Default implementation of ICpFileInfo interface
+ * 
  * @see ICpFileInfo
  * @see CpFile
- */
-/**
- *
  */
 public class CpFileInfo extends CpFile implements ICpFileInfo {
 
 	ICpFile fFile = null;
-	
+	int fVersionDiff = 0;
+
 	public CpFileInfo(ICpItem parent, ICpFile file) {
 		super(parent, file.getTag());
 		setFile(file);
 		updateInfo();
 	}
-	
+
 	public CpFileInfo(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
@@ -44,46 +44,63 @@ public class CpFileInfo extends CpFile implements ICpFileInfo {
 		return fFile;
 	}
 
-
 	@Override
 	public void setFile(ICpFile file) {
 		fFile = file;
 	}
 
-
 	@Override
 	public void updateInfo() {
-		if(fFile != null) {
+		if (fFile != null) {
+			fVersionDiff = 0;
 			attributes().setAttributes(fFile.attributes());
-			if(fFile.getRole() == EFileRole.CONFIG) {
+			if (fFile.getRole() == EFileRole.CONFIG) {
 				// ensure we have the version for config files
-				String version = fFile.getVersion();
-				attributes().setAttribute(CmsisConstants.VERSION, version);
+				attributes().setAttribute(CmsisConstants.VERSION, fFile.getVersion());
 			}
-			if(fFile.isDeviceDependent())
+			if (fFile.isDeviceDependent()) {
 				attributes().setAttribute(CmsisConstants.DEVICE_DEPENDENT, true);
-			else
+			} else {
 				attributes().removeAttribute(CmsisConstants.DEVICE_DEPENDENT);
+			}
 		}
 	}
 
 	@Override
 	public ICpComponentInfo getComponentInfo() {
-		for( ICpItem parent = getParent(); parent != null; parent = parent.getParent()){
-			if(parent instanceof ICpComponentInfo)
-				return (ICpComponentInfo)parent;
+		for (ICpItem parent = getParent(); parent != null; parent = parent.getParent()) {
+			if (parent instanceof ICpComponentInfo) {
+				return (ICpComponentInfo) parent;
+			}
 		}
 		return null;
 	}
 
-
 	@Override
 	public ICpPackInfo getPackInfo() {
 		ICpComponentInfo ci = getComponentInfo();
-		if(ci != null)
+		if (ci != null) {
 			return ci.getPackInfo();
+		}
 		return null;
 	}
 
-	
+	@Override
+	public void setVersion(String version) {
+		attributes().setAttribute(CmsisConstants.VERSION, version);
+		if (fFile != null) {
+			fVersionDiff = VersionComparator.versionCompare(getVersion(), fFile.getVersion());
+		} else {
+			fVersionDiff = 0;
+		}
+	}
+
+	@Override
+	public int getVersionDiff() {
+		if (fFile == null) {
+			return 0;
+		}
+		return fVersionDiff;
+	}
+
 }

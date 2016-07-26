@@ -25,7 +25,7 @@ import com.arm.cmsis.pack.enums.EDebugProtocolType;
  */
 public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguration {
 
-	protected ICpDebug debugItem = null;
+	protected Map<Integer, ICpDebug> debugItems = new HashMap<Integer, ICpDebug>();
 	protected ICpTrace traceItem = null;
 	protected ICpDebugVars debugVars = null;
 	protected String sdfFileName = CmsisConstants.EMPTY_STRING;
@@ -62,8 +62,8 @@ public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguratio
 	public long getDefaultClock() {
 		return attributes().getAttributeAsLong(CmsisConstants.CLOCK, CmsisConstants.DEFAULT_DEBUG_CLOCK);
 	}
-
 	
+
 	@Override
 	public String getSdfFile() {
 		return sdfFileName;
@@ -71,14 +71,20 @@ public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguratio
 
 	@Override
 	public String getSvdFile() {
-		if(debugItem != null)
-			return debugItem.getSvdFile();
+		ICpDebug dbgItem = getDebugItem();
+		if(dbgItem != null)
+			return dbgItem.getSvdFile();
 		return CmsisConstants.EMPTY_STRING;
 	}
 
 	@Override
 	public ICpDebug getDebugItem() {
-		return debugItem;
+		return getDebugItem(0);
+	}
+
+	@Override
+	public ICpDebug getDebugItem(int punitIndex) {
+		return debugItems.get(punitIndex);
 	}
 
 	@Override
@@ -196,7 +202,9 @@ public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguratio
 				continue;
 			}
 			if(item instanceof ICpDebug) {
-				debugItem = (ICpDebug)item;
+				ICpDebug dbgItem = (ICpDebug)item;
+				int punitIndex = dbgItem.getPunitIndex();
+				debugItems.put(punitIndex, dbgItem);
 				continue;
 			}
 

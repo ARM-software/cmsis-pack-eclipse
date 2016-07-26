@@ -48,39 +48,41 @@ import com.arm.cmsis.pack.rte.components.RteComponentRoot;
 import com.arm.cmsis.pack.rte.components.RteMoreClass;
 import com.arm.cmsis.pack.rte.components.RteSelectedDeviceClass;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
+import com.arm.cmsis.pack.rte.dependencies.IRteDependencySolver;
+import com.arm.cmsis.pack.rte.dependencies.RteDependencySolver;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.rte.devices.RteDeviceItem;
 
 /**
- * Default implementation of IRteModel interface 
- *    
+ * Default implementation of IRteModel interface
+ *
  */
 public class RteModel implements IRteModel {
 
-	// object to store/load configuration meta data 
+	// object to store/load configuration meta data
 	protected ICpConfigurationInfo fConfigurationInfo = null;
 	// filtered Packs
 	protected ICpPackCollection   fAllPacks = null;
 	protected Collection<ICpPack> fFilteredPacks = null;
-	protected ICpPackFilter 	  fPackFilter = null;  
-	private Map<String, ICpPackInfo> fUsedPackInfos = null;
-	
-	// selected device 
+	protected ICpPackFilter 	  fPackFilter = null;
+	protected Map<String, ICpPackInfo> fUsedPackInfos = null;
+
+	// selected device
 	protected ICpDeviceInfo      fDeviceInfo = null;
 	// selected toolchain
 	protected ICpItem		     fToolchainInfo = null;
-	
-	// component filter 
+
+	// component filter
 	protected ICpConditionContext  fComponentFilter = null;
 
-	// filtered components tree 
+	// filtered components tree
 	protected RteComponentRoot 	fComponentRoot = null;
-	// filtered device tree 
+	// filtered device tree
 	protected IRteDeviceItem 	fRteDevices = null;
-	
-	// engine to evaluate/resolve component dependencies 
+
+	// engine to evaluate/resolve component dependencies
 	protected IRteDependencySolver fDependencySolver = null;
-	
+
 
 	/**
 	 *  Default constructor
@@ -101,7 +103,7 @@ public class RteModel implements IRteModel {
 		fConfigurationInfo = null;
 	}
 
-	
+
 	@Override
 	public ICpConfigurationInfo getConfigurationInfo() {
 		return fConfigurationInfo;
@@ -120,41 +122,52 @@ public class RteModel implements IRteModel {
 
 		update();
 	}
-	
+
 	@Override
 	public void update(){
+		update(RteConstants.NONE);
+	}
+
+	
+	@Override
+	public void update(int flags){
 		fRteDevices = null;
 		collectPacks();
 		filterPacks();
-		resolveFilterPacks(); 
+		resolveFilterPacks();
 		getDevices(); // creates device tree
-		resolveDevice(); 
+		resolveDevice();
 		updateComponentFilter();
 		collectComponents();
-		resolveComponents();
+		resolveComponents(flags);
 		updateComponentInfos();
 	}
-	
-	
+
+
 	protected boolean resolveFilterPacks() {
-		if(fConfigurationInfo == null)
+		if(fConfigurationInfo == null) {
 			return false;
-		
+		}
+
 		boolean allResolved = true;
 		ICpPackFilterInfo packsItem = fConfigurationInfo.getPackFilterInfo();
-		if(packsItem == null) 
+		if(packsItem == null) {
 			return allResolved;
+		}
 
 		Collection<? extends ICpItem> packInfos = packsItem.getChildren();
-		if(packInfos == null)
+		if(packInfos == null) {
 			return allResolved;
+		}
 
-		if(fAllPacks == null)
+		if(fAllPacks == null) {
 			return false;
-		
+		}
+
 		for(ICpItem item : packInfos) {
-			if(!(item instanceof ICpPackInfo))
+			if(!(item instanceof ICpPackInfo)) {
 				continue;
+			}
 			ICpPackInfo packInfo = (ICpPackInfo)item;
 			EVersionMatchMode mode = packInfo.getVersionMatchMode();
 			ICpPack pack = null;
@@ -164,34 +177,38 @@ public class RteModel implements IRteModel {
 				break;
 			case EXCLUDED:
 			case LATEST:
-				pack = fAllPacks.getPack(packInfo.getPackFamilyId()); 
+				pack = fAllPacks.getPack(packInfo.getPackFamilyId());
 				break;
 			}
 			packInfo.setPack(pack);
 			if(pack == null && mode !=EVersionMatchMode.EXCLUDED) {
 				allResolved = false;
 			}
-		}		
+		}
 		return allResolved;
 	}
-	
-	private ICpPack resolvePack(ICpPackInfo pi) {
+
+	protected ICpPack resolvePack(ICpPackInfo pi) {
 		ICpPack pack = pi.getPack();
-		if(pack != null)
+		if(pack != null) {
 			return pack;
-		if(fAllPacks == null)
+		}
+		if(fAllPacks == null) {
 			return null;
+		}
 		pack = fAllPacks.getPack(pi.getId());
-		if(pack != null)
+		if(pack != null) {
 			pi.setPack(pack);
+		}
 
 		return pack;
 	}
-	
-	
+
+
 	protected boolean resolveDevice() {
-		if(fDeviceInfo == null)
+		if(fDeviceInfo == null) {
 			return false;
+		}
 		fDeviceInfo.setRteDevice(null);
 		IRteDeviceItem rteDevice = getDevices().findItem(fDeviceInfo.attributes());
 		fDeviceInfo.setRteDevice(rteDevice);
@@ -199,7 +216,7 @@ public class RteModel implements IRteModel {
 		if(rteDevice == null) {
 			resolvePack(packInfo);
 		}
-		ICpDeviceItem device = fDeviceInfo.getDevice(); 
+		ICpDeviceItem device = fDeviceInfo.getDevice();
 		EEvaluationResult res = EEvaluationResult.FULFILLED;
 		if(device == null) {
 			if(packInfo.getPack() == null) {
@@ -211,17 +228,19 @@ public class RteModel implements IRteModel {
 		fDeviceInfo.setEvaluationResult(res);
 		return device != null;
 	}
-	
-	
-	
+
+
+
 	@Override
 	public void updateComponentInfos() {
-	
-		if(fConfigurationInfo == null)
+
+		if(fConfigurationInfo == null) {
 			return;
-		
+		}
+
 		ICpItem apiInfos = fConfigurationInfo.getApisItem();
 		apiInfos.clear();
+
 		ICpItem componentInfos = fConfigurationInfo.getComponentsItem();
 		componentInfos.clear();
 
@@ -233,18 +252,19 @@ public class RteModel implements IRteModel {
 		Collection<IRteComponent> selectedComponents = getSelectedComponents();
 		for(IRteComponent component : selectedComponents){
 			ICpComponent c = component.getActiveCpComponent();
-			if(c == null)
+			if(c == null) {
 				continue;
+			}
 			ICpComponentInfo ci = null;
 			if(c instanceof ICpComponentInfo) {
 				ci = (ICpComponentInfo)c;
 				ci.setParent(componentInfos);
-			} else { 
+			} else {
 				ci = new CpComponentInfo(componentInfos, c, component.getSelectedCount());
 				collectFilteredFiles(ci);
 			}
-			EVersionMatchMode versionMode = component.isUseLatestVersion() ? 
-					EVersionMatchMode.LATEST: EVersionMatchMode.FIXED; 
+			EVersionMatchMode versionMode = component.isUseLatestVersion() ?
+					EVersionMatchMode.LATEST: EVersionMatchMode.FIXED;
 			ci.setVersionMatchMode(versionMode);
 
 			componentInfos.addChild(ci);
@@ -252,16 +272,17 @@ public class RteModel implements IRteModel {
 			addUsedPackInfo(ci.getPackInfo());
 
 			IRteComponentGroup g = component.getParentGroup();
-			//	 collect used APIs  
+			//	 collect used APIs
 			ICpComponent api = g.getApi();
 			if(api != null) {
 				EVersionMatchMode vmm = EVersionMatchMode.LATEST;
-				if(!g.isUseLatestVersion())
+				if(!g.isUseLatestVersion()) {
 					vmm = EVersionMatchMode.FIXED;
+				}
 				selectedApis.put(api, vmm);
 			}
 		}
-		
+
 		for(Entry<ICpComponent, EVersionMatchMode> e : selectedApis.entrySet()){
 			ICpComponent api = e.getKey();
 			EVersionMatchMode versionMode = e.getValue();
@@ -273,33 +294,37 @@ public class RteModel implements IRteModel {
 				ai = new CpComponentInfo(apiInfos, api, 1);
 				collectFilteredFiles(ai);
 				ICpPackInfo pi = ai.getPackInfo();
-				if(!fUsedPackInfos.containsKey(pi.getId()))
+				if(!fUsedPackInfos.containsKey(pi.getId())) {
 					fUsedPackInfos.put(pi.getId(), pi);
+				}
 			}
 			ai.setVersionMatchMode(versionMode);
 			apiInfos.addChild(ai);
 			addUsedPackInfo(ai.getPackInfo());
 		}
 	}
-	
+
 	protected void addUsedPackInfo(ICpPackInfo packInfo) {
 		String packId = packInfo.getId();
-		if(fPackFilter.isFixed(packId))
+		if(fPackFilter.isFixed(packId)) {
 			packInfo.setVersionMatchMode(EVersionMatchMode.FIXED);
-		else 
+		} else {
 			packInfo.setVersionMatchMode(EVersionMatchMode.LATEST);
-		
-		if(!fUsedPackInfos.containsKey(packId))
+		}
+
+		if(!fUsedPackInfos.containsKey(packId)) {
 			fUsedPackInfos.put(packId, packInfo);
+		}
 	}
 
-	
+
 	void collectFilteredFiles(ICpComponentInfo ci){
 		ICpComponent c = ci.getComponent();
-		if(c == null)
+		if(c == null) {
 			return;
+		}
 		Collection<? extends ICpItem> allFiles = c.getGrandChildren(CmsisConstants.FILES_TAG);
-		Collection<ICpItem> filtered = fComponentFilter.filterItems(allFiles); // filter by device & toolchain 
+		Collection<ICpItem> filtered = fComponentFilter.filterItems(allFiles); // filter by device & toolchain
 		filtered = fDependencySolver.filterItems(filtered); // filter by selection
 		for(ICpItem item : filtered) {
 			if(item instanceof ICpFile) {
@@ -308,68 +333,75 @@ public class RteModel implements IRteModel {
 				if(fi != null) {
 					fi.setFile(f); // do not change stored attributes
 				} else {
-					fi = new CpFileInfo(ci, f); // new apply or resolved component has additional file(s) 
+					fi = new CpFileInfo(ci, f); // new apply or resolved component has additional file(s)
 					ci.addChild(fi);
 				}
 			}
 		}
 	}
-	
-	
-	void resolveComponents() {
+
+
+	protected void resolveComponents(int flags) {
 		if(fConfigurationInfo == null) {
 			return;
 		}
 		// resolve components and select them
-		EEvaluationResult result = EEvaluationResult.FULFILLED; 
-		EEvaluationResult res = resolveComponents(fConfigurationInfo.getGrandChildren(CmsisConstants.COMPONENTS_TAG));
-		if(res.ordinal() < result.ordinal())
+		EEvaluationResult result = EEvaluationResult.FULFILLED;
+		EEvaluationResult res = resolveComponents(fConfigurationInfo.getGrandChildren(CmsisConstants.COMPONENTS_TAG), flags);
+		if(res.ordinal() < result.ordinal()) {
 			result = res;
-		res = resolveComponents(fConfigurationInfo.getGrandChildren(CmsisConstants.APIS_TAG));
-		if(res.ordinal() < result.ordinal())
+		}
+		res = resolveComponents(fConfigurationInfo.getGrandChildren(CmsisConstants.APIS_TAG), flags);
+		if(res.ordinal() < result.ordinal()) {
 			result = res;
+		}
 		evaluateComponentDependencies();
 	}
-	
-	private EEvaluationResult resolveComponents(Collection<? extends ICpItem> children) {
+
+	protected EEvaluationResult resolveComponents(Collection<? extends ICpItem> children, int flags) {
 		EEvaluationResult result = EEvaluationResult.FULFILLED;
-		if(children == null || children.isEmpty())
+		if(children == null || children.isEmpty()) {
 			return result;
+		}
 		for(ICpItem item : children){
-			if(item instanceof ICpComponentInfo) { // skip doc and description items 
+			if(item instanceof ICpComponentInfo) { // skip doc and description items
 				ICpComponentInfo ci = (ICpComponentInfo) item;
 				ci.setComponent(null);
 				ci.setEvaluationResult(EEvaluationResult.UNDEFINED);
-				if(ci.isApi())
+				if(ci.isApi()) {
 					fComponentRoot.addCpItem(ci);
-				else
-					fComponentRoot.addComponent(ci);
+				} else {
+					fComponentRoot.addComponent(ci, flags);
+				}
 				EEvaluationResult res = ci.getEvaluationResult();
 				if(ci.getComponent() == null) {
 					ICpPackInfo pi = ci.getPackInfo();
 					if(resolvePack(pi) != null ){
-						if(fPackFilter.isExcluded(pi.getId()))
+						if(fPackFilter.isExcluded(pi.getId())) {
 							ci.setEvaluationResult(EEvaluationResult.UNAVAILABLE_PACK);
-						else 
+						} else {
 							ci.setEvaluationResult(EEvaluationResult.UNAVAILABLE);
+						}
 					}
 				}
-				if(res.ordinal() < result.ordinal())
+				if(res.ordinal() < result.ordinal()) {
 					result = res;
+				}
 			}
 		}
 		return result;
 	}
 
-	
-	public void collectPacks() {
+
+	protected void collectPacks() {
 		fAllPacks = null;
 		ICpPackManager pm  = CpPlugIn.getPackManager();
-		if(pm != null)
-			fAllPacks = pm.getPacks();
+		if(pm != null) {
+			fAllPacks = pm.getInstalledPacks();
+		}
 	}
-	
-	public void filterPacks() {
+
+	protected void filterPacks() {
 		fFilteredPacks = null;
 		if(fAllPacks != null) {
 			fPackFilter.setLatestPackIDs(fAllPacks.getLatestPackIDs());
@@ -381,8 +413,8 @@ public class RteModel implements IRteModel {
 	public Map<String, ICpPackInfo> getUsedPackInfos() {
 		return fUsedPackInfos;
 	}
-	
-	
+
+
 	@Override
 	public ICpPackFilter getPackFilter() {
 		return fPackFilter;
@@ -390,18 +422,19 @@ public class RteModel implements IRteModel {
 
 	@Override
 	public boolean setPackFilter(ICpPackFilter filter) {
-		if(filter.equals(fPackFilter))
+		if(filter.equals(fPackFilter)) {
 			return false;
+		}
 		fPackFilter = new CpPackFilter(filter);
 		return true;
 	}
-	
+
 	@Override
 	public ICpDeviceInfo getDeviceInfo() {
 		return fDeviceInfo;
 	}
 
-	
+
 	@Override
 	public void setDeviceInfo(ICpDeviceInfo deviceInfo) {
 		fDeviceInfo = deviceInfo;
@@ -410,11 +443,12 @@ public class RteModel implements IRteModel {
 
 	@Override
 	public ICpDeviceItem getDevice() {
-		if(fDeviceInfo != null)
+		if(fDeviceInfo != null) {
 			return fDeviceInfo.getDevice();
+		}
 		return null;
 	}
-	
+
 	@Override
 	public ICpItem getToolchainInfo() {
 		return fToolchainInfo;
@@ -450,25 +484,27 @@ public class RteModel implements IRteModel {
 	}
 
 	/**
-	 *  Builds filtered components tree 
+	 *  Builds filtered components tree
 	 */
 	protected void collectComponents() {
-		fComponentRoot = new RteComponentRoot(); 
+		fComponentRoot = new RteComponentRoot();
 
 		// add  artificial class items:
-		// selected device  
+		// selected device
 		RteSelectedDeviceClass devClass = new RteSelectedDeviceClass(fComponentRoot, fDeviceInfo);
 		fComponentRoot.addChild(devClass);
 
 		// create component tree
-		if(fFilteredPacks == null || fFilteredPacks.isEmpty())
+		if(fFilteredPacks == null || fFilteredPacks.isEmpty()) {
 			return;
+		}
 		//  device pack has precedence, always collect its components, APIs and taxonomy first
-		ICpPack devicePack = null; 	 
+		ICpPack devicePack = null;
 		ICpDeviceItem device = fDeviceInfo.getDevice();
-		if(device != null)
-			devicePack = device.getPack(); 
-		
+		if(device != null) {
+			devicePack = device.getPack();
+		}
+
 		Collection<? extends ICpItem> children;
 		// first add components
 		if(devicePack != null) {
@@ -476,8 +512,9 @@ public class RteModel implements IRteModel {
 			collectComponents(children);
 		}
 		for(ICpPack pack : fFilteredPacks ){
-			if(pack == devicePack)
+			if(pack == devicePack) {
 				continue;
+			}
 			children = pack.getGrandChildren(CmsisConstants.COMPONENTS_TAG);
 			collectComponents(children);
 		}
@@ -489,48 +526,51 @@ public class RteModel implements IRteModel {
 			collectCpItems(children);
 		}
 		for(ICpPack pack : fFilteredPacks ){
-			if(pack == devicePack)
+			if(pack == devicePack) {
 				continue;
+			}
 			children = pack.getGrandChildren(CmsisConstants.APIS_TAG);
 			collectCpItems(children);
-			
+
 			children = pack.getGrandChildren(CmsisConstants.TAXONOMY_TAG);
 			collectCpItems(children);
 		}
-		
+
 		// "more.." when filter is effect
 		if(!fPackFilter.isUseAllLatestPacks()) {
 			RteMoreClass more = new RteMoreClass(fComponentRoot);
 			fComponentRoot.addChild(more);
 		}
 	}
-	
+
 	/**
-	 * Adds collection members to the hierarchy  
+	 * Adds collection members to the hierarchy
 	 * @param children
 	 */
 	protected void collectCpItems( Collection<? extends ICpItem> children) {
-		if(children == null || children.isEmpty())
+		if(children == null || children.isEmpty()) {
 			return;
+		}
 		for(ICpItem item : children){
 			if(item instanceof ICpTaxonomy || item instanceof ICpComponent) {
-				fComponentRoot.addCpItem(item); 
+				fComponentRoot.addCpItem(item);
 			}
 		}
 	}
 
 	/**
-	 * Collect components from given pack 
+	 * Collect components from given pack
 	 * @param pack
 	 */
 	protected void collectComponents(Collection<? extends ICpItem> children) {
-		if(children == null || children.isEmpty())
+		if(children == null || children.isEmpty()) {
 			return;
+		}
 		for(ICpItem item : children){
 			if(item.getTag().equals(CmsisConstants.BUNDLE_TAG)){
-				// insert bundle implicitly since its components can be filtered out 
+				// insert bundle implicitly since its components can be filtered out
 				collectComponents(item.getChildren());
-			} else if(item instanceof ICpComponent) { // skip doc and description items 
+			} else if(item instanceof ICpComponent) { // skip doc and description items
 				ICpComponent c = (ICpComponent) item;
 				EEvaluationResult res = c.evaluate(fComponentFilter);
 				if(res.ordinal() < EEvaluationResult.FULFILLED.ordinal()) {
@@ -557,13 +597,13 @@ public class RteModel implements IRteModel {
 		return null;
 	}
 
-	
+
 	@Override
 	public EEvaluationResult evaluateComponentDependencies() {
 		return fDependencySolver.evaluateDependencies();
 
 	}
-	
+
 	@Override
 	public EEvaluationResult resolveComponentDependencies() {
 		return fDependencySolver.resolveDependencies();
@@ -574,10 +614,10 @@ public class RteModel implements IRteModel {
 		return fDependencySolver.getEvaluationResult(item);
 	}
 
-	
+
 	@Override
 	public Collection<? extends IRteDependencyItem> getDependencyItems() {
-		return fDependencySolver.getDependencyItems(); 
+		return fDependencySolver.getDependencyItems();
 	}
 
 	@Override
@@ -596,5 +636,5 @@ public class RteModel implements IRteModel {
 			component.setSelected(nInstances);
 		}
 	}
-	
+
 }

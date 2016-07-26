@@ -33,7 +33,9 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 	private boolean fbInitialized = false;
 
 	public RteDeviceSelectorPage() {
-		this(CpStringsUI.RteDeviceWizard_PageName, CpStringsUI.RteDeviceWizard_SelectDevice, CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_DEVICE_48));
+		this(CpStringsUI.RteDeviceWizard_PageName,
+				CpStringsUI.RteDeviceWizard_SelectDevice,
+				CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_CHIP_48));
 	}
 
 	/**
@@ -51,7 +53,7 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 		fDeviceWidget = new RteDeviceSelectorWidget(parent);
 		fDeviceWidget.addListener(this);
 		fDeviceWidget.setDevices(fDevices);
-		
+
 		setControl(fDeviceWidget);
 		updateStatus(CpStringsUI.RteDeviceSelectorPage_SelectDevice);
 	}
@@ -65,7 +67,7 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 	}
 
 	/**
-	 * Assigns device tree 
+	 * Assigns device tree
 	 * @param devices the devices to set
 	 */
 	public void setDevices(IRteDeviceItem devices) {
@@ -74,7 +76,7 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 			fDeviceWidget.setDevices(fDevices);
 		}
 	}
-	
+
 	@Override
 	public void setVisible(boolean visible) {
 		fDeviceWidget.setDeviceInfo(fDeviceInfo);
@@ -94,21 +96,23 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 	public void handle(String message) {
 		updateStatus(message);
 	}
-	
+
 	protected void updateStatus(String message) {
 		setErrorMessage(message);
-		if(fbInitialized )
+		if (fbInitialized) {
 			fDeviceInfo = fDeviceWidget.getDeviceInfo();
+		}
 		setPageComplete(fDeviceInfo!= null);
 	}
-	
+
 	/**
 	 * Returns selected device if any
 	 * @return the selected device
 	 */
 	public IRteDeviceItem getDevice() {
-		if(fDeviceWidget != null)
+		if(fDeviceWidget != null) {
 			return fDeviceWidget.getSelectedDeviceItem();
+		}
 		return null;
 	}
 
@@ -117,18 +121,20 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 	 * @return
 	 */
 	public ICpDeviceInfo getDeviceInfo() {
-		if(fbInitialized )
+		if(fbInitialized ) {
 			fDeviceInfo = fDeviceWidget.getDeviceInfo();
+		}
 		return fDeviceInfo;
 	}
 
 	/**
-	 * Makes initial device selection 
-	 * @param deviceInfo ICpDeviceInfo to make initial selection 
+	 * Makes initial device selection
+	 * @param deviceInfo ICpDeviceInfo to make initial selection
 	 */
 	public void setDeviceInfo(ICpDeviceInfo deviceInfo) {
 		fDeviceInfo = deviceInfo;
-		if(fDeviceWidget != null)
+		if(fDeviceWidget != null) {
 			fDeviceWidget.setDeviceInfo(deviceInfo);
+		}
 	}
 }

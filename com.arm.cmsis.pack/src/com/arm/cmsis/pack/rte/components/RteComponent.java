@@ -21,6 +21,7 @@ import com.arm.cmsis.pack.data.ICpTaxonomy;
 import com.arm.cmsis.pack.enums.EComponentAttribute;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
+import com.arm.cmsis.pack.rte.RteConstants;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependency;
 
 /**
@@ -49,8 +50,9 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 
 	@Override
 	public boolean isUseLatestVersion() {
-		if(hasBundle())
+		if(hasBundle()) {
 			return getParentBundle().isUseLatestVersion();
+		}
 		return super.isUseLatestVersion();
 	}
 	
@@ -59,8 +61,9 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 		String name = super.getEffectiveName();
 		if(name.isEmpty()) {
 			IRteComponentGroup g = getParentGroup();
-			if(g != null)
-				name = g.getName(); 
+			if(g != null) {
+				name = g.getName();
+			} 
 		}
 		return name;
 	}
@@ -68,8 +71,9 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	
 	@Override
 	public boolean setSelected(int count) {
-		if(nSelected == count)
+		if(nSelected == count) {
 			return false;
+		}
 		nSelected = count;
 		return true;
 	}
@@ -77,18 +81,20 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	@Override
 	public int getMaxInstanceCount() {
 		ICpComponent c = getActiveCpComponent();
-		if(c != null)
-			return c.getMaxInstances(); 
+		if(c != null) {
+			return c.getMaxInstances();
+		} 
 		return 0;
 	}
 	
 	@Override
-	public void addComponent(ICpComponent cpComponent) {
-		if(cpComponent.isApi())
+	public void addComponent(ICpComponent cpComponent, int flags) {
+		if(cpComponent.isApi()) {
 			return;
-		ICpComponentInfo ci = null;
+		}
 		if(cpComponent instanceof ICpComponentInfo) {
-			ci = (ICpComponentInfo)cpComponent;
+			addComponentInfo((ICpComponentInfo)cpComponent, flags);
+			return;
 		}
 		
 		// add variant, vendor and version items
@@ -96,58 +102,106 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 		IRteComponentItem variantItem = getChild(variant);
 		if( variantItem == null) {
 			variantItem = new RteComponentVariant(this, variant);
-			if(ci != null){
-				if(hasChildren())
-					ci.setEvaluationResult(EEvaluationResult.MISSING_VARIANT);
-				else
-					ci.setEvaluationResult(EEvaluationResult.MISSING);
-			}
-
 			addChild(variantItem);
 		}
 		
+		// first try to get supplied vendor
 		String vendor = cpComponent.getVendor();
 		IRteComponentItem vendorItem = variantItem.getChild(vendor);
 		if( vendorItem == null) {
-			if(ci != null && variantItem.hasChildren()) {
-				// there are some vendors in the collection, but not what is needed 
-				ci.setEvaluationResult(EEvaluationResult.MISSING_VENDOR);
-			}
 			vendorItem = new RteComponentVendor(variantItem, cpComponent.getVendor());
 			variantItem.addChild(vendorItem);
 		}
 		
-		String version = null;
-		if(ci == null || ci.isVersionFixed()) 
-			version = cpComponent.getVersion();
+		String version = cpComponent.getVersion();
 		IRteComponentItem versionItem = vendorItem.getChild(version);
 		if( versionItem == null) {
-			if(ci != null && ci.isVersionFixed() && vendorItem.hasChildren()) {
-				// there are some versions in the collection, but not what is needed
-				ci.setEvaluationResult(EEvaluationResult.MISSING_VERSION);
-			}
 			versionItem = new RteComponentVersion(vendorItem, cpComponent.getVersion());
 			vendorItem.addChild(versionItem);
 		}
 		
-		versionItem.addComponent(cpComponent);
-		if(ci != null) {
-			setSelected(ci.getInstanceCount());
+		versionItem.addComponent(cpComponent, flags);
+		if(cpComponent.isDefaultVariant()) {
 			setActiveChild(variant);
-			variantItem.setActiveChild(vendor);
-			vendorItem.setActiveChild(version);
-		}
+		}			
 	}
 
+	protected void addComponentInfo(ICpComponentInfo ci, int flags) {
+
+		// calculate ignore flags
+		boolean versionFixed = (flags & RteConstants.COMPONENT_IGNORE_VERSION) == 0 && ci.isVersionFixed();
+		// version is fixed => variant and vendor implicitly fixed too 
+		boolean vendorFixed  = versionFixed || ((flags & RteConstants.COMPONENT_IGNORE_VENDOR) == 0);  
+		String variant = ci.getAttribute(CmsisConstants.CVARIANT);
+		boolean variantFixed = versionFixed || ((flags & RteConstants.COMPONENT_IGNORE_VARIANT) == 0 && !variant.isEmpty());
+		
+		// add variant, vendor and version items
+		// try to get supplied variant
+		IRteComponentItem variantItem = getChild(variant);
+		if(variantItem == null && !variantFixed)
+			variantItem = getChild(getActiveVariant()); 
+		
+		if( variantItem == null) {
+			if(hasChildren()) {
+				ci.setEvaluationResult(EEvaluationResult.MISSING_VARIANT);
+			} else {
+				ci.setEvaluationResult(EEvaluationResult.MISSING);
+			}
+			variantItem = new RteComponentVariant(this, variant);
+			addChild(variantItem);
+		}
+		
+		// try to get supplied vendor
+		String vendor = ci.getVendor();
+		IRteComponentItem vendorItem = variantItem.getChild(vendor);
+		if( vendorItem == null && !vendorFixed)
+			vendorItem = variantItem.getActiveChild();
+		if( vendorItem == null) {
+			if(variantItem.hasChildren()) {
+				// there are some vendors in the collection, but not what is needed 
+				ci.setEvaluationResult(EEvaluationResult.MISSING_VENDOR);
+			} else {
+				ci.setEvaluationResult(EEvaluationResult.MISSING);
+			}
+			vendorItem = new RteComponentVendor(variantItem, vendor);
+			variantItem.addChild(vendorItem);
+		}
+		
+		String version = null;
+		if(versionFixed) {
+			version = ci.getVersion();
+		}
+		IRteComponentItem versionItem = vendorItem.getChild(version);
+		if( versionItem == null) {
+			if(vendorItem.hasChildren()) {
+				// there are some versions in the collection, but not what is needed
+				ci.setEvaluationResult(EEvaluationResult.MISSING_VERSION);
+			} else {
+				ci.setEvaluationResult(EEvaluationResult.MISSING);
+			}
+			versionItem = new RteComponentVersion(vendorItem, ci.getVersion());
+			vendorItem.addChild(versionItem);
+		}
+		
+		versionItem.addComponent(ci, flags);
+
+		setSelected(ci.getInstanceCount());
+		setActiveChild(variant);
+		variantItem.setActiveChild(vendor);
+		vendorItem.setActiveChild(version);
+	}
+
+	
 	@Override
 	public void addCpItem(ICpItem cpItem) {
 		if(cpItem instanceof ICpComponent ) {
-			addComponent((ICpComponent)cpItem);
+			addComponent((ICpComponent)cpItem, RteConstants.NONE);
 		} else if (cpItem instanceof ICpTaxonomy ){
 			String csub = cpItem.getAttribute(CmsisConstants.CGROUP);
 			if( csub.equals(getName())) {
-				if(getTaxonomy() == null)
-					fTaxonomy = cpItem; 
+				if(getTaxonomy() == null) {
+					fTaxonomy = cpItem;
+				} 
 				return;
 			}
 		}
@@ -156,9 +210,10 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	
 	@Override
 	public void setActiveComponentInfo(ICpComponentInfo ci) {
-		if(ci == null)
+		if(ci == null) {
 			return;
-		addComponent(ci);
+		}
+		addComponent(ci, RteConstants.NONE);
 	}
 
 	@Override
@@ -184,37 +239,42 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 
 	@Override
 	public String getActiveVendor() {
-		if(hasBundle())
+		if(hasBundle()) {
 			return CmsisConstants.EMPTY_STRING;
+		}
 		return super.getActiveVendor();
 	}
 	
 	@Override
 	public void setActiveVendor(String vendor) {
-		if(hasBundle())
+		if(hasBundle()) {
 			return;
+		}
 		super.setActiveVendor(vendor);
 	}
 
 	@Override
 	public String getActiveVersion() {
-		if(hasBundle())
+		if(hasBundle()) {
 			return CmsisConstants.EMPTY_STRING;
+		}
 		return super.getActiveVersion();
 	}
 
 	@Override
 	public void setActiveVersion(String version) {
-		if(hasBundle())
+		if(hasBundle()) {
 			return;
+		}
 		super.setActiveVersion(version);
 	}
 
 	@Override
 	public boolean hasBundle() {
 		IRteComponentBundle bundle = getParentBundle();
-		if(bundle != null && !bundle.getName().isEmpty())
+		if(bundle != null && !bundle.getName().isEmpty()) {
 			return true;
+		}
 		return false;
 	}
 	
@@ -223,9 +283,10 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	public Collection<IRteComponent> getSelectedComponents(	Collection<IRteComponent> components) {
 		// is we are here => component is active
 		if(isSelected()) {
-			if(components == null)
+			if(components == null) {
 				components = new LinkedList<IRteComponent>();
-				components.add(this);
+			}
+			components.add(this);
 		}
 		return components;
 	}
@@ -235,8 +296,9 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	public Collection<IRteComponent> getUsedComponents(Collection<IRteComponent> components) {
 		// is we are here => component is active
 		if(getActiveCpComponentInfo() != null) {
-			if(components == null)
+			if(components == null) {
 				components = new LinkedList<IRteComponent>();
+			}
 				components.add(this);
 		}
 		return components;
@@ -246,25 +308,24 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	public EEvaluationResult findComponents(IRteDependency dependency) {
 		EEvaluationResult result = super.findComponents(dependency);
 		if(result == EEvaluationResult.SELECTABLE) {
-			if(isSelected())
+			if(isSelected()) {
 				result = EEvaluationResult.FULFILLED;
+			}
 		} else if (result.ordinal() >= EEvaluationResult.INSTALLED.ordinal()) {
-			if(!isActive())
+			if(!isActive()) {
 				result = EEvaluationResult.INACTIVE;
+			}
 		}
-		if(dependency.isDeny() && result == EEvaluationResult.FULFILLED)
-			result = EEvaluationResult.INCOMPATIBLE;
-		if(!dependency.isDeny() || result == EEvaluationResult.INCOMPATIBLE) {
-			dependency.addComponent(this, result);
-		}
+		dependency.addComponent(this, result);
 		return result;
 	}
 
 	@Override
 	public int getUseCount() {
 		ICpComponentInfo ci = getActiveCpComponentInfo();
-		if(ci != null)
+		if(ci != null) {
 			return ci.getInstanceCount();
+		}
 		return 0;
 	}
 	

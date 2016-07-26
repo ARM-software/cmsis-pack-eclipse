@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.rte.components;
 
 import com.arm.cmsis.pack.CpStrings;
+import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
@@ -22,6 +23,7 @@ import com.arm.cmsis.pack.info.ICpDeviceInfo;
 public class RteSelectedDeviceClass extends RteComponentClass {
 
 	ICpDeviceInfo fDeviceInfo = null;
+	String vendorName = null;
 
 	public RteSelectedDeviceClass(IRteComponentItem parent, ICpDeviceInfo deviceInfo) {
 		super(parent, deviceInfo.getDeviceName());
@@ -53,7 +55,10 @@ public class RteSelectedDeviceClass extends RteComponentClass {
 
 	@Override
 	public String getActiveVendor() {
-		return fDeviceInfo.getVendor();
+		if(vendorName == null) {
+			vendorName = DeviceVendor.getOfficialVendorName(fDeviceInfo.getVendor());
+		}
+		return vendorName;
 	}
 
 	@Override

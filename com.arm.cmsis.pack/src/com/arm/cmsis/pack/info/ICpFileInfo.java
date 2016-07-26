@@ -36,4 +36,17 @@ public interface ICpFileInfo extends ICpFile, ICpItemInfo {
 	 * @return parent ICpComponentInfo
 	 */
 	ICpComponentInfo getComponentInfo();
+	
+	
+	/**
+	 * Sets file version to this object, either from actual ICpFile or a stored value when the file has been copied 
+	 * @param version version string to set
+	 */
+	void setVersion(String version);
+	
+	/**
+	 * Compares version stored in this info to actual file version
+	 * @return version difference
+	 */
+	int getVersionDiff(); 
 }

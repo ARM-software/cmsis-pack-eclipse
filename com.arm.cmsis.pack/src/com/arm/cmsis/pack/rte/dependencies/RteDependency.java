@@ -28,6 +28,7 @@ import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 public class RteDependency extends RteDependencyItem implements IRteDependency {
 
 	protected ICpItem fCpItem = null; // component attributes to search for
+	protected int fFlags = 0;         // RTE flags
 	// collection to store candidates to resolve dependency  
 	protected Map<IRteComponent, IRteDependencyItem> fComponentEntries = new LinkedHashMap<IRteComponent, IRteDependencyItem>();
 	
@@ -36,16 +37,22 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 	
 	boolean fbDeny = false;
 	
-	/**
-	 * 
-	 */
 	public RteDependency( ICpItem item, boolean bDeny) {
 		fCpItem = item;
 		fbDeny = bDeny;
 	}
 
+	public RteDependency( ICpItem item, int flags) {
+		this(item, false);
+		fFlags = flags;
+	}
 	
 	
+	@Override
+	public int getFlags() {
+		return fFlags;
+	}
+
 	@Override
 	public boolean isMaster() {
 		return true;
@@ -62,7 +69,7 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 		if(fResult == EEvaluationResult.IGNORED)
 			return true;
 		if(fResult == EEvaluationResult.FULFILLED)
-			return !isDeny();
+			return true;
 		if(fResult == EEvaluationResult.INCOMPATIBLE)
 			return false;
 		return isDeny();      
@@ -78,25 +85,12 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 		return fCpItem;
 	}
 	
-	 
-	@Override
-	public EEvaluationResult getEvaluationResult() {
-		EEvaluationResult result = super.getEvaluationResult();
-//		if(isDeny() && result == EEvaluationResult.FULFILLED) {
-//			result = EEvaluationResult.FAILED;
-//		}
-		return result;
-	}
-
-
+	
 	@Override
 	public EEvaluationResult getEvaluationResult(IRteComponent component) {
 		IRteDependencyItem entry = fComponentEntries.get(component);
 		if(entry != null) {
 			EEvaluationResult result = entry.getEvaluationResult();
-			if(isDeny() && result == EEvaluationResult.FULFILLED) {
-				result = EEvaluationResult.INCOMPATIBLE;
-			}
 			return result;
 		}
 		return EEvaluationResult.UNDEFINED;
@@ -149,8 +143,6 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 	@Override
 	public String getDescription() {
 		EEvaluationResult res = getEvaluationResult();
-		if(isDeny() && res == EEvaluationResult.FULFILLED)
-			res = EEvaluationResult.INCOMPATIBLE;
 		switch(res) {
 		case CONFLICT:
 			return CpStrings.RteDependency_Conflict;

@@ -11,24 +11,18 @@
 
 package com.arm.cmsis.pack.project;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
 
 import org.eclipse.cdt.core.settings.model.ICProjectDescription;
 import org.eclipse.cdt.core.settings.model.ICStorageElement;
 import org.eclipse.core.runtime.CoreException;
 
-import com.arm.cmsis.pack.build.settings.IMemorySettings;
 import com.arm.cmsis.pack.build.settings.IRteToolChainAdapter;
-import com.arm.cmsis.pack.build.settings.MemorySettings;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterInfo;
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.ICpDeviceItem;
-import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.generic.Attributes;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
@@ -148,36 +142,6 @@ public class RteProjectStorage {
 		} else { 
 			fDeviceAttributes = new Attributes(deviceInfo.attributes());
 		}
-	}
-	
-	/**
-	 * Creates memory settings from device information
-	 * @param deviceInfo ICpDeviceInfo object
-	 */
-	protected IMemorySettings createMemorySettings(ICpDeviceInfo deviceInfo) {
-
-		ICpDeviceItem d = deviceInfo.getDevice();
-		if(d == null) {
-			return null;
-		}
-		String processorName = deviceInfo.getProcessorName();
-		ICpItem props = d.getEffectiveProperties(processorName);
-		if(props == null)
-			return null;
-
-		Map<String, IAttributes> entries = new TreeMap<String, IAttributes>(); 		
-		
-		Collection<? extends ICpItem> children = props.getChildren();
-		for(ICpItem p : children) {
-			String tag = p.getTag();
-			if(!tag.equals(CmsisConstants.MEMORY_TAG))
-				continue;
-			String id = p.getId();
-			IAttributes a = new Attributes(p.attributes());
-			entries.put(id, a);
-		}
-		
-		return new MemorySettings(entries);
 	}
 
 	/**

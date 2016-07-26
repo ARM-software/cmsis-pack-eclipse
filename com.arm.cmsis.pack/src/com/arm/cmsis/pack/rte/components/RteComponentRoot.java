@@ -31,7 +31,7 @@ public class RteComponentRoot extends RteComponentItem {
 	}
 
 	@Override
-	public void addComponent(ICpComponent cpComponent) {
+	public void addComponent(ICpComponent cpComponent, int flags) {
 		String className = cpComponent.getAttribute(CmsisConstants.CCLASS);
 		if(className == null || className.isEmpty())
 			return; 
@@ -42,7 +42,7 @@ public class RteComponentRoot extends RteComponentItem {
 			classItem = new RteComponentClass(this, className);
 			addChild(classItem);
 		}
-		classItem.addComponent(cpComponent);
+		classItem.addComponent(cpComponent, flags);
 	}
 	
 	

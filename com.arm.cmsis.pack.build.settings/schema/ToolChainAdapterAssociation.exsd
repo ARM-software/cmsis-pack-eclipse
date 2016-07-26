@@ -6,7 +6,7 @@
          <meta.schema plugin="com.arm.cmsis.pack.project" id="ToolChainAdapterAssociation" name="Toolchain adapter associations"/>
       </appinfo>
       <documentation>
-         This extension point allows to specify toolchains that can use an existing toolchain adapter to provide options for CMSIS RTE project.
+         This extension point allows to specify toolchains that can use an existing toolchain adapter to provide options for CMSIS C/C++ project.
       </documentation>
    </annotation>
 
@@ -49,7 +49,7 @@
    <element name="toolChainAdapter">
       <annotation>
          <documentation>
-            This element references an existing toolchain adapter contribution&apos;s unique identifier in order that toolchains contributed separately can be made available to be used by CMSIS RTE project
+            This element references an existing toolchain adapter contribution&apos;s unique identifier in order that toolchains contributed separately can be made available to be used by CMSIS C/C++ project
          </documentation>
       </annotation>
       <complexType>
@@ -76,7 +76,7 @@
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
-                  A  toolchain identifier conributed to the org.eclipse.cdt.managedbuilder.core.buildDefinitions extension point. This could be the unique identifier or a wildcard pattern.
+                  A  toolchain identifier contributed to the org.eclipse.cdt.managedbuilder.core.buildDefinitions extension point. This could be the unique identifier or a wildcard pattern.
                </documentation>
             </annotation>
          </attribute>

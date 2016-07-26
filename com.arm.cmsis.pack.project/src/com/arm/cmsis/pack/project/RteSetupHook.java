@@ -66,15 +66,15 @@ public class RteSetupHook extends CConfigurationDataProvider{
 				}
 				// we are not interested in other events
 				@Override
-				public void aboutToRun(IJobChangeEvent event) {}
+				public void aboutToRun(IJobChangeEvent event) { /*does nothing */ }
 				@Override
-				public void sleeping(IJobChangeEvent event) {}
+				public void sleeping(IJobChangeEvent event) { /*does nothing */ }
 				@Override
-				public void running(IJobChangeEvent event) {}
+				public void running(IJobChangeEvent event) { /*does nothing */ }
 				@Override
-				public void done(IJobChangeEvent event) {}
+				public void done(IJobChangeEvent event) { /*does nothing */ }
 				@Override
-				public void awake(IJobChangeEvent event) {}
+				public void awake(IJobChangeEvent event) { /*does nothing */ }
 			};
 			IJobManager jobMan = Job.getJobManager();
 			jobMan.addJobChangeListener(jobListener);

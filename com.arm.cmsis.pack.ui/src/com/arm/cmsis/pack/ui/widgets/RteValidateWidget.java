@@ -23,6 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -48,8 +49,9 @@ public class RteValidateWidget extends RteWidget {
 	 *
 	 */
 	IRteDependencyItem getDependencyItem(Object element){
-		if(element instanceof IRteDependencyItem)
+		if(element instanceof IRteDependencyItem) {
 			return (IRteDependencyItem)element;
+		}
 		return null;
 	}
 	
@@ -97,8 +99,6 @@ public class RteValidateWidget extends RteWidget {
 				if(item != null) {
 					if(item.isMaster()) {
 						EEvaluationResult res = item.getEvaluationResult();
-						if(res == EEvaluationResult.FULFILLED && item.isDeny())
-							res = EEvaluationResult.INCOMPATIBLE;
 						switch(res) {
 						case IGNORED:
 						case UNDEFINED:
@@ -137,17 +137,15 @@ public class RteValidateWidget extends RteWidget {
 							ICpComponentInfo ci = component.getActiveCpComponentInfo();
 							int instances = component.getMaxInstanceCount();
 							if(ci != null && ci.getComponent() == null) {
-								if(instances > 1)
+								if(instances > 1) {
 									return CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT_ERROR);
-								else
-									return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_ERROR);
-
-							} else {
-								if(instances > 1)
-									return CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT);
-								else
-									return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
-							}							
+								}
+								return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_ERROR);
+							}
+							if(instances > 1) {
+								return CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT);
+							}
+							return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);							
 						}
 					} 
 				}
@@ -164,8 +162,9 @@ public class RteValidateWidget extends RteWidget {
 		public Object[] getElements(Object inputElement) {
 			if(inputElement == getModelController()) {
 				Collection<? extends IRteDependencyItem> depItems = getModelController().getDependencyItems();
-				if(depItems != null)
+				if(depItems != null) {
 					return depItems.toArray();
+				}
 				return ITreeObject.EMPTY_OBJECT_ARRAY;
 			} 
 			return getChildren(inputElement);
@@ -183,12 +182,12 @@ public class RteValidateWidget extends RteWidget {
 		
 		TreeViewerColumn column0 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		tree.setLinesVisible(true);
-		column0.getColumn().setAlignment(SWT.LEFT);
 		column0.getColumn().setText(CpStringsUI.RteValidateWidget_ValidationOutput);
 		column0.getColumn().setWidth(400);
 		column0.setEditingSupport(new AdvisedEditingSupport(fViewer, fColumnAdvisor, 0));
 		
 		fViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				handleTreeSelectionChanged(event);
 			}
@@ -199,8 +198,7 @@ public class RteValidateWidget extends RteWidget {
 		col0LabelProvider.setOwnerDrawEnabled(false);   
 		column0.setLabelProvider(col0LabelProvider);
 		
-		TreeViewerColumn column1 = new TreeViewerColumn(fViewer, SWT.RIGHT);
-		column1.getColumn().setAlignment(SWT.LEFT);
+		TreeViewerColumn column1 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		column1.getColumn().setText(CpStringsUI.RteValidateWidget_Description);
 		column1.getColumn().setWidth(500);
 		column1.setEditingSupport(new AdvisedEditingSupport(fViewer, fColumnAdvisor, 1));
@@ -237,12 +235,14 @@ public class RteValidateWidget extends RteWidget {
 	 * @param event
 	 */
 	protected void handleTreeSelectionChanged(SelectionChangedEvent event) {
-		if(getModelController() == null)
+		if(getModelController() == null) {
 			return;
+		}
 		
 		IRteDependencyItem d = getSelectedDependencyItem();
-		if(d == null)
+		if(d == null) {
 			return;
+		}
 		
 		IRteComponentItem item = d.getComponentItem();
 		if(item != null) {
@@ -252,28 +252,41 @@ public class RteValidateWidget extends RteWidget {
 
 	@Override
 	public void handle(RteEvent event) {
-		if(event.getTopic().equals(RteEvent.COMPONENT_SELECTION_MODIFIED) || 
-  		   event.getTopic().equals(RteEvent.CONFIGURATION_COMMITED) || 
-		   event.getTopic().equals(RteEvent.CONFIGURATION_MODIFIED)) {
-
+		switch(event.getTopic()) {
+		case RteEvent.COMPONENT_SELECTION_MODIFIED: 
 			update();
+			return;
 		}
+		super.handle(event);
 	}
 	
 	@Override
 	public void refresh() {
-		if(fViewer != null)
+		if(fViewer != null) {
 			fViewer.refresh();
+		}
 	}
 
 	@Override
 	public void update() {
 		refresh();
-		if(fViewer != null)
+		if(fViewer != null) {
 			fViewer.expandAll();
-		
+		}
 	}
 
+	/**
+	 *  Updates widget asynchronously, must run in GUI thread 
+	 */
+	protected void asyncUpdate() {
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				update();
+			}
+		});			
+	}	
+	
 	@Override
 	public Composite getFocusWidget() {
 		return fViewer.getTree();

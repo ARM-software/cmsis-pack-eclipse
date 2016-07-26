@@ -21,36 +21,36 @@ import com.arm.cmsis.pack.data.ICpItemFactory;
  * Interface to CMSIS pack description file (*.pdsc) parser
  */
 public interface ICpXmlParser extends ICpItemFactory {
-	/** 
-	 * Initializes the parser 
-	 * @return true if successful  
+	/**
+	 * Initializes the parser
+	 * @return true if successful
 	 */
 	boolean init();
-	
+
 	/**
-	 * Clears internal data, error strings and resets builder 
+	 * Clears internal data, error strings and resets builder
 	 */
 	void clear();
 
 	/**
 	 * Sets schema file to use by the parser
-	 * @param xsdFile schema file name to use with absolute path   
+	 * @param xsdFile schema file name to use with absolute path
 	 */
 	void setXsdFile(String xsdFile);
 
 	/**
-	 * Returns schema file used by parser 
-	 * @return absolute schema file name or null if not set 
+	 * Returns schema file used by parser
+	 * @return absolute schema file name or null if not set
 	 */
 	public String getXsdFile();
-	
+
 	/**
 	 * @return the errorStrings
 	 */
 	List<String> getErrorStrings();
 
 	/**
-	 * @return number of errors 
+	 * @return number of errors
 	 */
 	int getErrorCount();
 
@@ -60,49 +60,62 @@ public interface ICpXmlParser extends ICpItemFactory {
 	int getWarningCount();
 
 	/**
-	 * Sets XML tags to ignore during parsing 
+	 * Sets XML tags to ignore during parsing
 	 * @param ignoreTags set of tags to ignore
 	 */
 	void setIgnoreTags(Set<String> ignoreTags);
 
 	/**
-	 * Adjusts deprecated attribute values to modern ones  
+	 * Sets XML tags to ignore during writing
+	 * @param ignoreTags set of tags to ignore
+	 */
+	void setWriteIgnoreTags(Set<String> ignoreTags);
+
+	/**
+	 * Adjusts deprecated attribute values to modern ones
 	 * @param key attribute key
 	 * @param value attribute value
-	 * @return adjusted attribute value 
+	 * @return adjusted attribute value
 	 */
 	String adjustAttributeValue(String key, String value);
-	
+
 	/**
-	 * Parses supplied XML file 
-	 * @param file XML file to parse 
+	 * Factory method to create ICpItem-derived root instance
+	 * @param tag XML tag for the item
+	 * @return created ICpItem
+	 */
+	public ICpItem createRootItem(String tag);
+
+	/**
+	 * Parses supplied XML file
+	 * @param file XML file to parse
 	 * @return root ICpItem object
 	 */
 	ICpItem parseFile(String file);
 
 	/**
 	 * Parses supplied string in XML format
-	 * @param xml XML string to parse 
+	 * @param xml XML string to parse
 	 * @return root ICpItem object
 	 */
 	ICpItem parseXmlString(String xml);
-	
-	
+
+
 	/**
-	 * Generates XML text out of ICpItem and saves it to an XML file  
-	 * @param root ICpItem to save  
-	 * @param file file to contain the generated XML   
+	 * Generates XML text out of ICpItem and saves it to an XML file
+	 * @param root ICpItem to save
+	 * @param file file to contain the generated XML
 	 * @return true if successful
 	 */
 	boolean writeToXmlFile(ICpItem root, String file);
 
-	
+
 	/**
-	 * Generates XML text out of ICpItem and returns it as a string  
-	 * @param root ICpItem to write  
+	 * Generates XML text out of ICpItem and returns it as a string
+	 * @param root ICpItem to write
 	 * @return generate XML text if successful, null otherwise
 	 */
 	String writeToXmlString(ICpItem root);
-	
-	
+
+
 }

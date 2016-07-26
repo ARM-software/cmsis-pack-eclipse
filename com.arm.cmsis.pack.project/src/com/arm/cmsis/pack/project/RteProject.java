@@ -16,6 +16,7 @@ import org.eclipse.cdt.core.settings.model.ICProjectDescription;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.PlatformObject;
 
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterInfo;
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -23,19 +24,17 @@ import com.arm.cmsis.pack.configuration.IRteConfiguration;
 import com.arm.cmsis.pack.info.ICpFileInfo;
 
 /**
- * Default implementation of ICRteProject interface
+ * Default implementation of IRteProject interface
  */
-public class RteProject implements IRteProject {
+public class RteProject extends PlatformObject implements IRteProject {
 
 	private String fName = null;
-	protected IRteConfiguration fRteConfiguration = null; 
-
+	protected IRteConfiguration fRteConfiguration = null;
 	protected RteProjectStorage fRteProjectStorage = null;
-	
-	private boolean bUpdateCompleted = false; 
-	
+	private boolean bUpdateCompleted = false;
+
 	/**
-	 *  Constructs RteProject for given project
+	 * Constructs RteProject for given project
 	 */
 	public RteProject(IProject project) {
 		setName(project.getName());
@@ -52,12 +51,11 @@ public class RteProject implements IRteProject {
 	synchronized public boolean isUpdateCompleted() {
 		return bUpdateCompleted;
 	}
-	
-	
+
 	@Override
 	synchronized public void setUpdateCompleted(boolean completed) {
 		bUpdateCompleted = completed;
-		
+
 	}
 
 	@Override
@@ -80,12 +78,10 @@ public class RteProject implements IRteProject {
 		fRteProjectStorage.setToolChainAdapterInfo(toolChainAdapterInfo);
 	}
 
-	
-	protected void outputMessage(final String message)
-	{
+	protected void outputMessage(final String message) {
 		// TODO: implement
 	}
-	
+
 	@Override
 	public IProject getProject() {
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(getName());
@@ -97,7 +93,6 @@ public class RteProject implements IRteProject {
 		return fRteConfiguration;
 	}
 
-	
 	@Override
 	public void setRteConfiguration(String rteConfigName, IRteConfiguration rteConf) {
 		fRteConfiguration = rteConf;
@@ -114,13 +109,11 @@ public class RteProject implements IRteProject {
 		fRteProjectStorage.setRteConfigurationName(rteConfigName);
 	}
 
-	
 	@Override
 	public RteProjectStorage getProjectStorage() {
 		return fRteProjectStorage;
 	}
-	
-	
+
 	@Override
 	public void save() throws CoreException {
 		processRteStorages(true);
@@ -130,18 +123,27 @@ public class RteProject implements IRteProject {
 	public void load() throws CoreException {
 		setUpdateCompleted(false);
 		processRteStorages(false);
-		reload(); 
+		update(RteProjectUpdater.LOAD_CONFIGS);
 	}
 
-
 	@Override
-	public void update() {
-		update(RteProjectUpdater.UPDATE_ALL);
+	public void init() {
+		update(0);
 	}
 
 	@Override
 	public void reload() {
-		update( RteProjectUpdater.LOAD_CONFIGS | RteProjectUpdater.UPDATE_ALL);
+		update(RteProjectUpdater.LOAD_CONFIGS  | RteProjectUpdater.UPDATE_TOOLCHAIN);
+	}
+
+	@Override
+	public void refresh() {
+		update(RteProjectUpdater.LOAD_CONFIGS);
+	}
+
+	@Override
+	public void cleanup() {
+		update(RteProjectUpdater.LOAD_CONFIGS| RteProjectUpdater.CLEANUP_RTE_FILES);
 	}
 
 	protected void update(int updateFlags) {
@@ -149,51 +151,65 @@ public class RteProject implements IRteProject {
 		RteProjectUpdater updater = new RteProjectUpdater(this, updateFlags);
 		updater.schedule();
 	}
-	
-	
+
 	protected void processRteStorages(boolean save) throws CoreException {
 		IProject project = getProject();
 		CoreModel model = CoreModel.getDefault();
 		ICProjectDescription projDes = model.getProjectDescription(project);
-		if(save) {
+		if (save) {
 			saveRteStorage(projDes);
 			model.setProjectDescription(project, projDes);
-		}else {
+		} else {
 			loadRteStorage(projDes);
 		}
 	}
 
-
 	protected void saveRteStorage(ICProjectDescription projDes) throws CoreException {
-		if(fRteProjectStorage != null) {
+		if (fRteProjectStorage != null) {
 			fRteProjectStorage.save(projDes);
 		}
 	}
 
 	protected void loadRteStorage(ICProjectDescription projDes) throws CoreException {
-		if(fRteProjectStorage == null)
+		if (fRteProjectStorage == null) {
 			fRteProjectStorage = new RteProjectStorage();
+		}
 		fRteProjectStorage.load(projDes);
 	}
 
-
 	@Override
 	public boolean isFileUsed(String fileName) {
-		if(fileName == null || fileName.isEmpty())
+		if (fileName == null || fileName.isEmpty()) {
 			return false;
-		if(fileName.equals(CmsisConstants.RTE_RTE_Components_h))
+		}
+		if (fileName.equals(CmsisConstants.RTE_RTE_Components_h)) {
 			return true;
-		if(fRteConfiguration != null)
+		}
+		if (fRteConfiguration != null) {
 			return fRteConfiguration.getProjectFileInfo(fileName) != null;
+		}
 		return false;
 	}
 
 	@Override
 	public ICpFileInfo getProjectFileInfo(String fileName) {
-		if(fileName == null || fileName.isEmpty())
+		if (fileName == null || fileName.isEmpty()) {
 			return null;
-		if(fRteConfiguration != null)
+		}
+		if (fRteConfiguration != null) {
 			return fRteConfiguration.getProjectFileInfo(fileName);
+		}
+		return null;
+	}
+
+	@Override
+	public ICpFileInfo[] getProjectFileInfos(String fileName) {
+		if (fileName == null || fileName.isEmpty()) {
+			return null;
+		}
+		if (fRteConfiguration != null) {
+			return fRteConfiguration.getProjectFileInfos(fileName);
+		}
 		return null;
 	}
 

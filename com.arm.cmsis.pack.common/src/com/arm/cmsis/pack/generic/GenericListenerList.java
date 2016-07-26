@@ -28,7 +28,7 @@ public class GenericListenerList<L extends IGenericListener<E>, E> implements IG
 
 	@Override
 	public synchronized void addListener(L listener) {
-		if(listener != this) //avoid loops
+		if(listener != null && listener != this) //avoid loops
 			listeners.add(listener);
 	}
 

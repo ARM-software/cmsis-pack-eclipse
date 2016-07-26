@@ -14,7 +14,6 @@ package com.arm.cmsis.pack.parser;
 
 import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpItem;
-import com.arm.cmsis.pack.data.ICpPack;
 
 /**
  * Class to parse pdsc files 
@@ -30,15 +29,7 @@ public class PdscParser extends CpXmlParser  {
 	}
 	
 	@Override
-	public ICpItem createItem(ICpItem parent, String tag) {
-		if(parent != null) {
-			return parent.createItem(parent, tag);
-		}
-		if(rootItem == null) {
-			ICpPack pack = new CpPack(parent, tag) ;
-			pack.setFileName(xmlFile);
-			rootItem = pack;
-		}
-		return rootItem;
+	public ICpItem createRootItem(String tag) {
+		return new CpPack(tag, xmlFile);
 	}
 }

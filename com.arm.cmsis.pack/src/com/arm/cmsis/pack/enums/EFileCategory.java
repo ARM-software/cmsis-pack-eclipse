@@ -11,8 +11,6 @@
 
 package com.arm.cmsis.pack.enums;
 
-import com.arm.cmsis.pack.data.ICpFile;
-
 /**
  * 	Enumeration value corresponding <code>"category"</code> attribute in pdsc file
  *  That represents 

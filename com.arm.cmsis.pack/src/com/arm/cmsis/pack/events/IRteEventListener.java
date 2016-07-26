@@ -17,4 +17,5 @@ import com.arm.cmsis.pack.generic.IGenericListener;
  * Listener to handle an RTE event
  */
 public interface IRteEventListener extends IGenericListener<RteEvent> {
+	// the interface is used for simplicity
 }

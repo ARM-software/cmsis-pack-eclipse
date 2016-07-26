@@ -134,6 +134,16 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	T getFirstChild(final String key);
 
 	/**
+	 * Returns first child's text
+	 * @param key implementation-dependent string to search for
+	 * @return child item's text if found, null otherwise
+	 * @see #getFirstChild(ITreeItem) 
+	 * @see #getItemKey(ITreeItem)
+	 */
+	String getFirstChildText(final String key);
+
+	
+	/**
 	 * Removes child from the collection
 	 * @param childToRemove child to remove
 	 */

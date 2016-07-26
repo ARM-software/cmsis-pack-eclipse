@@ -30,6 +30,12 @@ public interface ICpDeviceProperty extends ICpItem {
 	 */
 	long getAP();
 	
+	
+	/**
+	 * Returns item-depended address (default is 0)
+	 * @return address as long value
+	 */
+	long getAddress();	
 
 	/**
 	 * Returns item-depended start address (default is 0)
@@ -37,6 +43,7 @@ public interface ICpDeviceProperty extends ICpItem {
 	 */
 	long getStart();	
 
+	
 	/**
 	 * Returns item-depended start address (default is 0)
 	 * @return start address as long value

@@ -39,7 +39,7 @@ public class RteComponentBundleVersion extends RteComponentItem {
 	}
 
 	@Override
-	public void addComponent(ICpComponent cpComponent) {
+	public void addComponent(ICpComponent cpComponent, int flags) {
 		
 		ICpItem bundle = cpComponent.getParent(CmsisConstants.BUNDLE_TAG);
 		if(bundle != null && !fBundles.contains(bundle)) {
@@ -52,7 +52,7 @@ public class RteComponentBundleVersion extends RteComponentItem {
 			groupItem = new RteComponentGroup(this, groupName);
 			addChild(groupItem);
 		}
-		groupItem.addComponent(cpComponent);
+		groupItem.addComponent(cpComponent, flags);
 	}
 
 	

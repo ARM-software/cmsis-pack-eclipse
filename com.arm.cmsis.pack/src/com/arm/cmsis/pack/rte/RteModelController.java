@@ -77,9 +77,11 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 
 	
 	//@Override
+	@Override
 	public void clear() {
-		if(fModel != null)
+		if(fModel != null) {
 			fModel.clear();
+		}
 		fModel = null;
 		fSavedPackFilter = null;
 		fCurrentPackFilter = null;
@@ -123,15 +125,18 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	}
 	
 	static protected void collectComponentKeys(Set<String> ids, Collection<? extends ICpItem> children) {
-		if(children == null || children.isEmpty())
+		if(children == null || children.isEmpty()) {
 			return;
+		}
 		for(ICpItem child : children) {
-			if(!(child instanceof ICpComponentInfo))
+			if(!(child instanceof ICpComponentInfo)) {
 				continue;
+			}
 			ICpComponentInfo ci = (ICpComponentInfo)child;
 			String key = ci.getName() + ':' + ci.getAttribute(CmsisConstants.INSTANCES);
-			if(ci.isVersionFixed())
+			if(ci.isVersionFixed()) {
 				key += ':' + ci.getVersion();
+			}
 			ids.add(key);
 		}
 	}
@@ -146,8 +151,9 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	protected void collectPacks() {
 		ICpPackCollection allPacks = null;
 		ICpPackManager pm  = CpPlugIn.getPackManager();
-		if(pm != null)
-			allPacks = pm.getPacks();
+		if(pm != null) {
+			allPacks = pm.getInstalledPacks();
+		}
 		fRtePackCollection = new RtePackCollection();
 		if(allPacks != null) {
 			fRtePackCollection.addCpItem(allPacks); 
@@ -175,8 +181,9 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 
 	@Override
 	public void updateConfigurationInfo() {
-		if(getConfigurationInfo() == null)
+		if(getConfigurationInfo() == null) {
 			return;
+		}
 		if(setPackFilter(fCurrentPackFilter)) {
 			update();
 		} else {
@@ -191,15 +198,20 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		fRtePackCollection.setUsedPacks(getUsedPackInfos());
 	}
 	
-	@Override
 	public void update() {
+		update(RteConstants.NONE);
+	}
+	
+	@Override
+	public void update(int flags) {
 		updateComponentInfos();
 		updatePackFilterInfo();
-		fModel.update();
+		fModel.update(flags);
 		fRtePackCollection.setUsedPacks(getUsedPackInfos());
 		emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this);
 	}
-	
+
+
 	@Override
 	public void commit() {
 		updateConfigurationInfo();
@@ -296,16 +308,19 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	@Override
 	public void setDeviceInfo(ICpDeviceInfo deviceInfo) {
 		boolean changed = false;
-		
-		if(getDeviceInfo() == null)
+		int updateFlags = RteConstants.NONE;  
+		if(getDeviceInfo() == null) {
 			changed = true;
-		else 
+		} else {
 			changed = !getDeviceInfo().attributes().equals(deviceInfo.attributes());
+			if(changed)
+				updateFlags = RteConstants.COMPONENT_IGNORE_ALL;
+		}
 		
 		if(changed) {
 			fbDeviceModified = !fSavedDeviceAttributes.equals(deviceInfo.attributes());
 			fModel.setDeviceInfo(deviceInfo);
-			update();
+			update(updateFlags);
 		}
 	}
 
@@ -381,8 +396,9 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		if(pack != null) {
 			pack.setSelected(select);
 			IRtePackFamily family = pack.getFamily();
-			if(family != null)
+			if(family != null) {
 				family.updateVersionMatchMode();
+			}
 			emitPackFilterModified();
 		}
 	}

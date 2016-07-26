@@ -2,30 +2,28 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS Pack UI
 Bundle-SymbolicName: com.arm.cmsis.pack.ui;singleton:=true
-Bundle-Version: 1.1.0.qualifier
+Bundle-Version: 2.0.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.ui.CpPlugInUI
 Bundle-Vendor: ARM
-Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack.ui,
  com.arm.cmsis.pack.ui.console,
  com.arm.cmsis.pack.ui.editors,
  com.arm.cmsis.pack.ui.preferences,
  com.arm.cmsis.pack.ui.tree,
- com.arm.cmsis.pack.ui.views,
  com.arm.cmsis.pack.ui.widgets,
- com.arm.cmsis.pack.ui.wizards,
- com.arm.cmsis.pack.ui.xmleditor
+ com.arm.cmsis.pack.ui.wizards
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.jface,
- org.eclipse.jface.text;bundle-version="3.9.0",
+ org.eclipse.jface.text,
  org.eclipse.osgi,
  org.eclipse.ui.workbench,
  org.eclipse.core.runtime,
  org.eclipse.ui,
- org.eclipse.ui.ide;bundle-version="3.10.0",
- org.eclipse.core.resources;bundle-version="3.9.0",
- org.eclipse.ui.console;bundle-version="3.5.300",
+ org.eclipse.ui.ide,
+ org.eclipse.core.resources,
+ org.eclipse.ui.console,
  com.arm.cmsis.pack.common,
  com.arm.cmsis.pack,
  org.eclipse.ui.editors,

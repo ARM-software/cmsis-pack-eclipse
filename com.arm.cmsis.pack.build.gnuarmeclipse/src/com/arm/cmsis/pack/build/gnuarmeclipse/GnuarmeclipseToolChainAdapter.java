@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.eclipse.cdt.managedbuilder.core.IOption;
 
-import com.arm.cmsis.pack.build.settings.IBuildSettings;
+import com.arm.cmsis.pack.build.IBuildSettings;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapter;
 import com.arm.cmsis.pack.common.CmsisConstants;
 
@@ -29,7 +29,10 @@ import com.arm.cmsis.pack.common.CmsisConstants;
  */
 public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 
-	static public final String GNUARMECLIPSE_OPTION = "ilg.gnuarmeclipse.managedbuild.cross.option"; //$NON-NLS-1$
+	static public final String GNUARMECLIPSE_TOOLCHAIN_PREFIX = "ilg.gnuarmeclipse.managedbuild.cross"; //$NON-NLS-1$
+	static public final String GNUARMECLIPSE_TOOLCHAIN_ID = GNUARMECLIPSE_TOOLCHAIN_PREFIX + ".toolchain.base"; //$NON-NLS-1$
+	
+	static public final String GNUARMECLIPSE_OPTION = GNUARMECLIPSE_TOOLCHAIN_PREFIX 	+ ".option"; //$NON-NLS-1$
 	static public final String GNUARMECLIPSE_ARM_TARGET = GNUARMECLIPSE_OPTION 			+ ".arm.target"; //$NON-NLS-1$
 	static public final String GNUARMECLIPSE_CPU_OPTION = GNUARMECLIPSE_ARM_TARGET		+ ".family"; //$NON-NLS-1$  
 	static public final String GNUARMECLIPSE_FPU_OPTION = GNUARMECLIPSE_ARM_TARGET		+ ".fpu.unit"; //$NON-NLS-1$  
@@ -52,69 +55,66 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 	protected int getRteOptionType(String id) {
 		switch (id) {
 		case GNUARMECLIPSE_CPU_OPTION:
-			return CPU_OPTION;
+			return IBuildSettings.CPU_OPTION;
 		case GNUARMECLIPSE_FPU_OPTION:
-			return FPU_OPTION;
+			return IBuildSettings.FPU_OPTION;
 		case GNUARMECLIPSE_FPU_ABI_OPTION:
-			return FLOAT_ABI_OPTION;
+			return IBuildSettings.FLOAT_ABI_OPTION;
 		case GNUARMECLIPSE_ENDIAN_OPTION:
-			return ENDIAN_OPTION;
+			return IBuildSettings.ENDIAN_OPTION;
 		case GNUARMECLIPSE_INSTR_SET_OPTION:
-			return INSTR_SET_OPTION;
+			return IBuildSettings.INSTR_SET_OPTION;
 		case GNUARMECLIPSE_LINKER_SCRIPT_OPTION:
-			return LINKER_SCRIPT_OPTION;
+			return IBuildSettings.RTE_LINKER_SCRIPT;
 			// misc options are here for completeness
 		case GNUARMECLIPSE_CMISC_OPTION: 
-			return CMISC_OPTION;
+			return IBuildSettings.CMISC_OPTION;
 		case GNUARMECLIPSE_AMISC_OPTION:
-			return AMISC_OPTION;
+			return IBuildSettings.AMISC_OPTION;
 		case GNUARMECLIPSE_LMISC_OPTION:
-			return LMISC_OPTION;
+			return IBuildSettings.LMISC_OPTION;
 
 		default:
 			break;
 		}
-		return UNKNOWN_OPTION;
+		return IBuildSettings.UNKNOWN_OPTION;
 	}
 
 	@Override
-	protected String getRteOptionValue(int oType, IBuildSettings buildSettings) {
+	protected String getRteOptionValue(int oType, IBuildSettings buildSettings, IOption option) {
 		switch (oType) {
-		case CPU_OPTION:
+		case IBuildSettings.CPU_OPTION:
 			return getCpuOptionValue(buildSettings);
-		case INSTR_SET_OPTION:
+		case IBuildSettings.INSTR_SET_OPTION:
 			return GNUARMECLIPSE_INSTR_SET_VALUE_PREFIX + "thumb"; //$NON-NLS-1$
-		case ENDIAN_OPTION:
-			return getEndianOptionValue(buildSettings); // bug in DS-5 armgcc
-														// toolchain
-		case FPU_OPTION:
+		case IBuildSettings.ENDIAN_OPTION:
+			return getEndianOptionValue(buildSettings); 
+		case IBuildSettings.FPU_OPTION:
 			return getFpuOptionValue(buildSettings);
-		case FLOAT_ABI_OPTION:
+		case IBuildSettings.FLOAT_ABI_OPTION:
 			return getFloatAbiOptionValue(buildSettings);
-		case LINKER_SCRIPT_OPTION:
+		case IBuildSettings.RTE_LINKER_SCRIPT:
 			return null; // reported via getStringListValue()
 		default:
 			break;
 
 		}
-		return super.getRteOptionValue(oType, buildSettings);
+		return super.getRteOptionValue(oType, buildSettings, option);
 	}
 
 	@Override
-	protected Collection<String> getStringListValue(
-			IBuildSettings buildSettings, int type) {
-		if (type == IOption.LIBRARIES || type == IOption.LIBRARY_PATHS) {
+	protected Collection<String> getStringListValue(IBuildSettings buildSettings, int type) {
+		if (type == IBuildSettings.RTE_LIBRARIES || type == IBuildSettings.RTE_LIBRARY_PATHS) {
 			return null; // we add libraries as objects => ignore libs and lib
 							// paths
-		} else if (type == IOption.OBJECTS) {
-			Collection<String> objs = buildSettings.getStringListValue(type);
+		} else if (type == IBuildSettings.RTE_OBJECTS) {
+			Collection<String> objs = buildSettings.getStringListValue(IBuildSettings.RTE_OBJECTS);
 			List<String> value = new LinkedList<String>();
 			if (objs != null && !objs.isEmpty())
 				value.addAll(objs);
 			// add libraries as objects (gcc does not allow to specify libs with
 			// absolute paths)
-			Collection<String> libs = buildSettings
-					.getStringListValue(IOption.LIBRARIES);
+			Collection<String> libs = buildSettings.getStringListValue(IBuildSettings.RTE_LIBRARIES);
 			if (libs != null && !libs.isEmpty())
 				value.addAll(libs);
 			return value;
@@ -130,7 +130,7 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 	 * @return CPU_OPTION value string
 	 */
 	protected String getCpuOptionValue(IBuildSettings buildSettings) {
-		String cpu = getDeviceAttribute(CPU_OPTION, buildSettings);
+		String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
 		int pos = cpu.indexOf('+');
 		if (pos > 0) {
 			// Cortex-M0+ -> Cortex-M0plus
@@ -148,20 +148,20 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 	 * @return FPU_OPTION value string
 	 */
 	public String getFpuOptionValue(IBuildSettings buildSettings) {
-		String cpu = getDeviceAttribute(CPU_OPTION, buildSettings);
-		String fpu = getDeviceAttribute(FPU_OPTION, buildSettings);
+		String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
+		String fpu = getDeviceAttribute(IBuildSettings.FPU_OPTION, buildSettings);
 		String val = "default"; //$NON-NLS-1$
-		if (cpu == null || fpu == null || fpu.equals(CmsisConstants.NO_FPU)
-				|| !coreHasFpu(cpu)) {
+		if (cpu == null || fpu == null || fpu.equals(CmsisConstants.NO_FPU) || !coreHasFpu(cpu)) {
 			// default
-		}
-		if (cpu.equals("Cortex-M7")) { //$NON-NLS-1$
-			if (fpu.equals(CmsisConstants.SP_FPU))
-				val = "fpv5spd16"; //$NON-NLS-1$
-			if (fpu.equals(CmsisConstants.DP_FPU))
-				val = "fpv5d16"; //$NON-NLS-1$ 
-		} else if (fpu.equals(CmsisConstants.SP_FPU)) {
-			val = "fpv4spd16"; //$NON-NLS-1$
+		} else {
+			if (cpu.equals("Cortex-M7")) { //$NON-NLS-1$
+				if (fpu.equals(CmsisConstants.SP_FPU))
+					val = "fpv5spd16"; //$NON-NLS-1$
+				if (fpu.equals(CmsisConstants.DP_FPU))
+					val = "fpv5d16"; //$NON-NLS-1$ 
+			} else if (fpu.equals(CmsisConstants.SP_FPU)) {
+				val = "fpv4spd16"; //$NON-NLS-1$
+			}
 		}
 		return GNUARMECLIPSE_FPU_VALUE_PREFIX + val;
 	}
@@ -174,8 +174,8 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 	 * @return FPU_OPTION value string
 	 */
 	private String getFloatAbiOptionValue(IBuildSettings buildSettings) {
-		String cpu = getDeviceAttribute(CPU_OPTION, buildSettings);
-		String fpu = getDeviceAttribute(FPU_OPTION, buildSettings);
+		String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
+		String fpu = getDeviceAttribute(IBuildSettings.FPU_OPTION, buildSettings);
 		String val;
 		if (cpu == null || fpu == null || fpu.equals(CmsisConstants.NO_FPU)
 				|| !coreHasFpu(cpu))
@@ -186,7 +186,7 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 	}
 
 	protected String getEndianOptionValue(IBuildSettings buildSettings) {
-		String endian = getDeviceAttribute(ENDIAN_OPTION, buildSettings);
+		String endian = getDeviceAttribute(IBuildSettings.ENDIAN_OPTION, buildSettings);
 		String val;
 		if (endian == null || endian.isEmpty()) {
 			val = "default"; //$NON-NLS-1$

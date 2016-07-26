@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+	<context id="component_page" title="RTE Configuration - Components">
+		<description>Manage Software Components of a project. Software Components can be added, deleted, disabled, or updated during the software development process at any time.
+		
+Click the <b>Resolve</b> button to solve unambiguous Software Component dependencies. 
+
+Click the <b>Save</b> button to apply your changes.
+		</description>
+  <topic href="html/reference/rte_components.html" label="RTE Configuration - Components"/>
+	</context>
+	<context id="device_page" title="RTE Configuration - Device">
+		<description>The device selection defines essential tool settings such as compiler controls, the memory layout for the linker, and the Flash programming algorithms.
+
+The view shows device properties and provides hyperlinks to documentation.
+
+Click the <b>Save</b> button to apply your changes.
+
+Select another device by clicking the &lt;b&gt;Change...&lt;/b&gt; button.</description>
+  <topic href="html/reference/rte_device.html" label="RTE Configuration - Device"/>
+  <topic href="html/reference/select_device.html" label="Change Device"/>
+	</context>
+	<context id="packs_page" title="RTE Configuration - Packs">
+		<description>Specify the Software Packs used in a project target.
+
+Enable &lt;b&gt;Use all latest Packs&lt;/b&gt; while developing a project. 
+Disable &lt;b&gt;Use all latest Packs&lt;/b&gt; to select specific Software Pack versions.
+
+Click the &lt;b&gt;Save&lt;/b&gt; icon to apply your changes.
+        </description>
+  <topic href="html/reference/rte_packs.html" label="RTE Configuration - Packs"/>
+	</context>
+</contexts>

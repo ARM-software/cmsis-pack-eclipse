@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="PackInstaller" name="Pack Installer to install/remove CMSIS packs" schema="schema/PackInstaller.exsd"/>
+   <extension-point id="EnvironmentProvider" name="Provider to bind CMSIS plug-ins to  a specific development environment" schema="schema/EnvironmentProvider.exsd"/>
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer

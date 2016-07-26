@@ -25,7 +25,7 @@ public class CpDataPatch extends CpDeviceProperty implements ICpDataPatch {
 
 	@Override
 	public long getPatchAddress() {
-		return attributes().getAttributeAsLong(CmsisConstants.ADDRESS, 0);
+		return getAddress();
 	}
 
 	@Override

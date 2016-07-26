@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+	<context id="cmsis_project_wizard" title="CMSIS - New Project">
+		<description>The project wizard helps you throug the first steps in creating a new CMSIS project.</description>
+  <topic href="html/reference/cmsis_project.html" label="CMSIS C/C++ Project"/>
+	</context>
+	<context id="cmsis_device_select_wizard" title="CMSIS - First Time Device Selector">
+		<description>The device selection defines essential tool settings such as compiler controls, the memory layout for the linker, and the Flash programming algorithms.
+
+The view shows properties of the selected device.
+Refer to related links below for details.
+
+The &lt;b&gt;Search&lt;/b&gt; field narrows the device list as you type. 
+    &lt;b&gt;*&lt;/b&gt; - wild character for strings.
+    &lt;b&gt;?&lt;/b&gt; - place holder for one character.</description>
+  <topic href="html/reference/rte_select_device.html" label="Select Device"/>
+	</context>
+	<context id="code_template" title="CMSIS - Code Template">
+		<description>The code template wizard helps you to create a source file containing function templates for the respective Software Component. Click on the Component to add the user code.</description>
+		<topic href="html/reference/cmsis_template.htm" label="Code Template">
+			<enablement>
+				<with variable="platform">
+	            	<test property="org.eclipse.core.runtime.isBundleInstalled" args="org.eclipse.platform.doc.isv"/>
+	     		</with>
+			</enablement>
+		</topic>
+	</context>
+ <context id="rte_property_page" title="CMSIS - Property">
+    <description>The RTE property page shows you the property of the RTE component.</description>
+ </context>
+</contexts>

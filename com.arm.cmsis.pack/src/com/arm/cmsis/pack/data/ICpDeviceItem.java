@@ -50,6 +50,14 @@ public interface ICpDeviceItem extends ICpItem {
 	Map<String, ICpItem> getProcessors();
 
 	/**
+	 * Returns effective processor property for given processor 
+	 * @param processorName processor name for which to get property
+	 * @return processor property as ICpItem 
+	 */
+	ICpItem getProcessor(String processorName);
+	
+	
+	/**
 	 * Returns effective processor count for this device item 
 	 * @return map of processor name (pname) - processor property entries 
 	 */

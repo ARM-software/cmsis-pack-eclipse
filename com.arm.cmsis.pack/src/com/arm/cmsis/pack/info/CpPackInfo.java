@@ -25,7 +25,7 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	protected ICpPack fPack = null;
 
 	/**
-	 * Constructs Pack info from a Pack 
+	 * Constructs Pack info from a Pack
 	 * @param parent parent item if any
 	 * @param pack ICpPack item to take data from
 	 */
@@ -47,7 +47,7 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 		attributes().setAttributes(attributes);
 	}
 
-	
+
 	/**
 	 * @param parent parent item if any
 	 */
@@ -73,7 +73,6 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 		return fPack;
 	}
 
-	
 	@Override
 	public void setPack(ICpPack pack) {
 		fPack = pack;
@@ -83,7 +82,7 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	public void updateInfo() {
 		if(fPack != null) {
 			attributes().setAttribute(CmsisConstants.NAME, fPack.getName());
-			attributes().setAttribute(CmsisConstants.URL, fPack.getUrl()); 
+			attributes().setAttribute(CmsisConstants.URL, fPack.getUrl());
 			attributes().setAttribute(CmsisConstants.VENDOR, fPack.getVendor());
 			attributes().setAttribute(CmsisConstants.VERSION, fPack.getVersion());
 		}
@@ -103,13 +102,13 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	public String getPackId() {
 		return getId();
 	}
-	
+
 	@Override
 	public String constructId() {
 		// construct Pack ID in the form "Vendor.Name.Version"
-		return getPackFamilyId() + '.' + getVersion(); 
+		return getPackFamilyId() + '.' + getVersion();
 	}
-	
+
 	@Override
 	public String getPackFamilyId() {
 		return getVendor() + '.' + getName();
@@ -117,10 +116,11 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 
 	@Override
 	public String getDescription() {
-		if(fPack != null)
+		if(fPack != null) {
 			return fPack.getDescription();
+		}
 		return null;
 	}
-	
-	
+
+
 }

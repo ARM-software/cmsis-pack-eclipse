@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.info;
 
@@ -15,40 +15,65 @@ package com.arm.cmsis.pack.info;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.CpPackFilter;
+import com.arm.cmsis.pack.data.CpRootItem;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackFilter;
 
 /**
- *
+ * The class inplementing ICpConfigurationInfo interface 
  */
-public class CpConfigurationInfo extends CpItem implements ICpConfigurationInfo {
+public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationInfo {
 
 	public CpConfigurationInfo() {
-		super(null, CmsisConstants.CONFIGURATION_TAG);
+		super(NULL_CPITEM, CmsisConstants.CONFIGURATION_TAG);
 	}
 
-	public CpConfigurationInfo(ICpDeviceInfo deviceInfo, ICpItem toolchainInfo) {
-		super(null, CmsisConstants.CONFIGURATION_TAG);
-		ICpPackFilterInfo filterInfo = new CpPackFilterInfo(this);
-		addChild(filterInfo);
+	public CpConfigurationInfo(ICpDeviceInfo deviceInfo, ICpItem toolchainInfo, boolean createDefaultTags) {
+		this();
+		if (createDefaultTags) {
+			ICpPackFilterInfo filterInfo = new CpPackFilterInfo(this);
+			addChild(filterInfo);
+		}
 		// add device
 		deviceInfo.setParent(this);
 		addChild(deviceInfo);
 		// add toolchain
 		toolchainInfo.setParent(this);
 		addChild(toolchainInfo);
-		ICpItem apiInfos = new CpItem(this, CmsisConstants.APIS_TAG);
-		addChild(apiInfos);
-		ICpItem componentInfos = new CpItem(this, CmsisConstants.COMPONENTS_TAG);
-		addChild(componentInfos);
+		if (createDefaultTags) {
+			getComponentsItem();
+		}
+	}
+
+	public CpConfigurationInfo(String tag, String fileName) {
+		super(tag, fileName);
+	}
+
+	
+	@Override
+	public ICpPack getPack() {
+		// return DFP taken from device info
+		ICpDeviceInfo di = getDeviceInfo();
+		if(di == null )
+			return null;
+		return di.getPack();
 	}
 	
-	
+
+	@Override
+	public String getDfpPath() {
+		ICpPack pack = getPack();
+		if(pack != null)
+			return pack.getInstallDir(null);
+		return null;
+	}
+
 	@Override
 	protected ICpItem createChildItem(String tag) {
 		return createChildItem(this, tag);
 	}
-		
+
 	public static ICpItem createChildItem(ICpItem parent, String tag) {
 		switch(tag) {
 		case CmsisConstants.API_TAG:
@@ -68,7 +93,7 @@ public class CpConfigurationInfo extends CpItem implements ICpConfigurationInfo 
 		return new CpItem(parent, tag);
 	}
 
-	
+
 	@Override
 	public ICpDeviceInfo getDeviceInfo() {
 		return (ICpDeviceInfo)getFirstChild(CmsisConstants.DEVICE_TAG);
@@ -82,29 +107,39 @@ public class CpConfigurationInfo extends CpItem implements ICpConfigurationInfo 
 	@Override
 	public ICpPackFilterInfo getPackFilterInfo() {
 		ICpItem child = getFirstChild(CmsisConstants.PACKAGES_TAG);
-		if(child instanceof ICpPackFilterInfo)
+		if(child instanceof ICpPackFilterInfo) {
 			return (ICpPackFilterInfo)child;
+		}
 		return null;
 	}
 
 	@Override
 	public ICpPackFilter createPackFilter() {
 		ICpPackFilterInfo filterInfo = getPackFilterInfo();
-		if(filterInfo != null)
+		if(filterInfo != null) {
 			return filterInfo.createPackFilter();
-		
+		}
+
 		return new CpPackFilter();
 	}
 
 	@Override
 	public ICpItem getComponentsItem() {
-		return getFirstChild(CmsisConstants.COMPONENTS_TAG);
+		ICpItem componentInfos  = getFirstChild(CmsisConstants.COMPONENTS_TAG);
+		if(componentInfos == null) {
+			componentInfos = new CpItem(this, CmsisConstants.COMPONENTS_TAG);
+			addChild(componentInfos);
+		}
+		return componentInfos;
 	}
 
 	@Override
 	public ICpItem getApisItem() {
-		return getFirstChild(CmsisConstants.APIS_TAG);
+		ICpItem apiInfos  = getFirstChild(CmsisConstants.APIS_TAG);
+		if(apiInfos == null) {
+			apiInfos = new CpItem(this, CmsisConstants.APIS_TAG);
+			addChild(apiInfos);
+		}
+		return apiInfos;
 	}
-
-	
 }

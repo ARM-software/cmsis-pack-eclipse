@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+	<context id="packs_view" title="CMSIS Pack Manager - Packs">
+		<description>The &lt;b&gt;Packs&lt;/b&gt; view shows the Software Packs available for the selected device or board.
+
+Enter a pack name using wildcards into the field &lt;b&gt;Search Pack&lt;/b&gt; to narrow the list.</description>
+  <topic href="html/reference/pack_manager_packs.html" label="CMSIS Pack Manager - Packs"/>
+	</context>
+	<context id="devices_view" title="CMSIS Pack Manager - Devices">
+		<description>The &lt;b&gt;Devices&lt;/b&gt; view lists devices that are supported in available Software Packs.
+
+Select a device to narrow the list in the &lt;b&gt;Packs&lt;/b&gt; and &lt;b&gt;Examples&lt;/b&gt; view.
+
+Enter a device name using wildcards into the field &lt;b&gt;Search Device&lt;/b&gt; to reduce the list.</description>
+		<topic href="html/reference/pack_manager_devices.html" label="CMSIS Pack Manager - Devices">
+		</topic>
+	</context>
+	<context id="boards_view" title="CMSIS Pack Manager - Boards">
+		<description>The &lt;b&gt;Boards&lt;/b&gt; view lists the boards that are supported in available Software Packs.
+
+Select a board to narrow the list in the &lt;b&gt;Packs&lt;/b&gt; and &lt;b&gt;Examples&lt;/b&gt; view.
+Enter a board name using wildcards in &lt;b&gt;Search Board&lt;/b&gt; to reduce the list.</description>
+		<topic href="html/reference/pack_manager_boards.html" label="CMSIS Pack Manager - Boards">
+		</topic>
+	</context>
+	<context id="examples_view" title="CMSIS Pack Manager - Examples">
+		<description>The &lt;b&gt;Examples&lt;/b&gt; view lists examples that are available for the selected device or board.
+
+Enter an example name using wildcards in the field &lt;b&gt;Search Example&lt;/b&gt; to narrow the list.
+
+Disable &lt;b&gt;Only show examples from installed packs&lt;/b&gt; to view all examples available in the Software Packs.</description>
+		<topic href="html/reference/pack_manager_examples.html" label="CMSIS Pack Manager - Examples">
+		</topic>
+	</context>
+	<context id="pack_properties_view" title="CMSIS Pack Manager - Pack Properties">
+		<description>The &lt;b&gt;Pack Property&lt;/b&gt; view shows the content of the selected Software Pack. 
+
+You can copy an example by right-clicking an existing example name.</description>
+  <topic href="html/reference/pack_manager_properties.html" label="CMSIS Pack Manager - Pack Properties"/>
+	</context>
+</contexts>

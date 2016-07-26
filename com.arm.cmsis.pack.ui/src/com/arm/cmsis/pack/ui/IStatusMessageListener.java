@@ -17,5 +17,5 @@ import com.arm.cmsis.pack.generic.IGenericListener;
  *  Generic listener interface to transfer messages from widgets to container dialogs or wizards  
  */
 public interface IStatusMessageListener extends IGenericListener<String> { 
-	
+	// defines for ease of use
 }

@@ -17,14 +17,13 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
-import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.ui.widgets.RteWidget;
 
 /**
  * Base abstract class for RTE configuration editor pages
  */
-public abstract class RteEditorPage extends RteWidget implements IRteEventListener{
+public abstract class RteEditorPage extends RteWidget {
 
 	protected RteEditorPageHeader headerWidget = null;
     protected boolean bModified = false;
@@ -49,6 +48,7 @@ public abstract class RteEditorPage extends RteWidget implements IRteEventListen
 	 */
 	protected void setupHeader() {
 		saveAction = headerWidget.addSaveAction();
+		headerWidget.addHelpAction();
 	}
 	
 	@Override
@@ -75,6 +75,14 @@ public abstract class RteEditorPage extends RteWidget implements IRteEventListen
 	
 	@Override
 	public void handle(RteEvent event) {
+		switch(event.getTopic()) {
+		case RteEvent.CONFIGURATION_COMMITED:
+		case RteEvent.CONFIGURATION_MODIFIED:
+			super.handle(event);
+			return;
+		default:
+			break;
+		}
 		updateSaveAction(); // update on every event
 	}
 
@@ -82,6 +90,7 @@ public abstract class RteEditorPage extends RteWidget implements IRteEventListen
 	public void update() {
 		updateSaveAction();
 	}
+
 	
 	private void updateSaveAction(){
 		if(saveAction != null && getModelController() != null){

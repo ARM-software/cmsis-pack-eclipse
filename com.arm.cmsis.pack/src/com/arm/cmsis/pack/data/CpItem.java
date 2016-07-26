@@ -243,6 +243,8 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			return new CpExample(this, tag);
 		case CmsisConstants.BUNDLE_TAG:
 			return new CpItem(this, tag);
+		case CmsisConstants.GENERATOR_TAG:
+			return new CpGenerator(this, tag);
 		default:
 			break;
 		}
@@ -342,7 +344,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			if(p.providesEffectiveContent()) {
 				p.mergeEffectiveContent(p, processorName);
 			}
-		} else if (inserted  != null) {
+		} else {
 			// add missing attributes, but do not replace existing ones (we go down-up)
 			// process sub-properties as well
 			inserted.mergeEffectiveContent(p, processorName);
@@ -378,6 +380,12 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	@Override
 	public boolean isUnique() {
 		return false; // default is false
+	}
+
+	@Override
+	public boolean isGenerated() {
+		ICpPack pack = getPack();
+		return pack != null && pack.isGenerated();
 	}
 
 	@Override
@@ -485,11 +493,22 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		return getAbsolutePath(doc);
 	}
 
+
 	@Override
 	public String getProcessorName() {
 		return getProcessorName(attributes());
 	}
 
+	@Override
+	public int getPunitIndex() {
+		return getPunitIndex(attributes());
+	}
+
+	@Override
+	public int getPunitsCount() {
+		return getPunitsCount(attributes());
+	}
+	
 	/**
 	 * Returns "Pname" attribute of the element representing device property 
 	 * @param attributes attributes to extract processor name  
@@ -497,6 +516,24 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 */
 	static public String getProcessorName(IAttributes attributes) {
 		return attributes.getAttribute(CmsisConstants.PNAME, CmsisConstants.EMPTY_STRING);
+	}
+
+	/**
+	 * Returns "Punit" attribute as integer
+	 * @param attributes attributes to extract Punit
+	 * @return processor unit index (0 is default) 
+	 */
+	static public int getPunitIndex(IAttributes attributes) {
+		return attributes.getAttributeAsInt(CmsisConstants.PUNIT, 0);
+	}
+
+	/**
+	 * Returns "Punits" attribute as integer
+	 * @param attributes attributes to extract "Punits"
+	 * @return processor unit count (1 is default) 
+	 */
+	static public int getPunitsCount(IAttributes attributes) {
+		return attributes.getAttributeAsInt(CmsisConstants.PUNITS, 1);
 	}
 
 	
@@ -559,9 +596,6 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 					continue;
 				}
 				String doc = book.getDoc();
-				if(doc.isEmpty()) {
-					continue;
-				}
 				if(doc == null || doc.isEmpty() || books.containsKey(doc)) {
 					continue;
 				}
@@ -570,6 +604,11 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			}
 		}
 		return books.values();
+	}
+
+	@Override
+	public boolean isDefaultVariant() {
+		return attributes().getAttributeAsBoolean(CmsisConstants.IS_DEFAULT_VARIANT, false);
 	}
 
 }

@@ -30,10 +30,12 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 
 import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.generic.ITreeObject;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.rte.IRteModelController;
@@ -125,9 +127,11 @@ public class RteDeviceInfoWidget extends Composite {
 		public Object[] getChildren(Object parentElement) {
 			ICpBoard b = getCpBoard(parentElement);
 			if(b != null) {
-				Collection<ICpItem> books = b.getBooks();
-				if(books != null && !books.isEmpty()) {
-					return books.toArray();
+				if(b.getPack().getPackState() == PackState.INSTALLED) {
+					Collection<ICpItem> books = b.getBooks();
+					if(books != null && !books.isEmpty()) {
+						return books.toArray();
+					}
 				}
 			}
 			return ITreeObject.EMPTY_OBJECT_ARRAY;
@@ -141,8 +145,6 @@ public class RteDeviceInfoWidget extends Composite {
 			return false;
 		}
 	}
-
-	
 	
 	public class RteBoardLabelProvider extends LabelProvider{
 		@Override
@@ -151,9 +153,8 @@ public class RteDeviceInfoWidget extends Composite {
 			if(item != null) {
 				if(item.getTag().equals(CmsisConstants.BOOK_TAG)) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOOK);
-				} else { 
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
 				}
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
 			}
 			return null;
 		}
@@ -324,14 +325,13 @@ public class RteDeviceInfoWidget extends Composite {
 		lblUrlLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblUrl);
 		
 		linkUrl = new Link(this, SWT.NONE);
-		linkUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		linkUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 		linkUrl.addSelectionListener(new SelectionAdapter(){
 	    	 @Override
 	         public void widgetSelected(SelectionEvent e) {
 	    		 OpenURL.open(url, getShell());
 	    	}
 	    });
-		new Label(this, SWT.NONE);
 		
 		
 		Label lblEndianLabel = new Label(this, SWT.NONE);
@@ -410,7 +410,7 @@ public class RteDeviceInfoWidget extends Composite {
 			cpu = "ARM " + fDeviceInfo.getAttribute(CmsisConstants.DCORE); //$NON-NLS-1$
 			fpu = getFpuString(fDeviceInfo.getAttribute(CmsisConstants.DFPU));
 			endian = fDeviceInfo.getAttribute(CmsisConstants.DENDIAN);
-			vendorName = fDeviceInfo.getVendor();
+			vendorName = DeviceVendor.getOfficialVendorName(fDeviceInfo.getVendor());
 			clock = fDeviceInfo.getClockSummary();
 			pack = fDeviceInfo.getPackId();
 			family = fDeviceInfo.getAttribute(CmsisConstants.DFAMILY);
@@ -427,7 +427,6 @@ public class RteDeviceInfoWidget extends Composite {
 				deviceName += " (" + CpStringsUI.RteDeviceInfoWidget_lblMissing_text + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
 		}
-		
 		lblVendor.setText(vendorName);
 		lblDevice.setText(deviceName);
 		text.setText(description);
@@ -435,6 +434,7 @@ public class RteDeviceInfoWidget extends Composite {
 		lblClock.setText(clock);
 		lblPack.setText(pack);
 		linkUrl.setText(urlText);
+		linkUrl.setToolTipText(url);
 		lblMemory.setText(mem);
 		lblFamily.setText(family);
 		lblSubfamily.setText(subFamily);

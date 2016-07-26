@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?NLS TYPE="org.eclipse.help.toc"?>
+
+<toc label="CMSIS C/C++ Development User&apos;s Guide" topic="html/toc.html">
+   <topic href="html/reference/pack_manager.html" label="CMSIS Pack Manager">
+      <anchor id="a_pack_manager"/>
+   </topic>
+   <topic href="html/reference/cmsis_project.html" label="CMSIS C/C++ Project">
+      <anchor id="a_cmsis_project"/>
+   </topic>
+   <topic href="html/reference/rte_configuration.html" label="RTE Configuration">
+      <anchor id="a_rte_configuration"/>
+   </topic>
+   <topic href="html/reference/config_wizard.html" label="CMSIS Configuration Wizard">
+      <anchor id="a_cmsis_config_wizard"/>
+   </topic>
+   <topic href="html/reference/menu_extensions.html" label="Menu Extensions">
+      <anchor id="a_menu_extensions"/>
+   </topic>
+</toc>

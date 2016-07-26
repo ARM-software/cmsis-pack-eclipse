@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 package com.arm.cmsis.pack.ui.widgets;
 
 import java.util.Collection;
@@ -58,7 +58,7 @@ import com.arm.cmsis.pack.utils.Utils;
 
 
 /**
- * This class displays the component tree for selection. 
+ * This class displays the component tree for selection.
  *
  */
 public class RteComponentSelectorWidget extends RteWidget {
@@ -70,13 +70,13 @@ public class RteComponentSelectorWidget extends RteWidget {
 	static final int COLVENDOR 	= 3;
 	static final int COLVERSION = 4;
 	static final int COLDESCR 	= 5;
-	
+
 	private Action expandAll;
 	private Action collapseAll;
 	private Action expandAllSelected;
-	
+
 	TreeViewer viewer = null;					// the Tree Viewer
-	
+
 	static final Color GREEN = new Color(Display.getCurrent(), CpPlugInUI.GREEN);
 	static final Color YELLOW = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
 
@@ -89,8 +89,8 @@ public class RteComponentSelectorWidget extends RteWidget {
 		}
 		return null;
 	}
-	
-	/**  
+
+	/**
 	 * Column label provider for RteComponentTreeWidget
 	 */
 	public class RteComponentColumnAdvisor extends RteColumnAdvisor {
@@ -111,62 +111,82 @@ public class RteComponentSelectorWidget extends RteWidget {
 			IRteComponentItem item = getComponentItem(obj);
 			if(item != null) {
 				if (item instanceof IRteComponent) {
-					int count = ((IRteComponent) item).getMaxInstanceCount(); 
+					int count = ((IRteComponent) item).getMaxInstanceCount();
 					if (count == 1) {
-						return CellControlType.CHECK;
+						return CellControlType.INPLACE_CHECK;
 					} else if (count > 1) {
-						return CellControlType.SPIN;
+						return CellControlType.INPLACE_SPIN;
 					}
 				}
 			}
 			return CellControlType.NONE;
 		}
-		
+
 		@Override
 		public CellControlType getCellControlType(Object obj, int columnIndex) {
 			IRteComponentItem item = getComponentItem(obj);
 			int minItems = 0;
-			if(item == null)
+			if(item == null) {
 				return CellControlType.NONE;
+			}
 			Collection<String> strings = null;
 			switch (columnIndex) {
-				case COLSWCOMP: break;
-				case COLSEL:
-					return getSelectionControlType(obj);
-				case COLVARIANT: 
-					strings = item.getVariantStrings();
-					minItems = 1;
-					break;
-				case COLVENDOR:  
-					strings = item.getVendorStrings();
-					minItems = 1;
-					break;
-				case COLVERSION: 
-					strings = item.getVersionStrings();	
-					break;
-				case COLDESCR:
-					String url = item.getUrl();
-					if(url != null && ! url.isEmpty()) {
-						return CellControlType.URL;
-					}
-					break;
-				default: break;
+			case COLSWCOMP:
+				break;
+			case COLSEL:
+				return getSelectionControlType(obj);
+			case COLVARIANT:
+				strings = item.getVariantStrings();
+				minItems = 1;
+				break;
+			case COLVENDOR:
+				strings = item.getVendorStrings();
+				minItems = 1;
+				break;
+			case COLVERSION:
+				strings = item.getVersionStrings();
+				break;
+			case COLDESCR:
+				String url = item.getUrl();
+				if(url != null && ! url.isEmpty()) {
+					return CellControlType.URL;
+				}
+				break;
+			default: break;
 			}
-			
+
 			if (strings != null && strings.size() > minItems) {
 				return CellControlType.MENU;
 			}
-			
+
 			return CellControlType.TEXT;
 		}
 
 		@Override
 		public boolean getCheck(Object obj, int columnIndex) {
-			if (getSelectionControlType(obj) == CellControlType.CHECK) {
+			if (columnIndex != COLSEL) {
+				return false;
+			}
+			if (getSelectionControlType(obj) == CellControlType.CHECK
+					|| getSelectionControlType(obj) == CellControlType.INPLACE_CHECK) {
 				IRteComponentItem item = getComponentItem(obj);
 				if(item instanceof IRteComponent) {
 					boolean check = item.isSelected();
 					return check;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public boolean hasSuffixButton(Object obj, int columnIndex) {
+			if (columnIndex == COLSEL && getSelectionControlType(obj) == CellControlType.INPLACE_CHECK) {
+				IRteComponentItem item = getComponentItem(obj);
+				if(item instanceof IRteComponent) {
+					// TODO: make it more general
+//					if ("STM32CubeMX".equals(item.getName())) {
+//						return true;
+//					}
 				}
 			}
 			return false;
@@ -182,7 +202,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 					return label;
 				}
 				case COLSEL:
-					if (getSelectionControlType(obj) == CellControlType.SPIN) {
+					if (getSelectionControlType(obj) == CellControlType.INPLACE_SPIN) {
 						return Integer.toString(((IRteComponent)item).getSelectedCount());
 					}
 					break;
@@ -202,19 +222,19 @@ public class RteComponentSelectorWidget extends RteWidget {
 		}
 
 		@Override
-		public int getCurrentSelectedIndex(Object element, int columnIndex) {
+		public long getCurrentSelectedIndex(Object element, int columnIndex) {
 			int index = -1;
 			IRteComponentItem item = getComponentItem(element);
-			
+
 			if(item != null) {
 				switch(columnIndex) {
 				case COLSEL:
-					if (getSelectionControlType(element) == CellControlType.SPIN) {
+					if (getSelectionControlType(element) == CellControlType.INPLACE_SPIN) {
 						index = ((IRteComponent)item).getSelectedCount();
 					}
 					break;
 				case COLVARIANT:
-					index = Utils.indexOf(item.getVariantStrings(), item.getActiveVariant()); 
+					index = Utils.indexOf(item.getVariantStrings(), item.getActiveVariant());
 					break;
 				case COLVENDOR:
 					index = Utils.indexOf(item.getVendorStrings(), item.getActiveVendor());
@@ -226,15 +246,15 @@ public class RteComponentSelectorWidget extends RteWidget {
 					break;
 				}
 			}
-			
+
 			return index;
 		}
 
-		
+
 		@Override
-		public int getMaxCount(Object obj, int columnIndex) {
+		public long getMaxCount(Object obj, int columnIndex) {
 			if(columnIndex == COLSEL && obj instanceof IRteComponent) {
-			IRteComponent c = (IRteComponent)(obj);
+				IRteComponent c = (IRteComponent)(obj);
 				return c.getMaxInstanceCount();
 			}
 			return 0;
@@ -249,7 +269,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 				case COLSWCOMP:
 					break;
 				case COLSEL:
-					if (getSelectionControlType(obj) == CellControlType.SPIN) {
+					if (getSelectionControlType(obj) == CellControlType.INPLACE_SPIN) {
 						strings = getSelectionStrings(obj);
 					}
 					break;
@@ -269,27 +289,29 @@ public class RteComponentSelectorWidget extends RteWidget {
 			}
 			return strings;
 		}
-		
-	
+
+
 		@Override
 		public boolean canEdit(Object obj, int columnIndex) {
 			Collection<String> strings = null;
 			IRteComponentItem item = getComponentItem(obj);
 			int minValues = 0;
 			if(item != null) {
-				
+
 				switch(columnIndex) {
 				case COLSWCOMP:
 					break;
 				case COLSEL:
 					CellControlType ct = getSelectionControlType(obj);
-					return ct == CellControlType.CHECK || ct == CellControlType.SPIN;
+					return ct == CellControlType.CHECK || ct == CellControlType.INPLACE_SPIN
+							|| ct == CellControlType.INPLACE_CHECK;
 				case COLVARIANT:
 					strings = item.getVariantStrings();
 					minValues = 1;
 					break;
 				case COLVENDOR:
 					strings = item.getVendorStrings();
+					minValues = 1;
 					break;
 				case COLVERSION:
 					strings = item.getVersionStrings();
@@ -299,7 +321,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 					break;
 				}
 			}
-			
+
 			if (strings != null) {
 				return strings.size() > minValues;
 			}
@@ -311,53 +333,56 @@ public class RteComponentSelectorWidget extends RteWidget {
 			IRteComponentItem item = getComponentItem(obj);
 			if (item != null) {
 				if (columnIndex == 0) {
-					EEvaluationResult res = getModelController().getEvaluationResult(item); 
+					EEvaluationResult res = getModelController().getEvaluationResult(item);
 					Image baseImage = null;
-					if(item instanceof RteSelectedDeviceClass) {
-						if(res.isFulfilled())
+					if (item instanceof RteSelectedDeviceClass) {
+						if (res.isFulfilled()) {
 							baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
-						else
+						} else {
 							baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_DEPRDEVICE);
-					}else if(item instanceof RteMoreClass) {
+						}
+					} else if (item instanceof RteMoreClass) {
 						baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_FILTER);
 					} else if (item instanceof IRteComponentClass) {
-						baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
-					}else if (item instanceof IRteComponentGroup) {
+						baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+					} else if (item instanceof IRteComponentGroup) {
 						baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_GROUP);
-					}else if (item instanceof IRteComponent) {
-						IRteComponent c = (IRteComponent)item;
+					} else if (item instanceof IRteComponent) {
+						IRteComponent c = (IRteComponent) item;
 						ICpComponentInfo ci = c.getActiveCpComponentInfo();
-						if(ci != null && ci.getComponent() == null) {
-							if(c.getMaxInstanceCount() > 1)
+						if (ci != null && ci.getComponent() == null) {
+							if (c.getMaxInstanceCount() > 1) {
 								baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT_ERROR);
-							else
+							} else {
 								baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_ERROR);
-	
+							}
+
 						} else {
-							if(c.getMaxInstanceCount() > 1)
+							if (c.getMaxInstanceCount() > 1) {
 								baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT);
-							else
+							} else {
 								baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
+							}
 						}
 					}
 					return baseImage;
-				} else {
-					switch (columnIndex) {
-					case COLSWCOMP:
-					case COLSEL:
-					case COLVARIANT:
-						break;
-					case COLVENDOR:
-						break;
-					case COLVERSION:
-						if(item.getActiveVersion() != null && !item.getActiveVersion().isEmpty() && !item.isUseLatestVersion()) {
-							return CpPlugInUI.getImage(CpPlugInUI.ICON_PIN);
-						}
-						break;
-					case COLDESCR:
-					default:
-						break;
+				}
+				switch (columnIndex) {
+				case COLSEL:
+				case COLSWCOMP:
+				case COLVARIANT:
+					break;
+				case COLVENDOR:
+					break;
+				case COLVERSION:
+					if (item.getActiveVersion() != null && !item.getActiveVersion().isEmpty()
+							&& !item.isUseLatestVersion()) {
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_PIN);
 					}
+					break;
+				case COLDESCR:
+				default:
+					break;
 				}
 			}
 			return null;
@@ -366,30 +391,33 @@ public class RteComponentSelectorWidget extends RteWidget {
 		@Override
 		public String getTooltipText(Object obj, int columnIndex) {
 			IRteComponentItem item = getComponentItem(obj);
-			if(item == null)
+			if(item == null) {
 				return null;
-			
+			}
+
 			switch(columnIndex) {
 			case COLSWCOMP:
 				return item.getDescription();
 			case COLVERSION:
 				String ver = item.getActiveVersion();
-				if(ver == null || ver.isEmpty())
+				if(ver == null || ver.isEmpty()) {
 					return null;
-				String tt; 
+				}
+				String tt;
 				if(item.isUseLatestVersion()) {
 					tt = CpStringsUI.RteComponentTreeWidget_UseLatestVersion;
 				} else {
 					tt = CpStringsUI.RteComponentTreeWidget_StickToFixedVersion;
 				}
-				
+
 				tt += ": ";  //$NON-NLS-1$
-				
+
 				return tt + ver;
 			case COLDESCR:
 				String url = item.getUrl();
-				if(url != null && !url.isEmpty())
+				if(url != null && !url.isEmpty()) {
 					return url;
+				}
 				break;
 			case COLSEL:
 			case COLVARIANT:
@@ -404,15 +432,20 @@ public class RteComponentSelectorWidget extends RteWidget {
 		public String getUrl(Object obj, int columnIndex) {
 			if(columnIndex == COLDESCR) {
 				IRteComponentItem item = getComponentItem(obj);
-				if(item != null)
+				if(item != null) {
 					return item.getUrl();
+				}
 			}
 			return null;
 		}
 
 		@Override
 		public void setCheck(Object element, int columnIndex, boolean newVal) {
-			if (getSelectionControlType(element) == CellControlType.CHECK) {
+			if (columnIndex != COLSEL) {
+				return;
+			}
+			if (getSelectionControlType(element) == CellControlType.CHECK
+					|| getSelectionControlType(element) == CellControlType.INPLACE_CHECK) {
 				IRteComponentItem item = getComponentItem(element);
 				getModelController().selectComponent((IRteComponent)item, newVal ? 1 : 0);
 			}
@@ -424,7 +457,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 		 */
 		private String[] getSelectionStrings(Object obj) {
 			String[] strings = null;
-			if (getSelectionControlType(obj) == CellControlType.SPIN) {
+			if (getSelectionControlType(obj) == CellControlType.INPLACE_SPIN) {
 				int count = ((IRteComponent)obj).getMaxInstanceCount();
 				strings = new String[count+1];
 				for (int i = 0; i <= count; ++i) {
@@ -433,15 +466,16 @@ public class RteComponentSelectorWidget extends RteWidget {
 			}
 			return strings;
 		}
-		
-		
-		
+
+
+
 		@Override
 		public void setString(Object obj, int columnIndex, String newVal) {
 			IRteComponentItem item = getComponentItem(obj);
-			
-			if(item == null || getModelController() == null || newVal == null) 
+
+			if(item == null || getModelController() == null || newVal == null) {
 				return;
+			}
 			switch(columnIndex) {
 			case COLVARIANT:
 				getModelController().selectActiveVariant(item, newVal);
@@ -460,26 +494,27 @@ public class RteComponentSelectorWidget extends RteWidget {
 
 
 		@Override
-		public void setCurrentSelectedIndex(Object obj, int columnIndex, int newVal) {
+		public void setCurrentSelectedIndex(Object obj, int columnIndex, long newVal) {
 			IRteComponentItem item = getComponentItem(obj);
-			if(item == null || getModelController() == null) 
+			if(item == null || getModelController() == null) {
 				return;
-			if(columnIndex == COLSEL &&  getSelectionControlType(item) == CellControlType.SPIN){
-				getModelController().selectComponent((IRteComponent)item, newVal);
 			}
-			
+			if(columnIndex == COLSEL &&  getSelectionControlType(item) == CellControlType.INPLACE_SPIN){
+				getModelController().selectComponent((IRteComponent)item, (int) newVal);
+			}
+
 		}
-		
+
 		@Override
 		public Color getBgColor(Object obj, int columnIndex) {
-			if(columnIndex != COLSEL)
+			if(columnIndex != COLSEL) {
 				return null;
+			}
 			IRteComponentItem item = getComponentItem(obj);
 			if(item != null) {
-				Device device = Display.getCurrent(); 
-				EEvaluationResult res = getModelController().getEvaluationResult(item);			
+				Device device = Display.getCurrent();
+				EEvaluationResult res = getModelController().getEvaluationResult(item);
 				switch(res){
-				case IGNORED:
 				case UNDEFINED:
 					break;
 				case CONFLICT:
@@ -499,7 +534,10 @@ public class RteComponentSelectorWidget extends RteWidget {
 				case MISSING_VERSION:
 				case UNAVAILABLE:
 				case UNAVAILABLE_PACK:
-					return device.getSystemColor(SWT.COLOR_RED); 
+					return device.getSystemColor(SWT.COLOR_RED);
+				case IGNORED:
+					if(!item.isSelected())
+						break;
 				case FULFILLED:
 					return GREEN;
 
@@ -516,29 +554,33 @@ public class RteComponentSelectorWidget extends RteWidget {
 
 		@Override
 		public String getDefaultString(Object obj, int columnIndex) {
-			if(columnIndex != COLVERSION)
+			if(columnIndex != COLVERSION) {
 				return null;
+			}
 			IRteComponentItem item = getComponentItem(obj);
-			if(item == null)
+			if(item == null) {
 				return null;
+			}
 			return item.getDefaultVersion();
 		}
 
 		@Override
 		public boolean isDefault(Object obj, int columnIndex) {
-			if(columnIndex != COLVERSION)
+			if(columnIndex != COLVERSION) {
 				return false;
+			}
 			IRteComponentItem item = getComponentItem(obj);
-			if(item == null)
+			if(item == null) {
 				return false;
+			}
 			return item.isUseLatestVersion();
 		}
 
-		
-		
-	} /// end of ColumnAdviser
-	
-	/**	
+
+
+	} /// end of RteColumnAdvisor
+
+	/**
 	 * Content provider for RTEComponentTreeWidget
 	 */
 	public class RteComponentContentProvider extends TreeObjectContentProvider {
@@ -546,10 +588,10 @@ public class RteComponentSelectorWidget extends RteWidget {
 		public Object[] getElements(Object inputElement) {
 			if(inputElement == getModelController()) {
 				return getModelController().getComponents().getChildArray();
-			} 
+			}
 			return getChildren(inputElement);
 		}
-		
+
 		@Override
 		public Object getParent(Object child) {
 			IRteComponentItem item = getComponentItem(child);
@@ -558,24 +600,26 @@ public class RteComponentSelectorWidget extends RteWidget {
 			}
 			return null;
 		}
-		
+
 		@Override
 		public Object [] getChildren(Object parent) {
 			IRteComponentItem item = getComponentItem(parent);
-			if (item != null) 
+			if (item != null) {
 				return item.getEffectiveChildArray();
+			}
 			return ITreeObject.EMPTY_OBJECT_ARRAY;
 		}
-		
+
 		@Override
 		public boolean hasChildren(Object parent) {
 			IRteComponentItem item = getComponentItem(parent);
-			if (item != null) 
+			if (item != null) {
 				return item.hasEffectiveChildren();
+			}
 			return false;
 		}
 	}
-	
+
 	/**
 	 * Set current configuration for this component tree widget
 	 * @param configuration A RTE configuration that contains RTE component
@@ -587,10 +631,10 @@ public class RteComponentSelectorWidget extends RteWidget {
 			viewer.setInput(model);
 		}
 	}
-	
-    @Override
-    public Composite createControl(Composite parent) {
-    	
+
+	@Override
+	public Composite createControl(Composite parent) {
+
 		Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL|SWT.BORDER);
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
@@ -600,50 +644,44 @@ public class RteComponentSelectorWidget extends RteWidget {
 
 		// Tree item name
 		TreeViewerColumn column0 = new TreeViewerColumn(viewer, SWT.LEFT);
-		column0.getColumn().setAlignment(SWT.LEFT);
 		column0.getColumn().setText(CpStringsUI.RteComponentTreeWidget_SoftwareComponents);
 		column0.getColumn().setWidth(180);
 		column0.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 0));
 		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, 0);
 		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
-		col0LabelProvider.setOwnerDrawEnabled(false);   
+		col0LabelProvider.setOwnerDrawEnabled(false);
 		column0.setLabelProvider(col0LabelProvider);
-		
+
 		// Check box for selection
-		TreeViewerColumn column1 = new TreeViewerColumn(viewer, SWT.CENTER);
-		column1.getColumn().setAlignment(SWT.CENTER);
+		TreeViewerColumn column1 = new TreeViewerColumn(viewer, SWT.LEFT);
 		column1.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Sel);
 		column1.getColumn().setWidth(35);
 		column1.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 1));
 		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 1));
 
 		// Variant
-		TreeViewerColumn column2 = new TreeViewerColumn(viewer, SWT.RIGHT);
-		column2.getColumn().setAlignment(SWT.LEFT);
+		TreeViewerColumn column2 = new TreeViewerColumn(viewer, SWT.LEFT);
 		column2.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Variant);
 		column2.getColumn().setWidth(110);
 		column2.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 2));
 		column2.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 2));
 
 		// Vendor
-		TreeViewerColumn column3 = new TreeViewerColumn(viewer, SWT.RIGHT);
-		column3.getColumn().setAlignment(SWT.LEFT);
+		TreeViewerColumn column3 = new TreeViewerColumn(viewer, SWT.LEFT);
 		column3.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Vendor);
 		column3.getColumn().setWidth(110);
 		column3.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 3));
 		column3.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 3));
-		
+
 		// Version
-		TreeViewerColumn column4 = new TreeViewerColumn(viewer, SWT.RIGHT);
-		column4.getColumn().setAlignment(SWT.LEFT);
+		TreeViewerColumn column4 = new TreeViewerColumn(viewer, SWT.LEFT);
 		column4.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Version);
 		column4.getColumn().setWidth(70);
 		column4.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 4));
 		column4.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 4));
 
 		// Description/URL
-		TreeViewerColumn column5 = new TreeViewerColumn(viewer, SWT.RIGHT);
-		column5.getColumn().setAlignment(SWT.LEFT);
+		TreeViewerColumn column5 = new TreeViewerColumn(viewer, SWT.LEFT);
 		column5.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Description);
 		column5.getColumn().setWidth(400);
 		column5.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 5));
@@ -651,21 +689,21 @@ public class RteComponentSelectorWidget extends RteWidget {
 
 		RteComponentContentProvider rteContentProvider = new RteComponentContentProvider();
 		viewer.setContentProvider(rteContentProvider);
-    
-    	GridData gridData = new GridData();
-    	gridData.horizontalAlignment = SWT.FILL;
-    	gridData.verticalAlignment = SWT.FILL;
-    	gridData.grabExcessHorizontalSpace = true;
-    	gridData.grabExcessVerticalSpace = true;
-    	gridData.horizontalSpan = 2;
-    	tree.setLayoutData(gridData);
+
+		GridData gridData = new GridData();
+		gridData.horizontalAlignment = SWT.FILL;
+		gridData.verticalAlignment = SWT.FILL;
+		gridData.grabExcessHorizontalSpace = true;
+		gridData.grabExcessVerticalSpace = true;
+		gridData.horizontalSpan = 2;
+		tree.setLayoutData(gridData);
 
 		if (getModelController() != null) {
 			viewer.setInput(getModelController());
 		}
 		hookContextMenu();
 		return tree;
-    }
+	}
 
 	@Override
 	public void refresh() {
@@ -675,7 +713,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 	}
 
 	/**
-	 * Refresh completely the tree viewer. 
+	 * Refresh completely the tree viewer.
 	 */
 	@Override
 	public void update() {
@@ -687,45 +725,48 @@ public class RteComponentSelectorWidget extends RteWidget {
 		if(event.getTopic().equals(RteEvent.COMPONENT_SHOW)) {
 			showComponentItem((IRteComponentItem)event.getData());
 			return;
-		} else if(event.getTopic().equals(RteEvent.COMPONENT_SELECTION_MODIFIED) ||
-				  event.getTopic().equals(RteEvent.CONFIGURATION_COMMITED) || 
-				   event.getTopic().equals(RteEvent.CONFIGURATION_MODIFIED)) {
+		} else if(event.getTopic().equals(RteEvent.COMPONENT_SELECTION_MODIFIED)) {
 			update();
+		} else {
+			super.handle(event);
 		}
 	}
-	
-	
+
+
 	/**
-	 * Highlights given item expanding parent nodes if needed 
+	 * Highlights given item expanding parent nodes if needed
 	 * @param item Component item to select
 	 */
 	public void showComponentItem(IRteComponentItem item) {
-		if(viewer == null)
+		if(viewer == null) {
 			return;
-		if(item == null)
+		}
+		if(item == null) {
 			return;
-		
+		}
+
 		IRteComponent c  = item.getParentComponent();
 		if(c != null) {
-			// if supplied item has parent component, highlight it  
+			// if supplied item has parent component, highlight it
 			item = c;
-		} 
-		IRteComponentBundle b = item.getParentBundle(); 
+		}
+		IRteComponentBundle b = item.getParentBundle();
 		if(b != null && !b.isActive()) {
 			// if bundle is not active, highlight bundle's parent (component class)
 			item = b.getParent();
 		}
-		
-		if(item == null)
+
+		if(item == null) {
 			return;
+		}
 		Object[] path = item.getEffectiveHierachyPath();
 		TreePath tp = new TreePath(path);
 		TreeSelection ts = new TreeSelection(tp);
-		
+
 		viewer.setSelection(ts, true);
-		
+
 	}
-	
+
 	/**
 	 * Return the tree viewer embedded in this widget
 	 * @return
@@ -735,11 +776,12 @@ public class RteComponentSelectorWidget extends RteWidget {
 	}
 
 	private void hookContextMenu() {
-		
+
 		final MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
 		makeActions();
 		menuMgr.setRemoveAllWhenShown(true);
 		menuMgr.addMenuListener(new IMenuListener() {
+			@Override
 			public void menuAboutToShow(IMenuManager manager) {
 				fillContextMenu(menuMgr);
 			}
@@ -756,30 +798,36 @@ public class RteComponentSelectorWidget extends RteWidget {
 
 	private void makeActions() {
 		expandAll = new Action() {
+			@Override
 			public void run() {
-				if(viewer == null)
+				if(viewer == null) {
 					return;
+				}
 				viewer.expandAll();
 			}
 		};
 
 		expandAll.setText(CpStringsUI.ExpandAll);
 		expandAll.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL));
-		
+
 		collapseAll = new Action() {
+			@Override
 			public void run() {
-				if(viewer == null)
+				if(viewer == null) {
 					return;
+				}
 				viewer.collapseAll();
 			}
 		};
 		collapseAll.setText(CpStringsUI.CollapseAll);
 		collapseAll.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
-		
+
 		expandAllSelected = new Action() {
+			@Override
 			public void run() {
-				if(viewer == null)
+				if(viewer == null) {
 					return;
+				}
 				IRteModel model = getModelController();
 				if (model != null) {
 					viewer.getTree().setRedraw(false);
@@ -797,8 +845,8 @@ public class RteComponentSelectorWidget extends RteWidget {
 			}
 		};
 		expandAllSelected.setText(CpStringsUI.RteManagerWidget_ExpandAllSelected);
-		
-		OverlayImage overlayImage = new OverlayImage(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL).createImage(), 
+
+		OverlayImage overlayImage = new OverlayImage(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL).createImage(),
 				CpPlugInUI.getImageDescriptor(CpPlugInUI.CHECKEDOUT_OVR).createImage(), OverlayPos.TOP_RIGHT);
 		expandAllSelected.setImageDescriptor(overlayImage);
 	}
@@ -807,5 +855,5 @@ public class RteComponentSelectorWidget extends RteWidget {
 	public Composite getFocusWidget() {
 		return viewer.getTree();
 	}
-	
+
 }

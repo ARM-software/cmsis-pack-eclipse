@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<contexts>
+	<context id="config_wizard" title="CMSIS Configuration Wizard">
+		<description>Files that have CMSIS Configuration Wizard annotations can be opened with a graphical editor. Using the GUI-like approach makes it easy to verify and adapt configuration files to application needs.
+
+In the Project Explorer window, right-click on such files and use &lt;b&gt;Open With → CMSIS Configuration Wizard&lt;/b&gt;.</description>
+		<topic href="html/reference/config_wizard.html" label="CMSIS Configuration Wizard">
+		</topic>
+	</context>
+</contexts>

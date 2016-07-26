@@ -3,7 +3,7 @@
 <schema targetNamespace="com.arm.cmsis.pack.build.settings" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="com.arm.cmsis.pack.build.settings" id="ToolChainAdapter" name="Toolchain Adapter for CMSIS RTE projects"/>
+         <meta.schema plugin="com.arm.cmsis.pack.build.settings" id="ToolChainAdapter" name="Toolchain Adapter for CMSIS C/C++ projects"/>
       </appinfo>
       <documentation>
          This exstension point facilitates the users to contribute their toolchain adapters CMSIS Pack Project plug-in
@@ -141,7 +141,7 @@ If not specified, the user should select the family in new project wizard.
          <attribute name="id" type="string" use="required">
             <annotation>
                <documentation>
-                  A  toolchain identifier conributed to the org.eclipse.cdt.managedbuilder.core.buildDefinitions extension point. This could be the unique identifier or a wildcard pattern.
+                  A  toolchain identifier contributed to the org.eclipse.cdt.managedbuilder.core.buildDefinitions extension point. This could be the unique identifier or a wildcard pattern.
                </documentation>
             </annotation>
          </attribute>
@@ -180,7 +180,7 @@ If not specified, the user should select the family in new project wizard.
          <meta.section type="implementation"/>
       </appinfo>
       <documentation>
-         An implementation of this extension point is supplied by &lt;samp&gt;com.arm.cmsis.pack.project&lt;/samp&gt; plug-in
+         An implementation of this extension point is supplied by &lt;samp&gt;com.arm.cmsis.pack.build.seettting&lt;/samp&gt; plug-in
       </documentation>
    </annotation>
 
