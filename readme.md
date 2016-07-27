@@ -34,6 +34,7 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 * **com.arm.cmsis.help** - integrated help
 * **com.arm.cmsis.pack.refclient** - a reference example for engineers integrating CMSIS-Pack plug-in into their development environments (not included in binary build)
 
+**Requirements:** This release of the CMSIS-Pack Management for Eclipse requires JRE 1.8 to run and JDK 1.8 to build.
 
 ###CMSIS-Pack Management Plug-In 1.0 has been presented at the Eclipse Conference Europe 2015
 
