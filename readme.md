@@ -42,7 +42,7 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 The presentation is available on [YouTube], slides to download:
 [Enhanced Project Management for Embedded C/C++ Programming using Software Components]
 
-##Hands-On  
+##Hands-On : Using the CMSIS-Pack Management Plug-In   
 
 ![Eclipse Plug-In Overview] 
 
@@ -54,8 +54,7 @@ The presentation is available on [YouTube], slides to download:
 
 3. (Optional) Download com.arm.cmsis.pack.refclient_x.x.x.x.jar to **dropin** folder of your Eclipse installation.
 
-###Using the CMSIS-Pack Management Plug-In:  
-##Installing Software Packs the CMSIS-Pack Management Plug-In
+###Installing Software Packs the CMSIS-Pack Management Plug-In
 1. Start Eclipse with installed **CMSIS-Pack Management Plug-In**.
 
 2. Specify the location of the installed Software Packs with the Eclipse menu command **Window - Preferences - CMSIS Packs**. The **CMSIS Pack root folder** is the base directory, for example *C:\Keil_v5\ARM\Pack*.
@@ -66,7 +65,7 @@ The presentation is available on [YouTube], slides to download:
 
 5. (Optional) Install supplied ARM.RefClient.0.2.0.pack to evaluate example importing functionality 
 
-## Creating RTE project 
+### Creating RTE project 
 1. Open New C/C++ Project wizard using Elipse menu command **File -> New -> Project... -> C/C++ -> C Project**.
 2. In the first page specify Project name, select desired Toolchain and "CMSIS RTE C/C++ Project" type, press Next. ![NewProjectWizardTemplatePage]
 3. In the second page select a Toolchain Adapter and press next.
@@ -89,7 +88,7 @@ You may change the component selection and use the **Resolve** toolbar button.
 
 6. Save the configuration by pressing **Save** toolbar button. This will trigger project update. You can now investigate project content, compiler settings and build the project.
 
-##Refer to integrated help for further information
+###Refer to integrated help for further information
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
