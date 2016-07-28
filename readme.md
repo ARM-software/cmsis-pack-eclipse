@@ -110,7 +110,7 @@ _Copyright (c) 2014-2016, ARM Limited and Contributors. All rights reserved._
 [NewProjectWizardTemplatePage]:  ./images/NewProjectWizardTemplatePage.png
 [Select Adapter]:             	./images/NewProjectWizardAdapterPage.png
 [Select Device]:             ./images/NewProjectWizardDevicePage.png
-[Check Web] :              ./images/check4Update.gif
+[Check Web]:             ./images/check4Update.gif
 
 [Component Selection]:           ./images/RteConfigEditor.png
 [GNU ARM Eclipse Packs Manager]: http://gnuarmeclipse.livius.net/blog/packs-manager/
