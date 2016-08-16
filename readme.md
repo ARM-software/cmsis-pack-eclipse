@@ -34,6 +34,7 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 * **com.arm.cmsis.help** - integrated help
 * **com.arm.cmsis.pack.refclient** - a reference example for engineers integrating CMSIS-Pack plug-in into their development environments (not included in binary build)
 
+**Requirements:** This release of the CMSIS-Pack Management for Eclipse requires JRE 1.8 to run and JDK 1.8 to build.
 
 ###CMSIS-Pack Management Plug-In 1.0 has been presented at the Eclipse Conference Europe 2015
 
@@ -42,7 +43,7 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 The presentation is available on [YouTube], slides to download:
 [Enhanced Project Management for Embedded C/C++ Programming using Software Components]
 
-##Hands-On  
+##Hands-On : Using the CMSIS-Pack Management Plug-In   
 
 ![Eclipse Plug-In Overview] 
 
@@ -54,8 +55,7 @@ The presentation is available on [YouTube], slides to download:
 
 3. (Optional) Download com.arm.cmsis.pack.refclient_x.x.x.x.jar to **dropin** folder of your Eclipse installation.
 
-###Using the CMSIS-Pack Management Plug-In:  
-##Installing Software Packs the CMSIS-Pack Management Plug-In
+###Installing Software Packs the CMSIS-Pack Management Plug-In
 1. Start Eclipse with installed **CMSIS-Pack Management Plug-In**.
 
 2. Specify the location of the installed Software Packs with the Eclipse menu command **Window - Preferences - CMSIS Packs**. The **CMSIS Pack root folder** is the base directory, for example *C:\Keil_v5\ARM\Pack*.
@@ -66,7 +66,7 @@ The presentation is available on [YouTube], slides to download:
 
 5. (Optional) Install supplied ARM.RefClient.0.2.0.pack to evaluate example importing functionality 
 
-## Creating RTE project 
+### Creating RTE project 
 1. Open New C/C++ Project wizard using Elipse menu command **File -> New -> Project... -> C/C++ -> C Project**.
 2. In the first page specify Project name, select desired Toolchain and "CMSIS RTE C/C++ Project" type, press Next. ![NewProjectWizardTemplatePage]
 3. In the second page select a Toolchain Adapter and press next.
@@ -89,7 +89,7 @@ You may change the component selection and use the **Resolve** toolbar button.
 
 6. Save the configuration by pressing **Save** toolbar button. This will trigger project update. You can now investigate project content, compiler settings and build the project.
 
-##Refer to integrated help for further information
+###Refer to integrated help for further information
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -110,7 +110,7 @@ _Copyright (c) 2014-2016, ARM Limited and Contributors. All rights reserved._
 [NewProjectWizardTemplatePage]:  ./images/NewProjectWizardTemplatePage.png
 [Select Adapter]:             	./images/NewProjectWizardAdapterPage.png
 [Select Device]:             ./images/NewProjectWizardDevicePage.png
-[Check Web] :              ./images/check4Update.gif
+[Check Web]:             ./images/check4Update.gif
 
 [Component Selection]:           ./images/RteConfigEditor.png
 [GNU ARM Eclipse Packs Manager]: http://gnuarmeclipse.livius.net/blog/packs-manager/
