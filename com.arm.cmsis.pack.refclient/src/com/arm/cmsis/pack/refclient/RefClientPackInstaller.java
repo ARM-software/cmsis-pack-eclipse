@@ -29,7 +29,7 @@ public class RefClientPackInstaller extends CpPackInstaller {
 	protected boolean confirmCopyExample(ICpExample example, File destFile, IProject project) {
 		
 		if(!RefClientEnvironmentProvider.isGnuarmeclipseToolchainInstalled()) {
-			String message = "Required GNU ARM C/C++ Cross Toolchain is not installed.\nCopy the example anyawy?";
+			String message = "Required GNU ARM C/C++ Cross Toolchain is not installed.\nCopy the example anyway?";
 			boolean res = MessageDialog.openQuestion(null, "Required Toolchain not Installed", message);
 			if(!res)
 				return false;

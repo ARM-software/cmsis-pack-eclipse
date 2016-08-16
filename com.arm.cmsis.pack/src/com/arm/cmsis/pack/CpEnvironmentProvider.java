@@ -199,7 +199,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		int lastIndex = len - 1;
 		StringBuilder output = new StringBuilder(len);
 		for(int i = 0 ; i < len; i++) {
-			char ch = output.charAt(i);
+			char ch = input.charAt(i);
 			if(i < lastIndex && ( ch == '$' || ch == '#' || ch == '@')) {
 				String key = output.substring(i, i + 2);
 				String s = bAsolute ? expandToAbsolute(key, configInfo) : expandToVariable(key, configInfo);
