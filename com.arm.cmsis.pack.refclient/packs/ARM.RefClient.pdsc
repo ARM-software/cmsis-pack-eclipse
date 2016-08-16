@@ -32,7 +32,7 @@
 
   <examples>
     <example name="RefClientExample" doc="Abstract.txt" folder="Examples/RefClientExample">
-      <description>ARM CortexM-4 example demonstarining PackInstaller functionality to install examples. Note: This example requires Cross ARM GCC toolchain to be installed</description>
+      <description>ARM Cortex-M4 example demonstrating PackInstaller functionality to install examples. Note: This example requires Cross ARM GCC toolchain to be installed</description>
       <board name="build only" vendor="ARM"/>
       <project>
         <environment name="RefClient" load="RefClient/.project"/>
