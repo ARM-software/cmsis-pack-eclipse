@@ -507,22 +507,54 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 			step = configuration.getPostbuildStep();
 		else 
 			return;
+
+		if(step == null) // actually should not happen, but do not rely on CDT 
+			step = CmsisConstants.EMPTY_STRING; 
 		
-		String newCommand = getPrePostCommand(buildSettings, oType);
-		if(newCommand == null || newCommand.isEmpty())
-			return; // do not delete old commands
-		if(step == null) // actually should not happen, bu do not relay on CDTt 
-			step = new String(); 
-		if(step.contains(newCommand))
-			return;
-		if(!step.isEmpty())
-			step += ';';
-		step += newCommand;
+		// find begin and end markers
+		int beginPos = step.indexOf(CmsisConstants.CMSIS_RTE_BEGIN_VAR);
+		if(beginPos < 0)
+			beginPos = step.length();
+		int endPos = step.indexOf(CmsisConstants.CMSIS_RTE_END_VAR);
+		if(endPos < 0)
+			endPos = step.length();
+		else { 
+			if(beginPos > endPos)
+				beginPos = endPos; // a marker has been removed by user
+			endPos += CmsisConstants.CMSIS_RTE_END_VAR.length();
+		}		
+
+		String prefix = (beginPos > 0) ? step.substring(0, beginPos) : CmsisConstants.EMPTY_STRING;
+		String suffix = (endPos >= 0) ? step.substring(endPos) : CmsisConstants.EMPTY_STRING;
+
+		String rteCommand = getPrePostCommand(buildSettings, oType);
+
+		String newStep = CmsisConstants.EMPTY_STRING;
+		if(!prefix.isEmpty()) {
+			if(prefix.endsWith(";")) //$NON-NLS-1$
+				prefix = prefix.substring(0,  prefix.length() - 1);
+			newStep += prefix;
+		}
+		
+		if(rteCommand != null && !rteCommand.isEmpty()) {
+			if(!newStep.isEmpty() && !newStep.endsWith(";")) //$NON-NLS-1$
+				newStep += ';'; 
+			newStep += rteCommand;
+		}
+
+		if(!suffix.isEmpty()) {
+			if(!newStep.isEmpty() && !newStep.endsWith(";") && !suffix.startsWith(";")) //$NON-NLS-1$ //$NON-NLS-2$
+				newStep += ';'; 
+			newStep += suffix;
+		}
+		
+		if(step.equals(newStep))
+			return; // nothing to do
 
 		if(oType == IBuildSettings.PRE_BUILD_STEPS)
-			configuration.setPrebuildStep(step);
+			configuration.setPrebuildStep(newStep);
 		else if(oType == IBuildSettings.POST_BUILD_STEPS)
-			configuration.setPostbuildStep(step);
+			configuration.setPostbuildStep(newStep);
 	}
 
 	/**
@@ -534,13 +566,14 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	protected String getPrePostCommand(IBuildSettings buildSettings, int oType) {
 		Collection<String> steps = buildSettings.getStringListValue(oType);
 		if(steps == null || steps.isEmpty())
-			return null;
-		String cmd = CmsisConstants.EMPTY_STRING;
+			return CmsisConstants.EMPTY_STRING;
+		String cmd = CmsisConstants.CMSIS_RTE_BEGIN_VAR;
 		for(String s : steps) {
-			if(!cmd.isEmpty())
+			if(cmd.length() > CmsisConstants.CMSIS_RTE_BEGIN_VAR.length())
 				cmd += ';';
 			cmd += s; 
 		}
+		cmd += CmsisConstants.CMSIS_RTE_END_VAR;
 		return cmd;
 	}
 

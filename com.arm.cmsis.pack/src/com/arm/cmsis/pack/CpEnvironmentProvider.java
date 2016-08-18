@@ -201,10 +201,11 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		for(int i = 0 ; i < len; i++) {
 			char ch = input.charAt(i);
 			if(i < lastIndex && ( ch == '$' || ch == '#' || ch == '@')) {
-				String key = output.substring(i, i + 2);
+				String key = input.substring(i, i + 2);
 				String s = bAsolute ? expandToAbsolute(key, configInfo) : expandToVariable(key, configInfo);
 				if(s != null) {
 					output.append(s);
+					i++; // skip key char
 					continue;
 				}
 			} 
@@ -227,7 +228,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		case "$S":  //$NON-NLS-1$
 			return CmsisConstants.CMSIS_DFP_VAR;
 		}
-		return key; // do not expand, can be anothe variable
+		return key; // do not expand, can be another variable
 	}
 
 	public String expandToAbsolute(String key, ICpConfigurationInfo configInfo) {

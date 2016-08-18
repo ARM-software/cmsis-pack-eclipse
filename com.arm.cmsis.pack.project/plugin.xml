@@ -124,6 +124,12 @@
             resolver="com.arm.cmsis.pack.project.CpVariableResolver"
             supportsArgument="true">
       </variable>
+      <variable
+            description="Marks RTE-specific portion in pre-/post-build commands using :begin and :end arguments. Expands to an empty string."
+            name="cmsis_rte"
+            resolver="com.arm.cmsis.pack.project.CpVariableResolver"
+            supportsArgument="true">
+      </variable>
    </extension>
    <extension
          point="org.eclipse.ltk.core.refactoring.renameParticipants">

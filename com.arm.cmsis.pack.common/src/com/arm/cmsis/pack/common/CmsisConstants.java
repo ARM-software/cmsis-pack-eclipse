@@ -337,8 +337,13 @@ public class CmsisConstants {
 	static public final String CMSIS_PACK_ROOT = "cmsis_pack_root";   				//$NON-NLS-1$
 	static public final String CMSIS_PACK_ROOT_VAR = "${" + CMSIS_PACK_ROOT + "}" ; //$NON-NLS-1$ //$NON-NLS-2$
 	static public final String CMSIS_DFP = "cmsis_dfp";   							//$NON-NLS-1$
-	static public final String CMSIS_DFP_VAR = "${cmsis_dfp:${ProjName}}"; //$NON-NLS-1$
+	static public final String CMSIS_DFP_VAR = "${cmsis_dfp:${ProjName}}"; 			//$NON-NLS-1$
 
+	// variable that is used as begin/end markers, both are expanded to empty string
+	static public final String CMSIS_RTE = "cmsis_rte";		 						//$NON-NLS-1$
+	static public final String CMSIS_RTE_BEGIN_VAR = "${cmsis_rte:begin}"; 			//$NON-NLS-1$
+	static public final String CMSIS_RTE_END_VAR   = "${cmsis_rte:end}";			//$NON-NLS-1$
+	
 	static public final String PACK_IDX = "pack.idx"; //$NON-NLS-1$
 
 	static public final String PROJECT_LOCAL_PATH 	= "${workspace_loc:/${ProjName}}/"; //$NON-NLS-1$
@@ -350,7 +355,6 @@ public class CmsisConstants {
 	
 	
 	// standard key sequences (http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_generators_pg.html) 
-	
 	static public final String[] STANDARD_KEY_SEQENCES = 
 			new String[]{	"$D",   // Name of the device configured in the current project, equals to #D:@D if @D is not empty, to #D otherwise   //$NON-NLS-1$
 							"#D", 	// Name of device item without processor name   //$NON-NLS-1$

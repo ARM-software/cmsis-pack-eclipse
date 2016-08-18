@@ -54,13 +54,13 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 
 	@Override
 	public String resolveValue(IDynamicVariable variable, String argument) 	throws CoreException {
+		String varName = variable.getName();
+		if(varName.equals(CmsisConstants.CMSIS_RTE))
+			return CmsisConstants.EMPTY_STRING; // always resolves to an empty string
+		
 		if(argument == null || argument.isEmpty())
 			return getCmsisPackRoot();
-//		if(variable.equals(CmsisConstants.CMSIS_PACK_ROOT)) {
-//			return getCmsisPackRoot() + argument;
-//			
-//		}
-		if(variable.getName().equals(CmsisConstants.CMSIS_DFP)) {
+		if(varName.equals(CmsisConstants.CMSIS_DFP)) {
 			// the argument must represent project name  
 			IProject proj = ProjectUtils.getProject(argument);  
 			RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
