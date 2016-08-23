@@ -85,10 +85,12 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin {
 		}
 		IWorkbench wb = PlatformUI.getWorkbench();
 		if(wb != null) {
-			if(workbenchListener != null)
+			if(workbenchListener != null) {
 				wb.removeWorkbenchListener(workbenchListener);
-			if(wb.getActiveWorkbenchWindow() != null && perspectiveListener != null)
+			}
+			if(wb.getActiveWorkbenchWindow() != null && perspectiveListener != null) {
 				wb.getActiveWorkbenchWindow().removePerspectiveListener(perspectiveListener);
+			}
 		}
 		workbenchListener = null;
 		perspectiveListener = null;
@@ -108,8 +110,9 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin {
 
 	private void registerWorkbenchListener() {
 		IWorkbench wb = PlatformUI.getWorkbench();
-		if(wb == null) 
+		if(wb == null) {
 			return;
+		}
 		final ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
 		workbenchListener = new IWorkbenchListener() {
 			@Override
@@ -142,8 +145,9 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin {
 
 	private void registerPerspectiveListener() {
 		IWorkbench wb = PlatformUI.getWorkbench();
-		if(wb == null || wb.getActiveWorkbenchWindow() == null) 
+		if(wb == null || wb.getActiveWorkbenchWindow() == null) {
 			return;
+		}
 
 		perspectiveListener = new IPerspectiveListener() {
 			@Override
@@ -197,8 +201,10 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin {
 				Socket socket = new Socket();
 				InetSocketAddress addr = new InetSocketAddress(CmsisConstants.REPO_KEILWEB, 80);
 				try {
-					socket.connect(addr, 500);
-					updateStatusLineAndButton(true);
+					socket.connect(addr, 2000);
+					if (!socket.isClosed() && socket.isConnected()) {
+						updateStatusLineAndButton(true);
+					}
 				} catch (Exception e) {
 					updateStatusLineAndButton(false);
 				} finally {

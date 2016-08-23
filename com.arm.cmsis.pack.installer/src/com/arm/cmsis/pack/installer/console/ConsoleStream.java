@@ -52,7 +52,7 @@ public class ConsoleStream {
 
 
 
-	private static MessageConsole findConsole(String name) {
+	public static MessageConsole findConsole(String name) {
 
 		ConsolePlugin plugin = ConsolePlugin.getDefault();
 		IConsoleManager consoleManager = plugin.getConsoleManager();

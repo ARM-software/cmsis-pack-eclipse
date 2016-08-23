@@ -19,13 +19,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.file.FileSystems;
@@ -71,6 +67,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
 import org.eclipse.ui.wizards.datatransfer.ImportOperation;
@@ -79,6 +76,7 @@ import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.ICpPackManager;
+import com.arm.cmsis.pack.ICpRepoServiceProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpExample;
@@ -96,7 +94,6 @@ import com.arm.cmsis.pack.installer.jobs.CpPackRemoveJob;
 import com.arm.cmsis.pack.installer.jobs.CpPackUnpackJob;
 import com.arm.cmsis.pack.installer.jobs.LicenseDialog;
 import com.arm.cmsis.pack.installer.utils.PackInstallerUtils;
-import com.arm.cmsis.pack.installer.utils.RepositoryRefreshingUtils;
 import com.arm.cmsis.pack.repository.CpRepositoryList;
 import com.arm.cmsis.pack.repository.ICpRepository;
 import com.arm.cmsis.pack.utils.Utils;
@@ -108,7 +105,6 @@ import com.arm.cmsis.pack.utils.VersionComparator;
 public class CpPackInstaller extends PlatformObject implements ICpPackInstaller {
 
 	private CpPackJob fJob;
-	private CpRepositoryList fRepos;
 	private IProgressMonitor fMonitor;
 	private Map<String, CpPackJob> fJobQueue;
 
@@ -125,6 +121,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	private PackWatchThread thread;
 	boolean reload;
 
+	protected ICpRepoServiceProvider fRepoServiceProvider;
 	ICpPackManager fPackManager;
 
 	Map<ConsoleColor, Color> fColorMap = new HashMap<>();
@@ -134,6 +131,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		fJobQueue = Collections.synchronizedMap(new HashMap<>());
 		fGroupJobQueue = Collections.synchronizedSet(new HashSet<>());
 		initColorMap();
+		fRepoServiceProvider = new CpRepoServiceProvider();
 	}
 
 	private void initColorMap() {
@@ -510,6 +508,16 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	}
 
 	@Override
+	public ICpRepoServiceProvider getRepoServiceProvider() {
+		return fRepoServiceProvider;
+	}
+
+	@Override
+	public void setRepoServiceProvider(ICpRepoServiceProvider repoServiceProvider) {
+		fRepoServiceProvider = repoServiceProvider;
+	}
+
+	@Override
 	public boolean isBusy() {
 		return !fJobQueue.isEmpty();
 	}
@@ -535,27 +543,31 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 	@Override
 	public void printInConsole(String message, ConsoleColor color) {
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				MessageConsoleStream stream = ConsoleStream.getConsoleOut(color);
-				stream.setColor(fColorMap.get(color));
-				stream.println(message);
-			}
+		Display.getDefault().asyncExec(() -> {
+			ConsolePlugin.getDefault().getConsoleManager()
+					.showConsoleView(ConsoleStream.findConsole(ConsoleStream.CONSOLE_NAME));
+			MessageConsoleStream stream = ConsoleStream.getConsoleOut(color);
+			stream.setColor(fColorMap.get(color));
+			stream.println(message);
 		});
 	}
 
 	/***************** Here begins the Update Packs part *****************/
 	private void updatePacks() {
 		fPackManager = CpPlugIn.getPackManager();
-		fRepos = fPackManager.getCpRepositoryList();
-		long beginTime = System.currentTimeMillis();
+		if (fPackManager.getCmsisPackRootDirectory() == null
+				|| fPackManager.getCmsisPackRootDirectory().isEmpty()) {
+			printInConsole(Messages.CpPackInstaller_SetCmsisPackRootFolderAndTryAgain,
+					ConsoleColor.ERROR);
+			return;
+		}
+		CpRepositoryList repos = fPackManager.getCpRepositoryList();
 
 		try {
 			// String[] { url, name, version }
 			List<String[]> list = new LinkedList<String[]>();
 
-			List<ICpRepository> reposList = fRepos.getList();
+			List<ICpRepository> reposList = repos.getList();
 			for (ICpRepository repo : reposList) {
 
 				if (fMonitor.isCanceled()) {
@@ -596,14 +608,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		if (fMonitor.isCanceled()) {
 			printInConsole(Messages.CpPackInstaller_JobCancelled, ConsoleColor.WARNING);
 		} else {
-
 			fPackManager.reload();
-
-			long endTime = System.currentTimeMillis();
-			long duration = endTime - beginTime;
-			if (duration == 0) {
-				duration = 1;
-			}
 		}
 
 	}
@@ -622,7 +627,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 		try {
 
-			int count = RepositoryRefreshingUtils.readIndex(indexUrl, pdscList);
+			int count = fRepoServiceProvider.readIndexFile(indexUrl, pdscList);
 
 			return count;
 
@@ -643,6 +648,11 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	 *            the repository map
 	 */
 	private void aggregateCmsis(List<String[]> list) {
+
+		IPath webFolder = new Path(PackInstallerUtils.getPacksWebDir());
+		if (!webFolder.toFile().exists()) {
+			webFolder.toFile().mkdir();
+		}
 
 		// repo keys: { "type", "url", "list" }
 
@@ -670,75 +680,10 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 				continue;
 			}
 
-			File destFileTmp = null;
+			String destFileName = webFolder.append(pdscName).toOSString();
+
 			try {
-
-				URL sourceUrl = new URL(pdscUrl + pdscName);
-
-				IPath webFolder = new Path(PackInstallerUtils.getPacksWebDir());
-				if (!webFolder.toFile().exists()) {
-					webFolder.toFile().mkdir();
-				}
-				String destFileName = webFolder.append(pdscName).toOSString();
-				String destFileNameTmp = destFileName + CmsisConstants.EXT_TEMP;
-				destFileTmp = new File(destFileNameTmp);
-
-				URLConnection connection = null;
-				while (true) {
-					connection = sourceUrl.openConnection();
-					if (connection == null) {
-						break;
-					}
-					connection.setConnectTimeout(TIME_OUT);
-					connection.setReadTimeout(TIME_OUT);
-
-					if (connection instanceof HttpURLConnection) {
-						int responseCode = ((HttpURLConnection) connection).getResponseCode();
-						if (responseCode == HttpURLConnection.HTTP_OK) {
-							break;
-						} else if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
-								|| responseCode == HttpURLConnection.HTTP_MOVED_PERM
-								|| responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-							String newUrl = connection.getHeaderField(CmsisConstants.REPO_LOCATION);
-							sourceUrl = new URL(newUrl);
-						} else {
-							break;
-						}
-					}
-				}
-
-				if (connection != null) {
-					if (destFileTmp.exists()) {
-						destFileTmp.delete();
-					}
-
-					InputStream input = connection.getInputStream();
-					OutputStream output = new FileOutputStream(destFileTmp);
-					boolean finished = true;
-					byte[] buf = new byte[1024];
-					int bytesRead;
-					while ((bytesRead = input.read(buf)) > 0) {
-						output.write(buf, 0, bytesRead);
-						// Check if the cancel button is pressed
-						if (fMonitor.isCanceled()) {
-							finished = false;
-							break;
-						}
-					}
-					output.close();
-					if (input != null) {
-						input.close();
-					}
-					if (finished) {
-						File destFile = new File(destFileName);
-						Utils.copy(destFileTmp, destFile);
-						destFile.setReadOnly();
-					}
-					destFileTmp.delete();
-					if (connection instanceof HttpURLConnection) {
-						((HttpURLConnection) connection).disconnect();
-					}
-				}
+				fRepoServiceProvider.getPdscFile(pdscUrl, pdscName, destFileName, fMonitor);
 
 			} catch (FileNotFoundException e) {
 				printInConsole(NLS.bind(Messages.CpPackInstaller_ErrorWhileRefreshingCheckFolder,
@@ -751,9 +696,6 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 				} else if (wait == 1) { // No
 					printInConsole(NLS.bind(Messages.CpPackInstaller_TimeoutConsoleMessage,
 							pdscName, pdscUrl), ConsoleColor.WARNING);
-					if (destFileTmp != null) {
-						destFileTmp.delete();
-					}
 				} else { // Cancel
 					fMonitor.setCanceled(true);
 					break;
@@ -765,6 +707,16 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 			// One more unit completed
 			fMonitor.worked(1);
+		}
+
+		// delete all the temp files in the .Web folder
+		for (String fileName : webFolder.toFile().list((dir, name) -> {
+			return name.endsWith(CmsisConstants.EXT_TEMP);
+		})) {
+			File file = new File(fileName);
+			if (file.exists()) {
+				file.delete();
+			}
 		}
 
 	}

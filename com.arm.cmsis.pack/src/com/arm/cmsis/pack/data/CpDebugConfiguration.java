@@ -186,7 +186,7 @@ public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguratio
 		for(ICpItem item : children) {
 			String tag = item.getTag();
 			if(tag.equals(CmsisConstants.DEBUGCONFIG_TAG)) {
-				attributes().setAttributes(item.attributes());
+				attributes().mergeAttributes(item.attributes());
 				sdfFileName = item.getAbsolutePath(item.getAttribute(CmsisConstants.SDF));
 				continue;
 			}

@@ -14,9 +14,9 @@ package com.arm.cmsis.pack.installer.utils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringReader;
-import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -44,21 +44,18 @@ public class RepositoryRefreshingUtils {
 	private static long timestamp = 0;
 
 	/**
-	 * @param indexUrl the .index file's url
+	 * @param inputStream the input stream
 	 * @param pdscList a list of .pdsc files
 	 * @return the number of .pdsc files in the list
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
 	 */
-	public static int readIndex(String indexUrl, List<String[]> pdscList)
+	public static int readIndex(InputStream inputStream, List<String[]> pdscList)
 			throws ParserConfigurationException, SAXException, IOException {
 
-		URL u = new URL(indexUrl);
-
 		// Read from url to local buffer
-		BufferedReader in = new BufferedReader(new InputStreamReader(
-				u.openStream()));
+		BufferedReader in = new BufferedReader(new InputStreamReader(inputStream));
 		String line = null;
 
 		// Insert missing root element
@@ -70,7 +67,7 @@ public class RepositoryRefreshingUtils {
 			line = line.trim();
 			if (line.startsWith("<pdsc")) { //$NON-NLS-1$
 				buffer.append(line);
-			} else if (line.startsWith("<timestamp>")) { //$NON-NLS-1$
+			} else if (line.startsWith("<timestamp")) { //$NON-NLS-1$
 				int start = line.indexOf('>') + 1;
 				int end = line.indexOf('<', start);
 				if (!parseTimestamp(line.substring(start, end))) {
@@ -98,7 +95,18 @@ public class RepositoryRefreshingUtils {
 		for (Element pdscElement : pdscElements) {
 
 			String url = pdscElement.getAttribute(CmsisConstants.REPO_URL).trim();
+			String vendor = pdscElement.getAttribute(CmsisConstants.VENDOR).trim();
 			String name = pdscElement.getAttribute(CmsisConstants.NAME).trim();
+			if (!name.endsWith(CmsisConstants.EXT_PDSC)) {
+				name += CmsisConstants.EXT_PDSC;
+			}
+			if (!vendor.isEmpty()) {
+				name = vendor + '.' + name;
+			}
+			String replacement = pdscElement.getAttribute(CmsisConstants.REPLACEMENT).trim();
+			if (!replacement.isEmpty()) {
+				name = replacement + CmsisConstants.EXT_PDSC;
+			}
 			String version = pdscElement.getAttribute(CmsisConstants.VERSION).trim();
 
 			pdscList.add(new String[] { url, name, version });
@@ -137,7 +145,8 @@ public class RepositoryRefreshingUtils {
 	private static boolean parseTimestamp(String time) {
 		StringBuilder dateFormat = new StringBuilder("yyyy-MM-dd'T'HH:mm:ss"); //$NON-NLS-1$
 		// if the date contains time zone info, add a 'Z' in the end of the date format
-		if (time.indexOf('+') > 0 || time.indexOf('-') > 0) {
+		int fromIndex = time.lastIndexOf(':');
+		if (time.indexOf('+', fromIndex) > 0 || time.indexOf('-', fromIndex) > 0) {
 			dateFormat.append('Z');
 		}
 		try {

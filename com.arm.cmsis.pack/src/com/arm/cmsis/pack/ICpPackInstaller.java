@@ -99,6 +99,17 @@ public interface ICpPackInstaller extends IAdaptable {
 	void jobFinished(String packId, String jobTopic, Object jobData);
 
 	/**
+	 * Set the repository service provider {@link ICpRepoServiceProvider}
+	 * @param repoServiceProvider
+	 */
+	void setRepoServiceProvider(ICpRepoServiceProvider repoServiceProvider);
+
+	/** Get the repository service provider {@link ICpRepoServiceProvider}
+	 * @return the repository service provider
+	 */
+	ICpRepoServiceProvider getRepoServiceProvider();
+
+	/**
 	 * Returen true if there is job going on
 	 * @return true if there is job going on
 	 */

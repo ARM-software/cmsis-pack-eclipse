@@ -52,6 +52,7 @@ public class Messages extends NLS {
 	public static String CpPackInstaller_ReloadPacksAndManagerTitle;
 	public static String CpPackInstaller_RemovingPack;
 	public static String CpPackInstaller_RepoTypeNotSupported;
+	public static String CpPackInstaller_SetCmsisPackRootFolderAndTryAgain;
 	public static String CpPackInstaller_TimeoutConsoleMessage;
 	public static String CpPackInstaller_TimeoutMessage;
 	public static String CpPackInstaller_Timout;

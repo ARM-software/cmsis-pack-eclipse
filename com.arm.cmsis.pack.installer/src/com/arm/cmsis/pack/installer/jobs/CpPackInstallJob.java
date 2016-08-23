@@ -12,15 +12,9 @@
 package com.arm.cmsis.pack.installer.jobs;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.net.UnknownHostException;
 import java.util.Collection;
 
@@ -52,13 +46,6 @@ public class CpPackInstallJob extends CpPackJob {
 	private String fPackId;
 	private String fPackDestFile;
 	String fPackUrl;
-	private ICpPack fPack;
-
-	private final IPath fDownloadDir;
-	private final File fDownloadFile;
-	private final File fDownloadFileTmp;
-
-	private final static int TIME_OUT = 10000;
 	boolean wait;
 
 
@@ -74,13 +61,6 @@ public class CpPackInstallJob extends CpPackJob {
 		fPackId = packId;
 		fPackDestFile = fPackId + CmsisConstants.EXT_PACK;
 		fPackUrl = Utils.addTrailingSlash(url) + fPackDestFile;
-
-		fDownloadDir = new Path(PackInstallerUtils.getPacksDownloadDir());
-		if (!fDownloadDir.toFile().exists()) {
-			fDownloadDir.toFile().mkdir();
-		}
-		fDownloadFile = fDownloadDir.append(fPackDestFile).toFile();
-		fDownloadFileTmp = fDownloadDir.append(fPackDestFile + CmsisConstants.EXT_TEMP).toFile();
 	}
 
 	@Override
@@ -91,17 +71,15 @@ public class CpPackInstallJob extends CpPackJob {
 		boolean tryAgain = true;
 		while (tryAgain) {
 			try {
-				URLConnection connection = getUrlConnection(progress.newChild(10));
+				File downloadFile = fPackInstaller.getRepoServiceProvider().getPackFile(fPackUrl, fPackDestFile, progress.newChild(90));
+				if (downloadFile != null) {
+					ICpPack pack = unzipAndParse(downloadFile, progress.newChild(10));
 
-				boolean downloadSuccess = downloadPack(progress.newChild(80), connection);
-				if (downloadSuccess) {
-					fPack = unzipAndParse(progress.newChild(10));
-
-					if (fPack != null) {
-						fResult.setPack(fPack);
+					if (pack != null) {
+						fResult.setPack(pack);
 						fResult.setSuccess(true);
 					} else {
-						fDownloadFile.delete();
+						downloadFile.delete();
 					}
 				}
 				tryAgain = false;
@@ -126,6 +104,9 @@ public class CpPackInstallJob extends CpPackJob {
 			} catch (IOException e) {
 				fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_FileNotFound, fPackUrl));
 				return Status.CANCEL_STATUS;
+			} catch (Exception e) {
+				fResult.setErrorString(e.getMessage());
+				return Status.CANCEL_STATUS;
 			} finally {
 				fPackInstaller.jobFinished(fPackId, RteEvent.PACK_INSTALL_JOB_FINISHED, fResult);
 			}
@@ -134,100 +115,16 @@ public class CpPackInstallJob extends CpPackJob {
 		return Status.OK_STATUS;
 	}
 
-	private URLConnection getUrlConnection(IProgressMonitor monitor) throws MalformedURLException, IOException {
-		SubMonitor progress = SubMonitor.convert(monitor, 100);
+	private ICpPack unzipAndParse(File downloadFile, IProgressMonitor monitor) throws IOException {
 
-		URLConnection connection = null;
-		progress.subTask(Messages.CpPackInstallJob_ConnectingTo + fPackUrl);
-		URL url = new URL(fPackUrl);
-		while (true) {
-			progress.worked(50);
-			if (progress.isCanceled()) {
-				cancel();
-			}
-			connection = url.openConnection();
-			connection.setConnectTimeout(TIME_OUT);
-			connection.setReadTimeout(TIME_OUT);
-			if (connection instanceof HttpURLConnection) {
-				int responseCode = ((HttpURLConnection) connection).getResponseCode();
-				if (responseCode == HttpURLConnection.HTTP_OK) {
-					break;
-				} else if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
-						|| responseCode == HttpURLConnection.HTTP_MOVED_PERM
-						|| responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-					String newUrl = connection.getHeaderField(CmsisConstants.REPO_LOCATION);
-					url = new URL(newUrl);
-				} else {
-					break;
-				}
-			}
-		}
-		progress.setWorkRemaining(0);
-
-		return connection;
-	}
-
-	private boolean downloadPack(IProgressMonitor monitor, URLConnection connection) throws IOException {
-
-		int totalWork = connection.getContentLength();
-		if (totalWork == -1) {
-			totalWork = IProgressMonitor.UNKNOWN;
-		}
-
-		SubMonitor progress = SubMonitor.convert(monitor, totalWork);
-		progress.subTask(NLS.bind(Messages.CpPackInstallJob_DownloadingFrom, fPackDestFile, fPackUrl));
-
-		InputStream input = null;
-		OutputStream output = null;
-		try {
-			input = connection.getInputStream();
-
-			if (fDownloadFileTmp.exists()) {
-				fDownloadFileTmp.delete();
-			}
-			output = new FileOutputStream(fDownloadFileTmp);
-
-			byte[] buf = new byte[1024];
-			int bytesRead;
-			while ((bytesRead = input.read(buf)) > 0) {
-				output.write(buf, 0, bytesRead);
-				progress.worked(bytesRead);
-				// Check if the cancel button is pressed
-				if (progress.isCanceled()) {
-					fResult.setErrorString(Messages.CpPackJob_CancelledByUser);
-					return false;
-				}
-			}
-			Utils.copy(fDownloadFileTmp, fDownloadFile);
-			return true;
-		} catch (IOException e) {
-			fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_FileNotFound, fPackUrl));
-			return false;
-		} finally {
-			if (input != null) {
-				input.close();
-			}
-			if (output != null) {
-				output.close();
-			}
-			fDownloadFileTmp.delete();
-			if (connection instanceof HttpURLConnection) {
-				((HttpURLConnection) connection).disconnect();
-			}
-		}
-	}
-
-	private ICpPack unzipAndParse(IProgressMonitor monitor) throws IOException {
-
-		SubMonitor progress = SubMonitor.convert(monitor, 100);
-		progress.subTask(Messages.CpPackInstallJob_UnzippingAndParsing + fPackDestFile);
+		monitor.subTask(Messages.CpPackInstallJob_UnzippingAndParsing + fPackDestFile);
 
 		String relativePath = PackInstallerUtils.getPackRelativeInstallDir(fPackId);
 		IPath destPath = new Path(CpPlugIn.getPackManager().getCmsisPackRootDirectory()).append(relativePath);
 
-		boolean unzipSuccess = fPackInstaller.unzip(fDownloadFile, destPath, progress.newChild(80));
+		boolean unzipSuccess = fPackInstaller.unzip(downloadFile, destPath, monitor);
 
-		if (progress.isCanceled() || !unzipSuccess) {
+		if (monitor.isCanceled() || !unzipSuccess) {
 			fResult.setErrorString(Messages.CpPackJob_CancelledByUser);
 			Utils.deleteFolderRecursive(destPath.toFile());
 			return null;
@@ -239,18 +136,20 @@ public class CpPackInstallJob extends CpPackJob {
 				fResult.setErrorString(Messages.CpPackInstallJob_CannotFindPdscFile);
 			} else {
 				String pdscFileName = pdscFileNames.iterator().next();
-				String destFileName = fDownloadDir.append(fPackId + CmsisConstants.EXT_PDSC).toOSString();
+				IPath downloadDir = new Path(PackInstallerUtils.getPacksDownloadDir());
+				String destFileName = downloadDir.append(fPackId + CmsisConstants.EXT_PDSC).toOSString();
 				// Copy the pdscFileName to .Download folder
 				Utils.copy(new File(pdscFileName), new File(destFileName));
 
-				fPack = (ICpPack) CpPlugIn.getPackManager().getParser().parseFile(pdscFileName);
-				fPack.setPackState(PackState.INSTALLED);
+				ICpPack pack = (ICpPack) CpPlugIn.getPackManager().getParser().parseFile(pdscFileName);
+				pack.setPackState(PackState.INSTALLED);
+				return pack;
 			}
 		}
 
-		progress.done();
+		monitor.done();
 
-		return fPack;
+		return null;
 
 	}
 
