@@ -358,8 +358,10 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 				errorString = pack.getFileName().replace('/', '\\') + ": " //$NON-NLS-1$
 						+ CpStrings.CpPackManager_DefaultError;
 			}
-			fPackInstaller.printInConsole(CpStrings.CpPackManager_ErrorWhileParsing + errorString,
-					ConsoleColor.ERROR);
+			
+			if (fPackInstaller != null)
+				fPackInstaller.printInConsole(CpStrings.CpPackManager_ErrorWhileParsing + errorString,
+						ConsoleColor.ERROR);
 		}
 		return true;
 	}
@@ -400,7 +402,9 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 		} else if (cmsisPackRootDirectory.equals(normalizedPackRoot) && bPacksLoaded) {
 			return;
 		}
-		fPackInstaller.stopPackWatchThread();
+		
+		if (fPackInstaller != null)
+			fPackInstaller.stopPackWatchThread();
 
 		if (normalizedPackRoot == null || normalizedPackRoot.isEmpty()) {
 			cmsisPackRootDirectory = null;
@@ -414,7 +418,7 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 
 		reload();
 
-		if (cmsisPackRootDirectory != null && !cmsisPackRootDirectory.isEmpty()) {
+		if (cmsisPackRootDirectory != null && !cmsisPackRootDirectory.isEmpty() && fPackInstaller != null) {
 			fPackInstaller.startPackWatchThread();
 		}
 	}
