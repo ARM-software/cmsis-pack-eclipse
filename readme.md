@@ -14,7 +14,7 @@ This release 2.0 provides the following functionality:
 
 For evaluation you need CMSIS-Pack compliant Software Packs that are available for download from the [CMSIS Pack Repository].
 
-**License:** The software is provided under the [Eclipse Public License] Version 1.0. See the [Contributing Guidelines] for information on how to contribute to this project.
+**License:** The software is provided under the [Eclipse Public License] Version 1.0. Contributions to this project are under the same license and there is no additional Contributor License Agreement (CLA) required.
 
 **Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.4.0 (Luna) and 4.5.1 (Mars).
 
