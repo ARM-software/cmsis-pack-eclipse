@@ -40,8 +40,10 @@ public class CpRootItem extends CpItem implements ICpRootItem {
 	
 	@Override
 	public void setFileName(String fileName) {
-		IPath p = new Path(fileName);
-		this.fileName = p.toString();
+		if (fileName != null) {
+			IPath p = new Path(fileName);
+			this.fileName = p.toString();
+		}
 	}
 
 	@Override
