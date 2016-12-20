@@ -14,7 +14,7 @@ package com.arm.cmsis.pack.installer.ui;
 /**
  * Interface for help context IDs in this plug-in
  */
-public interface IHelpContextIds {
+public class IHelpContextIds {
 	public static final String PREFIX = CpInstallerPlugInUI.PLUGIN_ID + "."; //$NON-NLS-1$
 	
 	public static final String PACKS_VIEW = PREFIX + "packs_view"; //$NON-NLS-1$

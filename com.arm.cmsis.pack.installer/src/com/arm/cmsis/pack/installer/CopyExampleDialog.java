@@ -27,7 +27,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 
 /**
- *
+ * The dialog to show before copying an example from Pack Manager
  */
 public class CopyExampleDialog extends Dialog {
 
@@ -40,7 +40,13 @@ public class CopyExampleDialog extends Dialog {
 	Button fCopyButton;
 
 	/**
-	 * @param parentShell
+	 * Default constructor
+	 * @param parentShell the parent shell for the dialog
+	 * @param exampleName example's name
+	 * @param packName name of the pack that the example belongs to
+	 * @param workspace workspace name
+	 * @param projectName project name
+	 * @param showAttention true if the example already exists in the workspace
 	 */
 	public CopyExampleDialog(Shell parentShell, String exampleName,
 			String packName, String workspace, String projectName,

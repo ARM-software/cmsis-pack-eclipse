@@ -185,7 +185,7 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 		return null;
 	}
 
-	private String getFloatAbiOptionValue(IBuildSettings buildSettings) {
+	public String getFloatAbiOptionValue(IBuildSettings buildSettings) {
 		String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
 		String fpu = getDeviceAttribute(IBuildSettings.FPU_OPTION, buildSettings);
 		if(cpu == null || fpu == null || fpu.equals(CmsisConstants.NO_FPU) || !coreHasFpu(cpu)) 

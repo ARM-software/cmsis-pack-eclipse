@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.rte.boards;
 
 import java.util.Collection;
+import java.util.Set;
 
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -85,4 +86,12 @@ public interface IRteBoardDeviceItem extends ICmsisMapItem<IRteBoardDeviceItem> 
 	 * @return a set of compatible devices of this board
 	 */
 	IRteDeviceItem getCompatibleDevices();
+	
+	/**
+	 * Get names of all devices in this item
+	 * @return set of device names 
+	 */
+	Set<String> getAllDeviceNames();
+
+	
 }

@@ -30,7 +30,7 @@ public class CpRepositoryList {
 
 	public static final String[] TYPES = { CmsisConstants.REPO_PACK_TYPE };
 
-	private List<ICpRepository> fList;
+	protected List<ICpRepository> fList;
 
 	public CpRepositoryList() {
 		List<String> repos = CpPreferenceInitializer.getCpRepositories();

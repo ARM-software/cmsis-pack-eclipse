@@ -108,6 +108,22 @@
                   </with>
                </visibleWhen>
             </command>
+            <command
+                  commandId="com.arm.cmsis.pack.installer.commands.importFolderPacksCommand"
+                  icon="icons/import_folder.gif"
+                  label="Import Packs from Folder"
+                  style="push"
+                  tooltip="Import Packs from Folder">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="com.arm.cmsis.pack.installer.ui.perspectives.packmanager">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
          </toolbar>
       </menuContribution>
    </extension>
@@ -131,6 +147,11 @@
             id="com.arm.cmsis.pack.installer.commands.reloadCommand"
             name="%ReloadCommand.name">
       </command>
+      <command
+            categoryId="com.arm.cmsis.pack.installer.commands"
+            id="com.arm.cmsis.pack.installer.commands.importFolderPacksCommand"
+            name="Import Packs from Folder">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
@@ -150,6 +171,10 @@
       <handler
             class="com.arm.cmsis.pack.installer.ui.handlers.ReloadPacksHandler"
             commandId="com.arm.cmsis.pack.installer.commands.reloadCommand">
+      </handler>
+      <handler
+            class="com.arm.cmsis.pack.installer.ui.handlers.ImportFolderPacksHandler"
+            commandId="com.arm.cmsis.pack.installer.commands.importFolderPacksCommand">
       </handler>
    </extension>
    <extension

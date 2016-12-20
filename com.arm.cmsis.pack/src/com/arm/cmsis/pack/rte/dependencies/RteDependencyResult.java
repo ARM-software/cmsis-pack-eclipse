@@ -78,7 +78,7 @@ public class RteDependencyResult extends RteDependencyItem implements IRteDepend
 	/**
 	 *  Removes dependencies that are greater than overall result since they are irrelevant
 	 */
-	private void purgeDependencies() {
+	protected void purgeDependencies() {
 		int thisOrdinal = getEvaluationResult().ordinal();
 		for (Iterator<IRteDependency> iterator = fDependencies.iterator(); iterator.hasNext();) {
 			IRteDependency d = iterator.next();

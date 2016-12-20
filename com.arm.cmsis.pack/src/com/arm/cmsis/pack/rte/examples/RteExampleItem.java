@@ -31,8 +31,8 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class RteExampleItem extends CmsisMapItem<IRteExampleItem> implements IRteExampleItem {
 
-	private Map<String, ICpExample> fExamples = null;
-	private boolean fRoot;
+	protected Map<String, ICpExample> fExamples = null;
+	protected boolean fRoot;
 
 	/**
 	 * Default constructor, used for the root node

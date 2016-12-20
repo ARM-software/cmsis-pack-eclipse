@@ -13,30 +13,38 @@ package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
 
+import com.arm.cmsis.pack.generic.IAttributes;
+
 
 /**
  * Base interface for pack container family or collection
- * 
+ *
  */
 public interface ICpPackGroup extends ICpItem {
 	/**
 	 * Returns pack of specified version if any
 	 * @param packId pack ID or version string to get pack
-	 * @return ICpPack object or null if not found
+	 * @return {@link ICpPack} object or null if not found
 	 */
 	ICpPack getPack(final String packId);
 
-	
 	/**
-	 * Searches for pack loaded from given pdsc file 
+	 * Returns latest pack that satisfies the attributes
+	 * @param attributes an Attributes that contain vendor, name and version
+	 * @return {@link ICpPack} object or null if not found
+	 */
+	ICpPack getPack(IAttributes attributes);
+
+	/**
+	 * Searches for pack loaded from given pdsc file
 	 * @param pdscFile file name corresponding to pack
-	 * @return ICpPack object or null if not found
+	 * @return {@link ICpPack} object or null if not found
 	 */
 	ICpPack getPackByFilename(final String pdscFile);
-	
+
 	/**
-	 * Returns collection of packs in the group sorted by ID (ascending and version descending) 
-	 * @return collection of ICpPack objects 
+	 * Returns collection of packs in the group sorted by ID (ascending and version descending)
+	 * @return collection of {@link ICpPack} objects
 	 */
 	Collection<ICpPack> getPacks();
 

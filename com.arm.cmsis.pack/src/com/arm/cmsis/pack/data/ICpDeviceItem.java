@@ -44,6 +44,13 @@ public interface ICpDeviceItem extends ICpItem {
 	EDeviceHierarchyLevel getLevel();
 	
 	/**
+	 * Returns a name value corresponding to given hierarchy level
+	 * @param level hierarchy level 
+	 * @return level name 
+	*/
+	String getLevelName(EDeviceHierarchyLevel level);
+	
+	/**
 	 * Returns effective processor properties for this device item (can be defined at higher level) 
 	 * @return map of processor name  - processor property entries 
 	 */

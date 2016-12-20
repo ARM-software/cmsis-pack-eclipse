@@ -36,9 +36,15 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 * @return element ID
 	 */
 	String getId();
-	
+
 	/**
-	 * Returns pack item containing this item as ICpPack   
+	 * Returns root item containing this item as ICpRootItem   
+	 * @return pack item owning the item tree
+	 */
+	ICpRootItem getRootItem();     
+
+	/**
+	 * Returns root item containing this item as ICpPack   
 	 * @return pack item owning the item tree
 	 */
 	ICpPack getPack();     
@@ -54,6 +60,20 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 * @return pack family ID
 	 */
 	String getPackFamilyId();
+	
+	
+	/**
+	 * Returns absolute directory path of the root item 
+	 * @param keepSlash flag if to keep or remove trailing slash 
+	 * @return absolute directory path of the root item 
+	 */
+	String getRootDir(boolean keepSlash);
+
+	/**
+	 * Returns absolute file name of the root item 
+	 * @return absolute file name of the root item 
+	 */
+	String getRootFileName();
 	
 	
 	/**
@@ -280,5 +300,11 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 * @return collection of ICpItem objects representing books  
 	 */
 	Collection<ICpItem> getBooks();
+
+	/**
+	 * Checks if this item matches running host.
+	 * @return true if matches
+	 */
+	boolean matchesHost();
 	
 }

@@ -303,6 +303,15 @@ public interface IColumnAdvisor {
 	 */
 	Image getCheckboxImage(Object obj, int columnIndex);
 
+	
+	/**
+	 * Returns an image to draw in a suffix button
+	 * @param obj cell object
+	 * @param columnIndex column index of the cell
+	 * @return the final image for the object
+	 */
+	Image getSuffixButtonImage(Object obj, int columnIndex);
+
 
 	/**
 	 * Returns cell background color

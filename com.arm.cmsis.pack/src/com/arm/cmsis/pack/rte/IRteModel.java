@@ -16,6 +16,7 @@ import java.util.Map;
 
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackFilter;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.IEvaluationResult;
@@ -29,7 +30,7 @@ import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 
 /**
  * Interface responsible for manipulating Run-Time-Configuration of a project for selected device and toolchain.
- * It can be considered as model controller that connects CMSIS-Pack items with  project model 
+ * It can be considered as a controller that connects CMSIS-Pack items with project model 
  *    
  */
 public interface IRteModel extends IEvaluationResult  {
@@ -46,7 +47,7 @@ public interface IRteModel extends IEvaluationResult  {
 
 	/**
 	 * Updates the model
-	 * @param flags a combination of RCF_* flags 
+	 * @param flags a combination of COMPONENT__* flags 
 	 * @see RteConstants
 	 */
 	void update(int flags);
@@ -173,5 +174,24 @@ public interface IRteModel extends IEvaluationResult  {
 	 * @return root of device tree as IRteDeviceItem  
 	 */
 	IRteDeviceItem getDevices();
+
+	/**
+	 * Return collection of used generated packs, an entry can be <code>null</code> if a gpdsc is not loaded   
+	 * @return map absolute filename -> pack, null or empty if no generated packs used 
+	 */
+	Map<String, ICpPack> getGeneratedPacks();
 	
+	/**
+	 * Returns {@link ICpPack} loaded from given gpdsc file 
+	 * @param gpdsc absolute gpdsc file name   
+	 * @return loaded {@link ICpPack} or null if such file does not exists or load failed  
+	 */
+	ICpPack getGeneratedPack(String gpdsc);
+
+	/**
+	 * Checks if the model requires given gpdsc file 
+	 * @param gpdsc absolute gpdsc file name   
+	 * @return true if given gpdsc file is needed  
+	 */
+	boolean isGeneratedPackUsed(String gpdsc);
 }

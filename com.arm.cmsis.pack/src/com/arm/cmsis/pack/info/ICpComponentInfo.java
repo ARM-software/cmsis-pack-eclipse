@@ -11,6 +11,7 @@
 package com.arm.cmsis.pack.info;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpFile;
+import com.arm.cmsis.pack.data.ICpGenerator;
 import com.arm.cmsis.pack.enums.IEvaluationResult;
 
 
@@ -46,5 +47,24 @@ public interface ICpComponentInfo extends ICpComponent, ICpItemInfo, IEvaluation
 	 */
 	ICpFileInfo getFileInfo(ICpFile f); 
 	
+	
+	/**
+	 * Checks if this component info has been saved in the configuration 
+	 * @return true if saved
+	 */
+	boolean isSaved(); 
+	
+	/**
+	 * Sets saved flag to the component info  
+	 * @parameter saved flag value to set
+	 */
+	void setSaved(boolean saved);
+	
+	/**
+	 * Returns gpdsc filename associated with the item
+	 * @param bExpandToAbsolute flag indicating to expand to absolute path, otherwise the value returned as provided by corresponding {@link ICpGenerator}
+	 * @return gpdsc filename or null 
+	 */
+	String getGpdsc(boolean bExpandToAbsolute); 
 	
 }

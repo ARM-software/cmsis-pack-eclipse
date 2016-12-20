@@ -15,7 +15,12 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
+
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
+import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.data.ICpPackFamily;
 import com.arm.cmsis.pack.events.IRteEventProxy;
@@ -100,7 +105,7 @@ public interface ICpPackManager {
 
 	/**
 	 * Returns collection of the installed packs
-	 * @return
+	 * @return collection of the installed packs
 	 */
 	ICpPackCollection getInstalledPacks();
 
@@ -176,17 +181,58 @@ public interface ICpPackManager {
 	boolean loadPacks(Collection<String> fileNames);
 
 	/**
-	 * Loads a single pdsc file
-	 * @param file pdsc file to load
-	 * @return true if loaded successfully
+	 * Parses  a single pdsc file
+	 * @param absolute file pdsc file to load
+	 * @return {@link ICpPack} is successful, null otherwise
 	 */
-	boolean loadPack(String file);
+	ICpPack readPack(String file);
+
+
+	/**
+	 * Readfs and loads a single gpdsc file if it is not yet loaded
+	 * @param file absolute gpdsc file to load
+	 * @return ICpPack if loaded successfully, null otherwise
+	 */
+	ICpPack loadGpdsc(String file);
+
 
 	/**
 	 * Returns CMSIS-Pack directory to load packs from
 	 * @return the CMSIS-Pack directory
 	 */
 	String getCmsisPackRootDirectory();
+
+	/**
+	 * Return CMSIS-Pack Download Directory
+	 * @return absolute download Directory of all the Packs
+	 */
+	default String getCmsisPackDownloadDir() {
+		String root = getCmsisPackRootDirectory();
+		if(root != null) {
+			IPath path = new Path(root).append(CmsisConstants.DOT_DOWNLOAD);
+			if (!path.toFile().exists()) {
+				path.toFile().mkdirs();
+			}
+			return path.toOSString();
+		}
+		return null;
+	}
+
+	/**
+	 * Return CMSIS-Pack Web directory (available packs)
+	 * @return absolute web directory of all the Packs
+	 */
+	default String getCmsisPackWebDir() {
+		String root = getCmsisPackRootDirectory();
+		if(root != null) {
+			IPath path = new Path(root).append(CmsisConstants.DOT_WEB);
+			if (!path.toFile().exists()) {
+				path.toFile().mkdirs();
+			}
+			return path.toOSString();
+		}
+		return null;
+	}
 
 	/**
 	 * Returns CMSIS-Pack directory as URI

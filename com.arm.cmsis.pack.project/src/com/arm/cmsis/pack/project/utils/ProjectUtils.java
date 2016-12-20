@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.project.utils;
 
@@ -235,7 +235,7 @@ public class ProjectUtils {
 	/**
 	 * Create a link in a local (if folder exists) or virtual folder if folder has to be created.
 	 * @param srcFile source file which is to be linked, may not be relative.
-	  * @param project parent IProject
+	 * @param project parent IProject
 	 * @param dstFile destination file in a virtual project folder. Folder(s) are created if not existing.
 	 * @param monitor IProgressMonitor
 	 * @throws CoreException
@@ -343,13 +343,13 @@ public class ProjectUtils {
 			return null;
 		}
 		try{
-		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
-		IConfiguration[] configs = buildInfo.getManagedProject().getConfigurations();
-		for(IConfiguration c : configs) {
-			if(c.getName().equals(name)) {
-				return c;
+			IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
+			IConfiguration[] configs = buildInfo.getManagedProject().getConfigurations();
+			for(IConfiguration c : configs) {
+				if(c.getName().equals(name)) {
+					return c;
+				}
 			}
-		}
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -409,8 +409,9 @@ public class ProjectUtils {
 		for (Iterator<String> iterator = paths.iterator(); iterator.hasNext();) {
 			String s = iterator.next();
 			if(s.startsWith(CmsisConstants.PROJECT_RTE_PATH) ||
-			   s.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR)) {
-					iterator.remove();
+					s.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR) ||
+					s.startsWith(CmsisConstants.CMSIS_RTE_VAR)) {
+				iterator.remove();
 			}
 		}
 		return paths;

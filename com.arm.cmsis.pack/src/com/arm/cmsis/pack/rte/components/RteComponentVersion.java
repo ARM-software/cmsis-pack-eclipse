@@ -64,19 +64,14 @@ public class RteComponentVersion extends RteComponentItem {
 	@Override
 	public void addComponent(ICpComponent cpComponent, int flags) {
 		if(cpComponent instanceof ICpComponentInfo) {
-			fComponentInfo = (ICpComponentInfo)cpComponent;
-			fComponentInfo.setComponent(getFirstCpComponent());
+			if(cpComponent != fComponentInfo ) {
+				fComponentInfo = (ICpComponentInfo)cpComponent;
+				fComponentInfo.setComponent(getFirstCpComponent());
+			}
 		} else if(! fComponents.contains(cpComponent)){
 			fComponents.add(cpComponent);
 		}
 	}
-
-//	@Override
-//	public EEvaluationResult resolveComponent(ICpComponentInfo componentInfo, int flags) {
-//		fComponentInfo = componentInfo;
-//		fComponentInfo.setComponent(getFirstCpComponent());
-//		return EEvaluationResult.FULFILLED;
-//	}
 
 
 	@Override

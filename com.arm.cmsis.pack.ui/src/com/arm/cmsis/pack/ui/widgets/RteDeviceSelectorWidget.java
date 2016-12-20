@@ -56,6 +56,7 @@ import com.arm.cmsis.pack.ui.IStatusMessageListener;
 import com.arm.cmsis.pack.ui.OpenURL;
 import com.arm.cmsis.pack.ui.StatusMessageListerenList;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
+import com.arm.cmsis.pack.utils.WildCards;
 
 
 /**
@@ -256,12 +257,21 @@ public class RteDeviceSelectorWidget extends Composite {
 					return true;
 				}
 				if(element instanceof IRteDeviceItem) {
-					String s = fSearchString;
-					if(!s.endsWith("*")) //$NON-NLS-1$
-					{
+					String s = CmsisConstants.EMPTY_STRING;
+					if(!fSearchString.startsWith("*")) { //$NON-NLS-1$ 
+						s = "*"; //$NON-NLS-1$
+					}
+					s += fSearchString;
+					if(!s.endsWith("*")) { //$NON-NLS-1$
 						s += "*"; //$NON-NLS-1$
 					}
+					// first check if parent elements (vendor, family, etc. match the pattern)
 					IRteDeviceItem deviceItem = (IRteDeviceItem)element;
+					for(IRteDeviceItem parent = deviceItem.getParent(); parent != null; parent = parent.getParent()) {
+						if(WildCards.matchNoCase(s, parent.getName())) {
+							return true;
+						}
+					}
 					return deviceItem.getFirstItem(s) != null;
 				}
 				return false;

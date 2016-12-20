@@ -37,7 +37,7 @@ import org.xml.sax.SAXException;
 import com.arm.cmsis.pack.common.CmsisConstants;
 
 /**
- * Util functions from GNU ARM
+ * Utility functions from GNU ARM
  */
 public class RepositoryRefreshingUtils {
 
@@ -46,7 +46,7 @@ public class RepositoryRefreshingUtils {
 	/**
 	 * @param inputStream the input stream
 	 * @param pdscList a list of .pdsc files
-	 * @return the number of .pdsc files in the list
+	 * @return the number of .pdsc files in the list that needs parsing
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
@@ -65,13 +65,13 @@ public class RepositoryRefreshingUtils {
 
 		while ((line = in.readLine()) != null) {
 			line = line.trim();
-			if (line.startsWith("<pdsc")) { //$NON-NLS-1$
-				buffer.append(line);
+			if (line.startsWith("<pdsc ")) { //$NON-NLS-1$
+				buffer.append(line + '\n');
 			} else if (line.startsWith("<timestamp")) { //$NON-NLS-1$
 				int start = line.indexOf('>') + 1;
 				int end = line.indexOf('<', start);
-				if (!parseTimestamp(line.substring(start, end))) {
-					continue;
+				if (!parseTimestamp(line.substring(start, end))) { // timestamp not changed
+					return 0;
 				}
 			}
 		}
@@ -94,7 +94,7 @@ public class RepositoryRefreshingUtils {
 		List<Element> pdscElements = getChildrenElementsList(el, "pdsc"); //$NON-NLS-1$
 		for (Element pdscElement : pdscElements) {
 
-			String url = pdscElement.getAttribute(CmsisConstants.REPO_URL).trim();
+			String url = pdscElement.getAttribute(CmsisConstants.URL).trim();
 			String vendor = pdscElement.getAttribute(CmsisConstants.VENDOR).trim();
 			String name = pdscElement.getAttribute(CmsisConstants.NAME).trim();
 			if (!name.endsWith(CmsisConstants.EXT_PDSC)) {

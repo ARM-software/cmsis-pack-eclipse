@@ -51,14 +51,20 @@ public interface ICpComponent extends ICpItem {
 	 * Checks if component is a bootstrap for generator (launches specified generator) 
 	 * @return true if component is bootstrap one  
 	 */
-	boolean isBootstrap();
+	boolean isBootStrap();
 	
 	/**
 	 * Returns generator associated with the component (generated or bootstrap) 
-	 * @return ICpGenerator if component is bootstrap or generated, null otherwise  
+	 * @return {@link ICpGenerator} if component is a bootstrap or generated, null otherwise  
 	 */
 	 ICpGenerator getGenerator();
-	
+
+	 /**
+	  * Returns generator id associated with the component (generated or bootstrap) 
+	  * @return generator id if component is a bootstrap or generated, null otherwise  
+	  */
+	 String getGeneratorId();
+	 
 	/**
 	 * Returns number of maximum instances for the component 
 	 * @return true if the component is API

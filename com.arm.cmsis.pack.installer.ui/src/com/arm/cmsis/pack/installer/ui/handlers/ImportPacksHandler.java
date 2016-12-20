@@ -24,6 +24,9 @@ import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.utils.Utils;
 
+/**
+ * Handler of importing pack from a .pack or .zip file
+ */
 public class ImportPacksHandler extends AbstractHandler {
 	
 	private static final String[] FILTER_NAMES = {
@@ -32,15 +35,16 @@ public class ImportPacksHandler extends AbstractHandler {
 	
 	private static final String[] FILTER_EXTS = {"*.pack", "*.zip"}; //$NON-NLS-1$ //$NON-NLS-2$
 
-	private IWorkbenchWindow window;
 
 	public ImportPacksHandler() {
 	}
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		window = HandlerUtil.getActiveWorkbenchWindow(event);
 		ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+		if(packInstaller == null)
+			return null;
+		IWorkbenchWindow  window = HandlerUtil.getActiveWorkbenchWindow(event);
 		FileDialog dialog = new FileDialog(window.getShell(), SWT.MULTI);
 		dialog.setText(Messages.ImportPacksHandler_DialogText); 
 		dialog.setFilterNames(FILTER_NAMES);

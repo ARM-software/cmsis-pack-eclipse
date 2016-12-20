@@ -13,6 +13,7 @@ package com.arm.cmsis.pack;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -20,6 +21,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpPack;
+import com.arm.cmsis.pack.events.RtePackJobResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
@@ -28,14 +30,16 @@ import com.arm.cmsis.pack.generic.IAttributes;
 public interface ICpPackInstaller extends IAdaptable {
 
 	/**
-	 * The colors used in Pack Manager's Console
+	 * Type of Pack Manager's Console output
 	 * <dl>
-	 * 	<dd>INFO color for information message
-		<dd>ERROR color for error message
-		<dd>WARNING color for warning message
+	 * 	<dd>OUTPUT output message
+	 *  <dd>INFO information message
+	 *	<dd>ERROR error message
+	 *	<dd>WARNING warning message
 	 * </dl>
 	 */
-	enum ConsoleColor {
+	enum ConsoleType {
+		OUTPUT,
 		INFO,
 		ERROR,
 		WARNING
@@ -49,6 +53,14 @@ public interface ICpPackInstaller extends IAdaptable {
 	void installPack(final String packId);
 
 	/**
+	 * Installs pack with given ID.
+	 * Specify full id to install the specific version or a family ID to install the latest version.
+	 * @param packId full or family pack ID
+	 * @param installRequiredPacks True if the required pack should also be installed
+	 */
+	void installPack(final String packId, boolean installRequiredPacks);
+
+	/**
 	 * Installs pack with given attributes, now only used when
 	 * refreshing RTE project.
 	 * @param packAttributes pack attributes
@@ -56,10 +68,23 @@ public interface ICpPackInstaller extends IAdaptable {
 	void installPack(final IAttributes packAttributes);
 
 	/**
+	 * Installs required packs of the given pack.
+	 * @param pack Pack whose required packs needs to be installed
+	 * @return A collection of the required packs' IDs to be installed
+	 */
+	Collection<String> installRequiredPacks(ICpPack pack);
+
+	/**
 	 * Imports .pack file
 	 * @param filePath full path of the .pack file
 	 */
 	void importPack(final String filePath);
+
+	/**
+	 * Import packs from a folder
+	 * @param rootPath Root path of the folder
+	 */
+	void importFolderPacks(final String rootPath);
 
 	/**
 	 * Check for updates in the internet
@@ -92,11 +117,11 @@ public interface ICpPackInstaller extends IAdaptable {
 
 	/**
 	 * The Actions to take after a pack job is finished
-	 * @param packId the pack id
+	 * @param jobId the job's ID, could be a pack ID
 	 * @param jobTopic the job topic, e.g. install, unpack, remove, ...
 	 * @param jobData the help data to this job
 	 */
-	void jobFinished(String packId, String jobTopic, Object jobData);
+	void jobFinished(String jobId, String jobTopic, RtePackJobResult jobData);
 
 	/**
 	 * Set the repository service provider {@link ICpRepoServiceProvider}
@@ -132,23 +157,13 @@ public interface ICpPackInstaller extends IAdaptable {
 	/**
 	 * Print the message in the console
 	 * @param message the message to print in the console
-	 * @param color the color used to print the message
+	 * @param type the type of the message to print
 	 */
-	void printInConsole(String message, ConsoleColor color);
+	void printInConsole(String message, ConsoleType type);
 
 	/**
 	 * Cancel all the processing jobs
 	 */
 	void reset();
-
-	/**
-	 * Start watch the pack.idx file in the pack root folder
-	 */
-	void startPackWatchThread();
-
-	/**
-	 * Stop watch the pack.idx file in the pack root folder
-	 */
-	void stopPackWatchThread();
 
 }

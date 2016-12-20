@@ -44,6 +44,7 @@ public interface ICpConfigurationInfo extends ICpRootItem {
 	 */
 	ICpItem getApisItem();
 
+	
 	/**
 	 * Returns stored pack filter info if any
 	 * @return ICpPackFilterInfo

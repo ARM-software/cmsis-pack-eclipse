@@ -12,20 +12,28 @@ package com.arm.cmsis.pack.data;
  *******************************************************************************/
 
 /**
- * Interface for ICpItem-based tree root element (ICpPack, ICpConfigurationInfo, etc.)  
+ * Interface for ICpItem-based tree root element (ICpPack, ICpConfigurationInfo, etc.) that gets loaded from a file or refers to an item to load.   
  */
 public interface ICpRootItem extends ICpItem {
 	
 	/**
-	 * Set absolute pdsc file name of the pack 
-	 * @param fileName absolute pdsc file name of the pack 
+	 * Set absolute file name  
+	 * @param fileName absolute file name to set 
 	 */
 	void setFileName(String fileName);
 
 	/**
-	 * Returns absolute file name of the root item 
-	 * @return absolute file name of the root item 
+	 * Returns absolute file name of the item 
+	 * @return absolute file name of the item 
 	 */
 	String getFileName();
+	
+	/**
+	 * Returns directory path of the item 
+	 * @param keepSlash flag if to keep or remove trailing slash 
+	 * @return absolute directory path of the item 
+	 */
+	String getDir(boolean keepSlash);
+
 	
 }

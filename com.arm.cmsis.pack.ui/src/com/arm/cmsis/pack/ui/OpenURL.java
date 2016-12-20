@@ -24,11 +24,14 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWebBrowser;
 
+import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpEnvironmentProvider;
+
 /**
  * Utility class to open an URL in browser or editor 
  *
  */
-public class OpenURL {
+public class OpenURL implements IOpenURL{
 
 	/**
 	 * Opens an URL in a browser or associated system editor 
@@ -54,7 +57,23 @@ public class OpenURL {
 	 * @param url URL to open
 	 * @return null if successfully opened, otherwise reason why operation failed
 	 */
+	@SuppressWarnings("cast")
 	static public String open(String url){
+		IOpenURL openURL = null;
+		ICpEnvironmentProvider provider = CpPlugIn.getEnvironmentProvider();
+		if(provider != null) {
+			openURL = (IOpenURL)provider.getAdapter(IOpenURL.class);  
+		}
+		if(openURL == null) {
+			// use default implementation
+			openURL = new OpenURL();
+		}
+		return openURL.openUrl(url);
+	}
+
+
+	@Override
+	public String openUrl(String url) {
 		if (url == null || url.isEmpty()) {
 			return null;
 		}

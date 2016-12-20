@@ -21,7 +21,6 @@ import java.util.TreeMap;
 import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
-import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -37,9 +36,9 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteDeviceItem {
 
-	private int fLevel = EDeviceHierarchyLevel.NONE.ordinal();
-	private Map<String, ICpDeviceItem> fDevices = null;
-	private Set<String> fDeviceNames = null;
+	protected int fLevel = EDeviceHierarchyLevel.NONE.ordinal();
+	protected Map<String, ICpDeviceItem> fDevices = null;
+	protected Set<String> fDeviceNames = null;
 
 	/**
 	 *
@@ -47,7 +46,6 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	public RteDeviceItem() {
 		fLevel = EDeviceHierarchyLevel.ROOT.ordinal();
 		fName = "All Devices"; //$NON-NLS-1$
-		fDeviceNames = new HashSet<>();
 	}
 
 	/**
@@ -57,7 +55,6 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		super(parent);
 		fLevel = level;
 		fName= name;
-		fDeviceNames = new HashSet<>();
 	}
 
 
@@ -100,13 +97,16 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	public ICpDeviceItem getDevice() {
 		if(fDevices != null && ! fDevices.isEmpty()) {
 			// Return the latest INSTALLED pack's device
+			ICpDeviceItem firstDevice = null;
 			for (ICpDeviceItem device : fDevices.values()) {
 				if (device.getPack().getPackState() == PackState.INSTALLED) {
 					return device;
 				}
+				if (firstDevice == null)
+					firstDevice = device;
 			}
 			// Otherwise return the latest pack's device
-			return fDevices.entrySet().iterator().next().getValue();
+			return firstDevice;
 		}
 		return null;
 	}
@@ -173,18 +173,16 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 				for(ICpDeviceItem i : subItems ){
 					addDevice(i);
 				}
-			} else if(level >= EDeviceHierarchyLevel.DEVICE.ordinal() && item.getProcessorCount() > 1) {
-				// add processor leaves
-				Map<String, ICpItem> processors = item.getProcessors();
-				for(Entry<String, ICpItem> e : processors.entrySet()) {
-					String fullName = item.getName() + ":" + e.getKey(); //$NON-NLS-1$
-					addDeviceItem(item, fullName, EDeviceHierarchyLevel.PROCESSOR.ordinal());
+			} else if(level >= EDeviceHierarchyLevel.DEVICE.ordinal()) {
+				addDeviceName(getName()); 
+				if( item.getProcessorCount() > 1) {
+					// add processor leaves
+					Map<String, ICpItem> processors = item.getProcessors();
+					for(Entry<String, ICpItem> e : processors.entrySet()) {
+						String fullName = item.getName() + ":" + e.getKey(); //$NON-NLS-1$
+						addDeviceItem(item, fullName, EDeviceHierarchyLevel.PROCESSOR.ordinal());
+					}
 				}
-			}
-			if (fLevel == EDeviceHierarchyLevel.VARIANT.ordinal() ||
-					(fLevel == EDeviceHierarchyLevel.DEVICE.ordinal() &&
-					(subItems == null || subItems.isEmpty()) )){
-				addDeviceNames(fName);
 			}
 			return;
 		} else if(fLevel == EDeviceHierarchyLevel.ROOT.ordinal()) {
@@ -194,7 +192,6 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		} else if(fLevel > level) {// should not happen if algorithm is correct
 			return;
 		}
-
 		// other cases
 		addDeviceItem(item, item.getName(), level);
 	}
@@ -274,7 +271,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 				}
 			}
 			if (fDevices.size() == 0) {
-				removeDeviceNames(fName);
+				removeDeviceName(fName);
 				getParent().removeChild(this);
 			}
 			return;
@@ -438,40 +435,17 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	}
 
 	@Override
-	public Set<String> getAllPackIds() {
-		if (fLevel == EDeviceHierarchyLevel.PROCESSOR.ordinal()) {
-			Set<String> ret = new HashSet<String>();
-			if (fDevices != null) {
-				for (String id : fDevices.keySet()) {
-					ret.add(CpPack.familyFromId(id));
-				}
-			}
-			return ret;
-		}
-		Set<String> ret = new HashSet<String>();
-		if (fChildMap != null) {
-			for (IRteDeviceItem item : fChildMap.values()) {
-				ret.addAll(item.getAllPackIds());
-			}
-		}
-		if (fDevices != null) {
-			for (String id : fDevices.keySet()) {
-				ret.add(CpPack.familyFromId(id));
-			}
-		}
-		return ret;
-	}
-
-	@Override
 	public Set<String> getAllDeviceNames() {
-		if (fName.equals(CmsisConstants.MOUNTED_DEVICES) ||
-				fName.equals(CmsisConstants.COMPATIBLE_DEVICES)) {
+		if(fDeviceNames == null ){
+			fDeviceNames = new HashSet<String>();
+			if(isDevice())
+				addDeviceName(getDevice().getName());
 			if (fChildMap != null) {
 				for (IRteDeviceItem item : fChildMap.values()) {
 					fDeviceNames.addAll(item.getAllDeviceNames());
 				}
 			}
-		}
+		} 
 		return fDeviceNames;
 	}
 
@@ -486,29 +460,23 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		return CmsisConstants.EMPTY_STRING;
 	}
 
-	/**
-	 * Remove the deviceName from all the parent fDeviceName list
-	 * @param deviceName
-	 */
-	private void removeDeviceNames(String deviceName) {
-		if (fDeviceNames != null) {
-			fDeviceNames.remove(deviceName);
-		}
-		IRteDeviceItem parent = getParent();
-		while (parent != null ) {
-			parent.getAllDeviceNames().remove(deviceName);
-			parent = parent.getParent();
+	@Override
+	public void addDeviceName(String name) {
+		if (fDeviceNames != null ) 
+			fDeviceNames.add(name);
+		if (getParent() != null) {
+			getParent().addDeviceName(name);
 		}
 	}
 
-	private void addDeviceNames(String deviceName) {
-		if (fDeviceNames != null) {
-			fDeviceNames.add(deviceName);
-		}
-		IRteDeviceItem parent = getParent();
-		while (parent != null ) {
-			parent.getAllDeviceNames().add(deviceName);
-			parent = parent.getParent();
+	
+	@Override
+	public void removeDeviceName(String name) {
+		if (fDeviceNames != null)
+			fDeviceNames.remove(name);
+		
+		if (getParent() != null) {
+			getParent().removeDeviceName(name);
 		}
 	}
 

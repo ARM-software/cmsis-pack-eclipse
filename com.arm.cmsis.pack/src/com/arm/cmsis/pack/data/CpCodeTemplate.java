@@ -51,6 +51,12 @@ public class CpCodeTemplate extends CpItem implements ICpCodeTemplate {
 	}
 
 	@Override
+	public ICpRootItem getRootItem() {
+		return getPack();
+	}
+	
+	
+	@Override
 	public String[] getCodeTemplates() {
 		return fCodeTemplates.toArray(new String[fCodeTemplates.size()]);
 	}

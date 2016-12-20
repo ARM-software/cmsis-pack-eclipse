@@ -119,6 +119,7 @@ public class RteValidateWidget extends RteWidget {
 						case MISSING_VARIANT:
 						case MISSING_VENDOR:
 						case MISSING_VERSION:
+						case MISSING_GPDSC:
 						case UNAVAILABLE:
 						case UNAVAILABLE_PACK:
 							return CpPlugInUI.getImage(CpPlugInUI.ICON_ERROR); 

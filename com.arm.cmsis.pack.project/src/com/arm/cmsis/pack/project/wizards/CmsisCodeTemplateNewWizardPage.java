@@ -298,6 +298,7 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 				}
 			} else if (obj instanceof IAdaptable) {
 				IAdaptable adaptable = (IAdaptable) obj;
+				@SuppressWarnings("cast")
 				IResource res = (IResource) adaptable.getAdapter(IResource.class);
 				if (res == null) {
 					return;
@@ -497,8 +498,9 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 
 	public String[] getCodeTemplateFileNames() {
 		String[] fileNames = new String[selectedCodeTemplate.getCodeTemplates().length];
+		String[] templates = selectedCodeTemplate.getCodeTemplates();
 		for (int i = 0; i < fileNames.length; i++) {
-			fileNames[i] = selectedCodeTemplate.getAbsolutePath(selectedCodeTemplate.getCodeTemplates()[i]);
+			fileNames[i] = selectedCodeTemplate.getAbsolutePath(templates[i]);
 		}
 		return fileNames;
 	}

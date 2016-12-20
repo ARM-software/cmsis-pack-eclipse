@@ -20,6 +20,7 @@ import java.util.TreeMap;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
+import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 
 /**
@@ -28,13 +29,13 @@ import com.arm.cmsis.pack.utils.AlnumComparator;
 public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 	// fChildren from CpItem class is not used
-	private Map<String, ICpPackFamily> fPackFamilies = null;
-	private Set<String> fLatestPackIDs = null;
+	protected Map<String, ICpPackFamily> fPackFamilies = null;
+	protected Set<String> fLatestPackIDs = null;
 
 	public CpPackCollection() {
 		super(null, CmsisConstants.PACKAGES_TAG);
 	}
-	
+
 	public CpPackCollection(String name) {
 		super(null, name);
 	}
@@ -55,6 +56,22 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 		return null;
 	}
 
+	@Override
+	public ICpPack getPack(IAttributes attributes) {
+		if(fPackFamilies != null) {
+			String familyId = attributes.getAttribute(CmsisConstants.VENDOR) +
+					"." + attributes.getAttribute(CmsisConstants.NAME); //$NON-NLS-1$
+			ICpPackFamily f = fPackFamilies.get(familyId);
+			if(f != null) {
+				String versionRange = attributes.getAttribute(CmsisConstants.VERSION);
+				if(versionRange == null || versionRange.isEmpty()) {
+					return null;
+				}
+				return f.getPack(attributes);
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public Collection<? extends ICpItem> getChildren() {
@@ -64,6 +81,11 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 		return null;
 	}
 
+
+	@Override
+	public boolean hasChildren() {
+		return fPackFamilies != null && !fPackFamilies.isEmpty();
+	}
 
 	@Override
 	public ICpItem getFirstChild(String packId) {
@@ -87,7 +109,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 		String familyId = pack.getPackFamilyId();
 
-		ICpPackFamily family = fPackFamilies.get(familyId); 
+		ICpPackFamily family = fPackFamilies.get(familyId);
 		if(family == null) {
 			family = new CpPackFamily(this, familyId);
 			fPackFamilies.put(familyId, family);
@@ -184,7 +206,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 	@Override
 	public synchronized Set<String> getLatestPackIDs() {
 		if(fLatestPackIDs == null) {
-			fLatestPackIDs = new HashSet<String>(); 
+			fLatestPackIDs = new HashSet<String>();
 			if (fPackFamilies != null) {
 				for(ICpPackFamily f : fPackFamilies.values()) {
 					String packId = f.getPackId();
@@ -202,7 +224,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 	public ICpPack getPackByFilename(String pdscFile) {
 		if(fPackFamilies != null) {
 			for(ICpPackFamily f : fPackFamilies.values()){
-				ICpPack pack = f.getPackByFilename(pdscFile); 
+				ICpPack pack = f.getPackByFilename(pdscFile);
 				if(pack != null) {
 					return pack;
 				}
@@ -214,8 +236,11 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 	@Override
 	public Collection<ICpPack> getPacksByPackFamilyId(String packFamilyId) {
-		ICpPackFamily family = fPackFamilies.get(packFamilyId); 
-		if ( family == null) {
+		if (fPackFamilies == null) {
+			return null;
+		}
+		ICpPackFamily family = fPackFamilies.get(packFamilyId);
+		if (family == null) {
 			return null;
 		}
 		return family.getPacks();

@@ -1,46 +1,29 @@
+/*******************************************************************************
+ * Copyright (c) 2016 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
+
 package com.arm.cmsis.pack.installer.ui.views;
 
-import java.io.File;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.regex.Pattern;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.TreeSelection;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerSorter;
-import org.eclipse.jface.window.Window;
-import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IImportWizard;
-import org.eclipse.ui.IPerspectiveDescriptor;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.ViewPart;
-import org.eclipse.ui.wizards.datatransfer.ExternalProjectImportWizard;
+import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
@@ -56,45 +39,28 @@ import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
-import com.arm.cmsis.pack.data.ICpPackFamily;
-import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.generic.ITreeObject;
 import com.arm.cmsis.pack.installer.ui.CpInstallerPlugInUI;
 import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
-import com.arm.cmsis.pack.installer.utils.PackInstallerUtils;
-import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
+import com.arm.cmsis.pack.installer.ui.PackInstallerViewController;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 import com.arm.cmsis.pack.utils.AlnumComparator;
-import com.arm.cmsis.pack.utils.Utils;
+import com.arm.cmsis.pack.utils.VersionComparator;
 
-public class PackPropertyView extends ViewPart implements IRteEventListener {
+/**
+ * Default implementation of the pack properties view in pack manager
+ */
+public class PackPropertyView extends PackInstallerView {
 
 	public static final String ID = "com.arm.cmsis.pack.installer.ui.views.PackPropertyView"; //$NON-NLS-1$
 
-	// copy from org.eclipse.ui.internal.wizards.datatransfer.WizardProjectsImportPage
-	private final static String STORE_COPY_PROJECT_ID = "WizardProjectsImportPage.STORE_COPY_PROJECT_ID"; //$NON-NLS-1$
-
-	TreeViewer fViewer;
-	private Action fExpandAction;
-	private Action fExpandItemAction;
-	private Action fCollapseAction;
-	private Action fCollapseItemAction;
-	private Action fHelpAction;
-	Action fDoubleClickAction;
-	private Action fInstallAction;
+	private Action fInstallPackAction; // install single pack
+	private Action fInstallRequiredPacksAction; // install required packs
 	private Action fCopyAction;
 
-	private ISelectionListener fViewSelectionListener;
-
-	ICpItem getCpItem(Object obj) {
-		if (obj instanceof ICpItem) {
-			return (ICpItem) obj;
-		}
-		return null;
-	}
 
 	/**
 	 *
@@ -108,19 +74,34 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 			if (item == null) {
 				return ITreeObject.EMPTY_OBJECT_ARRAY;
 			}
+			// root node
 			if (item instanceof ICpPack) {
 				return getPackChildren((ICpPack) item);
-			} else if (item instanceof ICpDeviceItem) {
+			}
+			// device node
+			else if (item instanceof ICpDeviceItem) {
 				return getDeviceItems((ICpDeviceItem) item);
-			} else if (item instanceof ICpBoard) {
+			}
+			// board node
+			else if (item instanceof ICpBoard) {
 				return getBoardChildren((ICpBoard) item);
-			} else if (CmsisConstants.EXAMPLES_TAG.equals(item.getTag())) {
-				return getExamples(item);
-			} else if (item instanceof ICpExample) {
+			}
+			// example node
+			else if (item instanceof ICpExample) {
 				return getExampleChildren((ICpExample) item);
-			} else if (CmsisConstants.COMPONENTS_TAG.equals(item.getTag())) {
+			}
+			// examples node
+			else if (CmsisConstants.EXAMPLES_TAG.equals(item.getTag())) {
+				return getExamples(item);
+			}
+			// components node
+			else if (CmsisConstants.COMPONENTS_TAG.equals(item.getTag())) {
 				root = buildComponentTree(item);
 				return root.getChildArray();
+			}
+			// required packages node
+			else if (CmsisConstants.PACKAGES_TAG.equals(item.getTag())) {
+				return getRequiredPacks(item);
 			}
 
 			return super.getChildren(parentElement);
@@ -143,7 +124,13 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 						|| CmsisConstants.BOARDS_TAG.equals(child.getTag())
 						|| CmsisConstants.COMPONENTS_TAG.equals(child.getTag())) {
 					result.add(child);
-				} else if (CmsisConstants.EXAMPLES_TAG.equals(child.getTag())) {
+				}
+				// requirements node, here we only need the required packages
+				else if (CmsisConstants.REQUIREMENTS_TAG.equals(child.getTag())) {
+					result.add(child.getFirstChild(CmsisConstants.PACKAGES_TAG));
+				}
+				// examples node
+				else if (CmsisConstants.EXAMPLES_TAG.equals(child.getTag())) {
 					Object[] examples = getExamples(child);
 					if (examples != null && examples.length > 0) {
 						result.add(child);
@@ -151,6 +138,13 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 				}
 			}
 			return result.toArray();
+		}
+
+		private Object[] getRequiredPacks(ICpItem packs) {
+			if (packs == null || packs.getChildren() == null) {
+				return ITreeObject.EMPTY_OBJECT_ARRAY;
+			}
+			return packs.getChildArray();
 		}
 
 		private Object[] getDeviceItems(ICpDeviceItem device) {
@@ -297,39 +291,47 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 		}
 	}
 
-	class OutlineViewLabelProvider extends ColumnLabelProvider {
+	class PackPropertyViewLabelProvider extends ColumnLabelProvider {
 		@Override
 		public Image getImage(Object obj) {
 			ICpItem item = getCpItem(obj);
 			if (item == null) {
 				return null;
 			}
-			boolean installed = item.getPack() == null ? false : item.getPack().getPackState() == PackState.INSTALLED;
-			if (obj instanceof ICpPack) {
+			ICpPack pack = item.getPack();
+			boolean installed = pack != null ? pack.getPackState() == PackState.INSTALLED : false;
+			// root node
+			if (pack != null && item == pack) {
 				if (installed) {
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
+					if (pack.isRequiredPacksInstalled()) {
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
+					}
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE_RED);
 				}
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE_GREY);
-			} else if (obj instanceof ICpPackFamily) {
-				if (installed) {
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES);
-				}
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_GREY);
-			} else if (obj instanceof ICpComponent) {
-				ICpComponent c = (ICpComponent) obj;
+			}
+			// Component node
+			else if (item instanceof ICpComponent) {
+				ICpComponent c = (ICpComponent) item;
 				if(c.getMaxInstances() > 1) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
 				}
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
-			} else if (obj instanceof ICpFile) {
+			}
+			// File node
+			else if (item instanceof ICpFile) {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
-			} else if (obj instanceof ICpBoard) {
+			}
+			// Board node
+			else if (item instanceof ICpBoard) {
 				if (installed) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
 				}
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_GREY);
-			} else if (obj instanceof ICpDeviceItem) {
-				ICpDeviceItem di = (ICpDeviceItem) obj;
+			}
+			// Device node
+			else if (item instanceof ICpDeviceItem) {
+				ICpDeviceItem di = (ICpDeviceItem) item;
 				if (di.getDeviceItems() == null) {
 					if (installed) {
 						return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
@@ -339,24 +341,38 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
 			}
 			switch (item.getTag()) {
-			case CmsisConstants.COMPONENTS_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
-			case CmsisConstants.DEVICES_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
-			case CmsisConstants.BOARDS_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
-			case CmsisConstants.BUNDLE_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
-			case CmsisConstants.COMPATIBLE_DEVICE_TAG:
-			case CmsisConstants.MOUNTED_DEVICE_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
-			case CmsisConstants.EXAMPLES_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_EXAMPLE);
-			default:
-				break;
+				case CmsisConstants.COMPONENTS_TAG:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+				case CmsisConstants.DEVICES_TAG:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+				case CmsisConstants.BOARDS_TAG:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
+				case CmsisConstants.BUNDLE_TAG:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+				case CmsisConstants.COMPATIBLE_DEVICE_TAG:
+				case CmsisConstants.MOUNTED_DEVICE_TAG:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+				case CmsisConstants.EXAMPLES_TAG:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_EXAMPLE);
+				case CmsisConstants.PACKAGES_TAG:
+					if (pack != null && pack.getPackState() == PackState.INSTALLED
+							&& !pack.isRequiredPacksInstalled()) {
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_RED);
+					}
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES);
+				case CmsisConstants.PACKAGE_TAG:
+					String familyId = item.getAttribute(CmsisConstants.VENDOR) + '.'
+							+ item.getAttribute(CmsisConstants.NAME);
+					if (isRequiredPackInstalled(familyId,
+							item.getAttribute(CmsisConstants.VERSION))) {
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
+					}
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE_RED);
+				default:
+					break;
 			}
 
-			return null;//  CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
+			return null;
 		}
 
 		@Override
@@ -366,20 +382,25 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 				return CmsisConstants.EMPTY_STRING;
 			}
 			if (item instanceof ICpComponent) {
-				return format(item.getTag());
-			} else if (CmsisConstants.RELEASE_TAG.equals(item.getTag()) && item.hasAttribute(CmsisConstants.VERSION)) {
-				return format(item.getAttribute(CmsisConstants.VERSION));
+				return capitalizeInitChar(item.getTag());
 			}
-			return format(item.getId());
+			// required package node
+			else if (!(item instanceof ICpPack) && CmsisConstants.PACKAGE_TAG.equals(item.getTag())) {
+				return item.getAttribute(CmsisConstants.VENDOR) + '.'
+						+ item.getAttribute(CmsisConstants.NAME) + '.'
+						+ '[' + item.getAttribute(CmsisConstants.VERSION) + ']';
+			}
+			return capitalizeInitChar(item.getId());
 		}
 
-		private String format(String string) {
+		private String capitalizeInitChar(String string) {
 			if (string.isEmpty()) {
 				return string;
 			}
 			char c = Character.toUpperCase(string.charAt(0));
 			return String.valueOf(c) + string.substring(1);
 		}
+
 	}
 
 	class NameSorter extends ViewerSorter {
@@ -396,72 +417,44 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 	}
 
 	public PackPropertyView() {
+		fViewController = CpInstallerPlugInUI.getViewController();
 	}
 
 	@Override
-	public void createPartControl(Composite parent) {
+	public boolean isFilterClient() {
+		return false;
+	}
 
-		fViewer = new TreeViewer(parent, SWT.SINGLE | SWT.H_SCROLL | SWT.V_SCROLL);
+	@Override
+	protected String getHelpContextId() {
+		return IHelpContextIds.PACK_PROPERTIES_VIEW;
+	}
+
+
+	@Override
+	public void createTreeColumns() {
+
 		fViewer.setContentProvider(new PackPropertyViewContentProvider());
-		fViewer.setLabelProvider(new OutlineViewLabelProvider());
+		fViewer.setLabelProvider(new PackPropertyViewLabelProvider());
 		fViewer.setSorter(new NameSorter());
+		Tree tree = fViewer.getTree();
+		tree.setHeaderVisible(false);
+		tree.setLinesVisible(false);
 
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(fViewer.getControl(), IHelpContextIds.PACK_PROPERTIES_VIEW);
-
-		hookViewSelection();
-		makeActions();
-		hookContextMenu();
-		hookDoubleClickAction();
-		contributeToActionBars();
-
-		CpInstallerPlugInUI.registerViewPart(this);
-
-		CpPlugIn.addRteListener(this);
 	}
 
-	private void hookViewSelection() {
 
-		fViewSelectionListener = new ISelectionListener() {
-
-			@Override
-			public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-
-				if (part instanceof PacksView && !fViewer.getControl().isDisposed()) {
-					fireSelectionChanged(part, selection);
-				}
-				if (part instanceof ExamplesView && !fViewer.getControl().isDisposed()) {
-					fireSelectionChanged(part, selection);
-				}
-			}
-		};
-		getSite().getPage().addSelectionListener(fViewSelectionListener);
-	}
-
-	protected void fireSelectionChanged(IWorkbenchPart part, ISelection selection) {
-		ICpPack pack = getPackItem(selection);
+	@Override
+	protected void refresh() {
+		ICpPack pack = fViewController.getSelectedPack();
 		if (pack != null) {
 			ICpItem proot = new CpItem(null);
 			proot.addChild(pack);
 			fViewer.setAutoExpandLevel(2);
 			fViewer.setInput(proot);
+		} else {
+			fViewer.setInput(null);
 		}
-	}
-
-	private ICpPack getPackItem(ISelection sel) {
-		IStructuredSelection selection = (IStructuredSelection) sel;
-		if (selection == null || selection.isEmpty()) {
-			return null;
-		}
-		Object obj = selection.getFirstElement();
-		if (obj instanceof ICpPack) {
-			return (ICpPack) obj;
-		} else if (obj instanceof ICpPackFamily) {
-			return ((ICpPackFamily) obj).getPack();
-		} else if (obj instanceof IRteExampleItem) {
-			IRteExampleItem item = (IRteExampleItem) obj;
-			return item.getExample().getPack();
-		}
-		return null;
 	}
 
 	ICpExample getExampleItem() {
@@ -476,100 +469,56 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 		return null;
 	}
 
-	private void makeActions() {
-		fExpandAction = new Action() {
-			@Override
-			public void run() {
-				if (fViewer == null) {
-					return;
-				}
-				fViewer.expandAll();
+	/**
+	 * Check if the required pack is installed
+	 * @param familyId family ID of the required pack
+	 * @param versionRange version range of the required pack
+	 * @return true if the required pack with the version range is installed
+	 */
+	boolean isRequiredPackInstalled(String familyId, String versionRange) {
+		Collection<ICpPack> installedPacks = CpPlugIn.getPackManager().getInstalledPacks().getPacksByPackFamilyId(familyId);
+		if (installedPacks == null) {
+			return false;
+		}
+		for (ICpPack installedPack : installedPacks) {
+			if (VersionComparator.matchVersionRange(installedPack.getVersion(), versionRange)) {
+				return true;
 			}
-		};
-		fExpandAction.setText(Messages.ExpandAll);
-		fExpandAction.setToolTipText(Messages.ExpandAllNodes);
-		fExpandAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL));
+		}
+		return false;
+	}
 
-		fExpandItemAction = new Action() {
+
+	@Override
+	protected void makeActions() {
+
+		super.makeActions();
+
+		fInstallPackAction = new Action() {
 			@Override
 			public void run() {
-				if (fViewer == null) {
-					return;
-				}
-				ISelection selection = fViewer.getSelection();
-				if (selection == null) {
-					return;
-				}
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				fViewer.expandToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
-			}
-		};
-		fExpandItemAction.setText(Messages.ExpandSelected);
-		fExpandItemAction.setToolTipText(Messages.ExpandSelectedNode);
-		fExpandItemAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL));
-
-		fCollapseAction = new Action() {
-			@Override
-			public void run() {
-				if (fViewer == null) {
-					return;
-				}
-				fViewer.collapseAll();
-			}
-		};
-		fCollapseAction.setText(Messages.CollapseAll);
-		fCollapseAction.setToolTipText(Messages.CollapseAllNodes);
-		fCollapseAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
-
-		fCollapseItemAction = new Action() {
-			@Override
-			public void run() {
-				if (fViewer == null) {
-					return;
-				}
-				ISelection selection = fViewer.getSelection();
-				if (selection == null) {
-					return;
-				}
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				fViewer.collapseToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
-			}
-		};
-		fCollapseItemAction.setText(Messages.CollapseSelected);
-		fCollapseItemAction.setToolTipText(Messages.CollapseSelectedNode);
-		fCollapseItemAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
-
-		fHelpAction = new Action(Messages.Help, IAction.AS_PUSH_BUTTON) {
-			@Override
-			public void run() {
-				fViewer.getControl().notifyListeners(SWT.Help, new Event());
-			}
-		};
-		fHelpAction.setToolTipText(Messages.PackPropertyView_HelpForPackPropertiesView);
-		fHelpAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_HELP));
-
-		fDoubleClickAction = new Action() {
-			@Override
-			public void run() {
-				ISelection selection = fViewer.getSelection();
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				if (fViewer.getExpandedState(obj)) {
-					fViewer.collapseToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
-				} else if (fViewer.isExpandable(obj)) {
-					fViewer.expandToLevel(obj, 1);
-				}
-			}
-		};
-
-		fInstallAction = new Action() {
-			@Override
-			public void run() {
-				ICpExample example = getExampleItem();
-				if (example == null) {
+				ICpPack pack = fViewController.getSelectedPack();
+				if (pack == null) {
 					return;
 				}
 				ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
-				packInstaller.installPack(example.getPackId());
+				if(packInstaller != null) {
+					packInstaller.installPack(pack.getPackId());
+				}
+			}
+		};
+
+		fInstallRequiredPacksAction = new Action() {
+			@Override
+			public void run() {
+				ICpPack pack = fViewController.getSelectedPack();
+				if (pack == null) {
+					return;
+				}
+				ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+				if(packInstaller != null) {
+					packInstaller.installRequiredPacks(pack);
+				}
 			}
 		};
 
@@ -577,150 +526,78 @@ public class PackPropertyView extends ViewPart implements IRteEventListener {
 			@Override
 			public void run() {
 				ICpExample cpExample = getExampleItem();
-				copyExample(cpExample.getAbsolutePath(cpExample.getFolder()));
-				PackInstallerUtils.clearReadOnly(
-						ResourcesPlugin.getWorkspace().getRoot().getLocation()
-						.append(Utils.extractBaseFileName(cpExample.getFolder())).toFile(),
-						CmsisConstants.EMPTY_STRING);
+				if(cpExample != null) {
+					CpInstallerPlugInUI.getViewController().copyExample(cpExample);
+				}
 			}
 		};
 		fCopyAction.setText(Messages.PackPropertyView_CopyAction);
 		fCopyAction.setToolTipText(Messages.PackPropertyView_CopyTooltip);
 		fCopyAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE));
-
 	}
 
-	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
-		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(new IMenuListener() {
-			@Override
-			public void menuAboutToShow(IMenuManager manager) {
-				PackPropertyView.this.fillContextMenu(manager);
-			}
-		});
-		Menu menu = menuMgr.createContextMenu(fViewer.getControl());
-		fViewer.getControl().setMenu(menu);
-		getSite().registerContextMenu(menuMgr, fViewer);
-	}
 
-	void fillContextMenu(IMenuManager manager) {
-		if (fViewer.getSelection() == null || fViewer.getSelection().isEmpty()) {
-			manager.add(fExpandAction);
-			manager.add(fCollapseAction);
-		} else {
-			manager.add(fExpandItemAction);
-			manager.add(fCollapseItemAction);
-		}
+	@Override
+	protected void fillContextMenu(IMenuManager manager) {
+		super.fillContextMenu(manager);
+
 		manager.add(new Separator());
+		if(!CpInstallerPlugInUI.isOnline()) {
+			return;
+		}
+		ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+		if(packInstaller == null) {
+			return;
+		}
+
 		ICpExample example = getExampleItem();
+		ICpPack pack = null;
+		PackState packState = PackState.UNKNOWN;
 		if (example != null) {
-			if (example.getPack().getPackState() == PackState.INSTALLED
-					|| example.getPack().getPackState() == PackState.GENERATED) {
+			pack = example.getPack();
+			packState = pack.getPackState();
+			if (packState == PackState.INSTALLED) {
 				manager.add(fCopyAction);
-				fCopyAction.setEnabled(copyButtonEnabled(example));
-			} else {
-				if (example.getPack().getPackState() == PackState.DOWNLOADED) {
-					fInstallAction.setText(Messages.PackPropertyView_UnpackAction);
-					fInstallAction.setToolTipText(Messages.PackPropertyView_UnpackTooltip);
-					fInstallAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_UNPACK));
-				} else {
-					fInstallAction.setText(Messages.PackPropertyView_InstallAction);
-					fInstallAction.setToolTipText(Messages.PackPropertyView_InstallTooltip);
-					fInstallAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_INSTALL));
-				}
-				manager.add(fInstallAction);
+				fCopyAction.setEnabled(true);
+				return;
 			}
+		} else {
+			pack = fViewController.getSelectedPack();
 		}
-		// Other plug-ins can contribute there actions here
-		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-	}
-
-	private void hookDoubleClickAction() {
-		fViewer.addDoubleClickListener(new IDoubleClickListener() {
-			@Override
-			public void doubleClick(DoubleClickEvent event) {
-				fDoubleClickAction.run();
-			}
-		});
-	}
-
-	private void contributeToActionBars() {
-		IActionBars bars = getViewSite().getActionBars();
-		fillLocalPullDown(bars.getMenuManager());
-		fillLocalToolBar(bars.getToolBarManager());
-	}
-
-	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(fExpandAction);
-		manager.add(fCollapseAction);
-		manager.add(fHelpAction);
-	}
-
-	private void fillLocalToolBar(IToolBarManager manager) {
-		manager.add(fExpandAction);
-		manager.add(fCollapseAction);
-		manager.add(fHelpAction);
-	}
-
-	private boolean copyButtonEnabled(ICpExample example) {
-		if (example == null) {
-			return false;
+		if (pack == null) {
+			return;
 		}
-		return true;
+		packState = pack.getPackState();
+
+		if (packState == PackState.DOWNLOADED) {
+			fInstallPackAction.setText(Messages.PackPropertyView_UnpackAction);
+			fInstallPackAction.setToolTipText(Messages.PackPropertyView_UnpackTooltip);
+			fInstallPackAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_UNPACK));
+			manager.add(fInstallPackAction);
+		} else if (packState == PackState.AVAILABLE) {
+			fInstallPackAction.setText(Messages.PackPropertyView_InstallAction);
+			fInstallPackAction.setToolTipText(Messages.PackPropertyView_InstallTooltip);
+			fInstallPackAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_INSTALL));
+			manager.add(fInstallPackAction);
+		} else if (!pack.isRequiredPacksInstalled()) {
+			fInstallRequiredPacksAction.setText(Messages.PackInstallerView_InstallRequiredPacks);
+			fInstallRequiredPacksAction.setToolTipText(Messages.PackInstallerView_InstallRequiredPacksToolTip);
+			fInstallRequiredPacksAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_INSTALL));
+			manager.add(fInstallRequiredPacksAction);
+		}
 	}
 
-	void copyExample(String examplePath) {
-		IImportWizard wizard = new ExternalProjectImportWizard(examplePath);
-		IDialogSettings settings = wizard.getDialogSettings();
-		boolean bCopySaved = false;
-		if (settings != null) {
-			bCopySaved = settings.getBoolean(STORE_COPY_PROJECT_ID);
-			settings.put(STORE_COPY_PROJECT_ID, true);
-		}
-		wizard.init(PlatformUI.getWorkbench(), new TreeSelection());
 
-		WizardDialog dialog = new WizardDialog(fViewer.getControl().getShell(), wizard);
-
-		File exampleFolder = new File(examplePath);
-		PackInstallerUtils.clearReadOnly(exampleFolder, ".project"); //$NON-NLS-1$
-
-		if (dialog.open() == Window.OK) {
-
-			IPerspectiveDescriptor persDescription = PlatformUI.getWorkbench().getPerspectiveRegistry()
-					.findPerspectiveWithId("org.eclipse.cdt.ui.CPerspective"); //$NON-NLS-1$
-
-			if (persDescription != null) {
-				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().setPerspective(persDescription);
-			}
-		}
-
-		if (settings != null) {
-			settings.put(STORE_COPY_PROJECT_ID, bCopySaved);
-		}
-
-		PackInstallerUtils.setReadOnly(exampleFolder);
-	}
-
-	public Composite getComposite() {
-		return fViewer.getTree();
-	}
 
 	@Override
-	public void setFocus() {
-		fViewer.getControl().setFocus();
-	}
-
-	@Override
-	public void handle(RteEvent event) {
-		if (RteEvent.PACKS_RELOADED.equals(event.getTopic())) {
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					fViewer.setInput(null);
-				}
-			});
+	public void handleRteEvent(RteEvent event) {
+		String topic = event.getTopic();
+		switch(topic) {
+		case RteEvent.PACKS_RELOADED:
+		case PackInstallerViewController.INSTALLER_UI_PACK_CHANGED:
+			refresh();
+		default:
+			super.handleRteEvent(event);
 		}
 	}
-
 }

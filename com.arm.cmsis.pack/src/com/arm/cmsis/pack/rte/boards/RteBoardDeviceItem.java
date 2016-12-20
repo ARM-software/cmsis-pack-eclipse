@@ -12,7 +12,9 @@
 package com.arm.cmsis.pack.rte.boards;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import com.arm.cmsis.pack.CpPlugIn;
@@ -32,10 +34,11 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class RteBoardDeviceItem extends CmsisMapItem<IRteBoardDeviceItem> implements IRteBoardDeviceItem {
 
-	private Map<String, ICpBoard> fBoards = null;	// packId -> board
-	private IRteDeviceItem fMountedDevices;	// deviceName -> deviceItem
-	private IRteDeviceItem fCompatibleDevices;	// deviceName -> deviceItem
-	private boolean fRoot;
+	protected Map<String, ICpBoard> fBoards = null;	// packId -> board
+	protected IRteDeviceItem fMountedDevices;	// deviceName -> deviceItem
+	protected IRteDeviceItem fCompatibleDevices;	// deviceName -> deviceItem
+	protected Set<String> fAllDeviceNames = null; 
+	protected boolean fRoot;
 
 	public RteBoardDeviceItem() {
 		fName = "All Boards"; //$NON-NLS-1$
@@ -246,7 +249,7 @@ public class RteBoardDeviceItem extends CmsisMapItem<IRteBoardDeviceItem> implem
 		return fCompatibleDevices;
 	}
 
-	private String getDeviceName(ICpItem device) {
+	protected String getDeviceName(ICpItem device) {
 		String deviceName = CmsisConstants.EMPTY_STRING;
 		if (device.hasAttribute(CmsisConstants.DFAMILY)) {
 			deviceName = device.getAttribute(CmsisConstants.DFAMILY);
@@ -302,6 +305,20 @@ public class RteBoardDeviceItem extends CmsisMapItem<IRteBoardDeviceItem> implem
 			return board.getDoc(); // TODO: return a collection of documents
 		}
 		return null;
+	}
+
+	@Override
+	public Set<String> getAllDeviceNames() {
+		if(fAllDeviceNames == null) {
+			fAllDeviceNames = new HashSet<String>();
+			IRteDeviceItem di = getMountedDevices();
+			if(di != null)
+				fAllDeviceNames.addAll(di.getAllDeviceNames());
+			di = getCompatibleDevices();
+			if(di != null)
+				fAllDeviceNames.addAll(di.getAllDeviceNames());
+		}
+		return fAllDeviceNames;
 	}
 
 }

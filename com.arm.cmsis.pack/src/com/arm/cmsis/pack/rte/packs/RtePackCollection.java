@@ -41,7 +41,7 @@ import com.arm.cmsis.pack.utils.AlnumComparator;
 public class RtePackCollection extends RtePackItem implements IRtePackCollection {
 
 	protected ICpPackCollection fPackCollection = null;
-	private Map<String, IRtePackFamily> fPackFamilies = new TreeMap<String, IRtePackFamily>(new AlnumComparator(false, false));
+	protected Map<String, IRtePackFamily> fPackFamilies = new TreeMap<String, IRtePackFamily>(new AlnumComparator(false, false));
 	Map<String, ICpPackInfo> fUsedPacks = null; 
 	
 	

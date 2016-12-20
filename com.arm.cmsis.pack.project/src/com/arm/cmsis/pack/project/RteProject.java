@@ -147,9 +147,7 @@ public class RteProject extends PlatformObject implements IRteProject {
 	}
 
 	protected void update(int updateFlags) {
-		setUpdateCompleted(false);
-		RteProjectUpdater updater = new RteProjectUpdater(this, updateFlags);
-		updater.schedule();
+		CpProjectPlugIn.getRteProjectManager().updateProject(this, updateFlags);
 	}
 
 	protected void processRteStorages(boolean save) throws CoreException {

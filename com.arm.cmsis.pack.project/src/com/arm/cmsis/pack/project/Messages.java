@@ -74,7 +74,8 @@ public class Messages extends NLS {
 	public static String RteProjectTemplate_CMSIS_RTE_Project;
 	public static String RteProjectUpdater_ErrorLoadinConfigFile;
 	public static String RteProjectUpdater_ErrorConfigFileNotExist;
-	public static String RteProjectUpdater_ErrorParsingFailed; 
+	public static String RteProjectUpdater_ErrorParsingFailed;
+	public static String RteProjectUpdater_ErrorCmisPackRootNotSet;
 	public static String RteProjectUpdater_ErrorProjectIsNull;
 	public static String RteProjectUpdater_ErrorUpdatingRteProject;
 	public static String RteProjectUpdater_LoadingRteConfiguration;

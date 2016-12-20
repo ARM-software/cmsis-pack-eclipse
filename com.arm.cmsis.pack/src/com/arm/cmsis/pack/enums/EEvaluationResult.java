@@ -55,7 +55,11 @@ public enum EEvaluationResult {
     /**
      *  device or toolchain not match;  selected component is denied
      */
-    FAILED, 
+    FAILED,
+    /**
+     * required GPDSC file is missing of failed to load
+     */
+    MISSING_GPDSC,
     /**
      * no matching component is installed
      */

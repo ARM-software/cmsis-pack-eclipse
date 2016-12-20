@@ -16,9 +16,9 @@ package com.arm.cmsis.pack.events;
  */
 public class RteExampleJobResult {
 	
-	private String projectPath;
-	private boolean success;
-	private String errorString;
+	protected String projectPath;
+	protected boolean success;
+	protected String errorString;
 
 	public RteExampleJobResult() {
 	}

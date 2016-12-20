@@ -173,7 +173,7 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 	 *            settings to get required information from
 	 * @return FPU_OPTION value string
 	 */
-	private String getFloatAbiOptionValue(IBuildSettings buildSettings) {
+	public String getFloatAbiOptionValue(IBuildSettings buildSettings) {
 		String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
 		String fpu = getDeviceAttribute(IBuildSettings.FPU_OPTION, buildSettings);
 		String val;

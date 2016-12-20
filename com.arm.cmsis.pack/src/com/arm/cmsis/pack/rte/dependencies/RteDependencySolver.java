@@ -14,6 +14,7 @@ package com.arm.cmsis.pack.rte.dependencies;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -24,6 +25,7 @@ import com.arm.cmsis.pack.data.CpConditionContext;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpExpression;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
@@ -101,6 +103,13 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 			return rteModel.getUsedComponents();
 		return null;
 	}
+	
+	protected Map<String, ICpPack> getGeneratedPacks(){
+		if(rteModel != null)
+			return rteModel.getGeneratedPacks();
+		return null;
+	}
+	
 	
 	
 	@Override
@@ -195,7 +204,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 		return result;
 	}
 
-	private EEvaluationResult evaluateDenyDependency(IRteDependency dep) {
+	protected EEvaluationResult evaluateDenyDependency(IRteDependency dep) {
 		EEvaluationResult res = EEvaluationResult.FULFILLED;
 		Collection<IRteComponent> selectedComponents = getSelectedComponents(); 
 		if(selectedComponents == null || selectedComponents.isEmpty())
@@ -268,7 +277,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 			cacheConditionResult(devClass, EEvaluationResult.FULFILLED);
 		}
 		
-		// report missing components 
+		// report missing components and gpdsc files
 		Collection<IRteComponent> usedComponents = getUsedComponents();
 		if(usedComponents != null && !usedComponents.isEmpty()) {
 			for(IRteComponent component : usedComponents){
@@ -278,17 +287,34 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 				ICpComponentInfo ci = component.getActiveCpComponentInfo();
 				if(ci == null)
 					continue;
-				if(ci.getComponent() != null)
-					continue;
-				EEvaluationResult r = ci.getEvaluationResult();
-				IRteDependencyResult  depRes = new RteMissingComponentResult(component);
+				EEvaluationResult r = EEvaluationResult.IGNORED; 
+				
+				IRteDependencyResult depRes = null;
+				if(ci.getComponent() != null) {
+					if(ci.isGenerated() || !ci.isSaved())
+						continue;
+					String gpdsc = ci.getGpdsc(true);
+					if(gpdsc == null)
+						continue;
+					ICpPack pack = rteModel.getGeneratedPack(gpdsc);
+					if(pack != null)
+						continue;
+					r = EEvaluationResult.MISSING_GPDSC;
+					depRes = new RteMissingGpdscResult(component, gpdsc);
+				} else {
+					r = ci.getEvaluationResult();
+					depRes = new RteMissingComponentResult(component);
+					updateEvaluationResult(EEvaluationResult.FAILED);
+				}
+
 				depRes.setEvaluationResult(r);
 				fDependencyItems.put(component, depRes);
-
+				
 				cacheConditionResult(component, r);
 				cacheConditionResult(component.getParentClass(), r);
 				cacheConditionResult(component.getParentGroup(), r);
-				fResult = EEvaluationResult.FAILED;
+				
+				updateEvaluationResult(r);
 			}
 		}
 		
@@ -305,8 +331,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 				continue;
 			EEvaluationResult r = evaluate(c);
 
-			if(r.ordinal() < fResult.ordinal())
-				fResult = r;
+			updateEvaluationResult(r);
 
 			cacheConditionResult(component, r);
 			cacheConditionResult(component.getParentClass(), r);
@@ -358,6 +383,8 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 				fDependencyItems.put(g, d);
 				cacheConditionResult(g, EEvaluationResult.CONFLICT);
 				cacheConditionResult(g.getParentClass(), EEvaluationResult.CONFLICT);
+				if(fResult.ordinal() > EEvaluationResult.CONFLICT.ordinal() )
+					fResult = EEvaluationResult.CONFLICT;
 			}
 		}
 		// finally add sorted dependency results
@@ -366,11 +393,25 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 			IRteDependencyResult r = e.getValue();
 			fDependencyItems.put(c, r);
 		}
+		purgeResults();
 		return getEvaluationResult();
 	}
 	
+	// remove all items that are higher than overall result  
+	protected void purgeResults() {
+	 Iterator<IRteDependencyItem> iterator = fDependencyItems.values().iterator();
+		while(iterator.hasNext()) {
+			IRteDependencyItem d = iterator.next();
+			EEvaluationResult res = d.getEvaluationResult();
+			if(res.ordinal() > fResult.ordinal()) {
+				iterator.remove();
+			}
+		}
+	}
 
-	IRteComponentItem getSelectedDeviceClass(){
+	
+	
+	protected IRteComponentItem getSelectedDeviceClass(){
 		return rteModel.getComponents().getFirstChild(CmsisConstants.EMPTY_STRING); // always first
 	}
 	

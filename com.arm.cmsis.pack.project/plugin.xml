@@ -109,6 +109,12 @@
             class="com.arm.cmsis.pack.project.CpVariableResolver"
             variable="${cmsis_pack_root}">
       </variableResolver>
+      <variableResolver
+            variable="${cmsis_rte}">
+      </variableResolver>
+      <variableResolver
+            variable="cmsis_rte">
+      </variableResolver>
    </extension>
    <extension
          point="org.eclipse.core.variables.dynamicVariables">
@@ -119,13 +125,13 @@
             supportsArgument="true">
       </variable>
       <variable
-            description="Path to DFP (Defive Family Pack) used in the project"
+            description="Path to DFP (Device Family Pack) used in the project"
             name="cmsis_dfp"
             resolver="com.arm.cmsis.pack.project.CpVariableResolver"
             supportsArgument="true">
       </variable>
       <variable
-            description="Marks RTE-specific portion in pre-/post-build commands using :begin and :end arguments. Expands to an empty string."
+            description="RTE marker, expands to an empty string. Prefixes RTE-specific paths and marks RTE-specific pre-/post-build commands using :begin and :end arguments. "
             name="cmsis_rte"
             resolver="com.arm.cmsis.pack.project.CpVariableResolver"
             supportsArgument="true">

@@ -24,7 +24,7 @@ public class CpComponent extends CpItem implements ICpComponent {
 	
 	protected int bApi = -1; // not initialized
 	protected int deviceDependent = -1; // not initialized
-	protected int bGenerated = -1; // not initialized
+	protected int bExclusiveApi = -1; // not initialized
 	
 	/**
 	 * Public constructor
@@ -118,6 +118,17 @@ public class CpComponent extends CpItem implements ICpComponent {
 			bApi = getTag().equals(CmsisConstants.API_TAG) ? 1 : 0;
 		}
 		return bApi > 0;
+	}
+
+	
+	@Override
+	public boolean isExclusive() {
+		if(!isApi())
+			return false;
+		if (bExclusiveApi < 0) {
+			bExclusiveApi = attributes().getAttributeAsBoolean(CmsisConstants.EXCLUSIVE, false) ? 1 : 0;
+		}
+		return bExclusiveApi > 0;
 	}
 
 	@Override
@@ -216,30 +227,38 @@ public class CpComponent extends CpItem implements ICpComponent {
 		return this;
 	}
 	
-	@Override
-	public boolean isGenerated() {
-		if(bGenerated == -1) {
-			bGenerated = super.isGenerated() ? 1 : 0;
-		}
-		return bGenerated == 1;	
-	}
 
 	@Override
-	public boolean isBootstrap() {
+	public boolean isBootStrap() {
 		return !isGenerated() && hasAttribute(CmsisConstants.GENERATOR_TAG);
 	}
 	
 	
 	@Override
 	public ICpGenerator getGenerator() {
-		String generatorName = getAttribute(CmsisConstants.GENERATOR_TAG);
-		if(!generatorName.isEmpty()) {
+		String id = getAttribute(CmsisConstants.GENERATOR_TAG);
+		if(!id.isEmpty()) {
 			ICpPack pack = getPack();
 			if(pack != null)
-				return pack.getGenerator(generatorName);
+				return pack.getGenerator(id);
 		}
 		return null;
 	}
 
+	@Override
+	public String getGeneratorId() {
+		String id = getAttribute(CmsisConstants.GENERATOR_TAG);
+		if(!id.isEmpty())
+			return id;
+		if(!isGenerated())
+			return null;
+		ICpPack pack = getPack();
+		if(pack == null)
+			return null;
+		ICpGenerator gen = pack.getGenerator(null);  
+		if(gen != null)
+			return gen.getId();
+		return null;
+	}
 	
 }

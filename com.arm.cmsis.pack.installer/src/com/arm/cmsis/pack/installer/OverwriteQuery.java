@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
 
 /**
- * Utility overwrite query dialog
+ * Query dialog to show in the process of copying an example
  */
 public class OverwriteQuery implements IOverwriteQuery {
 

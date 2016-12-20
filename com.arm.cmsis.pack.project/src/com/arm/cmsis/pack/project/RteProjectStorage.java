@@ -204,7 +204,7 @@ public class RteProjectStorage {
 		initializeToolChainAdapter();	
 	}
 	
-	private IAttributes loadAttributes(ICStorageElement e) {
+	protected IAttributes loadAttributes(ICStorageElement e) {
 		IAttributes attributes = null;
 		String[] names = e.getAttributeNames();
 		if(names != null && names.length > 0) {
@@ -218,7 +218,7 @@ public class RteProjectStorage {
 	}
 
 	
-	private void saveAttributes(ICStorageElement e, IAttributes attributes) {
+	protected void saveAttributes(ICStorageElement e, IAttributes attributes) {
 		if(e == null || attributes == null)
 			return;
 		Map<String, String> attrMap = attributes.getAttributesAsMap();

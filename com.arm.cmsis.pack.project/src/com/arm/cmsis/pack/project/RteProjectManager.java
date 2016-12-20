@@ -17,7 +17,9 @@ package com.arm.cmsis.pack.project;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -33,14 +35,27 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.commands.ICommandService;
 
 import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.configuration.IRteConfiguration;
+import com.arm.cmsis.pack.data.CpPack;
+import com.arm.cmsis.pack.data.ICpPack;
+import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
+import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 
 /**
@@ -49,10 +64,14 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 public class RteProjectManager extends RteEventProxy implements IResourceChangeListener, IExecutionListener{
 
 	private RteSetupParticipant rteSetupParticipant = null;
-	private Map<String, IRteProject> rteProjects = Collections.synchronizedMap(new HashMap<String, IRteProject>());
+	private Map<String, IRteProject> rteProjects = Collections.synchronizedMap(new HashMap<>());
+	private Map<String, IRteProject> fUpdateQueue = Collections.synchronizedMap(new HashMap<>());
+	private Set<String> fMissingPacks = Collections.synchronizedSet(new HashSet<>());
+	boolean fMissingPacksQueryInProgress = false; // to prevent multiple dialogs at a time
+
+
 	private boolean executionListenerRegistered = false;
 	boolean postponeRefresh = false;
-
 	/**
 	 *  Default constructor
 	 */
@@ -75,6 +94,10 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 			if(commandService != null) {
 				commandService.removeExecutionListener(this);
 			}
+		}
+
+		synchronized (fUpdateQueue) {
+			fUpdateQueue.clear();
 		}
 
 		synchronized (rteProjects) { // do it as atomic operation
@@ -202,11 +225,11 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	public void handle(RteEvent event) {
 		switch (event.getTopic()) {
 		case RteEvent.PACKS_RELOADED:
-		case RteEvent.PACK_INSTALL_JOB_FINISHED:
-		case RteEvent.PACK_REMOVE_JOB_FINISHED:
-		case RteEvent.PACK_UNPACK_JOB_FINISHED:
-		case RteEvent.PACK_DELETE_JOB_FINISHED:
+		case RteEvent.PACKS_UPDATED:
 			refreshProjects();
+			break;
+		case RteEvent.GPDSC_CHANGED:
+			refreshGpdscProjects((String) event.getData());
 			break;
 		case RteEvent.PRE_IMPORT:
 			postponeRefresh = true;
@@ -225,7 +248,8 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 		}
 	}
 
-	void refreshProjects() {
+
+	protected void refreshProjects() {
 		synchronized(rteProjects) {
 			for(IRteProject rteProject : rteProjects.values()) {
 				if (rteProject.getProject().isOpen()) {
@@ -235,6 +259,19 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 		}
 	}
 
+	protected void refreshGpdscProjects(String file) {
+		synchronized(rteProjects) {
+			for(IRteProject rteProject : rteProjects.values()) {
+				if (rteProject.getProject().isOpen()) {
+					IRteConfiguration rteConf = rteProject.getRteConfiguration();
+					if(rteConf != null && rteConf.isGeneratedPackUsed(file))
+						rteProject.refresh();
+				}
+			}
+		}
+	}
+
+	
 	@Override
 	public void resourceChanged(IResourceChangeEvent event) {
 		// consider only POST_CHANGE events
@@ -346,6 +383,133 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 			}
 		}
 	}
+
+	synchronized public void updateProject(RteProject rteProject, int updateFlags) {
+		if(rteProject == null)
+			return;
+		IProject project = rteProject.getProject();
+		if(project == null || !project.isOpen())
+			return;
+		
+		String name = rteProject.getName();
+		if(fUpdateQueue.containsKey(name))
+			return;
+		rteProject.setUpdateCompleted(false);
+		fUpdateQueue.put(name, rteProject);
+		RteProjectUpdater updater = new RteProjectUpdater(rteProject, updateFlags);
+		updater.schedule();
+	}
+
+	
+	synchronized public void updateFinished(IRteProject rteProject) {
+		if(rteProject == null)
+			return;
+		String name = rteProject.getName();
+		fUpdateQueue.remove(name);
+		rteProject.setUpdateCompleted(true);
+		collectMissingPacks(rteProject);
+		if(!fUpdateQueue.isEmpty())
+			return;
+		queryInstallMissingPacks();
+		fMissingPacks.clear();
+	}
+	
+	private void collectMissingPacks(IRteProject rteProject) {
+		if (rteProject == null || !rteProject.getProject().isOpen()) 
+			return;
+				IRteConfiguration conf = rteProject.getRteConfiguration();
+				if(conf == null)
+			return;
+				Collection<ICpPackInfo> packs = conf.getMissingPacks();
+				if(packs == null || packs.isEmpty())
+			return;
+				for (ICpPackInfo pi : packs) {
+					String packId = CpPack.constructPackId(pi.attributes());
+			fMissingPacks.add(packId);
+					}
+				}
+		
+	
+	class QueryInstallMissingPacksDlg  extends MessageDialog {
+
+		public QueryInstallMissingPacksDlg(Shell parentShell, String dialogTitle, Image dialogTitleImage,
+				String dialogMessage, int dialogImageType, String[] dialogButtonLabels, int defaultIndex) {
+			super(parentShell, dialogTitle, dialogTitleImage, dialogMessage, dialogImageType, dialogButtonLabels, 0);
+			setShellStyle(getShellStyle() | SWT.SHEET);
+			setReturnCode(defaultIndex);
+			}
+		}
+
+	private void queryInstallMissingPacks() {
+		if(fMissingPacksQueryInProgress)
+			return;
+
+		if(fMissingPacks.isEmpty())
+			return;
+
+		final ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+		if(packInstaller == null) {
+			return;
+		}
+		
+		String packRoot = CpVariableResolver.getCmsisPackRoot();
+		if(packRoot == null || packRoot.isEmpty()){
+			return;
+		}
+
+		Display display = Display.getDefault();
+		if(display == null)
+			return;
+
+		final Set<String> missingPacks = new HashSet<>();
+		StringBuilder sb = new StringBuilder(System.lineSeparator());
+		for (String packId : fMissingPacks) {
+			if (packInstaller.isProcessing(packId) || isInstalled(packId)) 
+				continue;
+			missingPacks.add(packId);
+			sb.append(System.lineSeparator());
+			sb.append(packId);
+		}
+		if(missingPacks.isEmpty())
+			return;
+		fMissingPacksQueryInProgress = true;
+		sb.append(System.lineSeparator()).append(System.lineSeparator());
+		final String message = NLS.bind(Messages.RteProjectUpdater_InstallMissinPacksMessage, sb.toString());
+		display.asyncExec(new Runnable() {
+			@Override
+			public void run() {
+
+				String [] dialogButtonLabels = new String[] { IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL };
+
+				MessageDialog dialog = new QueryInstallMissingPacksDlg(Display.getDefault().getActiveShell(), Messages.RteProjectUpdater_InstallMissinPacksTitle, 
+						null, message, MessageDialog.QUESTION, dialogButtonLabels, 1);
+
+				boolean install = dialog.open() == 0;
+				if (install) {
+					for (String packId : missingPacks) {
+						packInstaller.installPack(packId);
+					}
+				}
+				fMissingPacksQueryInProgress = false;
+			}
+		});
+	}
+		
+
+	/**
+	 * Check if the pack manager contains the pack and it is already installed
+	 * @param packAttributes pack attributes
+	 * @return true if the pack installer has already installed the pack
+	 */
+	protected boolean isInstalled(String packId) {
+		ICpPackCollection installedPacks = CpPlugIn.getPackManager().getInstalledPacks();
+		if (installedPacks == null) {
+			return false;
+		}
+		ICpPack pack = installedPacks.getPack(packId);
+		return pack != null;
+	}
+
 
 	@Override
 	public void notHandled(String commandId, NotHandledException exception) {

@@ -12,6 +12,8 @@
 package com.arm.cmsis.pack.item;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -87,7 +89,35 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 		return null;
 	}
 	
+
+	@Override
+	public T findChild(List<String> keyPath, boolean useFullPath) {
+		if(keyPath == null || keyPath.isEmpty())
+			return null;
+		T previousChild = getThisItem();
+		T child = null;
+		for(String key : keyPath) {
+			child = previousChild.getChild(key);
+			if(child == null) {
+				return useFullPath ? previousChild : null;
+			}
+			previousChild = child; 
+		}
+		return child;
+	}
 	
+
+	@Override
+	public List<String> getKeyPath() {
+		List<String> keyPath = new LinkedList<String>();
+		T child = getThisItem();
+		for(T parent = getParent(); parent != null; parent = parent.getParent()) {
+			String key = parent.getItemKey(child);
+			keyPath.add(0, key);
+			child = parent;
+		}
+		return keyPath;
+	}
 
 	@Override
 	public T getFirstChild() {

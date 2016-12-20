@@ -143,6 +143,33 @@ public abstract class CpXmlParser implements ICpXmlParser {
 		ignoreWriteTags = ignoreTags;
 	}
 
+	/**
+	 * Check if an item with given tag should be ignored by reading or writing
+	 * @param tag tag to check
+	 * @return true if tag is ignored
+	 */
+	protected boolean isTagIgnored(String tag) {
+		if(tag == null || tag.isEmpty()) {
+			return true;
+		}
+		if (ignoreTags == null || ignoreTags.isEmpty()) {
+			return false;
+		}
+		return ignoreTags.contains(tag);
+	}
+
+	/**
+	 * Check if item should be ignored by writing
+	 * @param item {@link ICpItem} to check
+	 * @return true if ignored
+	 */
+	protected boolean isItemIgnored(ICpItem item) {
+		if(item == null) {
+			return true;
+		}
+		return isTagIgnored(item.getTag());
+	}
+
 
 	@Override
 	public ICpItem createItem(ICpItem parent, String tag) {
@@ -156,7 +183,7 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	}
 
 
-	private class XmlErrorHandler implements ErrorHandler {
+	protected class XmlErrorHandler implements ErrorHandler {
 
 		public XmlErrorHandler() {
 			// TODO Auto-generated constructor stub
@@ -182,7 +209,7 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			nWarnings++;
 		}
 
-		private void addErrorString(SAXParseException arg0,	final String severity) {
+		protected void addErrorString(SAXParseException arg0,	final String severity) {
 			String err = xmlFile;
 			int line = arg0.getLineNumber();
 			int col = arg0.getColumnNumber();
@@ -266,8 +293,9 @@ public abstract class CpXmlParser implements ICpXmlParser {
 		} finally {
 			sr.close();
 		}
-		if(domDoc == null)
+		if(domDoc == null) {
 			return null;
+		}
 
 		Element domElement = domDoc.getDocumentElement();
 		if (domElement == null) {
@@ -302,8 +330,8 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			err += e.toString();
 			errorStrings.add(err);
 			nErrors++;
-			e.printStackTrace();
-		} 
+			//e.printStackTrace();
+		}
 		if(sr != null) {
 			try {
 				sr.close();
@@ -312,8 +340,9 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			}
 		}
 		sr = null;
-		if(domDoc == null)
+		if(domDoc == null) {
 			return null;
+		}
 
 		Element domElement = domDoc.getDocumentElement();
 		if (domElement == null) {
@@ -372,7 +401,6 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			parent.addChild(item);
 		}
 
-
 		// insert children and text
 		for (Node node = elementNode.getFirstChild(); node != null; node = node.getNextSibling()) {
 			switch (node.getNodeType()) {
@@ -393,21 +421,18 @@ public abstract class CpXmlParser implements ICpXmlParser {
 				break;
 			}
 		}
+
+		// do some post processing of the item
+		processItem(item);
+
 		return true;
 	}
 
-	private boolean isTagIgnored(String tag) {
-		if (ignoreTags == null || ignoreTags.isEmpty()) {
-			return false;
-		}
-		return ignoreTags.contains(tag);
-	}
-
-	private boolean writeTag(String tag) {
-		if (ignoreWriteTags == null || ignoreWriteTags.isEmpty()) {
-			return true;
-		} 
-		return !ignoreWriteTags.contains(tag);
+	/**
+	 * Process the item just created
+	 * @param item item just created
+	 */
+	protected void processItem(ICpItem item) {
 	}
 
 
@@ -425,14 +450,43 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			}
 		} else if(key.equals(CmsisConstants.DMPU)){
 			switch(value){
-			case "1":				 //$NON-NLS-1$
+			case "1":	//$NON-NLS-1$
 				return CmsisConstants.MPU;
-			case "0": //$NON-NLS-1$
+			case "0":	//$NON-NLS-1$
 				return CmsisConstants.NO_MPU;
 			default:
 				return value;
 			}
+		} else if(key.equals(CmsisConstants.DDSP)){
+			switch(value){
+			case "1":	//$NON-NLS-1$
+				return CmsisConstants.DSP;
+			case "0":	//$NON-NLS-1$
+				return CmsisConstants.NO_DSP;
+			default:
+				return value;
+			}
+		} else if(key.equals(CmsisConstants.DTZ)){
+			switch(value){
+			case "1":	//$NON-NLS-1$
+				return CmsisConstants.TZ;
+			case "0":	//$NON-NLS-1$
+				return CmsisConstants.NO_TZ;
+			default:
+				return value;
+			}
+		} else if(key.equals(CmsisConstants.DSECURE)){
+			switch(value){
+			case "1":	//$NON-NLS-1$
+				return CmsisConstants.SECURE;
+			case "0":	//$NON-NLS-1$
+				return CmsisConstants.NON_SECURE;
+			default:
+				return value;
+			}
 		}
+
+
 		// convert boolean values to 1 for consistency
 		if(value.equals("true")) { //$NON-NLS-1$
 			return "1"; //$NON-NLS-1$
@@ -463,8 +517,9 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			FileWriter fw = new FileWriter(outputFile);
 			fw.write(xml);
 			fw.close();
-			if(root instanceof ICpRootItem)
+			if(root instanceof ICpRootItem) {
 				((ICpRootItem)root).setFileName(file);
+			}
 		} catch (IOException e) {
 			errorStrings.add("Error writting to '" + file + "' file:"); //$NON-NLS-1$ //$NON-NLS-2$
 			errorStrings.add(e.toString());
@@ -531,13 +586,11 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	 * @return created element node
 	 */
 	protected Node createElement(Document doc, Node parentNode, ICpItem item){
-		if(item == null) {
+
+		if(isItemIgnored(item)) {
 			return null;
-		}
-		String tag = item.getTag();
-		if(tag.isEmpty() || !writeTag(tag)) {
-			return null;
-		}
+	    }
+
 		Element node = null;
 		node = doc.createElement(item.getTag());
 
@@ -572,4 +625,5 @@ public abstract class CpXmlParser implements ICpXmlParser {
 		}
 		return node;
 	}
+
 }

@@ -22,14 +22,20 @@ import com.arm.cmsis.pack.enums.EComponentAttribute;
  */
 public class RteComponentRoot extends RteComponentItem {
 	/**
-	 * Default root constructor 
+	 * Default root constructors 
 	 */
 	public RteComponentRoot() {
+		this(CmsisConstants.EMPTY_STRING);
+	}
+
+	public RteComponentRoot(String name) {
 		super(null, "root"); //$NON-NLS-1$
 		fComponentAttribute = EComponentAttribute.CCLASS;
 		fbExclusive = false;
+		fName = name;
 	}
-
+	
+	
 	@Override
 	public void addComponent(ICpComponent cpComponent, int flags) {
 		String className = cpComponent.getAttribute(CmsisConstants.CCLASS);

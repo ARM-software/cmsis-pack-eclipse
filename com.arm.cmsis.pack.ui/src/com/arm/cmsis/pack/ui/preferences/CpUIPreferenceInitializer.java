@@ -25,7 +25,7 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
  */
 public class CpUIPreferenceInitializer extends AbstractPreferenceInitializer {
 
-	/** 
+	/**
 	 *  Default constructor
 	 */
 	public CpUIPreferenceInitializer() {
@@ -34,15 +34,15 @@ public class CpUIPreferenceInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 		IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE.getNode(CpPlugInUI.PLUGIN_ID);
-		
+
 		defaultPreferences.putBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT, true);
 
 		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_BG_COLOR, StringConverter.asString(new RGB(255, 255, 255)));
 		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_OUT_COLOR, StringConverter.asString(new RGB(0, 0, 0)));
 		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_ERROR_COLOR, StringConverter.asString(new RGB(255, 0, 0)));
 		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_INFO_COLOR, StringConverter.asString(new RGB(0, 0, 255)));
+		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_WARNING_COLOR, StringConverter.asString(new RGB(255, 140, 0)));
 
-		
 	}
 
 }

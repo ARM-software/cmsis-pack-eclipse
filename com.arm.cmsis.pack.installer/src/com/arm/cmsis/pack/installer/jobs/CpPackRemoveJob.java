@@ -29,6 +29,7 @@ import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.installer.Messages;
 import com.arm.cmsis.pack.installer.utils.PackInstallerUtils;
+import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * The Pack Removing Job. This job deletes the pack's folder and
@@ -36,9 +37,8 @@ import com.arm.cmsis.pack.installer.utils.PackInstallerUtils;
  */
 public class CpPackRemoveJob extends CpPackJob {
 
-	private ICpPack fPack;
-	private String fPackId;
-	private boolean fDelete;
+	protected ICpPack fPack;
+	protected boolean fDelete;
 
 	/**
 	 * @param name The Job's name
@@ -49,7 +49,6 @@ public class CpPackRemoveJob extends CpPackJob {
 	public CpPackRemoveJob(String name, ICpPackInstaller installer, ICpPack pack, boolean delete) {
 		super(name, installer, pack.getId());
 		fPack = pack;
-		fPackId = pack.getId();
 		fDelete = delete;
 	}
 
@@ -61,24 +60,24 @@ public class CpPackRemoveJob extends CpPackJob {
 
 		IPath installedDir;
 		if (fPack.getPackState() == PackState.ERROR) {
-			fPackId = fPack.getTag();
+			fJobId = fPack.getTag();
 			installedDir = new Path(fPack.getFileName());
 		} else {
-			fPackId = fPack.getId();
+			fJobId = fPack.getId();
 			installedDir = new Path(fPack.getInstallDir(CpPlugIn.getPackManager().getCmsisPackRootDirectory()));
 		}
-		monitor.setTaskName(Messages.CpPackRemoveJob_RemovingPack + fPackId);
+		monitor.setTaskName(Messages.CpPackRemoveJob_RemovingPack + fJobId);
 
-		IPath downloadPackFilePath = new Path(PackInstallerUtils.getPacksDownloadDir())
-				.append(fPackId + CmsisConstants.EXT_PACK);
+		IPath downloadPackFilePath = new Path(CpPlugIn.getPackManager().getCmsisPackDownloadDir())
+				.append(fJobId + CmsisConstants.EXT_PACK);
 		File downloadPackFile = downloadPackFilePath.toFile();
-		IPath downloadPdscFilePath = new Path(PackInstallerUtils.getPacksDownloadDir())
-				.append(fPackId + CmsisConstants.EXT_PDSC);
+		IPath downloadPdscFilePath = new Path(CpPlugIn.getPackManager().getCmsisPackDownloadDir())
+				.append(fJobId + CmsisConstants.EXT_PDSC);
 		File downloadPdscFile = downloadPdscFilePath.toFile();
 
-		SubMonitor progress = SubMonitor.convert(monitor, PackInstallerUtils.countFiles(installedDir.toFile()));
+		SubMonitor progress = SubMonitor.convert(monitor, Utils.countFiles(installedDir.toFile()));
 		progress.setTaskName(NLS.bind(Messages.CpPackRemoveJob_DeletingFilesFromFolder, installedDir.toOSString()));
-		PackInstallerUtils.deleteFolderRecursiveWithProgress(installedDir.toFile(), progress);
+		Utils.deleteFolderRecursiveWithProgress(installedDir.toFile(), progress);
 
 		if (fDelete) {
 			downloadPackFile.delete();
@@ -96,7 +95,7 @@ public class CpPackRemoveJob extends CpPackJob {
 				fResult.setNewPack(fPack);
 			} else {
 				fPack.setPackState(PackState.AVAILABLE);
-				newPack = PackInstallerUtils.updatePackFamily(fPack, progress.newChild(100));
+				newPack = PackInstallerUtils.loadLatesPack(fPack);
 				fResult.setNewPack(newPack);
 			}
 		}
@@ -106,9 +105,9 @@ public class CpPackRemoveJob extends CpPackJob {
 		progress.done();
 
 		if (fDelete || !downloadPackFile.exists() || !downloadPdscFile.exists()) {
-			fPackInstaller.jobFinished(fPackId, RteEvent.PACK_DELETE_JOB_FINISHED, fResult);
+			fPackInstaller.jobFinished(fJobId, RteEvent.PACK_DELETE_JOB_FINISHED, fResult);
 		} else {
-			fPackInstaller.jobFinished(fPackId, RteEvent.PACK_REMOVE_JOB_FINISHED, fResult);
+			fPackInstaller.jobFinished(fJobId, RteEvent.PACK_REMOVE_JOB_FINISHED, fResult);
 		}
 
 		return Status.OK_STATUS;

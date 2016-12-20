@@ -56,6 +56,11 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 		fResult = result;
 	}
 
+	protected void updateEvaluationResult(EEvaluationResult result) {
+		if(result.ordinal() < fResult.ordinal())
+			fResult = result;
+	}
+	
 	@Override
 	public EEvaluationResult getEvaluationResult(ICpItem item) {
 		if(fResults != null)

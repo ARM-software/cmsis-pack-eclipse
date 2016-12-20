@@ -38,8 +38,15 @@ public interface ICpExample extends ICpItem {
 	String getAbsoluteLoadPath(String environmentName);
 	
 	/**
-	 * Get the board of this example
+	 * Get the first board of this example
 	 * @return the board of this example, or null if it does not exist
 	 */
 	ICpBoard getBoard();
+	
+	/**
+	 * Checks if example contains board reference for given board ID
+	 * @param boardId board ID 
+	 * @return true if contains board 
+	 */
+	boolean containsBoard(String boardId);
 }

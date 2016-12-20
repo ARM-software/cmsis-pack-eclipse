@@ -664,14 +664,9 @@ public class ConfigWizardParser {
 	protected void syntaxError() {
 		fParsingErrorOffset = fScanner.getTokenOffset();
 		int line = fScanner.getCurrentLineNumber();
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				MessageDialog.openError(Display.getDefault().getActiveShell(),
-						Messages.ConfigWizardParser_ErrorInConfigWizard,
-						Messages.ConfigWizardParser_SyntaxErrorAtLine + (line + 1) + ": " + fParsingErrorMessage); //$NON-NLS-1$
-			}
-		});
+		Display.getDefault().asyncExec(() -> MessageDialog.openError(Display.getDefault().getActiveShell(),
+				Messages.ConfigWizardParser_ErrorInConfigWizard,
+				Messages.ConfigWizardParser_SyntaxErrorAtLine + (line + 1) + ": " + fParsingErrorMessage)); //$NON-NLS-1$
 	}
 
 	private IConfigWizardItem analyseCodeContent(IConfigWizardItem item) {
@@ -808,17 +803,17 @@ public class ConfigWizardParser {
 					item.setItemErrorType(EItemErrorType.LOCATE_POSITION_ERROR);
 					return;
 				}
-			value = parseNumber(item, valueText);
-			if (item.getItemErrorType() != EItemErrorType.NO_ERROR) {
-				return;
-			}
-			int base = getBaseFromValue(valueText);
-			item.setBase(base);
-			long realValue = value;
-			if (value >= 0) {
-				realValue = (value >> minBit) & mask;
-			}
-			item.setValue(realValue);
+				value = parseNumber(item, valueText);
+				if (item.getItemErrorType() != EItemErrorType.NO_ERROR) {
+					return;
+				}
+				int base = getBaseFromValue(valueText);
+				item.setBase(base);
+				long realValue = value;
+				if (value >= 0) {
+					realValue = (value >> minBit) & mask;
+				}
+				item.setValue(realValue);
 				break;
 			case OPTION_STRING:
 				Collection<String> strings = fStringContainer.tailMap(offset).values();
@@ -832,8 +827,8 @@ public class ConfigWizardParser {
 					item.setItemErrorType(EItemErrorType.LOCATE_POSITION_ERROR);
 					return;
 				}
-			item.setItemErrorType(EItemErrorType.NO_ERROR);
-			item.setString(str);
+				item.setItemErrorType(EItemErrorType.NO_ERROR);
+				item.setString(str);
 				break;
 			default:
 				break;

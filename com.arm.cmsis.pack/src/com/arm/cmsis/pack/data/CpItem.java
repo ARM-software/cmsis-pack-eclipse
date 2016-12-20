@@ -28,6 +28,7 @@ import com.arm.cmsis.pack.enums.EVersionMatchMode;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.item.CmsisTreeItem;
 import com.arm.cmsis.pack.utils.AlnumComparator;
+import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * Default implementation of ICpItem interface
@@ -36,7 +37,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	
 	protected IAttributes fAttributes = new CpAttributes(); 
 	
-	private ICpItem fCondition = null; // cached condition reference for quick access
+	protected ICpItem fCondition = null; // cached condition reference for quick access
 
 	protected String fURL = null;
 	protected String fId   = null;
@@ -142,6 +143,32 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		}
 		return null;
 	}
+
+	@Override
+	public ICpRootItem getRootItem() {
+		if(getParent() != null) {
+			return getParent().getRootItem();
+		}
+		return null;
+	}
+	
+	@Override
+	public String getRootDir(boolean keepSlash) {
+		ICpRootItem root = getRootItem();
+		if(root != null)
+			return root.getDir(keepSlash);
+		return null;
+	}
+
+	@Override
+	public String getRootFileName() {
+		ICpRootItem root = getRootItem();
+		if(root != null)
+			return root.getFileName();
+		return null;
+	}
+
+	
 	
 	@Override
 	public String getPackId() {
@@ -339,6 +366,8 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	public void mergeProperty(ICpItem p, String processorName) {
 		String id = p.getId();
 		ICpItem inserted = getProperty(id);
+		if(p == inserted)
+			return; // do not insert the same item twice (can happen when merging effective content)
 		if(inserted == null || !p.isUnique()) {
 			addChild(p); // insert only unique properties or descriptions
 			if(p.providesEffectiveContent()) {
@@ -384,8 +413,10 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 	@Override
 	public boolean isGenerated() {
-		ICpPack pack = getPack();
-		return pack != null && pack.isGenerated();
+		ICpItem parent = getParent();
+		if(parent != null)
+			return parent.isGenerated(); 
+		return false;
 	}
 
 	@Override
@@ -466,14 +497,11 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			return relPath;  // an URL => already absolute
 		}
 		// relative path => add pack installation directory
-		ICpPack pack = getPack();
-		if(pack != null) {
-			String packPath = pack.getInstallDir(null);
-			if(packPath != null) {
-				String absPath = packPath + relPath; 
-				IPath path = new Path(absPath);
-				return path.toString(); 
-			}
+		String basePath = getRootDir(true);
+		if(basePath != null && !basePath.isEmpty()) {
+			String absPath = basePath + relPath; 
+			IPath path = new Path(absPath);
+			return path.toString(); 
 		}
 		return relPath;
 	}
@@ -609,6 +637,12 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	@Override
 	public boolean isDefaultVariant() {
 		return attributes().getAttributeAsBoolean(CmsisConstants.IS_DEFAULT_VARIANT, false);
+	}
+
+	@Override
+	public boolean matchesHost() {
+		String host = getAttribute(CmsisConstants.HOST);
+		return host == null || host.isEmpty() || host.equals(CmsisConstants.ALL) || host.equals(Utils.getHostType());
 	}
 
 }

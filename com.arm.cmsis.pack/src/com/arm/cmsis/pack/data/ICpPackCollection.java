@@ -22,7 +22,7 @@ import java.util.Set;
 public interface ICpPackCollection extends ICpPackGroup {
 
 	/**
-	 * Returns pack collection of the latest installed packs  
+	 * Returns pack collection of the latest packs  
 	 * @return collection of the latest packs 
 	 */
 	Collection<ICpPack> getLatestPacks();

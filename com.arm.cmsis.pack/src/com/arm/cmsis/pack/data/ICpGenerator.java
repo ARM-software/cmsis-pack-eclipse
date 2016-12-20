@@ -20,46 +20,39 @@ public interface ICpGenerator extends ICpItem {
 
 
 	/**
-	 * Returns generator command as written in pdsc file (raw)
-	 * @return command string
+	 * Returns gpdsc file as it is written in pdsc
+	 * @return gpdsc string
 	 */
-	String getCommand(); 
+	String getGpdsc();
+
 	
 	/**
 	 * Returns generator working directory as written in pdsc file (raw)
 	 * @return working directory string
 	 */
 	String getWorkingDir();
-	
+
+
 	/**
-	 * Returns gpdsc file as it is written in pdsc
-	 * @return gpdsc string
+	 * Returns generator command item for requested type
+     * @param type one of "exe", "web" or "eclipse", if empty "exe" is assumed   
+	 * @return {@link ICpItem} for requested command type or null if not found
 	 */
-	String getGpdsc();
-	
-    /**
-     * Returns collection of argument items
-     * @return collection of arguments 
+	ICpItem getCommand(String type); 
+
+	/**
+     * Returns collection of arguments for requested type and running host 
+     * @param type one of "exe", "web" or "eclipse", if empty "exe" is assumed  
+     * @return collection of command line arguments 
      */
-    Collection<? extends ICpItem> getArguments();
+    Collection<ICpItem> getArguments(String type);
+
     
-    /**
-     * Returns fully expanded command line with arguments
-     * @return fully qualified command line string
+	/**
+     * Returns collection of available generator types  
+     * @return collection of available generator types 
      */
-    String getExpandedCommandLine(ICpStringExpander expander);
+    Collection<String> getAvailableTypes();
+
     
-    /**
-     * Returns absolute gpdsc filename
-     * @return absolute gpdsc filename
-     */
-    String getExpandedGpdsc(ICpStringExpander expander);
-    
-    /**
-     * Returns absolute working directory path  
-     * @return absolute working directory path
-     */
-    String getExpandedWorkingDir(ICpStringExpander expander);
-	
-	
 }

@@ -20,6 +20,7 @@ import com.arm.cmsis.pack.build.IBuildSettings;
 import com.arm.cmsis.pack.data.ICpCodeTemplate;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpPack;
+import com.arm.cmsis.pack.enums.IEvaluationResult;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
@@ -29,7 +30,7 @@ import com.arm.cmsis.pack.info.ICpPackInfo;
 /**
  * The interface provides data needed for project update and build system   
  */
-public interface IRteConfiguration extends IAdaptable {
+public interface IRteConfiguration extends IAdaptable, IEvaluationResult {
 	
 	/**
 	 * Returns underlying ICpConfigurationInfo object
@@ -183,6 +184,14 @@ public interface IRteConfiguration extends IAdaptable {
 	 * @see #isValid()
 	 */
 	Collection<String> validate();
+	
+	
+	/**
+	 * Checks if the configuration requires given gpdsc file 
+	 * @param gpdsc absolute gpdsc file name   
+	 * @return true if given gpdsc file is needed  
+	 */
+	boolean isGeneratedPackUsed(String gpdsc);
 
-
+	
 }

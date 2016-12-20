@@ -103,4 +103,13 @@ public class CpFileInfo extends CpFile implements ICpFileInfo {
 		return fVersionDiff;
 	}
 
+	@Override
+	public boolean isGenerated() {
+		if (fFile != null) 
+			return fFile.isGenerated();
+		return super.isGenerated();
+	}
+
+	
+	
 }

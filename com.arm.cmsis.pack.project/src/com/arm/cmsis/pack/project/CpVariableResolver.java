@@ -43,6 +43,9 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 				String packRoot = packRootURI.toString(); 
 				return packRoot;  // a string like "file:/" + CMSIS_PACK_ROOT;
 			}
+		} else if (resource != null && variable.equals(CmsisConstants.CMSIS_DFP)) {
+			IProject project = resource.getProject();
+			return getDfpPath(project);
 		}
 		return null;
 	}
@@ -62,17 +65,23 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 			return getCmsisPackRoot();
 		if(varName.equals(CmsisConstants.CMSIS_DFP)) {
 			// the argument must represent project name  
-			IProject proj = ProjectUtils.getProject(argument);  
-			RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
-			IRteProject rteProject = rteProjectManager.getRteProject(proj);
-			if (rteProject == null)
-				return null;
-			IRteConfiguration rteConf = rteProject.getRteConfiguration();
-			if(rteConf == null) 
-				return null;
-			return rteConf.getDfpPath();
+			IProject project = ProjectUtils.getProject(argument);
+			return getDfpPath(project);
 		}
 		return getCmsisPackRoot() + argument;
+	}
+	
+	static public String getDfpPath(IProject project) {
+		if(project == null)
+			return null;
+		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
+		IRteProject rteProject = rteProjectManager.getRteProject(project);
+		if (rteProject == null)
+			return null;
+		IRteConfiguration rteConf = rteProject.getRteConfiguration();
+		if(rteConf == null) 
+			return null;
+		return rteConf.getDfpPath();
 	}
 	
 	/**
@@ -86,6 +95,19 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 		}
 		return null;
 	}
+
+	/**
+	 * Returns CMSIS pack root folder (the value of <code>${cmsis_pack_root}</code> variable)
+	 * @return CMSIS pack root folder as string with OS directory separators
+	 */
+	static public String getCmsisPackRootOS() {
+		String root = getCmsisPackRoot();
+		if(root != null && File.separatorChar != '/') { 
+			return root.replace('/', File.separatorChar);
+		}
+		return root;
+	}
+
 	
 	/**
 	 * Returns CMSIS pack root folder (the value of <code>${cmsis_pack_root}</code> variable) as URI
@@ -135,6 +157,6 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 			}
 			
 		}
-		return path;
+		return CmsisConstants.CMSIS_RTE_VAR + path;
 	}
 }

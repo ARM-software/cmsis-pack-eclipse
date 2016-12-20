@@ -14,6 +14,7 @@ package com.arm.cmsis.pack.rte.components;
 import java.util.Collection;
 
 import com.arm.cmsis.pack.data.ICpComponent;
+import com.arm.cmsis.pack.data.ICpGenerator;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EComponentAttribute;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
@@ -282,27 +283,27 @@ public interface IRteComponentItem extends ICmsisMapItem<IRteComponentItem> {
 	Collection<IRteComponent> getSelectedComponents(Collection<IRteComponent> components);
 
 	/**
-	 * Returns collection of currently used active components (those that have associated ICpComponentInfo)
+	 * Returns collection of currently used active components (those that have associated {@link ICpComponentInfo})
 	 * @param components collection to fill, if null the new collection is allocated
-	 * @return collection of used components
+	 * @return collection of {@link IRteComponent} components
 	 */
 	Collection<IRteComponent> getUsedComponents(Collection<IRteComponent> components);
-	
+
+	/**
+	 * Returns collection of components associated with given generator, includes generated and bootstrap ones
+	 * @param generatorId {@link ICpGenerator} id, if null all generator-related components are returned 
+	 * @param components collection to fill, if null the new collection is allocated
+	 * @return collection of {@link IRteComponent} components
+	 */
+	Collection<IRteComponent> getGeneratorComponents(String generatorId, Collection<IRteComponent> components);
+
 	
 	/**
 	 * Searches the hierarchy for components matching supplied criteria
-	 * @param dependency IRteDependency describing search criteria and accumulating results 
+	 * @param dependency {@link IRteDependency} describing search criteria and accumulating results 
 	 * @return result of search as EEvaluationResult value 
 	 */
 	EEvaluationResult findComponents(IRteDependency dependency);
-
-	/**
-	 * Searches the component tree to find a component matching supplied info according to supplied flags   
-	 * @param componentInfo ICpComponentInfo to search for
-	 * @param flags ORed flags that define resolve behavior
-	 * @return result of search as EEvaluationResult value 
-	 */
-//	EEvaluationResult resolveComponent(ICpComponentInfo componentInfo, int flags);
 
 	
 	/**

@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.info;
 
+
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -18,7 +19,7 @@ import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
- *
+ * Default implementation of ICpPackInfo interface 
  */
 public class CpPackInfo extends CpItem implements ICpPackInfo {
 
@@ -63,6 +64,8 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 		super(parent, tag);
 	}
 
+	
+	
 	@Override
 	public ICpPackInfo getPackInfo() {
 		return this;
@@ -78,6 +81,7 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 		fPack = pack;
 	}
 
+
 	@Override
 	public void updateInfo() {
 		if(fPack != null) {
@@ -85,7 +89,17 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 			attributes().setAttribute(CmsisConstants.URL, fPack.getUrl());
 			attributes().setAttribute(CmsisConstants.VENDOR, fPack.getVendor());
 			attributes().setAttribute(CmsisConstants.VERSION, fPack.getVersion());
+			if(fPack.isGenerated())
+				attributes().setAttribute(CmsisConstants.GENERATED, true);
+			else 
+				attributes().removeAttribute(CmsisConstants.GENERATED);
 		}
+	}
+	
+
+	@Override
+	public boolean isGenerated() {
+		return attributes().getAttributeAsBoolean(CmsisConstants.GENERATED, false);
 	}
 
 	@Override
@@ -121,6 +135,4 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 		}
 		return null;
 	}
-
-
 }

@@ -16,6 +16,8 @@ public class CpStrings extends NLS {
 	public static String Version;
 	public static String Selection;
 	public static String Configuration;
+	public static String Required_Gpdsc_File;
+	public static String Failed_To_Load;
 	public static String CpComponentInfo_ComponentMissing;
 	public static String CpPackManager_DefaultError;
 	public static String CpPackManager_ErrorWhileParsing;

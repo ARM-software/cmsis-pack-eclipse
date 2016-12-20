@@ -226,7 +226,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		case "#P": //$NON-NLS-1$
 			return CmsisConstants.PROJECT_ABS_PATH + ".project"; //$NON-NLS-1$
 		case "$S":  //$NON-NLS-1$
-			return CmsisConstants.CMSIS_DFP_VAR;
+			return CmsisConstants.CMSIS_DFP_VAR_PRJ;
 		}
 		return key; // do not expand, can be another variable
 	}
@@ -240,8 +240,8 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		if(ch1 == 'D') {
 			ICpDeviceInfo di = configInfo.getDeviceInfo();
 			String fullDeviceName = di.getDeviceName();
-			if(ch1 == '$')
-				return fullDeviceName;
+			if(ch0 == '$')
+				return Utils.wildCardsToX(fullDeviceName);
 			
 			String dName = fullDeviceName;
 			String pName = CmsisConstants.EMPTY_STRING;
@@ -258,8 +258,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		}
 
 		if(ch1 == 'P') {
-			String fileName = configInfo.getFileName();
-			String pathName = Utils.extractPath(fileName, true);
+			String pathName = configInfo.getDir(true);
 			if(ch0 == '#')
 				pathName += ".project"; //$NON-NLS-1$
 			return pathName;

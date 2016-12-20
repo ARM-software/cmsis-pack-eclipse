@@ -16,6 +16,7 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -160,13 +161,14 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider {
 		int y = buttonBounds.y;
 
 		if (!columnAdvisor.isSuffixButtonPressed(element, columnIndex)) {
-			event.gc.setForeground(ColorConstants.COLOR_BUTTON_TOP);
-			event.gc.setBackground(ColorConstants.COLOR_BUTTON_BOTTOM);
+			event.gc.setForeground(ColorConstants.COLOR_SUFFICS_BUTTON_TOP);
+			event.gc.setBackground(ColorConstants.COLOR_SUFFICS_BUTTON_BOTTOM);
 		} else {
-			event.gc.setForeground(ColorConstants.COLOR_BUTTON_BOTTOM);
-			event.gc.setBackground(ColorConstants.COLOR_BUTTON_TOP);
+			event.gc.setForeground(ColorConstants.COLOR_SUFFICS_BUTTON_BOTTOM);
+			event.gc.setBackground(ColorConstants.COLOR_SUFFICS_BUTTON_TOP);
 		}
 		event.gc.fillGradientRectangle(x, y, width, height, true);
+		drawButtonImage(columnAdvisor.getSuffixButtonImage(element, columnIndex), event.gc, buttonBounds);
 		event.gc.setForeground(ColorConstants.COLOR_BORDER);
 		event.gc.drawRectangle(x, y, width, height);
 	}
@@ -217,7 +219,7 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider {
 		event.gc.drawRoundRectangle(cellBounds.x, cellBounds.y, cellBounds.width, cellBounds.height,
 				ColorConstants.ARC_WIDTH_HEIGHT, ColorConstants.ARC_WIDTH_HEIGHT);
 
-		int dstX = drawButtonImage(event, element) + 8;
+		int dstX = drawButtonImage(columnAdvisor.getImage(element, columnIndex), event.gc, cellBounds) + 8;
 
 		String text = columnAdvisor.getString(element, columnIndex);
 		Point extent = event.gc.textExtent(text);
@@ -233,30 +235,32 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider {
 		event.gc.drawString(text, dstX, dstY, true);
 	}
 
+	
 	/**
 	 * Draw the button image
-	 * @param event
-	 * @param element
+	 * @param image {@link Image} to draw 
+	 * @param gc {@GC} to draw in 
+	 * @param bounds rectangle defining destination image position 
 	 * @return the right point of the image in the cell, can be used to
 	 * calculate the starting position of the cell string
 	 */
-	protected int drawButtonImage(Event event, Object element) {
-		Image image = columnAdvisor.getImage(element, columnIndex);
-		Rectangle cellBounds = getCellControlBounds(event);
-		int dstX = cellBounds.x;
-		int dstY = cellBounds.y;
+	protected int drawButtonImage(Image image, GC gc, Rectangle bounds) {
+		int dstX = bounds.x;
+		int dstY = bounds.y;
 		if (image != null) {
 			Rectangle imageBounds = image.getBounds();
 
-			event.gc.setAlpha(ALPHA);
-			event.gc.drawImage(image, imageBounds.x, imageBounds.y, imageBounds.width, imageBounds.height,
+			//gc.setAlpha(ALPHA);
+			gc.drawImage(image, imageBounds.x, imageBounds.y, imageBounds.width, imageBounds.height,
 					dstX, dstY, imageBounds.width, imageBounds.height);
-			event.gc.setAlpha(255);
+			//gc.setAlpha(255);
 			return dstX + imageBounds.width;
 		}
 		return dstX;
 	}
 
+	
+	
 	/**
 	 * Draw inplace spinner
 	 * @param event the event

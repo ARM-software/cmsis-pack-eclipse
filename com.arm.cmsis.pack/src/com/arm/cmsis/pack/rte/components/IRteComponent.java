@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.rte.components;
 
+import com.arm.cmsis.pack.data.ICpComponent;
+import com.arm.cmsis.pack.data.ICpGenerator;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 
 /**
@@ -55,9 +57,28 @@ public interface IRteComponent extends IRteComponentItem {
 	
 	/**
 	 * Sets/updates active component info, purges all non-active ones  
-	 * @param ci ICpComponentInfo
+	 * @param ci {@link ICpComponentInfo}
 	 */
 	void setActiveComponentInfo(ICpComponentInfo ci);
+
+	
+	/**
+	 * Check is this RTE component represents a generated {@link ICpComponent} 
+	 * @return bootstrap ICpComponent or null
+	 */
+	boolean isGenerated();
+
+	
+	/**
+	 * Check is this RTE component has associated bootstrap 
+	 * @return bootstrap ICpComponent or null
+	 */
+	boolean isBootStrap();
 	
 	
+	/**
+	 * Returns id of {@link ICpGenerator} associated with the component either as generated or a bootstrap  
+	 * @return generator id or null
+	 */
+	String getGeneratorId();
 }

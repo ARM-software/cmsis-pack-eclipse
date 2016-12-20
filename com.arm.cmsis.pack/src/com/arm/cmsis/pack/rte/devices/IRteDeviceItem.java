@@ -122,17 +122,6 @@ public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem>  {
 	 */
 	IRteDeviceItem getVendorItem(final String vendor);
 
-	/**
-	 * Get All the Pack IDs contained in this IRteDeviceItem
-	 * @return A set of Pack IDs
-	 */
-	Set<String> getAllPackIds();
-
-	/**
-	 * Get All the {@link ICpDeviceItem} contained in this IRteDeviceItem
-	 * @return A set of {@link ICpDeviceItem} Names
-	 */
-	Set<String> getAllDeviceNames();
 
 	/**
 	 * Get the vendor name of this IRteDeviceItem
@@ -140,4 +129,23 @@ public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem>  {
 	 */
 	String getVendorName();
 
+	/**
+	 * Get names of all devices in this item
+	 * @return set of device names
+	 */
+	Set<String> getAllDeviceNames();
+
+	/**
+	 * Add device name for this item and all items up in the hierarchy 
+	 * @param name device name to add 
+	 */
+	void addDeviceName(String name);
+
+	/**
+	 * Remove device name from this item and all items up in the hierarchy 
+	 * @param name device name to add 
+	 */
+	void removeDeviceName(String name);
+	
+	
 }

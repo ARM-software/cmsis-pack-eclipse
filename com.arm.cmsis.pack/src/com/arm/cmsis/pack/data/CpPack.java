@@ -12,15 +12,11 @@
 package com.arm.cmsis.pack.data;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -32,11 +28,12 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class CpPack extends CpRootItem implements ICpPack {
 
-	private String installDir = null;
-	private String version = null;
-	private PackState state = PackState.UNKNOWN;
-	private Map<String, ICpItem> conditions = null; // sorted map for quick access to conditions
-	private Set<String> deviceNames = null;
+	protected String version = null;
+	protected PackState state = PackState.UNKNOWN;
+	protected Map<String, ICpItem> conditions = null; // sorted map for quick access to conditions
+	protected Set<String> deviceNames = null; // names of all declared and referenced devices
+	protected Set<String> boardNames = null; // names of boards described in the pack
+	protected int deviceLess = -1; // -1 means uninitialized
 
 	public CpPack() {
 		this(NULL_CPITEM);
@@ -102,14 +99,15 @@ public class CpPack extends CpRootItem implements ICpPack {
 
 
 	@Override
-	public synchronized ICpGenerator getGenerator(String name) {
-		if(name == null || name.isEmpty()) {
-			return null;
-		}
+	public synchronized ICpGenerator getGenerator(String id) {
 		Collection<? extends ICpItem> generators = getGrandChildren(CmsisConstants.GENERATORS_TAG);
 		if(generators != null) {
 			for(ICpItem g : generators) {
-				if(g.getName().equals(name) && g instanceof ICpGenerator) {
+				if(!(g instanceof ICpGenerator)) {
+					continue;
+				}
+
+				if(id == null || id.isEmpty() || g.getId().equals(id) ) {
 					return (ICpGenerator)g;
 				}
 			}
@@ -119,21 +117,9 @@ public class CpPack extends CpRootItem implements ICpPack {
 
 	@Override
 	public synchronized String getInstallDir(final String packRoot) {
-		if(packRoot == null) {
+		if(packRoot == null || getPackState() == PackState.GENERATED) {
 			// installed and generator files are already located at their installation directories
-			if(installDir == null) {
-				try {
-					File f = new File(getFileName());
-					if(f.exists()) {
-
-						IPath p = new Path( f.getCanonicalFile().getParent());
-						installDir = p.toString() + '/';
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			return installDir;
+			return getRootDir(true);
 		}
 		// construct installation path out of Pack properties, use forward slashes
 		String dir = packRoot;
@@ -263,9 +249,9 @@ public class CpPack extends CpRootItem implements ICpPack {
 			}
 			ICpItem latestPack = packs.iterator().next();
 			String latestVersion = latestPack.getVersion();
-			int verCmp = new VersionComparator(false).compare(latestVersion, version);
-			if (isPackFamilyId(packId) && verCmp > 0 && verCmp < 2) { // compatible
-				packId += '.' + latestPack.getVersion();
+			int verCmp = VersionComparator.versionCompare(latestVersion, version);
+			if (isPackFamilyId(packId) && verCmp >= 0 && verCmp < 4) { // compatible
+				packId += '.' + latestVersion;
 			} else {
 				packId += '.' + version;
 			}
@@ -281,56 +267,195 @@ public class CpPack extends CpRootItem implements ICpPack {
 	public Set<String> getAllDeviceNames() {
 		if (deviceNames == null) {
 			deviceNames = new HashSet<String>();
-			Collection<? extends ICpItem> items = getGrandChildren(CmsisConstants.DEVICES_TAG);
-			if (items == null || items.isEmpty()) {
+			if(isDevicelessPack()) {
 				return deviceNames;
 			}
-			for (ICpItem item : items) {
-				if (!(item instanceof ICpDeviceItem)) {
-					continue;
-				}
-				ICpDeviceItem device = (ICpDeviceItem) item;
-				deviceNames.addAll(collectDeviceNames(device));
-			}
+
+			collectDeviceNames(getGrandChildren(CmsisConstants.DEVICES_TAG), deviceNames);
+			collectDeviceNames(getGrandChildren(CmsisConstants.BOARDS_TAG), deviceNames);
 		}
 		return deviceNames;
 	}
 
-	private Set<String> collectDeviceNames(ICpDeviceItem parent) {
-		Set<String> ret = new HashSet<String>();
+	protected void collectDeviceNames(Collection<? extends ICpItem> items, Set<String> deviceNames) {
+		if (items == null || items.isEmpty()) {
+			return;
+		}
+		for (ICpItem item : items) {
+			if (item instanceof ICpDeviceItem) {
+				ICpDeviceItem d = (ICpDeviceItem) item;
+				deviceNames.add(d.getName());
+				collectDeviceNames(d, deviceNames);
+			}
+		}
+	}
+
+
+	protected void collectDeviceNames(ICpDeviceItem parent, Set<String> deviceNames) {
 		if (parent == null || parent.getDeviceItems() == null) {
-			return ret;
+			return;
 		}
 		for (ICpItem item : parent.getDeviceItems()) {
 			if (!(item instanceof ICpDeviceItem)) {
 				continue;
 			}
 			ICpDeviceItem d = (ICpDeviceItem) item;
-			ret.add(d.getName());
-			ret.addAll(collectDeviceNames(d));
+			deviceNames.add(d.getName());
+			collectDeviceNames(d, deviceNames);
 		}
-		return ret;
+	}
+
+
+	@Override
+	public Set<String> getBoardNames() {
+		if( boardNames == null) {
+			boardNames = new HashSet<String>();
+			Collection<? extends ICpItem> items = getGrandChildren(CmsisConstants.DEVICES_TAG);
+			if (items == null || items.isEmpty()) {
+				return boardNames;
+			}
+			for (ICpItem item : items) {
+				if (!(item instanceof ICpBoard)) {
+					continue;
+				}
+				boardNames.add(item.getName());
+			}
+		}
+		return boardNames;
 	}
 
 	@Override
 	public boolean isDevicelessPack() {
-		// TODO check more
-		if (getId().contains("ARM") ||  //$NON-NLS-1$
-				(getGrandChildren(CmsisConstants.DEVICES_TAG) == null &&
-				getGrandChildren(CmsisConstants.BOARDS_TAG) == null)) {
-			return true;
+		if(deviceLess < 0) {
+			// TODO check more
+			if (getId().contains("ARM") ||  //$NON-NLS-1$
+					(getGrandChildren(CmsisConstants.DEVICES_TAG) == null &&
+					getGrandChildren(CmsisConstants.BOARDS_TAG) == null)) {
+				deviceLess = 1;
+			}else {
+				deviceLess = 0;
+			}
 		}
-		return false;
+		return deviceLess == 1;
 	}
 
 	@Override
 	public boolean isLatest() {
-		return (getParent().getFirstChild() == this);
+		return (getParent() != null && getParent().getFirstChild() == this);
 	}
 
 	@Override
 	public Collection<? extends ICpItem> getReleases() {
 		return getGrandChildren(CmsisConstants.RELEASES_TAG);
+	}
+
+	@Override
+	public Collection<? extends ICpItem> getRequiredPacks() {
+		ICpItem requirements = getFirstChild(CmsisConstants.REQUIREMENTS_TAG);
+		if (requirements == null) {
+			return null;
+		}
+		return requirements.getGrandChildren(CmsisConstants.PACKAGES_TAG);
+	}
+
+	@Override
+	public boolean isRequiredPacksInstalled() {
+		Collection<? extends ICpItem> requiredPacks = getRequiredPacks();
+		if (requiredPacks == null) {
+			return true;
+		}
+
+		for (ICpItem requiredPack : requiredPacks) {
+			ICpPackCollection installedPacks = CpPlugIn.getPackManager().getInstalledPacks();
+			if (installedPacks == null || installedPacks.getPack(requiredPack.attributes()) == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	/**
+	 * Replace Vendor.Pack.Version with Vendor/Pack/Version
+	 *
+	 * @param fullPackId the pack's id
+	 * @return the relative installation directory. e.g. ARM/CMSIS/4.5.0
+	 */
+	public static String getPackRelativeInstallDir(String fullPackId) {
+		int iv = fullPackId.indexOf('.');
+		if (iv == -1) {
+			return fullPackId;
+		}
+		String vendor = fullPackId.substring(0, iv);
+		int ip = fullPackId.indexOf('.', iv + 1);
+		if (ip == -1) {
+			return fullPackId;
+		}
+		String pack = fullPackId.substring(iv + 1, ip);
+		String version = fullPackId.substring(ip + 1);
+		return vendor + File.separator + pack + File.separator + version;
+	}
+
+	/**
+	 * Get the Full Pack ID of this {@link ICpItem}
+	 *
+	 * @param cpItem the cmsis pack item
+	 * @return a String like Vendor.Pack.Version
+	 */
+	public static String getFullPackId(ICpItem cpItem) {
+		return cpItem.getPackFamilyId() + "." + getCpItemVersion(cpItem); //$NON-NLS-1$
+	}
+
+	/**
+	 * Return this {@link ICpItem}'s release date
+	 *
+	 * @param cpItem the cmsis pack item
+	 * @return a string of the date or an empty string
+	 */
+	public static String getCpItemDate(ICpItem cpItem) {
+		if (cpItem == null || cpItem instanceof ICpPackCollection) {
+			return CmsisConstants.EMPTY_STRING;
+		}
+
+		String date = CmsisConstants.EMPTY_STRING;
+		if (CmsisConstants.RELEASE_TAG.equals(cpItem.getTag())) {
+			date = cpItem.getAttribute(CmsisConstants.DATE);
+		} else {
+			String version = cpItem.getPack().getVersion();
+			Collection<? extends ICpItem> releases = cpItem.getPack().getGrandChildren(CmsisConstants.RELEASES_TAG);
+			if (releases == null) {
+				return date;
+			}
+			for (ICpItem release : releases) {
+				if (release.getAttribute(CmsisConstants.VERSION).equals(version)) {
+					date = release.getAttribute(CmsisConstants.DATE);
+					break;
+				}
+			}
+		}
+
+		return date;
+	}
+
+	/**
+	 * Get the items' pack version (either this pack or a specified release)
+	 *
+	 * @param cpItem the cmsis pack item
+	 * @return pack version or an empty string
+	 */
+	public static String getCpItemVersion(ICpItem cpItem) {
+		if (cpItem == null) {
+			return CmsisConstants.EMPTY_STRING;
+		}
+
+		String installingVersion = CmsisConstants.EMPTY_STRING;
+
+		if (cpItem.getTag().equals(CmsisConstants.RELEASE_TAG)) {
+			installingVersion = cpItem.getAttribute(CmsisConstants.VERSION);
+		} else {
+			installingVersion = cpItem.getPack().getVersion();
+		}
+
+		return installingVersion;
 	}
 
 }

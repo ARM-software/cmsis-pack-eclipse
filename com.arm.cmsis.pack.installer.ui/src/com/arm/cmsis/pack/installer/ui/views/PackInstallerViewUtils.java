@@ -31,9 +31,10 @@ public class PackInstallerViewUtils {
 	public static void addManagementCommandsToLocalToolBar(IViewPart viewPart, IContributionManager manager) {
 		String[] commandIds = { "com.arm.cmsis.pack.installer.commands.updateCommand", //$NON-NLS-1$
 				"com.arm.cmsis.pack.installer.commands.importPackCommand", //$NON-NLS-1$
-				"com.arm.cmsis.pack.installer.commands.reloadCommand" }; //$NON-NLS-1$
+				"com.arm.cmsis.pack.installer.commands.reloadCommand", //$NON-NLS-1$
+				"com.arm.cmsis.pack.installer.commands.importFolderPacksCommand" }; //$NON-NLS-1$
 		String[] commandImages = { CpPlugInUI.ICON_CHECK4UPDATE, CpPlugInUI.ICON_RTE_UNPACK,
-				CpPlugInUI.ICON_REFRESH };
+				CpPlugInUI.ICON_REFRESH, CpPlugInUI.ICON_IMPORT_FOLDER };
 
 		for (int i = 0; i < commandIds.length; i++) {
 			String commandId = commandIds[i];

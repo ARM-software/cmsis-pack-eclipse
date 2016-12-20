@@ -30,7 +30,6 @@ import org.eclipse.swt.SWT;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.configuration.IRteConfiguration;
-import com.arm.cmsis.pack.configuration.RteConfiguration;
 import com.arm.cmsis.pack.data.ICpDebug;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpItem;

@@ -11,14 +11,19 @@
 package com.arm.cmsis.pack.ui.widgets;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TreePath;
 import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
@@ -27,6 +32,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -34,6 +40,8 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.data.ICpComponent;
+import com.arm.cmsis.pack.data.ICpGenerator;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.generic.ITreeObject;
@@ -49,6 +57,7 @@ import com.arm.cmsis.pack.rte.components.RteMoreClass;
 import com.arm.cmsis.pack.rte.components.RteSelectedDeviceClass;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
+import com.arm.cmsis.pack.ui.LaunchGenerator;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.AdvisedEditingSupport;
 import com.arm.cmsis.pack.ui.tree.OverlayImage;
@@ -74,11 +83,16 @@ public class RteComponentSelectorWidget extends RteWidget {
 	private Action expandAll;
 	private Action collapseAll;
 	private Action expandAllSelected;
-
+	
+	
+	protected Map<String, LaunchGeneratorAction> laGeneratorActions = new HashMap<>();
+	
 	TreeViewer viewer = null;					// the Tree Viewer
 
 	static final Color GREEN = new Color(Display.getCurrent(), CpPlugInUI.GREEN);
 	static final Color YELLOW = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
+
+	private List<String> selItemKeyPath = null;
 
 	/**
 	 *	Return the effective component
@@ -90,6 +104,30 @@ public class RteComponentSelectorWidget extends RteWidget {
 		return null;
 	}
 
+	public void launchGenerator(ICpGenerator gen, String launchType) {
+		if (gen == null) {
+			return;
+		}
+		LaunchGenerator.launch(gen, getModelController().getConfigurationInfo(), launchType);
+	}
+	
+	/**
+	 * Action to launch a generator for selected item  
+	 */
+	public class LaunchGeneratorAction extends Action {
+		protected String fLaunchType;
+		public LaunchGeneratorAction(String launchType){
+			fLaunchType = launchType;
+		}
+		public String getLaunchType() {
+			return fLaunchType;
+		}
+		@Override
+		public void run() {
+			launchGenerator(getSelectedGenerator(), getLaunchType());
+		}
+	}
+	
 	/**
 	 * Column label provider for RteComponentTreeWidget
 	 */
@@ -182,14 +220,38 @@ public class RteComponentSelectorWidget extends RteWidget {
 		public boolean hasSuffixButton(Object obj, int columnIndex) {
 			if (columnIndex == COLSEL && getSelectionControlType(obj) == CellControlType.INPLACE_CHECK) {
 				IRteComponentItem item = getComponentItem(obj);
-				if(item instanceof IRteComponent) {
-					// TODO: make it more general
-//					if ("STM32CubeMX".equals(item.getName())) {
-//						return true;
-//					}
+				if(getGenerator(item) != null) {
+					return true;
 				}
 			}
 			return false;
+		}
+
+
+		@Override
+		public boolean isEnabled(Object obj, int columnIndex) {
+			IRteComponentItem item = getComponentItem(obj);
+			if(columnIndex ==  COLSEL  || columnIndex ==  COLSWCOMP  || columnIndex == COLDESCR) {
+				return true;
+			}
+			if(item instanceof IRteComponent) {
+				IRteComponent rteComponent = (IRteComponent) item;
+				if(rteComponent.isBootStrap()) {
+					return true;
+				} else if(rteComponent.isGenerated()) {
+					return false;
+				}
+			}
+			return true;
+		}
+
+
+		@Override
+		public boolean isSuffixButtonEnabled(Object obj, int columnIndex) {
+			if(columnIndex == COLSEL && hasSuffixButton(obj, columnIndex)) {
+				return getCheck(obj, columnIndex);
+			}
+			return super.isSuffixButtonEnabled(obj, columnIndex);
 		}
 
 		@Override
@@ -296,8 +358,10 @@ public class RteComponentSelectorWidget extends RteWidget {
 			Collection<String> strings = null;
 			IRteComponentItem item = getComponentItem(obj);
 			int minValues = 0;
+			if(!isEnabled(obj, columnIndex)) {
+				return false;
+			}
 			if(item != null) {
-
 				switch(columnIndex) {
 				case COLSWCOMP:
 					break;
@@ -384,6 +448,16 @@ public class RteComponentSelectorWidget extends RteWidget {
 				default:
 					break;
 				}
+			}
+			return null;
+		}
+		
+		@Override
+		public Image getSuffixButtonImage(Object obj, int columnIndex) {
+			if(columnIndex == COLSEL) {
+				if(isSuffixButtonEnabled(obj, columnIndex))
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_RUN);
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_RUN_GREY);
 			}
 			return null;
 		}
@@ -527,6 +601,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 				case INCOMPATIBLE_VENDOR:
 				case INCOMPATIBLE_VERSION:
 				case MISSING:
+				case MISSING_GPDSC:
 				case MISSING_API:
 				case MISSING_BUNDLE:
 				case MISSING_VARIANT:
@@ -536,8 +611,9 @@ public class RteComponentSelectorWidget extends RteWidget {
 				case UNAVAILABLE_PACK:
 					return device.getSystemColor(SWT.COLOR_RED);
 				case IGNORED:
-					if(!item.isSelected())
+					if(!item.isSelected()) {
 						break;
+					}
 				case FULFILLED:
 					return GREEN;
 
@@ -576,7 +652,14 @@ public class RteComponentSelectorWidget extends RteWidget {
 			return item.isUseLatestVersion();
 		}
 
-
+		@Override
+		protected void executeSuffixButtonAction(Object element, int colIndex, Point pt) {
+			IRteComponentItem item = getComponentItem(element);
+			if (item == null) {
+				return;
+			}
+			launchGenerator(getGenerator(item), null);
+		}
 
 	} /// end of RteColumnAdvisor
 
@@ -689,6 +772,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 
 		RteComponentContentProvider rteContentProvider = new RteComponentContentProvider();
 		viewer.setContentProvider(rteContentProvider);
+		viewer.addSelectionChangedListener(event -> handleTreeSelectionChanged(event));
 
 		GridData gridData = new GridData();
 		gridData.horizontalAlignment = SWT.FILL;
@@ -705,6 +789,46 @@ public class RteComponentSelectorWidget extends RteWidget {
 		return tree;
 	}
 
+	protected IRteComponentItem getSelectedItem() {
+		if (viewer != null) {
+			IStructuredSelection sel = (IStructuredSelection)viewer.getSelection();
+			if(sel != null) {
+				return getComponentItem(sel.getFirstElement());
+			}
+		}
+		return null;
+	}
+
+	ICpGenerator getSelectedGenerator() {
+		return getGenerator(getSelectedItem());
+	}
+
+	ICpGenerator getGenerator(IRteComponentItem item) {
+		if (item == null) {
+			return null;
+		}
+		ICpComponent cp = item.getActiveCpComponent();
+		if (cp == null) {
+			return null;
+		}
+		return cp.getGenerator();
+	}
+
+	
+	/**
+	 * @param event
+	 */
+	protected void handleTreeSelectionChanged(SelectionChangedEvent event) {
+		if(getModelController() == null) {
+			return;
+		}
+		IRteComponentItem c = getSelectedItem();
+		if(c != null) {
+			selItemKeyPath = c.getKeyPath();
+		}
+	}
+
+
 	@Override
 	public void refresh() {
 		if (viewer != null) {
@@ -718,6 +842,18 @@ public class RteComponentSelectorWidget extends RteWidget {
 	@Override
 	public void update() {
 		refresh();
+
+		if(viewer == null || getModelController() == null) {
+			return;
+		}
+		if( selItemKeyPath == null || selItemKeyPath.isEmpty()) {
+			return;
+		}
+
+		IRteComponentItem item = getModelController().getComponents().findChild(selItemKeyPath, false);
+		if(item != null) {
+			showComponentItem(item);
+		}
 	}
 
 	@Override
@@ -726,7 +862,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 			showComponentItem((IRteComponentItem)event.getData());
 			return;
 		} else if(event.getTopic().equals(RteEvent.COMPONENT_SELECTION_MODIFIED)) {
-			update();
+			refresh();
 		} else {
 			super.handle(event);
 		}
@@ -759,7 +895,15 @@ public class RteComponentSelectorWidget extends RteWidget {
 		if(item == null) {
 			return;
 		}
+
+		if(item == getSelectedItem()) {
+			return;
+		}
+
 		Object[] path = item.getEffectiveHierachyPath();
+		if(path.length == 0) {
+			return;
+		}
 		TreePath tp = new TreePath(path);
 		TreeSelection ts = new TreeSelection(tp);
 
@@ -780,23 +924,42 @@ public class RteComponentSelectorWidget extends RteWidget {
 		final MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
 		makeActions();
 		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(new IMenuListener() {
-			@Override
-			public void menuAboutToShow(IMenuManager manager) {
-				fillContextMenu(menuMgr);
-			}
-		});
+		menuMgr.addMenuListener(manager -> fillContextMenu(menuMgr));
 		Menu menu = menuMgr.createContextMenu(viewer.getControl());
 		viewer.getControl().setMenu(menu);
 	}
 
+	void addGeneratorActions(IMenuManager manager) {
+		ICpGenerator gen = getSelectedGenerator();
+		if(gen == null)
+			return;
+		Collection<String> types = gen.getAvailableTypes();
+		if(types == null || types.isEmpty())
+			return;
+		String genName = gen.getId(); 
+		int n = 0;
+		for(String type : types) {
+			Action a = laGeneratorActions.get(type);
+			if(a == null) 
+				continue;
+			String text = CpStringsUI.Launch + ' ' + genName + ' ' + '(' + type + ')';
+			a.setText(text);
+			manager.add(a);
+			n++;
+		}
+	
+		if(n > 0)
+			manager.add(new Separator());
+	}
+	
 	void fillContextMenu(IMenuManager manager) {
+		addGeneratorActions(manager);
 		manager.add(expandAll);
 		manager.add(collapseAll);
 		manager.add(expandAllSelected);
 	}
 
-	private void makeActions() {
+	protected void makeActions() {
 		expandAll = new Action() {
 			@Override
 			public void run() {
@@ -849,6 +1012,12 @@ public class RteComponentSelectorWidget extends RteWidget {
 		OverlayImage overlayImage = new OverlayImage(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL).createImage(),
 				CpPlugInUI.getImageDescriptor(CpPlugInUI.CHECKEDOUT_OVR).createImage(), OverlayPos.TOP_RIGHT);
 		expandAllSelected.setImageDescriptor(overlayImage);
+		
+		
+		for(String type : CmsisConstants.LAUNCH_TYPES) {
+			LaunchGeneratorAction lga = new LaunchGeneratorAction(type);
+			laGeneratorActions.put(type, lga); 
+		}
 	}
 
 	@Override

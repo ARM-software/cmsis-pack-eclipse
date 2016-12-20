@@ -28,7 +28,7 @@ import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
  */
 public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem {
 
-	private EDeviceHierarchyLevel level = null;
+	protected EDeviceHierarchyLevel level = null;
 	protected List<ICpDeviceItem> deviceItems = null;
 	protected Map<String, ICpItem> processors = null; // effective processors
 	protected Map<String, ICpItem > effectiveProperties = null;
@@ -229,6 +229,25 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
 			break;
 		}
 		return super.constructName();
+	}
+
+	@Override
+	public String getLevelName(EDeviceHierarchyLevel level) {
+		switch(level) {
+		case VENDOR:
+			return getEffectiveAttribute(CmsisConstants.DVENDOR);
+		case DEVICE:
+			return getEffectiveAttribute(CmsisConstants.DNAME);
+		case FAMILY:
+			return getEffectiveAttribute(CmsisConstants.DFAMILY);
+		case SUBFAMILY:
+			return getEffectiveAttribute(CmsisConstants.DSUBFAMILY);
+		case VARIANT:
+			return getEffectiveAttribute(CmsisConstants.DVARIANT);
+		default:
+			break;
+		}
+		return null;
 	}
 
 

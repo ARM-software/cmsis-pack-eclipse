@@ -23,6 +23,9 @@ import com.arm.cmsis.pack.installer.ui.views.ExamplesView;
 import com.arm.cmsis.pack.installer.ui.views.PackPropertyView;
 import com.arm.cmsis.pack.installer.ui.views.PacksView;
 
+/**
+ * Perspective for pack manager
+ */
 public class PackManagerPerspective implements IPerspectiveFactory {
 
 	public static final String ID = "com.arm.cmsis.pack.installer.ui.perspectives.packmanager"; //$NON-NLS-1$

@@ -16,47 +16,20 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
-import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IWorkbenchActionConstants;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.dialogs.FilteredTree;
-import org.eclipse.ui.dialogs.PatternFilter;
-import org.eclipse.ui.part.ViewPart;
-
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
-import com.arm.cmsis.pack.events.IRteEventListener;
-import com.arm.cmsis.pack.events.RteEvent;
-import com.arm.cmsis.pack.installer.ui.CpInstallerPlugInUI;
 import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.item.CmsisMapItem;
@@ -70,27 +43,16 @@ import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 import com.arm.cmsis.pack.utils.VersionComparator;
 
-public class BoardsView extends ViewPart implements IRteEventListener {
+/**
+ * Default implementation of the boards view in pack manager
+ */
+public class BoardsView extends PackInstallerView {
 
 	public static final String ID = "com.arm.cmsis.pack.installer.ui.views.BoardsView"; //$NON-NLS-1$
-
-	private static final int COLURL = 1;
-
-	FilteredTree fTree;
-	TreeViewer fViewer;
-	private Action fExpandAction;
-	private Action fExpandItemAction;
-	private Action fCollapseAction;
-	private Action fCollapseItemAction;
-	private Action fRemoveSelection;
-	private Action fHelpAction;
-	Action fDoubleClickAction;
 
 	static final String ALL_BOARDS = Messages.BoardsView_AllBoards;
 	private static final String MOUNTED_DEVICES = CmsisConstants.MOUNTED_DEVICES;
 	private static final String COMPATIBLE_DEVICES = CmsisConstants.COMPATIBLE_DEVICES;
-
-	private BoardsViewColumnAdvisor fColumnAdvisor;
 
 	IRteBoardDeviceItem getBoardDeviceTreeItem(Object obj) {
 		if (obj instanceof IRteBoardDeviceItem) {
@@ -359,27 +321,19 @@ public class BoardsView extends ViewPart implements IRteEventListener {
 
 	public BoardsView() {
 	}
+	
+	@Override
+	protected String getHelpContextId() {
+		return IHelpContextIds.BOARDS_VIEW;
+	}
 
 	@Override
-	public void createPartControl(Composite parent) {
+	public boolean isFilterSource() {
+		return true;
+	}
 
-		PatternFilter filter = new PatternFilter() {
-			@Override
-			protected boolean isLeafMatch(final Viewer viewer, final Object element) {
-				TreeViewer treeViewer = (TreeViewer) viewer;
-				boolean isMatch = false;
-				ColumnLabelProvider labelProvider = (ColumnLabelProvider) treeViewer.getLabelProvider(0);
-				String labelText = labelProvider.getText(element);
-				isMatch |= wordMatches(labelText);
-				return isMatch;
-			}
-		};
-		filter.setIncludeLeadingWildcard(true);
-		fTree = new FilteredTree(parent, SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL, filter, true);
-		fTree.setInitialText(Messages.BoardsView_SearchBoard);
-		fViewer = fTree.getViewer();
-		fViewer.getTree().setLinesVisible(true);
-		fViewer.getTree().setHeaderVisible(true);
+	@Override
+	public void createTreeColumns() {
 
 		TreeViewerColumn column0 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		column0.getColumn().setText(CmsisConstants.BOARD_TITLE);
@@ -389,35 +343,16 @@ public class BoardsView extends ViewPart implements IRteEventListener {
 		TreeViewerColumn column1 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		column1.getColumn().setText(CmsisConstants.SUMMARY_TITLE);
 		column1.getColumn().setWidth(300);
-		fColumnAdvisor = new BoardsViewColumnAdvisor(fViewer);
-		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLURL));
+		BoardsViewColumnAdvisor columnAdvisor = new BoardsViewColumnAdvisor(fViewer);
+		column1.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, COLURL));
 
 		fViewer.setContentProvider(new BoardViewContentProvider());
-		fViewer.setComparator(new BoardTreeColumnComparator(fViewer, fColumnAdvisor));
+		fViewer.setComparator(new BoardTreeColumnComparator(fViewer, columnAdvisor));
 		fViewer.setAutoExpandLevel(2);
-		refresh();
-
-		ColumnViewerToolTipSupport.enableFor(fViewer);
-
-		// Create the help context id for the viewer's control
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(fViewer.getControl(), IHelpContextIds.BOARDS_VIEW);
-
-		getSite().setSelectionProvider(fViewer);
-
-		makeActions();
-		hookContextMenu();
-		hookDoubleClickAction();
-		contributeToActionBars();
-
-		CpInstallerPlugInUI.registerViewPart(this);
-
-		CpPlugIn.addRteListener(this);
 	}
 
-	/**
-	 * Set the viewer's input
-	 */
-	void refresh() {
+	@Override
+	protected void refresh() {
 		if (CpPlugIn.getDefault() == null) {
 			return;
 		}
@@ -435,218 +370,4 @@ public class BoardsView extends ViewPart implements IRteEventListener {
 			}
 		}
 	}
-
-	/**
-	 * make actions
-	 */
-	private void makeActions() {
-		fRemoveSelection = new Action() {
-			@Override
-			public void run() {
-				fViewer.setSelection(null);
-				fTree.getFilterControl().setText(CmsisConstants.EMPTY_STRING);
-			}
-		};
-
-		fRemoveSelection.setText(Messages.BoardsView_RemoveSelection);
-		fRemoveSelection.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_REMOVE_ALL));
-		fRemoveSelection.setToolTipText(Messages.BoardsView_RemoveSelection);
-
-		fExpandAction = new Action() {
-			@Override
-			public void run() {
-				if (fViewer == null) {
-					return;
-				}
-				fViewer.expandAll();
-			}
-		};
-
-		fExpandAction.setText(Messages.ExpandAll);
-		fExpandAction.setToolTipText(Messages.ExpandAllNodes);
-		fExpandAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL));
-
-		fExpandItemAction = new Action() {
-			@Override
-			public void run() {
-				if (fViewer == null) {
-					return;
-				}
-				ISelection selection = fViewer.getSelection();
-				if (selection == null) {
-					return;
-				}
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				fViewer.expandToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
-			}
-		};
-		fExpandItemAction.setText(Messages.ExpandSelected);
-		fExpandItemAction.setToolTipText(Messages.ExpandSelectedNode);
-		fExpandItemAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL));
-
-		fCollapseAction = new Action() {
-			@Override
-			public void run() {
-				if (fViewer == null) {
-					return;
-				}
-				fViewer.collapseAll();
-			}
-		};
-		fCollapseAction.setText(Messages.CollapseAll);
-		fCollapseAction.setToolTipText(Messages.CollapseAllNodes);
-		fCollapseAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
-
-		fCollapseItemAction = new Action() {
-			@Override
-			public void run() {
-				if (fViewer == null) {
-					return;
-				}
-				ISelection selection = fViewer.getSelection();
-				if (selection == null) {
-					return;
-				}
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				fViewer.collapseToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
-			}
-		};
-		fCollapseItemAction.setText(Messages.CollapseSelected);
-		fCollapseItemAction.setToolTipText(Messages.CollapseSelectedNode);
-		fCollapseItemAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
-
-		fHelpAction = new Action(Messages.Help, IAction.AS_PUSH_BUTTON) {
-			@Override
-			public void run() {
-				fViewer.getControl().notifyListeners(SWT.Help, new Event());
-			}
-		};
-		fHelpAction.setToolTipText(Messages.BoardsView_HelpForBoardsView);
-		fHelpAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_HELP));
-
-		fDoubleClickAction = new Action() {
-			@Override
-			public void run() {
-				ISelection selection = fViewer.getSelection();
-				Object obj = ((IStructuredSelection) selection).getFirstElement();
-				if (fViewer.getExpandedState(obj)) {
-					fViewer.collapseToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
-				} else if (fViewer.isExpandable(obj)) {
-					fViewer.expandToLevel(obj, 1);
-				}
-			}
-		};
-	}
-
-	private void hookDoubleClickAction() {
-		fViewer.addDoubleClickListener(new IDoubleClickListener() {
-			@Override
-			public void doubleClick(DoubleClickEvent event) {
-				fDoubleClickAction.run();
-			}
-		});
-	}
-
-	/**
-	 * hook context menu
-	 */
-	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
-		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(new IMenuListener() {
-			@Override
-			public void menuAboutToShow(IMenuManager manager) {
-				BoardsView.this.fillContextMenu(manager);
-			}
-		});
-		Menu menu = menuMgr.createContextMenu(fViewer.getControl());
-		fViewer.getControl().setMenu(menu);
-		getSite().registerContextMenu(menuMgr, fViewer);
-	}
-
-	/**
-	 * fill context menu
-	 *
-	 * @param manager
-	 */
-	void fillContextMenu(IMenuManager manager) {
-		if (fViewer.getSelection() == null || fViewer.getSelection().isEmpty()) {
-			manager.add(fExpandAction);
-			manager.add(fCollapseAction);
-		} else {
-			manager.add(fExpandItemAction);
-			manager.add(fCollapseItemAction);
-		}
-		manager.add(new Separator());
-		manager.add(fRemoveSelection);
-		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-	}
-
-	/**
-	 * contribute to action bars
-	 */
-	private void contributeToActionBars() {
-		IActionBars bars = getViewSite().getActionBars();
-		fillLocalPullDown(bars.getMenuManager());
-		fillLocalToolBar(bars.getToolBarManager());
-	}
-
-	/**
-	 * @param manager
-	 */
-	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(fExpandAction);
-		manager.add(fCollapseAction);
-		manager.add(fHelpAction);
-		manager.add(new Separator());
-		manager.add(fRemoveSelection);
-	}
-
-	/**
-	 * @param manager
-	 */
-	private void fillLocalToolBar(IToolBarManager manager) {
-		manager.add(fExpandAction);
-		manager.add(fCollapseAction);
-		manager.add(fHelpAction);
-		manager.add(new Separator());
-		manager.add(fRemoveSelection);
-	}
-
-	public Composite getComposite() {
-		return fTree;
-	}
-
-	@Override
-	public void setFocus() {
-		fViewer.getControl().setFocus();
-	}
-
-	@Override
-	public void handle(RteEvent event) {
-		switch (event.getTopic()) {
-		case RteEvent.PACKS_RELOADED:
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					refresh();
-				}
-			});
-			break;
-		case RteEvent.PACK_INSTALL_JOB_FINISHED:
-		case RteEvent.PACK_UNPACK_JOB_FINISHED:
-		case RteEvent.PACK_REMOVE_JOB_FINISHED:
-		case RteEvent.PACK_DELETE_JOB_FINISHED:
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					fViewer.refresh();
-				}
-			});
-			break;
-		default:
-			return;
-		}
-	}
-
 }

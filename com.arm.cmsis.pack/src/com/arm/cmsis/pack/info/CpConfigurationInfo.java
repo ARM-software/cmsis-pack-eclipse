@@ -19,6 +19,7 @@ import com.arm.cmsis.pack.data.CpRootItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackFilter;
+import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * The class inplementing ICpConfigurationInfo interface 
@@ -65,7 +66,7 @@ public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationI
 	public String getDfpPath() {
 		ICpPack pack = getPack();
 		if(pack != null)
-			return pack.getInstallDir(null);
+			return pack.getDir(true);
 		return null;
 	}
 
@@ -142,4 +143,13 @@ public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationI
 		}
 		return apiInfos;
 	}
+
+	@Override
+	public String getName() {
+		if(fileName != null && !fileName.isEmpty())
+			return Utils.extractBaseFileName(fileName);
+		return super.getName();
+	}
+
+	
 }

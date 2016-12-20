@@ -21,7 +21,7 @@ import java.util.Set;
  */
 public class GenericListenerList<L extends IGenericListener<E>, E> implements IGenericListenerList<L, E> {
 
-	private Set<L> listeners = Collections.synchronizedSet(new LinkedHashSet<L>()); 
+	protected Set<L> listeners = Collections.synchronizedSet(new LinkedHashSet<L>()); 
 
 	public GenericListenerList() {
 	}

@@ -42,6 +42,8 @@ public class CmsisConstants {
 	static public final String ID			= "id";				//$NON-NLS-1$
 	static public final String DOC			= "doc";			//$NON-NLS-1$
 	static public final String DESCRIPTION	= "description";	//$NON-NLS-1$
+	public static final String FILE_NAME 	= "filename";		//$NON-NLS-1$
+
 
 	// condition expressions
 	static public final String ACCEPT		= "accept";			//$NON-NLS-1$
@@ -61,6 +63,7 @@ public class CmsisConstants {
 	static public final String CVENDOR 		= "Cvendor";		//$NON-NLS-1$
 	static public final String CVERSION 	= "Cversion";		//$NON-NLS-1$
 	static public final String CAPIVERSION 	= "Capiversion";	//$NON-NLS-1$
+	static public final String EXCLUSIVE	= "exclusive";   	//$NON-NLS-1$
 	static public final String MAX_INSTANCES = "maxInstances";	//$NON-NLS-1$
 	static public final String IS_DEFAULT_VARIANT = "isDefaultVariant";   //$NON-NLS-1$
 
@@ -73,6 +76,9 @@ public class CmsisConstants {
 	static public final String DCORE		= "Dcore";			//$NON-NLS-1$
 	static public final String DFPU			= "Dfpu";			//$NON-NLS-1$
 	static public final String DMPU			= "Dmpu";			//$NON-NLS-1$
+	static public final String DDSP			= "Ddsp";			//$NON-NLS-1$
+	static public final String DTZ			= "Dtz";			//$NON-NLS-1$
+	static public final String DSECURE		= "Dsecure";		//$NON-NLS-1$
 	static public final String DENDIAN		= "Dendian";		//$NON-NLS-1$
 	static public final String DCLOCK		= "Dclock";			//$NON-NLS-1$
 
@@ -87,10 +93,29 @@ public class CmsisConstants {
 	static public final String PUNITS 		= "Punits";			//$NON-NLS-1$
 
 	static public final String TCOMPILER	= "Tcompiler";		//$NON-NLS-1$
+	static public final String TVARIANT		= "Tvariant";		//$NON-NLS-1$
 	static public final String TOUTPUT		= "Toutput";		//$NON-NLS-1$
 
 	static public final String TOUTPUT_EXE	= "exe";			//$NON-NLS-1$
 	static public final String TOUTPUT_LIB	= "lib";			//$NON-NLS-1$
+
+	static public final String THOST		= "Thost";			//$NON-NLS-1$
+	static public final String TENVIRONMENT	= "Tenvironment";	//$NON-NLS-1$
+	static public final String TECLIPSE		= "Teclipse";		//$NON-NLS-1$
+
+	static public final String HOST			= "host";			//$NON-NLS-1$
+	public static final String ALL 			= "all";			//$NON-NLS-1$
+	static public final String WIN			= "win";			//$NON-NLS-1$
+	static public final String LINUX		= "linux";			//$NON-NLS-1$
+	static public final String MAC			= "mac";			//$NON-NLS-1$
+
+	static public final String EXE			= "exe";			//$NON-NLS-1$
+	static public final String ECLIPSE		= "eclipse";		//$NON-NLS-1$
+	static public final String WEB			= "web";			//$NON-NLS-1$
+
+	static public final String PLUGIN		= "plugin";			//$NON-NLS-1$
+	static public final String CLASS		= "class";			//$NON-NLS-1$
+	static public final String METHOD		= "method";			//$NON-NLS-1$
 
 	static public final String CATEGORY 	= "category";		//$NON-NLS-1$
 	static public final String ATTR 		= "attr";			//$NON-NLS-1$
@@ -124,6 +149,16 @@ public class CmsisConstants {
 	static public final String MPU			= "MPU";			//$NON-NLS-1$
 	static public final String NO_MPU		= "NO_MPU";			//$NON-NLS-1$
 
+	static public final String TZ			= "TZ";				//$NON-NLS-1$
+	static public final String NO_TZ		= "NO_TZ";			//$NON-NLS-1$
+
+	static public final String DSP			= "DSP";				//$NON-NLS-1$
+	static public final String NO_DSP		= "NO_DSP";			//$NON-NLS-1$
+
+	static public final String SECURE		= "secure";				//$NON-NLS-1$
+	static public final String NON_SECURE	= "Non-secure";			//$NON-NLS-1$
+
+
 	static public final String COPY			= "copy";			//$NON-NLS-1$
 	static public final String CONFIG		= "config";			//$NON-NLS-1$
 	static public final String TEMPLATE		= "template";		//$NON-NLS-1$
@@ -153,6 +188,9 @@ public class CmsisConstants {
 	static public final String TAXONOMY_TAG		= "taxonomy";	//$NON-NLS-1$
 	static public final String EXAMPLE_TAG		= "example";	//$NON-NLS-1$
 	static public final String EXAMPLES_TAG		= "examples";	//$NON-NLS-1$
+	static public final String REQUIREMENTS_TAG	= "requirements";	//$NON-NLS-1$
+
+
 	static public final String RTE_COMPONENTS_H = "RTE_Components_h"; //$NON-NLS-1$
 	static public final String RTE				= "RTE"; 		//$NON-NLS-1$
 	static public final String RTEDIR			= "RTE/"; 		//$NON-NLS-1$
@@ -176,10 +214,9 @@ public class CmsisConstants {
 	static public final String ARGUMENTS_TAG    = "arguments";	//$NON-NLS-1$
 	static public final String SWITCH		    = "switch";	//$NON-NLS-1$
 	static public final String GPDSC_TAG		= "gpdsc";		//$NON-NLS-1$
+	static public final String GPDSCS_TAG		= "gpdscs";		//$NON-NLS-1$
 	static public final String WORKING_DIR_TAG  = "workingDir";	//$NON-NLS-1$
 	static public final String PROJECT_FILES_TAG = "project_files";	//$NON-NLS-1$
-
-
 
 	// device property tags and attributes
 	static public final String DEBUG_TAG		= "debug";		//$NON-NLS-1$
@@ -301,8 +338,12 @@ public class CmsisConstants {
 	static public final String BUTTON_OFFLINE		= "Offline"; //$NON-NLS-1$
 	static public final String BUTTON_DEPRECATED	= "Deprecated"; //$NON-NLS-1$
 	static public final String BUTTON_INSTALL		= "Install"; //$NON-NLS-1$
+	static public final String BUTTON_INSTALL_PLUS	= "Install+"; //$NON-NLS-1$
+	static public final String BUTTON_RESOLVE		= "Resolve"; //$NON-NLS-1$
 	static public final String BUTTON_UPDATE		= "Update"; //$NON-NLS-1$
+	static public final String BUTTON_UPDATE_PLUS	= "Update+"; //$NON-NLS-1$
 	static public final String BUTTON_UNPACK		= "Unpack"; //$NON-NLS-1$
+	static public final String BUTTON_UNPACK_PLUS	= "Unpack+"; //$NON-NLS-1$
 	static public final String BUTTON_REMOVE		= "Remove"; //$NON-NLS-1$
 	static public final String BUTTON_DELETE		= "Delete"; //$NON-NLS-1$
 	static public final String BUTTON_DELETE_ALL	= "Delete All"; //$NON-NLS-1$
@@ -325,25 +366,34 @@ public class CmsisConstants {
 	static public final String REPO_URL			= "url"; //$NON-NLS-1$
 	static public final String REPO_LOCATION	= "Location"; //$NON-NLS-1$
 	static public final String REPO_KEIL		= "Keil"; //$NON-NLS-1$
-	static public final String REPO_KEILWEB		= "www.keil.com"; //$NON-NLS-1$
-	static public final String REPO_KEILINDEX	= "http://www.keil.com/pack/index.idx"; //$NON-NLS-1$
+	static public final String REPO_KEIL_SERVER	= "www.keil.com"; //$NON-NLS-1$
+	static public final String REPO_KEIL_PACK_SERVER = "http://www.keil.com/pack/"; //$NON-NLS-1$
+	static public final String REPO_KEIL_INDEX_FILE = "index.idx"; //$NON-NLS-1$
+	static public final String REPO_KEIL_PINDEX_FILE = "index.pidx"; //$NON-NLS-1$
+	static public final String REPO_KEIL_INDEX_URL = REPO_KEIL_PACK_SERVER + REPO_KEIL_PINDEX_FILE;
 
 	static public final String ALL_BOARDS		= "All Boards"; //$NON-NLS-1$
 	static public final String ALL_DEVICES		= "All Devices"; //$NON-NLS-1$
 
 	static public final String ZERO	= "0"; //$NON-NLS-1$
-	
-	// paths and variables
-	static public final String CMSIS_PACK_ROOT = "cmsis_pack_root";   				//$NON-NLS-1$
-	static public final String CMSIS_PACK_ROOT_VAR = "${" + CMSIS_PACK_ROOT + "}" ; //$NON-NLS-1$ //$NON-NLS-2$
-	static public final String CMSIS_DFP = "cmsis_dfp";   							//$NON-NLS-1$
-	static public final String CMSIS_DFP_VAR = "${cmsis_dfp:${ProjName}}"; 			//$NON-NLS-1$
 
-	// variable that is used as begin/end markers, both are expanded to empty string
+	// paths and variables
+
+	static public final String CMSIS_PACK_ROOT = "cmsis_pack_root";   			//$NON-NLS-1$
+	static public final String CMSIS_PACK_ROOT_VAR = "${cmsis_pack_root}" ; 	//$NON-NLS-1$
+	static public final String CMSIS_DFP = "cmsis_dfp";   						//$NON-NLS-1$
+	static public final String CMSIS_DFP_VAR = "${cmsis_dfp}";   				//$NON-NLS-1$
+	static public final String CMSIS_DFP_VAR_PRJ = "${cmsis_dfp:${ProjName}}"; 	//$NON-NLS-1$
+
+	static public final String DOT_DOWNLOAD = ".Download"; 						//$NON-NLS-1$
+	static public final String DOT_WEB = ".Web";		 						//$NON-NLS-1$
+
+	// variable that is used as markers, all are are expanded to empty string
 	static public final String CMSIS_RTE = "cmsis_rte";		 						//$NON-NLS-1$
+	static public final String CMSIS_RTE_VAR = "${cmsis_rte}";		 						//$NON-NLS-1$
 	static public final String CMSIS_RTE_BEGIN_VAR = "${cmsis_rte:begin}"; 			//$NON-NLS-1$
 	static public final String CMSIS_RTE_END_VAR   = "${cmsis_rte:end}";			//$NON-NLS-1$
-	
+
 	static public final String PACK_IDX = "pack.idx"; //$NON-NLS-1$
 
 	static public final String PROJECT_LOCAL_PATH 	= "${workspace_loc:/${ProjName}}/"; //$NON-NLS-1$
@@ -352,16 +402,19 @@ public class CmsisConstants {
 
 	static public final String RTE_RTE_Components_h = RTEDIR + "RTE_Components.h";  //$NON-NLS-1$
 	static public final String CMSIS_device_header = "CMSIS_device_header";  //$NON-NLS-1$
-	
-	
-	// standard key sequences (http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_generators_pg.html) 
-	static public final String[] STANDARD_KEY_SEQENCES = 
-			new String[]{	"$D",   // Name of the device configured in the current project, equals to #D:@D if @D is not empty, to #D otherwise   //$NON-NLS-1$
-							"#D", 	// Name of device item without processor name   //$NON-NLS-1$
+
+
+	// standard key sequences (http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_generators_pg.html)
+	static public final String[] STANDARD_KEY_SEQENCES =
+			new String[]{	"$D",   // Directory name corresponding to project's device, equals to #D_@D if @D is not empty, to #D otherwise   //$NON-NLS-1$
+							"#D", 	// Device device item without processor name   //$NON-NLS-1$
 							"@D",   // Processor name if not empty  //$NON-NLS-1$
 							"$P", 	// PATH to current project //$NON-NLS-1$
 							"#P", 	// PATH and name of the current project  //$NON-NLS-1$
-							"$S"	// PATH to PACK folder containing the Device description used by the current project  //$NON-NLS-1$
-						};   
-	
+							"$S",	// PATH to PACK folder containing the Device description used by the current project  //$NON-NLS-1$
+							"$K"	// PATH to environment-specific "kernel" directory  //$NON-NLS-1$
+						};
+
+	static public final String[] LAUNCH_TYPES = new String[]{ECLIPSE, EXE, WEB};
+
 }

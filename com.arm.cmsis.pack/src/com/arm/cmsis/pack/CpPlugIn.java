@@ -28,8 +28,16 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.arm.cmsis.pack"; //$NON-NLS-1$
+	// Preference ID
 	public static final String CMSIS_PACK_ROOT_PREFERENCE = "com.arm.cmsis.pack.root"; //$NON-NLS-1$
 	public static final String CMSIS_PACK_REPOSITORY_PREFERENCE = "com.arm.cmsis.pack.repository"; //$NON-NLS-1$
+	private static final String PROXY_PREFIX = "com.arm.cmsis.proxy."; //$NON-NLS-1$
+	public static final String PROXY_MODE 	= PROXY_PREFIX + "mode"; //$NON-NLS-1$
+	public static final String PROXY_ADDRESS= PROXY_PREFIX + "address"; //$NON-NLS-1$
+	public static final String PROXY_PORT 	= PROXY_PREFIX + "port"; //$NON-NLS-1$
+	public static final String PROXY_USER 	= PROXY_PREFIX + "username"; //$NON-NLS-1$
+	public static final String PROXY_PASSWORD = PROXY_PREFIX + "password"; //$NON-NLS-1$
+
 	private static BundleContext context;
 	private static CpPlugIn plugin;
 
@@ -47,16 +55,17 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 		plugin = this;
 		CpPlugIn.context = bundleContext;
 
-		DeviceVendor.fillMaps(); // the maps can later be updated by ICpEnvironmentProvider 
-		
-		// initialize environment provider first to let it change pack manager or/and installer   
+		DeviceVendor.fillMaps(); // the maps can later be updated by ICpEnvironmentProvider
+
+		// initialize environment provider first to let it change pack manager or/and installer
 		initEnvironmentProvider();
 
-		if(thePackManager == null)
+		if(thePackManager == null) {
 			thePackManager = new CpPackManager();
+		}
 		thePackManager.setRteEventProxy(this);
 
-		if(thePackInstaller == null) { 
+		if(thePackInstaller == null) {
 			thePackInstaller = CpPackInstallerFactory.getInstance().getExtender();
 		}
 
@@ -65,7 +74,7 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 		}
 
 		String packRoot = CpPreferenceInitializer.getPackRoot();
-		thePackManager.initParser(null); 
+		thePackManager.initParser(null);
 		thePackManager.setCmsisPackRootDirectory(packRoot); // will load packs and issue corresponding event
 	}
 
@@ -103,8 +112,9 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	 * @param provider ICpEnvironmentProvider
 	 */
 	public void setEnvironmentProvider(ICpEnvironmentProvider provider) {
-		if(provider == theEnvironmentProvider)
+		if(provider == theEnvironmentProvider) {
 			return;
+		}
 		rteEventProxy.removeListener(theEnvironmentProvider);
 		theEnvironmentProvider = provider;
 		rteEventProxy.addListener(theEnvironmentProvider);
@@ -118,7 +128,7 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 		return plugin != null ? plugin.theEnvironmentProvider : new CpEnvironmentProvider();
 	}
 
-	
+
 	/**
 	 * Initializes an environment provider
 	 */
@@ -128,13 +138,13 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 			if(theEnvironmentProvider == null) {
 				// create default one
 				theEnvironmentProvider = new CpEnvironmentProvider();
-			} 
+			}
 		}
 		rteEventProxy.addListener(theEnvironmentProvider);
 		theEnvironmentProvider.init();
 	}
-	
-		
+
+
 	/**
 	 * Returns the pack manager
 	 * @return ICpPackManager
@@ -157,11 +167,12 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	 */
 	public void setPackInstaller(ICpPackInstaller pi) {
 		thePackInstaller = pi;
-		if(thePackManager != null)
+		if(thePackManager != null) {
 			thePackManager.setPackInstaller(thePackInstaller);
+		}
 	}
-	
-	
+
+
 	/**
 	 * Adds an IRteEventListener to the internal listener list
 	 * @param listener IRteEventListener

@@ -14,12 +14,15 @@ package com.arm.cmsis.pack.data;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
+import com.arm.cmsis.pack.utils.Utils;
+
 /**
  *   Default implementation of ICpRootItem interface
  */
 public class CpRootItem extends CpItem implements ICpRootItem {
 
-	private String fileName = null;
+	protected String fileName = null;
+	protected String directory = null;
 
 	public CpRootItem() {
 		super(NULL_CPITEM);
@@ -39,9 +42,36 @@ public class CpRootItem extends CpItem implements ICpRootItem {
 	}
 	
 	@Override
+	public ICpRootItem getRootItem() {
+		return this;
+	}	
+	
+	@Override
 	public void setFileName(String fileName) {
-		IPath p = new Path(fileName);
-		this.fileName = p.toString();
+		if (fileName != null && !fileName.isEmpty()) {
+			IPath p = new Path(fileName);
+			this.fileName = p.toString();
+		} else {
+			this.fileName = fileName;
+		}
+	}
+	
+	
+	@Override
+	public String getDir(boolean keepSlash) {
+		if(directory == null || !keepSlash) {
+			String dir = Utils.extractPath(getFileName(), keepSlash);
+			if(!keepSlash)
+				return dir;
+			directory = dir;
+		}
+		return directory;
+	}
+
+	
+	@Override
+	public String getRootDir(boolean keepSlash) {
+		return getDir( keepSlash);
 	}
 
 	@Override
@@ -49,4 +79,11 @@ public class CpRootItem extends CpItem implements ICpRootItem {
 		return fileName;
 	}
 
+	
+	@Override
+	public String getRootFileName() {
+		return getFileName();
+	}
+
+	
 }

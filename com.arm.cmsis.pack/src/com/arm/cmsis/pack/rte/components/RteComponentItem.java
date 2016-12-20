@@ -134,16 +134,6 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 		return fbExclusive;
 	}
 
-	@Override
-	public String getActiveChildName() {
-		if(isExclusive() && hasChildren() ) {
-			if(fActiveChildName == null || !hasChild(fActiveChildName)) {
-				fActiveChildName = getFirstChildKey();
-			}
-		}
-		return fActiveChildName;
-	}
-
 	
 	@Override
 	public boolean isSelected() {
@@ -184,6 +174,27 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 	}
 
 	@Override
+	public String getActiveChildName() {
+		if(isExclusive() && hasChildren() ) {
+			if(fActiveChildName == null || !hasChild(fActiveChildName)) {
+				fActiveChildName = super.getFirstChildKey();
+			}
+		}
+		return fActiveChildName;
+	}
+
+	@Override
+	public String getFirstChildKey() {
+		if(isExclusive() && hasChildren() ) {
+			if(fActiveChildName != null && hasChild(fActiveChildName)) {
+				return fActiveChildName;
+			}
+		}
+		return super.getFirstChildKey();
+	}
+
+	
+	@Override
 	public IRteComponentItem getActiveChild() {
 		if(hasChildren() && isExclusive()) {
 			String activeChildName = getActiveChildName();
@@ -192,6 +203,14 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public IRteComponentItem getFirstChild() {
+		IRteComponentItem item = getActiveChild();
+		if(item != null)
+			return item;
+		return super.getFirstChild();
 	}
 
 	@Override
@@ -580,6 +599,25 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 	}
 
 	
+	@Override
+	public Collection<IRteComponent> getGeneratorComponents(String generatorId, Collection<IRteComponent> components) {
+		if(components == null) {
+			components = new LinkedList<IRteComponent>();
+		}
+		
+		IRteComponentItem activeChild = getActiveChild();
+		if(activeChild != null) {
+			return activeChild.getGeneratorComponents(generatorId, components);
+		}
+		if(hasChildren()) {
+			Collection<? extends IRteComponentItem> children = getChildren();
+			for(IRteComponentItem child : children) {
+				child.getGeneratorComponents(generatorId, components);
+			}
+		}
+		return components;	
+	}
+
 	@Override
 	public EEvaluationResult findComponents(IRteDependency dependency) {
 		EEvaluationResult result = EEvaluationResult.MISSING;

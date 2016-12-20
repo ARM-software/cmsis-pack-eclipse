@@ -95,6 +95,8 @@ public class RteDependencyItem extends CmsisItem implements IRteDependencyItem {
 		ICpItem cpItem = getCpItem();
 		if(cpItem != null)
 			return cpItem.getName();
+		if(fComponentItem != null)
+			return fComponentItem.getName();
 		return super.getName();
 	}
 	

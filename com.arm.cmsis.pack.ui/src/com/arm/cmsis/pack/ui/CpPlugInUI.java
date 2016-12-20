@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.graphics.Image;
@@ -95,6 +94,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_RTE_WARNING 	= "rteWarning.gif"; //$NON-NLS-1$
 	public static final String ICON_RTE_ERROR   	= "rteError.gif"; 	//$NON-NLS-1$
 	public static final String ICON_RTE_UNPACK   	= "rteUnpack.png"; 	//$NON-NLS-1$
+	public static final String ICON_RTE_SUB_WARNING	= "rteSubWarning.png"; 	//$NON-NLS-1$
 
 	public static final String ICON_RTE_OVR 	  	= "rte_ovr.gif"; 		//$NON-NLS-1$
 	public static final String ICON_RTE_WARNING_OVR = "rteWarning_ovr.gif"; //$NON-NLS-1$
@@ -116,12 +116,15 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_PACKINSTALLER 	= "packInstaller.gif"; 	//$NON-NLS-1$
 	public static final String ICON_CHECK4UPDATE 	= "check4Update.gif"; 	//$NON-NLS-1$
 	public static final String ICON_REFRESH 		= "refresh_nav.gif"; 	//$NON-NLS-1$
+	public static final String ICON_IMPORT_FOLDER 	= "import_folder.gif"; 	//$NON-NLS-1$
 
 	public static final String ICON_EXAMPLE			= "cmsisExample.png"; 			//$NON-NLS-1$
 
+	public static final String ICON_GEAR_WHEEL		= "gear_wheel.gif"; 			//$NON-NLS-1$
+	public static final String ICON_GEAR_WHEELS		= "gear_wheels.gif"; 			//$NON-NLS-1$
 
 	public static final String ICON_CHIP	 		= "chip.png"; 			//$NON-NLS-1$
-	public static final String ICON_CHIP_GREY 		= "chip_grey.png"; 			//$NON-NLS-1$
+	public static final String ICON_CHIP_GREY 		= "chip_grey.png"; 		//$NON-NLS-1$
 	public static final String ICON_CHIP_32 		= "chip32.png"; 		//$NON-NLS-1$
 	public static final String ICON_CHIP_48 		= "chip48.png"; 		//$NON-NLS-1$
 
@@ -135,6 +138,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_BOARD_GREY		= "boardGrey.png";		//$NON-NLS-1$
 
 	public static final String ICON_RUN 			= "run.gif"; 			//$NON-NLS-1$
+	public static final String ICON_RUN_GREY 		= "runGrey.gif"; 		//$NON-NLS-1$
 
 	public static final String ICON_PACKAGE 		= "package.png"; 		//$NON-NLS-1$
 	public static final String ICON_PACKAGE_EMPTY 	= "packageEmpty.png"; 	//$NON-NLS-1$
@@ -182,16 +186,13 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		plugin = this;
 		IPreferenceStore store = getCorePreferenceStore();
 
-		store.addPropertyChangeListener(new IPropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent event) {
-				if (event.getProperty() == CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE) {
-					String newPackRoot = event.getNewValue().toString();
-					ICpPackManager pm  = CpPlugIn.getPackManager();
-					if(pm != null && CpPreferenceInitializer.getCmsisRootProvider() == null
-							&& !newPackRoot.equals(pm.getCmsisPackRootDirectory()) ) {
-						pm.setCmsisPackRootDirectory(newPackRoot);
-					}
+		store.addPropertyChangeListener(event -> {
+			if (event.getProperty() == CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE) {
+				String newPackRoot = event.getNewValue().toString();
+				ICpPackManager pm  = CpPlugIn.getPackManager();
+				if(pm != null && CpPreferenceInitializer.getCmsisRootProvider() == null
+						&& !newPackRoot.equals(pm.getCmsisPackRootDirectory()) ) {
+					pm.setCmsisPackRootDirectory(newPackRoot);
 				}
 			}
 		});
@@ -259,6 +260,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	 * Utility method to get command service from workbench
 	 * @return ICommandService
 	 */
+	@SuppressWarnings("cast")
 	static public ICommandService getCommandService(){
 		if(!PlatformUI.isWorkbenchRunning()) {
 			return null;

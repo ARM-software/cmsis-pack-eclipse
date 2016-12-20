@@ -14,8 +14,9 @@ package com.arm.cmsis.pack.installer;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-import com.arm.cmsis.pack.installer.console.ConsoleStream;
-
+/**
+ * The activator class controls the plug-in life cycle
+ */
 public class CpInstallerPlugIn implements BundleActivator {
 
 	// The plug-in ID
@@ -35,7 +36,6 @@ public class CpInstallerPlugIn implements BundleActivator {
 	@Override
 	public void stop(BundleContext bundleContext) throws Exception {
 		CpInstallerPlugIn.context = null;
-		ConsoleStream.dispose();
 	}
 
 }

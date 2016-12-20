@@ -23,7 +23,7 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 
 /**
- * Console preferences : colors, activation 
+ * Console preferences : colors, activation
  *
  */
 public class CpConsolePreferencePage extends FieldEditorPreferencePage implements
@@ -47,16 +47,17 @@ public class CpConsolePreferencePage extends FieldEditorPreferencePage implement
 
 	@Override
 	protected void createFieldEditors() {
-	
+
 		addField(new BooleanFieldEditor(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT, CpStringsUI.CpConsolePreferencePage_AutoOpen, SWT.NONE, getFieldEditorParent()));
-		
+
 		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_OUT_COLOR, CpStringsUI.CpConsolePreferencePage_OutputColor, getFieldEditorParent()));
 		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_INFO_COLOR, CpStringsUI.CpConsolePreferencePage_InfoColor, getFieldEditorParent()));
+		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_WARNING_COLOR, CpStringsUI.CpConsolePreferencePage_WarnColor, getFieldEditorParent()));
 		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_ERROR_COLOR, CpStringsUI.CpConsolePreferencePage_ErrorColor, getFieldEditorParent()));
 		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_BG_COLOR, CpStringsUI.CpConsolePreferencePage_BgColor, getFieldEditorParent()));
-		
+
 	}
-	
+
 
 
 

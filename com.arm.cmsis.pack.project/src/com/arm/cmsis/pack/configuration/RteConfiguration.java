@@ -337,7 +337,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		collectFiles(ci);
 	}
 
-	private void collectFiles(ICpComponentInfo ci) {
+	protected void collectFiles(ICpComponentInfo ci) {
 		Collection<? extends ICpItem> children = ci.getChildren();
 		if( children == null || children.isEmpty()) {
 			return;
@@ -380,9 +380,9 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		if(isAddToProject(fi)){
 			String className = ci.getAttribute(CmsisConstants.CCLASS);
 			String deviceName = fConfigInfo.getDeviceInfo().getDeviceName();
-			effectivePath = getProjectRelativePath(fi, className, deviceName, index);
+			effectivePath = getPathRelativeToProject(fi, className, deviceName, index);
 			projectFiles.put(effectivePath, fi);
-			if(role != EFileRole.CONFIG  && role != EFileRole.COPY) {
+			if(fi.isGenerated() || (role != EFileRole.CONFIG  && role != EFileRole.COPY)) {
 				effectivePath = CpVariableResolver.insertCmsisRootVariable(absPath);
 			}
 		} else {
@@ -402,7 +402,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
 		ICpPack pack = ci.getPack();
 		if (role == EFileRole.TEMPLATE && pack != null &&
-				(pack.getPackState() == PackState.INSTALLED || pack.getPackState() == PackState.GENERATED)) {
+				(pack.getPackState() == PackState.INSTALLED )) {
 			String className = ci.getAttribute(CmsisConstants.CCLASS);
 			ICpCodeTemplate component = (ICpCodeTemplate) fCodeTemplateRoot.getFirstChild(className);
 			if (component == null) {
@@ -425,10 +425,18 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	 * @return
 	 */
 	protected String adjustRelativePath(String path){
-		if(path != null && path.startsWith(CmsisConstants.RTE)) {
+		if(path == null || path.isEmpty())
+			return path;
+		if(path.startsWith(CmsisConstants.RTE)) {
 			return CmsisConstants.PROJECT_LOCAL_PATH + path;
 		}
-		return path;
+		if(path.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR)) {
+			return path;
+		} 
+		if(path.startsWith(CmsisConstants.CMSIS_RTE_VAR)) {
+			return path;
+		} 
+		return CmsisConstants.CMSIS_RTE_VAR + path;
 	}
 
 	protected void addFile(String effectivePath, EFileCategory cat, String comment) {
@@ -483,7 +491,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		}
 	}
 
-	private void addLibrarySourcePaths(ICpFile f) {
+	protected void addLibrarySourcePaths(ICpFile f) {
 		if(f == null) {
 			return;
 		}
@@ -539,6 +547,10 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		if(fi == null ) {
 			return false;
 		}
+		if(isGeneratedAndRelativeToProject(fi)) {
+			return true;
+		}
+		
 		EFileRole role = fi.getRole();
 		boolean includeInProject = false;
 		switch(role) {
@@ -570,21 +582,58 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		}
 		return includeInProject;
 	}
+	
+	
+	/**
+	 * Check if file is generated and relative to project (=> to config file directory)
+	 * @param fi {@link ICpFileInfo} to check
+	 * @return true if file is resolved to a generated file that is relative to project directory  
+	 */
+	protected boolean isGeneratedAndRelativeToProject(ICpFileInfo fi) {
+		ICpFile f= fi.getFile();
+		if(f != null && f.isGenerated()) {
+			String abs = f.getAbsolutePath(f.getName());
+			String base = fConfigInfo.getDir(true);
+			if(abs.startsWith(base)) {
+				return true;
+			}
+		}		
+		return false;
+	}
 
-	protected String getProjectRelativePath(ICpFile f, String className, String deviceName, int index){
-		if(f == null) {
+	
+	/**
+	 * 
+	 * @param fi {@link ICpFileInfo} 
+	 * @param className
+	 * @param deviceName
+	 * @param index
+	 * @return
+	 */
+	protected String getPathRelativeToProject(ICpFileInfo fi, String className, String deviceName, int index){
+		if(fi == null) {
 			return null;
 		}
+		if(fi.isGenerated()) {
+			ICpFile f = fi.getFile();
+			String absPath = f.getAbsolutePath(f.getName());
+			String baseDir =  fConfigInfo.getDir(false);
+			if(absPath.startsWith(baseDir)) {
+				// the file is within project
+				return Utils.makePathRelative(absPath, baseDir);
+			}
+		}
+		
 		String path = CmsisConstants.RTE;
 		path += '/';
 		if(className != null && !className.isEmpty()) {
 			path += Utils.wildCardsToX(className) + '/'; // escape spaces with underscores
 		}
-		if(f.isDeviceDependent() && deviceName != null && !deviceName.isEmpty()) {
+		if(fi.isDeviceDependent() && deviceName != null && !deviceName.isEmpty()) {
 			path += Utils.wildCardsToX(deviceName) + '/';
 		}
 
-		String fileName = Utils.extractFileName(f.getName());
+		String fileName = Utils.extractFileName(fi.getName());
 		if(index >= 0) {
 			String ext =  Utils.extractFileExtension(fileName);
 			fileName = Utils.extractBaseFileName(fileName);
@@ -619,7 +668,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	@Override
 	public Collection<String> validate() {
 		EEvaluationResult res = fModel.getEvaluationResult();
-		if(res != EEvaluationResult.FAILED) {
+		if(res.ordinal() >= EEvaluationResult.MISSING.ordinal()) {
 			valid = true;
 			return null;
 		}
@@ -652,5 +701,24 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		return fMissingPacks;
 	}
 
+	@Override
+	public EEvaluationResult getEvaluationResult() {
+		if(fModel != null)
+			return fModel.getEvaluationResult();
+		return EEvaluationResult.UNDEFINED;
+	}
 
+	@Override
+	public void setEvaluationResult(EEvaluationResult result) {
+		if(fModel != null)
+			fModel.setEvaluationResult(result);
+	}
+
+	@Override
+	public boolean isGeneratedPackUsed(String gpdsc) {
+		if(fModel != null)
+			return fModel.isGeneratedPackUsed(gpdsc);
+		return false;
+	}
+	
 }

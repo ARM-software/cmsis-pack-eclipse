@@ -342,7 +342,8 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 		for (Iterator<String> iterator = paths.iterator(); iterator.hasNext();) {
 			String s = iterator.next();
 			if(s.startsWith(CmsisConstants.PROJECT_RTE_PATH, 1) ||
-					s.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR, 1)) {
+					s.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR, 1) ||
+					s.startsWith(CmsisConstants.CMSIS_RTE_VAR, 1)	) {
 				iterator.remove();
 			}
 		}

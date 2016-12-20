@@ -26,5 +26,9 @@ public class ColorConstants {
 
 	public final static Color COLOR_BORDER = new Color(Display.getCurrent(), new RGB(150,150,150));
 
+	public final static Color COLOR_SUFFICS_BUTTON_TOP = new Color(Display.getCurrent(), new RGB(210, 210, 210));
+	public final static Color COLOR_SUFFICS_BUTTON_BOTTOM= new Color(Display.getCurrent(), new RGB(160, 160, 160));
+	
+	
 	public final static int ARC_WIDTH_HEIGHT = 8;
 }

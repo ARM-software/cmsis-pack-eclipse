@@ -13,13 +13,16 @@ package com.arm.cmsis.pack.info;
 
 import java.util.Collection;
 
+import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.CpStrings;
+import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpComponent;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
+import com.arm.cmsis.pack.data.ICpRootItem;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 
 /**
@@ -31,6 +34,8 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 	protected EEvaluationResult fResolveResult = EEvaluationResult.UNDEFINED;
 	protected ICpPackInfo  fPackInfo = null;
 	protected int fInstanceCount = -1;
+	protected boolean fSaved = false; 
+	
 	/**
 	 * Creates info for the given component
 	 * @param parent parent item if any
@@ -39,6 +44,7 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 	 */
 	public CpComponentInfo(ICpItem parent, ICpComponent component, int instanceCount) {
 		super(parent, component);
+		fSaved = component.isGenerated();  // generated components are always saved
 		fComponent = component;
 		fInstanceCount = instanceCount;
 		setEvaluationResult(EEvaluationResult.FULFILLED);
@@ -53,6 +59,7 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 	 */
 	public CpComponentInfo(ICpItem parent, String tag) {
 		super(parent, tag);
+		fSaved = true;
 	}
 
 	@Override
@@ -89,6 +96,8 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 			attributes().removeAttribute(CmsisConstants.IS_DEFAULT_VARIANT); // not needed in info
 			attributes().setAttribute(CmsisConstants.CVENDOR, fComponent.getVendor());
 			attributes().setAttribute(CmsisConstants.CVERSION, fComponent.getVersion());
+			if(fComponent.isGenerated())
+				attributes().setAttribute(CmsisConstants.GENERATED, true);
 			if(fComponent.isDeviceDependent()) {
 				deviceDependent = 1;
 				attributes().setAttribute(CmsisConstants.DEVICE_DEPENDENT, true);
@@ -133,7 +142,7 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 
 	@Override
 	public ICpPack getPack() {
-		if(fComponent != null)// TODO Auto-generated method stub
+		if(fComponent != null)
 			return fComponent.getPack();
 		else if(fPackInfo != null)
 			return fPackInfo.getPack();
@@ -192,8 +201,7 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 
 	@Override
 	public void setEvaluationResult(EEvaluationResult result) {
-	//	if(fResolveResult == EEvaluationResult.UNDEFINED || result.ordinal() < fResolveResult.ordinal()) 
-			fResolveResult = result;
+		fResolveResult = result;
 	}
 
 
@@ -203,5 +211,42 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
 			return fComponent.getDescription();
 		return CpStrings.CpComponentInfo_ComponentMissing; 
 	}
+	
+	@Override
+	public boolean isGenerated() {
+		return attributes().getAttributeAsBoolean(CmsisConstants.GENERATED, false);
+	}
+
+
+	@Override
+	public boolean isSaved() {
+		return fSaved;  
+	}
+
+
+	@Override
+	public void setSaved(boolean saved) {
+		fSaved = saved;
+	}
+
+
+	@Override
+	public String getGpdsc(boolean bExpandToAbsolute) {
+		ICpItem gpdscItem = getFirstChild(CmsisConstants.GPDSC_TAG);
+		if(gpdscItem == null)
+			return null; 
+		String gpdsc = gpdscItem.getName();
+		if(bExpandToAbsolute) {
+			ICpRootItem rootItem = getRootItem();
+			if(rootItem != null && rootItem instanceof ICpConfigurationInfo) {
+				ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
+				return ep.expandString(gpdsc, (ICpConfigurationInfo) rootItem, true);
+			}
+		}
+		
+		return gpdsc;
+	}
+
+	
 	
 }

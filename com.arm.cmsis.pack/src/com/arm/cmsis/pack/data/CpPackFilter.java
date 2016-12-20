@@ -23,9 +23,9 @@ import java.util.Set;
  */
 public class CpPackFilter implements ICpPackFilter {
 
-	private boolean fbUseAllLatestPacks = true;
-	private Map<String, Set<String> > fPackVersions = null; // filtered pack IDs (common id , set of versions)   
-	private Set<String> fLatestPackIDs = null;
+	protected boolean fbUseAllLatestPacks = true;
+	protected Map<String, Set<String> > fPackVersions = null; // filtered pack IDs (common id , set of versions)   
+	protected Set<String> fLatestPackIDs = null;
 	
 	/**
 	 * Default empty constructor 

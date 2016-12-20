@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.generic;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -58,7 +59,22 @@ public interface ITreeMapItem<K, E extends ITreeItem<E> > extends ITreeItem<E> {
 	 */
 	E removeChild(final K key);
 
+
+	/**
+	 * Searches the tree hierarchy for a child  
+	 * @param keyPath list of keys for each hierarchy level 
+	 * @param useFullPath flag indicating if the all  path keys should be satisfied or only its fraction 
+	 * @return found child item or null if not found
+	 * @see #getKeyPath()
+	 */
+	E findChild(List<K> keyPath, boolean useFullPath); 
 	
+	/**
+	 * Returns list of keys defining full path to the item.
+	 * @return list of keys for each hierarchy level, the list is empty for the root item 
+	 * @see #findChild(List, boolean)
+	 */
+	List<K> getKeyPath();
 	
 	/**
 	 * Returns effective children as a map of key-value pairs
@@ -74,7 +90,7 @@ public interface ITreeMapItem<K, E extends ITreeItem<E> > extends ITreeItem<E> {
 	 */
 	Collection<K> getEffectiveKeys();
 
-
+	
 	
 	
 }

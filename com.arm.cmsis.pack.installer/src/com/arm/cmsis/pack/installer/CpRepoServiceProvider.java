@@ -1,26 +1,51 @@
+/*******************************************************************************
+ * Copyright (c) 2016 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
+
 package com.arm.cmsis.pack.installer;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
+import java.net.SocketAddress;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.osgi.util.NLS;
+import org.xml.sax.SAXException;
 
+import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpRepoServiceProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.installer.utils.PackInstallerUtils;
 import com.arm.cmsis.pack.installer.utils.RepositoryRefreshingUtils;
+import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
 import com.arm.cmsis.pack.utils.Utils;
 
+/**
+ * Default implementation of providing repository service like get pdsc files and pack files
+ * from the Internet
+ */
 public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 
 	private final static int TIME_OUT = 10000;
@@ -29,13 +54,15 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 	}
 
 	@Override
-	public int readIndexFile(String indexUrl, List<String[]> pdscList) throws Exception {
+	public int readIndexFile(String indexUrl, List<String[]> pdscList)
+			throws ParserConfigurationException, SAXException, IOException {
 		URL url = new URL(indexUrl);
-		return RepositoryRefreshingUtils.readIndex(url.openStream(), pdscList);
+		URLConnection connection = getConnection(url);
+		return RepositoryRefreshingUtils.readIndex(connection.getInputStream(), pdscList);
 	}
 
 	@Override
-	public File getPdscFile(String pdscUrl, String pdscName, String destFileName, IProgressMonitor monitor) throws Exception {
+	public File getPdscFile(String pdscUrl, String pdscName, String destFileName, IProgressMonitor monitor) throws IOException {
 		File destFile = null;
 
 		URL sourceUrl = new URL(pdscUrl + pdscName);
@@ -45,7 +72,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 
 		URLConnection connection = null;
 		while (true) {
-			connection = sourceUrl.openConnection();
+			connection = getConnection(sourceUrl);
 			if (connection == null) {
 				break;
 			}
@@ -103,7 +130,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 	}
 
 	@Override
-	public File getPackFile(String packUrl, String destFileName, IProgressMonitor monitor) throws Exception {
+	public File getPackFile(String packUrl, String destFileName, IProgressMonitor monitor) throws IOException {
 		SubMonitor progress = SubMonitor.convert(monitor, 100);
 
 		/***************** Establish connection *****************/
@@ -113,9 +140,9 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 		while (true) {
 			progress.worked(10);
 			if (progress.isCanceled()) {
-				return null;
+				throw new InterruptedIOException(Messages.CpPackJob_CancelledByUser);
 			}
-			connection = url.openConnection();
+			connection = getConnection(url);
 			connection.setConnectTimeout(TIME_OUT);
 			connection.setReadTimeout(TIME_OUT);
 			if (connection instanceof HttpURLConnection) {
@@ -132,7 +159,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 				}
 			}
 		}
-		
+
 		if(connection == null) {
 			return null; // should not happen
 		}
@@ -146,7 +173,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 		progress = SubMonitor.convert(progress.newChild(90), totalWork);
 		progress.subTask(NLS.bind(Messages.CpPackInstallJob_DownloadingFrom, destFileName, packUrl));
 
-		IPath downloadDir = new Path(PackInstallerUtils.getPacksDownloadDir());
+		IPath downloadDir = new Path(CpPlugIn.getPackManager().getCmsisPackDownloadDir());
 		if (!downloadDir.toFile().exists()) {
 			downloadDir.toFile().mkdir();
 		}
@@ -170,7 +197,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 				progress.worked(bytesRead);
 				// Check if the cancel button is pressed
 				if (progress.isCanceled()) {
-					throw new Exception(Messages.CpPackJob_CancelledByUser);
+					throw new InterruptedIOException(Messages.CpPackJob_CancelledByUser);
 				}
 			}
 			Utils.copy(downloadFileTmp, downloadFile);
@@ -187,6 +214,34 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 				((HttpURLConnection) connection).disconnect();
 			}
 		}
+	}
+
+	private URLConnection getConnection(URL url) throws IOException {
+		URLConnection connection = null;
+		int proxyMode = CpPreferenceInitializer.getProxyMode();
+		if (proxyMode == 0) { // No Proxy
+			connection = url.openConnection();
+		} else {
+			String addr = CpPreferenceInitializer.getProxyAddress();
+			int port = CpPreferenceInitializer.getProxyPort();
+			SocketAddress socket = new InetSocketAddress(addr, port);
+			Proxy proxy;
+			if (proxyMode == 1) { // HTTP Proxy
+				proxy = new Proxy(Proxy.Type.HTTP, socket);
+			} else if (proxyMode == 2) { // Socket Proxy
+				proxy = new Proxy(Proxy.Type.SOCKS, socket);
+			} else {
+				proxy = Proxy.NO_PROXY;
+			}
+			connection = url.openConnection(proxy);
+
+			String username = CpPreferenceInitializer.getProxyUsername();
+			String password = CpPreferenceInitializer.getProxyPassword();
+			String userpass = username + ':' + password;
+			String basicAuth = "Basic " + DatatypeConverter.printBase64Binary(userpass.getBytes()); //$NON-NLS-1$
+			connection.setRequestProperty("Authorization", basicAuth); //$NON-NLS-1$
+		}
+		return connection;
 	}
 
 }

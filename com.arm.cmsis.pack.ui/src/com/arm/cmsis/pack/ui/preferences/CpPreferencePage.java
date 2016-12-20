@@ -17,21 +17,25 @@ import java.util.List;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
@@ -41,6 +45,7 @@ import com.arm.cmsis.pack.repository.CpRepositoryList;
 import com.arm.cmsis.pack.repository.ICpRepository;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
+import com.arm.cmsis.pack.utils.Encryptor;
 import com.arm.cmsis.pack.utils.Utils;
 
 public class CpPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
@@ -51,8 +56,6 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 	private TableColumn fColumnType;
 	private TableColumn fColumnName;
 	private TableColumn fColumnUrl;
-
-	private Composite fButtonsComposite;
 
 	private String[] fButtonsNames = {
 			CpStringsUI.CpRepoPreferencePage_Add,
@@ -65,17 +68,40 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 
 	private CpRepositoryList fRepos;
 
+	boolean fAutoUpdate; // flag of 'check for update once a day'
+
+	Button fNoProxyButton;
+	Button fHttpProxyButton;
+	Button fSockProxyButton;
+	private int fProxyMode;
+	private Text fAddressText;
+	private String fAddress;
+	private Text fPortText;
+	private String fPort;
+	private Text fUserText;
+	private String fUser;
+	private Text fPassText;
+	private String fPass;
+
+	protected static Encryptor encryptor;
+
 	public CpPreferencePage() {
+		super();
 		fContentList = null;
 		fButtons = null;
 
 		fRepos = CpPlugIn.getPackManager().getCpRepositoryList();
-	}
 
+		if (encryptor == null) {
+	        encryptor = Encryptor.getEncryptor(Encryptor.DEFAULT_KEY);
+		}
+	}
 
 	@Override
 	public void init(IWorkbench workbench) {
 		setPreferenceStore(CpPlugInUI.getDefault().getCorePreferenceStore());
+		fAutoUpdate = CpPreferenceInitializer.getAutoUpdateFlag();
+		loadProxyData();
 	}
 
 
@@ -97,15 +123,98 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 	@Override
 	protected Control createContents(Composite parent) {
 		Control control = super.createContents(parent);
+
+		// Repository Settings
 		Label separator = new Label(parent, SWT.HORIZONTAL | SWT.SEPARATOR);
 	    separator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 	    Label description = new Label(parent, SWT.NONE);
 	    description.setText(CpStringsUI.CpRepoPreferencePage_AddLinksToSites);
 		createCpRepoContents(parent);
+
+		// Proxy Settings
+	    createProxyContents(parent);
+
 		return control;
 	}
 
-	protected Control createCpRepoContents(Composite parent) {
+	protected void createProxyContents(Composite parent) {
+		Group proxyComposite = new Group(parent, SWT.LEFT);
+        GridLayout layout = new GridLayout(5, false);
+        proxyComposite.setLayout(layout);
+        GridData data = new GridData(GridData.HORIZONTAL_ALIGN_FILL
+                | GridData.GRAB_HORIZONTAL);
+        proxyComposite.setLayoutData(data);
+        proxyComposite.setText(CpStringsUI.CpPreferencePage_ProxySettings);
+
+        SelectionListener selectionListener = new SelectionAdapter() {
+
+            @Override
+			public void widgetSelected(SelectionEvent e) {
+                selectProxyMode(fNoProxyButton.getSelection(),
+                		fHttpProxyButton.getSelection(),
+                		fSockProxyButton.getSelection());
+            }
+        };
+
+        fNoProxyButton = createRadioButton(proxyComposite, CpStringsUI.CpPreferencePage_NoProxy);
+        fNoProxyButton.addSelectionListener(selectionListener);
+        fNoProxyButton.setSelection(fProxyMode == 0);
+
+        fHttpProxyButton = createRadioButton(proxyComposite, CpStringsUI.CpPreferencePage_HttpProxy);
+        fHttpProxyButton.addSelectionListener(selectionListener);
+        fHttpProxyButton.setSelection(fProxyMode == 1);
+
+        fSockProxyButton = createRadioButton(proxyComposite, CpStringsUI.CpPreferencePage_SocksProxy);
+        fSockProxyButton.addSelectionListener(selectionListener);
+        fSockProxyButton.setSelection(fProxyMode == 2);
+
+        Label label = new Label(proxyComposite, SWT.NULL);
+        label.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+
+        label = new Label(proxyComposite, SWT.LEFT);
+        label.setText(CpStringsUI.CpPreferencePage_ProxyAddress);
+        fAddressText = new Text(proxyComposite, SWT.SINGLE | SWT.BORDER);
+        fAddressText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        fAddressText.setText(fAddress);
+        fAddressText.setEnabled(fProxyMode != 0);
+
+        label = new Label(proxyComposite, SWT.LEFT);
+        label.setText(CpStringsUI.CpPreferencePage_ProxyPort);
+        fPortText = new Text(proxyComposite, SWT.SINGLE | SWT.BORDER);
+        fPortText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        fPortText.setText(fPort);
+        fPortText.setEnabled(fProxyMode != 0);
+
+        label = new Label(proxyComposite, SWT.LEFT);
+        label.setText(CpStringsUI.CpPreferencePage_ProxyUsername);
+        fUserText = new Text(proxyComposite, SWT.SINGLE | SWT.BORDER);
+        fUserText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
+        fUserText.setText(fUser);
+        fUserText.setEnabled(fProxyMode != 0);
+
+        label = new Label(proxyComposite, SWT.LEFT);
+        label.setText(CpStringsUI.CpPreferencePage_ProxyPassword);
+        fPassText = new Text(proxyComposite, SWT.SINGLE | SWT.BORDER | SWT.PASSWORD);
+        fPassText.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1));
+        fPassText.setText(fPass);
+        fPassText.setEnabled(fProxyMode != 0);
+	}
+
+	void selectProxyMode(boolean noProxy, boolean httpProxy, boolean sockProxy) {
+        fProxyMode = noProxy ? 0 : httpProxy ? 1 : sockProxy ? 2 : 0;
+        fAddressText.setEnabled(!noProxy);
+        fPortText.setEnabled(!noProxy);
+        fUserText.setEnabled(!noProxy);
+        fPassText.setEnabled(!noProxy);
+    }
+
+	protected static Button createRadioButton(Composite parent, String label) {
+        Button button = new Button(parent, SWT.RADIO | SWT.LEFT);
+        button.setText(label);
+        return button;
+    }
+
+	protected void createCpRepoContents(Composite parent) {
 		fComposite = new Composite(parent, SWT.NULL);
 		fComposite.setFont(parent.getFont());
 
@@ -140,7 +249,18 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 			initButtons(fComposite, fButtonsNames);
 		}
 
-		return fComposite;
+		// Row 2: check box of "Check for Update"
+		{
+			Button checkbox = new Button(fComposite, SWT.CHECK);
+			checkbox.setText(CpStringsUI.CpPreferencePage_CheckForUpdatesEveryday);
+			checkbox.setSelection(fAutoUpdate);
+			checkbox.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					fAutoUpdate = !fAutoUpdate;
+				}
+			});
+		}
 	}
 
 	protected void initTable(Composite comp) {
@@ -187,7 +307,7 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 
 	protected void initButtons(Composite comp, String[] names) {
 
-		fButtonsComposite = new Composite(comp, SWT.NULL);
+		Composite buttonsComposite = new Composite(comp, SWT.NULL);
 
 		if (names == null || names.length == 0) {
 			return;
@@ -196,7 +316,7 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 		GridData layoutData = new GridData();
 		layoutData.verticalAlignment = SWT.FILL;
 		layoutData.horizontalAlignment = SWT.RIGHT;
-		fButtonsComposite.setLayoutData(layoutData);
+		buttonsComposite.setLayoutData(layoutData);
 
 		GridLayout layout = new GridLayout();
 		layout.numColumns = 1;
@@ -204,12 +324,12 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 		layout.marginRight = 5;
 		layout.marginTop = 0;
 
-		fButtonsComposite.setLayout(layout);
+		buttonsComposite.setLayout(layout);
 
 		fButtons = new Button[names.length];
 		for (int i = 0; i < names.length; i++) {
 
-			fButtons[i] = new Button(fButtonsComposite, SWT.PUSH);
+			fButtons[i] = new Button(buttonsComposite, SWT.PUSH);
 
 			layoutData = new GridData(GridData.FILL_HORIZONTAL);
 			layoutData.verticalAlignment = SWT.CENTER;
@@ -255,7 +375,7 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 			handleEditButton();
 			break;
 		case 2:
-			handleDelButton();
+			handleDeleteButton();
 			break;
 		}
 		updateTableContent();
@@ -266,7 +386,7 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 		NewRepoDialog dlg = new NewRepoDialog(fComposite.getShell(), null);
 		if (dlg.open() == Window.OK) {
 			String[] data = dlg.getData();
-			if (checkData(data)) {
+			if (checkRepositoryData(data)) {
 				fContentList.add(fRepos.convertToCpRepository(data));
 			}
 		}
@@ -283,13 +403,13 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 				fRepos.convertToArray(fContentList.get(index)));
 		if (dlg.open() == Window.OK) {
 			String[] data = dlg.getData();
-			if (checkData(data)) {
+			if (checkRepositoryData(data)) {
 				fContentList.set(index, fRepos.convertToCpRepository(data));
 			}
 		}
 	}
 
-	private void handleDelButton() {
+	private void handleDeleteButton() {
 
 		int index = fTable.getSelectionIndex();
 		if (index == -1) {
@@ -304,11 +424,35 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 	 * @param data the data
 	 * @return true if the data is valid, otherwise false
 	 */
-	private boolean checkData(String[] data) {
+	private boolean checkRepositoryData(String[] data) {
 		String url = data[data.length-1];
 		if (!Utils.isValidURL(url)) {
 			MessageDialog.openError(getShell(), CpStringsUI.CpPreferencePage_WrongUrlTitle,
 					CpStringsUI.CpPreferencePage_WrongUrlMessage);
+			return false;
+		}
+		return true;
+	}
+
+	private boolean checkProxyData() {
+		if(fProxyMode == 0) {
+			return true;
+		}
+		if (!Utils.isValidURL(fAddressText.getText())) {
+			MessageDialog.openError(getShell(), CpStringsUI.CpPreferencePage_WrongProxyUrlTitle,
+					CpStringsUI.CpPreferencePage_WrongProxyUrlMessage);
+			return false;
+		}
+		try {
+			int port = Integer.parseInt(fPortText.getText());
+			if (port < 0 || port > 65535) {
+				MessageDialog.openError(getShell(), CpStringsUI.CpPreferencePage_WrongPortTitle,
+						CpStringsUI.CpPreferencePage_WrongPortMessage);
+				return false;
+			}
+		} catch (NumberFormatException e) {
+			MessageDialog.openError(getShell(), CpStringsUI.CpPreferencePage_WrongPortTitle,
+					CpStringsUI.CpPreferencePage_WrongPortMessage);
 			return false;
 		}
 		return true;
@@ -321,12 +465,70 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 
 		fContentList = fRepos.getDefaultList();
 		updateTableContent();
+
+		fAutoUpdate = CpPreferenceInitializer.getAutoUpdateFlag();
+
+		updateProxySettings();
+	}
+
+	protected void updateProxySettings() {
+		loadProxyData();
+
+		fNoProxyButton.setSelection(fProxyMode == 0);
+		fHttpProxyButton.setSelection(fProxyMode == 1);
+		fSockProxyButton.setSelection(fProxyMode == 2);
+
+		fAddressText.setText(fAddress);
+		fAddressText.setEnabled(fProxyMode != 0);
+
+		fPortText.setText(fPort);
+		fPortText.setEnabled(fProxyMode != 0);
+
+		fUserText.setText(fUser);
+		fUserText.setEnabled(fProxyMode != 0);
+
+		fPassText.setText(fPass);
+		fPassText.setEnabled(fProxyMode != 0);
 	}
 
 	@Override
 	public boolean performOk() {
 		fRepos.putList(fContentList);
+
+		CpPreferenceInitializer.setAutoUpdateFlag(fAutoUpdate);
+
+		if (!checkProxyData()) {
+			return false;
+		}
+		saveProxyData();
+
 		return super.performOk();
+	}
+
+	protected void loadProxyData() {
+		IPreferenceStore store = getPreferenceStore();
+		fProxyMode = store.getInt(CpPlugIn.PROXY_MODE);
+		fAddress = store.getString(CpPlugIn.PROXY_ADDRESS);
+		fPort = store.getString(CpPlugIn.PROXY_PORT);
+		fUser = store.getString(CpPlugIn.PROXY_USER);
+		fPass = decrypt(store.getString(CpPlugIn.PROXY_PASSWORD));
+	}
+
+	protected void saveProxyData() {
+		IPreferenceStore store = getPreferenceStore();
+		store.setValue(CpPlugIn.PROXY_MODE, fProxyMode);
+		store.setValue(CpPlugIn.PROXY_ADDRESS, fAddressText.getText());
+		store.setValue(CpPlugIn.PROXY_PORT, fPortText.getText());
+		store.setValue(CpPlugIn.PROXY_USER, fUserText.getText());
+		store.setValue(CpPlugIn.PROXY_PASSWORD, encrypt(fPassText.getText()));
+	}
+
+	protected String encrypt(String input) {
+		return encryptor.encrypt(input);
+	}
+
+	protected String decrypt(String input) {
+		return encryptor.decrypt(input);
 	}
 
 	@Override

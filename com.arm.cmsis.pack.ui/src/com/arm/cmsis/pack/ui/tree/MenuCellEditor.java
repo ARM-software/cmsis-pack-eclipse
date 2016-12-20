@@ -15,7 +15,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Tree;
 
 /**
  * A cell editor that presents a drop down menu. The cell editor's
@@ -119,9 +118,8 @@ public class MenuCellEditor extends CellEditor {
 	 * Show the drop down menu just under the selected cell.
 	 */
 	private void showMenu() {
-		Tree tree = (Tree)parent;;
 		Rectangle rc = viewerCell.getBounds();
-		Rectangle rc2 = Geometry.toDisplay(tree, rc);		// convert to screen coordinates
+		Rectangle rc2 = Geometry.toDisplay(parent, rc);		// convert to screen coordinates
 		menu.setLocation(rc2.x, rc2.y + rc2.height);		// set menu position
 		menu.setVisible(true);
 		button.setVisible(false);

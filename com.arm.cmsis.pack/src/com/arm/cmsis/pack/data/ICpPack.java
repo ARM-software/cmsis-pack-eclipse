@@ -71,18 +71,25 @@ public interface ICpPack extends ICpRootItem {
 	ICpItem getCondition(String conditionId);
 
 	/**
-	 * Returns generator corresponding to supplied name if any
-	 * @param name name of the generator find
-	 * @return generator as ICpItem or null if not found in the pack
+	 * Returns generator corresponding to supplied id if any
+	 * @param id name of the generator to find. If null or empty the first generator is returned  (gpdsc case)
+	 * @return generator as ICpGenerator or null if not found in the pack
 	 */
-	ICpGenerator getGenerator(String name);
+	ICpGenerator getGenerator(String id);
 
 
 	/**
-	 * Get all the Devices contained in this pack
-	 * @return A set of {@link ICpDeviceItem} names
+	 * Get names of all devices declared in the pack
+	 * @return a set of device names, includes family, sub-family, device and variant levels.
 	 */
 	Set<String> getAllDeviceNames();
+
+	/**
+	 * Get names of boards described in the pack
+	 * @return a set of boar names
+	 */
+	Set<String> getBoardNames();
+
 
 	/**
 	 * Check if this pack is generic or not
@@ -96,10 +103,20 @@ public interface ICpPack extends ICpRootItem {
 	boolean isLatest();
 
 	/**
+	 * Check if the required packs of this packs are all installed
+	 * @return true if the required packs are all installed
+	 */
+	boolean isRequiredPacksInstalled();
+
+	/**
 	 * Returns collection of Pack releases (from latest to oldest)
 	 * @return collection of ICpItem representing pack releases
 	 */
 	Collection<? extends ICpItem> getReleases();
 
-
+	/**
+	 * Returns collection of required packs of this pack
+	 * @return collection of required packs of this pack
+	 */
+	Collection<? extends ICpItem> getRequiredPacks();
 }

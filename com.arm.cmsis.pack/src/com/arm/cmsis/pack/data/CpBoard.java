@@ -90,21 +90,17 @@ public class CpBoard extends CpItem implements ICpBoard {
 		return fURL;
 	}
 
-	// TODO: check later
 	@Override
 	public Collection<ICpItem> getMountedDevices() {
 		return getDevices(CmsisConstants.MOUNTED_DEVICE_TAG);
 	}
 
-	// TODO: check later
 	@Override
 	public Collection<ICpItem> getCompatibleDevices() {
 		return getDevices(CmsisConstants.COMPATIBLE_DEVICE_TAG);
 	}
 
-	// TODO: check later
-	private Collection<ICpItem> getDevices(final String requiredTag) {
-
+	protected Collection<ICpItem> getDevices(final String requiredTag) {
 		Collection<ICpItem> devices = new LinkedList<>();
 		Collection<? extends ICpItem> children = getChildren();
 		if (children == null) {
@@ -117,7 +113,6 @@ public class CpBoard extends CpItem implements ICpBoard {
 				devices.add(item);
 			}
 		}
-
 		return devices;
 	}
 	

@@ -15,11 +15,13 @@ import com.arm.cmsis.pack.CpEnvironmentProvider;
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.build.gnuarmeclipse.GnuarmeclipseToolChainAdapter;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
+import com.arm.cmsis.pack.data.ICpExample;
 
 /**
  *  A sample environment provider 
  */
 public class RefClientEnvironmentProvider extends CpEnvironmentProvider {
+
 
 	static public final String REF_CLIENT = "RefClient"; //$NON-NLS-1$
 	static private int gnuarmeclipseInstalled = -1; // not initialized
@@ -46,5 +48,12 @@ public class RefClientEnvironmentProvider extends CpEnvironmentProvider {
 		RefClientPackInstaller packInstaller = new RefClientPackInstaller();
 		CpPlugIn.getDefault().setPackInstaller(packInstaller);
 	}
+
+	@Override
+	public boolean isExampleSupported(ICpExample example) {
+		// return true to see all examples, even those that are not supported
+		return super.isExampleSupported(example);
+	}
+
 	
 }

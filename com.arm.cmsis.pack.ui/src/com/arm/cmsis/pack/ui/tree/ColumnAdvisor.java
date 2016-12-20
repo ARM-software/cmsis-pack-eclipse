@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.ui.tree;
 
+import org.eclipse.jface.util.Geometry;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
@@ -333,17 +334,21 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 	 */
 	protected void suffixButtonClicked(Rectangle buttonBounds, Point pt, Object element, int colIndex) {
 		if (isSuffixButtonPressed(element, colIndex) && buttonBounds.contains(pt)) {
-			executeSuffixButtonAction(element, colIndex);
+			Rectangle rect = Geometry.toDisplay(control, buttonBounds);	
+			executeSuffixButtonAction(element, colIndex, new Point(rect.x, rect.y));
 		}
 		setSuffixButtonPressed(element, colIndex, null);
 		this.control.redraw();
 	}
 
 	/**
-	 * Execute the action associated with the suffix button
+	 * Executes an action associated with the suffix button
+	 * @param element cell's element
+	 * @param colIndex cell's column index
+	 * @param pt point to show menu if needed (in display coordinates)  
 	 */
-	protected void executeSuffixButtonAction(Object element, int colIndex) {
-		// TODO: take action
+	protected void executeSuffixButtonAction(Object element, int colIndex,  Point pt) {
+		// default does nothing
 	}
 
 	public String getUrl(int x, int y){
@@ -459,6 +464,12 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 	}
 
 	@Override
+	public Image getSuffixButtonImage(Object obj, int columnIndex) {
+		return null;
+	}
+	
+	
+	@Override
 	public Color getBgColor(Object obj, int columnIndex) {
 		return null;
 	}
@@ -557,7 +568,7 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 
 	@Override
 	public boolean isSuffixButtonEnabled(Object obj, int columnIndex) {
-		return isEnabled(obj, columnIndex) && canEdit(obj, columnIndex) && getCheck(obj, columnIndex);
+		return isEnabled(obj, columnIndex) && getCheck(obj, columnIndex);
 	}
 
 	@Override
@@ -594,6 +605,24 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		return null;
 	}
 
+	/**
+	 * Creates menu
+	 * @param strings collection of strings
+	 * @return Menu
+	 */
+	protected Menu createMenu(String[] strings) {
+		if(strings == null || strings.length == 0) {
+			return null;
+		}
+
+		Menu menu = new Menu(this.control);
+		for (String s : strings) {
+			MenuItem menuItem = new MenuItem(menu, SWT.NONE);
+			menuItem.setText(s);
+		}
+		return menu;
+	}
+	
 	/**
 	 * Creates menu
 	 * @param parent parent control

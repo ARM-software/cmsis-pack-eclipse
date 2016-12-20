@@ -19,7 +19,7 @@ import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 
 /**
- *  The class represent a result of missing component/API 
+ *  The class represent a result of missing device description  
  */
 public class RteMissingDeviceResult extends RteDependencyResult {
 	protected ICpDeviceInfo fDeviceInfo = null; 

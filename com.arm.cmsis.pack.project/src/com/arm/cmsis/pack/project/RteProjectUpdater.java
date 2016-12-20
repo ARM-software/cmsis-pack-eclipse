@@ -24,13 +24,9 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.widgets.Display;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
-import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.build.IBuildSettings;
 import com.arm.cmsis.pack.build.IMemorySettings;
 import com.arm.cmsis.pack.build.settings.ILinkerScriptGenerator;
@@ -38,19 +34,15 @@ import com.arm.cmsis.pack.build.settings.IRteToolChainAdapter;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.configuration.IRteConfiguration;
 import com.arm.cmsis.pack.configuration.RteConfiguration;
-import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
-import com.arm.cmsis.pack.data.ICpPack;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
-import com.arm.cmsis.pack.data.ICpPackCollection;
+import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.EFileCategory;
 import com.arm.cmsis.pack.enums.EFileRole;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
-import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.parser.CpConfigParser;
 import com.arm.cmsis.pack.project.ui.RteProjectDecorator;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
@@ -93,30 +85,40 @@ public class RteProjectUpdater extends WorkspaceJob {
 
 	@Override
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
-		if (project == null) {
+		if (project == null || rteProject == null) {
 			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID,
 					Messages.RteProjectUpdater_ErrorProjectIsNull);
 			return status;
 		}
+
+		
 		this.monitor = monitor;
 		bSaveProject = false;
 		Status status = null;
+		EEvaluationResult res = EEvaluationResult.FULFILLED;
 		try {
 			long startTime = System.currentTimeMillis();
 			String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date(startTime)); //$NON-NLS-1$
 			String msg = timestamp + " **** " + Messages.RteProjectUpdater_UpdatingProject + " " + project.getName(); //$NON-NLS-1$ //$NON-NLS-2$
 			rteConsole.outputInfo(msg);
-			if (bLoadConfigs) {
-				rteConsole.outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
-				loadConfigFile();
+
+			String packRoot = CpVariableResolver.getCmsisPackRoot();
+			if(packRoot == null || packRoot.isEmpty()){
+				status = new Status(IStatus.WARNING, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ErrorCmisPackRootNotSet);
+				throw new CoreException(status);
 			}
-			rteConsole.outputInfo(Messages.RteProjectUpdater_UpdatingResources);
+
+			if (bLoadConfigs) {
+			//	rteConsole.outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
+				res = loadConfigFile();
+			}
+			// rteConsole.outputInfo(Messages.RteProjectUpdater_UpdatingResources);
 			addResources();
 			removeResources();
 
 			updateRteComponentsH();
 
-			rteConsole.outputInfo(Messages.RteProjectUpdater_UpdatingBuildSettings);
+			//rteConsole.outputInfo(Messages.RteProjectUpdater_UpdatingBuildSettings);
 			updateBuildSettings(bForceUpdateToolchain);
 
 			if (bSaveProject) {
@@ -128,29 +130,33 @@ public class RteProjectUpdater extends WorkspaceJob {
 		} catch (CoreException e) {
 			status = new Status(e.getStatus().getSeverity(), CpPlugInUI.PLUGIN_ID,
 					Messages.RteProjectUpdater_ErrorUpdatingRteProject, e);
+			res = EEvaluationResult.FAILED;
 		} catch (Exception e) {
 			e.printStackTrace();
-			status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ErrorUpdatingRteProject,
-					e);
-		} finally {
-			rteProject.setUpdateCompleted(true);
-		}
-		if (status != null) {
+			status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, 
+					Messages.RteProjectUpdater_ErrorUpdatingRteProject, e);
+			res = EEvaluationResult.FAILED;
+		} 
+		if (res.ordinal() <  EEvaluationResult.MISSING.ordinal() || status != null) {
 			rteConsole.outputError(Messages.RteProjectUpdater_Fail);
-			rteConsole.outputInfo(status.getMessage());
-			IStatus[] statusArray = status.getChildren();
-			if (statusArray != null && statusArray.length > 0) {
-				for (IStatus s : statusArray) {
-					rteConsole.outputInfo(s.getMessage());
+			if(status != null) {
+				rteConsole.outputInfo(status.getMessage());
+				IStatus[] statusArray = status.getChildren();
+				if (statusArray != null && statusArray.length > 0) {
+					for (IStatus s : statusArray) {
+						rteConsole.outputInfo(s.getMessage());
+					}
 				}
 			}
 		} else {
 			rteConsole.outputInfo(Messages.RteProjectUpdater_Success);
-			status = new Status(IStatus.OK, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ProjectUpdated);
 		}
 		rteConsole.output(CmsisConstants.EMPTY_STRING);
 		RteProjectDecorator.refresh();
+		if(status == null)
+			status = new Status(IStatus.OK, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ProjectUpdated);
 
+		CpProjectPlugIn.getRteProjectManager().updateFinished(rteProject);
 		return status;
 	}
 
@@ -159,12 +165,14 @@ public class RteProjectUpdater extends WorkspaceJob {
 		CpProjectPlugIn.getRteProjectManager().updateIndex(project);
 	}
 
-	protected void loadConfigFile() throws CoreException {
+	protected EEvaluationResult loadConfigFile() throws CoreException {
 		String savedRteConfigName = rteProject.getRteConfigurationName();
 		IRteConfiguration rteConf = loadRteConfiguration(savedRteConfigName);
 		Collection<String> errors = rteConf.validate();
-		if (errors == null || errors.isEmpty()) {
-			return;
+		EEvaluationResult res = rteConf.getEvaluationResult();
+
+		if ( errors == null || errors.isEmpty()) {
+			return res;
 		}
 		String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + savedRteConfigName + "':"; //$NON-NLS-1$ //$NON-NLS-2$
 		rteConsole.outputError(msg);
@@ -173,42 +181,19 @@ public class RteProjectUpdater extends WorkspaceJob {
 			msg += System.lineSeparator() + s;
 		}
 
-		// install missing packs?
-		final ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
-		final Collection<ICpPackInfo> missingPacks = rteConf.getMissingPacks();
-		StringBuilder sb = new StringBuilder(System.lineSeparator());
-		for (ICpPackInfo pi : missingPacks) {
-			if (!packInstaller.isProcessing(pi.attributes())
-					&& !hasInstalled(pi.attributes())) {
-				sb.append(System.lineSeparator() + pi.getPackFamilyId());
-			}
+		if(res.ordinal() > EEvaluationResult.FAILED.ordinal()){
+			return res;
 		}
-		if (sb.length() > System.lineSeparator().length()) {	// sb always contains at first a System.lineSeparator
-			sb.append(System.lineSeparator()).append(System.lineSeparator());
-			final String message = NLS.bind(Messages.RteProjectUpdater_InstallMissinPacksMessage, rteProject.getName(),
-					sb.toString());
-			Display.getDefault().asyncExec(new Runnable() {
-				@Override
-				public void run() {
-					boolean install = MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
-							NLS.bind(Messages.RteProjectUpdater_InstallMissinPacksTitle, rteProject.getName()),
-							message);
-					if (install) {
-						for (ICpPackInfo pi : missingPacks) {
-							packInstaller.installPack(pi.attributes());
-						}
-					}
-				}
-			});
-		}
-
 		Status status = new Status(IStatus.WARNING, CpPlugInUI.PLUGIN_ID, msg);
 		throw new CoreException(status);
 	}
 
 	protected IRteConfiguration loadRteConfiguration(String savedRteConfigName) throws CoreException {
 		if (savedRteConfigName == null || savedRteConfigName.isEmpty()) {
-			return null;
+			String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '' " + //$NON-NLS-1$ 
+					Messages.RteProjectUpdater_ErrorConfigFileNotExist;
+			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, msg);
+			throw new CoreException(status);
 		}
 
 		String rteConfigName = project.getName() + CmsisConstants.DOT_RTECONFIG;
@@ -253,6 +238,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 		return rteConf;
 	}
 
+	/**
+	 * Removes resources that are no longer belong to project and refreshes remaining ones   
+	 * @throws CoreException
+	 */
 	protected void removeResources() throws CoreException {
 		IResource rteFolder = project.findMember(CmsisConstants.RTE);
 		removeResources(rteFolder);
@@ -265,14 +254,17 @@ public class RteProjectUpdater extends WorkspaceJob {
 		int type = res.getType();
 		if (type == IResource.FILE) {
 			IPath path = res.getProjectRelativePath();
-			if (!rteProject.isFileUsed(path.toString())) {
+			String dstFile = path.toString();
+			if (!isFileUsed(res)) {
 				if (res.isLinked()) {
 					res.delete(IResource.FORCE, monitor);
 				} else if (bDeleteConfigFiles) {
 					res.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
 				} else {
-					ProjectUtils.setExcludeFromBuild(project, path.toString(), true);
+					ProjectUtils.setExcludeFromBuild(project, dstFile, true);
 				}
+			} else if (ProjectUtils.isExcludedFromBuild(project, dstFile)) {
+				ProjectUtils.setExcludeFromBuild(project, dstFile, false);
 			}
 		} else if (res.getType() == IResource.FOLDER) {
 			IFolder f = (IFolder) res;
@@ -287,6 +279,17 @@ public class RteProjectUpdater extends WorkspaceJob {
 		}
 	}
 
+	protected boolean isFileUsed(IResource res) {
+		IPath path = res.getProjectRelativePath();
+		String ext = path.getFileExtension();
+		if(CmsisConstants.GPDSC_TAG.equals(ext)) {
+			IPath gpdsc = res.getLocation();
+			IRteConfiguration rteConf = rteProject.getRteConfiguration();
+			return rteConf.isGeneratedPackUsed(gpdsc.toString());
+		} 
+		return rteProject.isFileUsed(path.toString());
+	}
+	
 	protected void addResources() throws CoreException {
 		IRteConfiguration rteConf = rteProject.getRteConfiguration();
 		addResources(rteConf);
@@ -307,17 +310,24 @@ public class RteProjectUpdater extends WorkspaceJob {
 	}
 
 	protected void addFile(IRteConfiguration rteConf, String dstFile, ICpFileInfo fi) throws CoreException {
-		EFileRole role = fi.getRole();
 		ICpFile f = fi.getFile();
-
-		String srcFile = null;
-		if (f != null) {
-			srcFile = fi.getAbsolutePath(f.getName());
+		if (f == null) {
+			return;
 		}
+		String srcFile = f.getAbsolutePath(f.getName());
 		if (srcFile == null) {
 			return;
 		}
 
+		boolean generated = f.isGenerated(); 
+		ICpConfigurationInfo cpConf = rteConf.getConfigurationInfo();
+		String base = cpConf.getDir(true);
+		boolean local = srcFile.startsWith(base);
+		EFileRole role = fi.getRole();
+		if(generated || local) {
+			role = EFileRole.NONE; // prevent generated files from copy   
+		}
+		
 		if (role == EFileRole.CONFIG) {
 			int index = -1;
 			EFileCategory cat = fi.getCategory();
@@ -353,7 +363,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 					fi.setVersion(savedVersion);
 				}
 			}
-		} else {
+		} else if(!local) {
 			srcFile = CpVariableResolver.insertCmsisRootVariable(srcFile);
 			if (srcFile != null) {
 				ProjectUtils.createLink(project, srcFile, dstFile, monitor);
@@ -525,24 +535,4 @@ public class RteProjectUpdater extends WorkspaceJob {
 			e.printStackTrace();
 		}
 	}
-
-	/**
-	 * Check if the pack manager contains the pack and it is already installed
-	 * @param packAttributes pack attributes
-	 * @return true if the pack installer has already installed the pack
-	 */
-	protected boolean hasInstalled(IAttributes packAttributes) {
-		ICpPackCollection allPacks = CpPlugIn.getPackManager().getPacks();
-		if (allPacks == null) {
-			return false;
-		}
-		String packId = CpPack.constructPackId(packAttributes);
-		ICpPack pack = allPacks.getPack(packId);
-		if (pack == null) {
-			return false;
-		}
-		return pack.getPackState() == PackState.INSTALLED
-				|| pack.getPackState() == PackState.GENERATED;
-	}
-
 }

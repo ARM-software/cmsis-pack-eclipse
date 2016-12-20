@@ -18,7 +18,6 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 
 import com.arm.cmsis.pack.CpPlugIn;
-import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
 
 /**
@@ -63,19 +62,8 @@ public class CpExample extends CpItem implements ICpExample {
 			return null;
 		}
 		Map<String, ICpBoard> allBoards = CpPlugIn.getPackManager().getBoards();
-		// Dvendor has precedence over vendor attribute. here should try both
 		if (allBoards != null) {
 			ICpBoard item = allBoards.get(board.getId());
-			if (item != null) {
-				return item;
-			}
-			String id = DeviceVendor.getOfficialVendorName(board.getAttribute(CmsisConstants.VENDOR));
-			String name = board.getAttribute(CmsisConstants.NAME);
-			if(name != null && !name.isEmpty()) {
-				id += CmsisConstants.DOUBLE_COLON;
-				id += name;
-			}
-			item = allBoards.get(id);
 			return item;
 		}
 		return null;
@@ -104,6 +92,20 @@ public class CpExample extends CpItem implements ICpExample {
 			return null;
 		IPath examplePath = new Path(getAbsolutePath(getFolder())).append(loadPath);
 		return examplePath.toString();
+	}
+
+	@Override
+	public boolean containsBoard(String boardId) {
+		Collection<? extends ICpItem> children = getChildren();
+		if(children == null)
+			return false;
+		for(ICpItem item : children) {
+			if(!item.getTag().equals(CmsisConstants.BOARD_TAG)) 
+				continue;
+			if(item.getId().equals(boardId))
+				return true;
+		}
+		return false;
 	}
 	
 }

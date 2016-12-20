@@ -12,9 +12,13 @@
 package com.arm.cmsis.pack;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.xml.sax.SAXException;
 
 /**
  * The interface of providing repository service
@@ -28,7 +32,7 @@ public interface ICpRepoServiceProvider {
 	 * @return size of the pdsc file list
 	 * @throws Exception
 	 */
-	int readIndexFile(String indexUrl, List<String[]> pdscList) throws Exception;
+	int readIndexFile(String indexUrl, List<String[]> pdscList) throws ParserConfigurationException, SAXException, IOException;
 
 	/**
 	 * Download the pdsc file
@@ -39,7 +43,7 @@ public interface ICpRepoServiceProvider {
 	 * @return the downloaded .pdsc file
 	 * @throws Exception
 	 */
-	File getPdscFile(String pdscUrl, String pdscName, String destFileName, IProgressMonitor monitor) throws Exception;
+	File getPdscFile(String pdscUrl, String pdscName, String destFileName, IProgressMonitor monitor) throws IOException;
 
 	/**
 	 * Download the pack file
@@ -49,5 +53,5 @@ public interface ICpRepoServiceProvider {
 	 * @return the downloaded .pack file
 	 * @throws Exception
 	 */
-	File getPackFile(String packUrl, String destFileName, IProgressMonitor monitor) throws Exception;
+	File getPackFile(String packUrl, String destFileName, IProgressMonitor monitor) throws IOException;
 }

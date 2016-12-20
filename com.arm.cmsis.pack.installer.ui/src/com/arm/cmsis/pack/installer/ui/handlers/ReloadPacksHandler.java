@@ -26,6 +26,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.installer.ui.Messages;
 
+/**
+ * Handler of reloading all the packs
+ */
 public class ReloadPacksHandler extends AbstractHandler {
 
 	@Override

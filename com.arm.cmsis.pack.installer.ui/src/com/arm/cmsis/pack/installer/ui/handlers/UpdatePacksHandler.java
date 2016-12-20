@@ -24,6 +24,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.arm.cmsis.pack.CpPlugIn;
 
+/**
+ * Handler of checking for updates
+ */
 public class UpdatePacksHandler extends AbstractHandler {
 
 	public UpdatePacksHandler() {

@@ -86,10 +86,11 @@ public class RteProjectDecorator implements ILightweightLabelDecorator {
 				decoration.addSuffix(suffix);
 				if (ci.getComponent() == null) {
 					addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
-				}
-				int versionDiff = fi.getVersionDiff();
-				if (versionDiff > 2 || versionDiff < 0) {
-					addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
+				} else {
+					int versionDiff = fi.getVersionDiff();
+					if (versionDiff > 2 || versionDiff < 0) {
+						addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
+					}
 				}
 				return;
 			}
@@ -101,7 +102,11 @@ public class RteProjectDecorator implements ILightweightLabelDecorator {
 	 */
 	private int getOverlayType(IRteProject rteProject, IPath path) {
 		ICpFileInfo[] fileInfos = rteProject.getProjectFileInfos(path.toString() + ".*"); //$NON-NLS-1$
+		if(fileInfos == null)
+			return 1;
 		for (ICpFileInfo fileInfo : fileInfos) {
+			if(fileInfo.isGenerated())
+				continue;
 			if (fileInfo.getComponentInfo().getComponent() == null) {
 				return -1;
 			}

@@ -67,7 +67,7 @@ public class RteToolChainAdapterInfo {
 			return null;
 		}
 
-		@SuppressWarnings("rawtypes")
+		@SuppressWarnings({ "rawtypes", "unchecked" })
 		@Override
 		public Object getAdapter(Class adapter) {
 			return null;

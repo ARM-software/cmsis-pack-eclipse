@@ -24,7 +24,7 @@ import com.arm.cmsis.pack.utils.WildCards;
  */
 public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implements  ICmsisTreeItem<T> {
 
-	private T fParent = null;
+	protected T fParent = null;
 	protected String fName = null;
 	protected Collection<T> fChildren = null;
 

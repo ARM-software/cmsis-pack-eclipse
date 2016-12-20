@@ -234,9 +234,18 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 				firePropertyChange(IEditorPart.PROP_DIRTY);
 				return;
 			case RteEvent.PACKS_RELOADED:
+			case RteEvent.PACKS_UPDATED:
 				if (fModelController != null) {
 					fModelController.reloadPacks();
 				}
+				break;
+			case RteEvent.GPDSC_CHANGED:
+				if (fModelController != null) {
+					if(fModelController.isGeneratedPackUsed((String)event.getData())){
+						fModelController.update();
+					}
+				}
+				break;
 			default:
 		}
 	}
@@ -314,7 +323,7 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 
 	// bind to framework
 	@Override
-	@SuppressWarnings({ "rawtypes" })
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public Object getAdapter(Class required) {
 		if (IContentOutlinePage.class.equals(required)) {
 			// two outline views for Components and xml views.

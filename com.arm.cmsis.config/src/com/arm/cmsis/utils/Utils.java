@@ -25,8 +25,7 @@ public class Utils {
 	 * @param modifier the modifier
 	 * @param max the value's maximum
 	 * @param min the value's minimum
-	 * @return The modified value,
-	 * or max/min if the modified value is greater/smaller than the max/min
+	 * @return The modified value
 	 */
 	public static long modifyValue(long value, char op, long modifier, long max, long min) {
 		long realValue = value;
@@ -62,8 +61,8 @@ public class Utils {
 	 * @param value the value to be modified
 	 * @param op the operation, now there are only '+', '-', '*' and '/'
 	 * @param modifier the modifier
-	 * @param max the value's maximum
-	 * @param min the value's minimum
+	 * @param max the modified value's maximum
+	 * @param min the modified value's minimum
 	 * @return The reversely modified value,
 	 * or max/min if the reversely modified value is greater/smaller than the max/min
 	 */

@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.ui.console;
 
@@ -29,25 +29,30 @@ import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
+import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.events.IRteEventListener;
+import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.preferences.CpUIPreferenceConstants;
 
 /**
- * Console to display RTE messages from RteProject 
+ * Console to display RTE messages from RteProject
  *
  */
-public class RteConsole extends MessageConsole implements IPropertyChangeListener {
+public class RteConsole extends MessageConsole implements IPropertyChangeListener, IRteEventListener {
 
 	public static final String CONSOLE_TYPE = "com.arm.cmsis.pack.rte.console";	 //$NON-NLS-1$
 	public static final String BASE_NAME = CpStringsUI.RteConsole_BaseName;
+	public static final String PACK_MANAGER_CONSOLE_NAME = CpStringsUI.RteConsole_PackManagerConsoleName;
 	public static final int OUTPUT = 0;
 	public static final int INFO = 1;
-	public static final int ERROR = 2;
-	public static final int STREAM_COUNT = 3;
-	
+	public static final int WARNING = 2;
+	public static final int ERROR = 3;
+	public static final int STREAM_COUNT = 4;
+
 	private Map<Integer, MessageConsoleStream> fStreams = new HashMap<Integer, MessageConsoleStream>();
-	
+
 	public RteConsole(String name, ImageDescriptor imageDescriptor) {
 		super(name, CONSOLE_TYPE, imageDescriptor, true);
 		updateBackGround();
@@ -57,23 +62,24 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 
 
 	private void initStreams() {
-		asyncExec(new Runnable() {
-			public void run() {
-				for(int i = 0;  i < STREAM_COUNT; i++) {
-					getStream(i);
-				}
-		}}); 
+		asyncExec(() -> {
+			for(int i = 0;  i < STREAM_COUNT; i++) {
+				getStream(i);
+			}
+		});
 	}
 
 	@Override
 	protected void dispose() {
 		super.dispose();
 		CpPlugInUI.removePreferenceStoreListener(this);
-		for(MessageConsoleStream stream : fStreams.values())
-		try {
-			stream.close();
-		} catch (IOException e) {
-			e.printStackTrace();
+		CpPlugIn.removeRteListener(this);
+		for(MessageConsoleStream stream : fStreams.values()) {
+			try {
+				stream.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
 		fStreams.clear();
 	}
@@ -98,20 +104,19 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 			}
 		} else if (property.equals(CpUIPreferenceConstants.CONSOLE_BG_COLOR)) {
 			updateBackGround();
-        }
+		}
 	}
 
 	private void updateBackGround() {
-		asyncExec(new Runnable() {
-			public void run() {
-				IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
-				RGB rgb = PreferenceConverter.getColor( store, CpUIPreferenceConstants.CONSOLE_BG_COLOR);
-		    	setBackground(new Color(Display.getCurrent(), rgb));
-			}}); 
+		asyncExec(() -> {
+			IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
+			RGB rgb = PreferenceConverter.getColor( store, CpUIPreferenceConstants.CONSOLE_BG_COLOR);
+			setBackground(new Color(Display.getCurrent(), rgb));
+		});
 	}
-	
+
 	MessageConsoleStream getStream(int streamType) {
-		MessageConsoleStream stream = fStreams.get(streamType); 
+		MessageConsoleStream stream = fStreams.get(streamType);
 		if(stream == null) {
 			stream = newMessageStream();
 			initStream(stream, streamType);
@@ -128,74 +133,70 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 	}
 
 	private void updateStreamColor(MessageConsoleStream stream, String preferenceConstant) {
-    	stream.setColor(new Color(Display.getCurrent(), getStreamColor(preferenceConstant)));	
+		stream.setColor(new Color(Display.getCurrent(), getStreamColor(preferenceConstant)));
 	}
 
 	private RGB getStreamColor(String preferenceConstant) {
 		IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
 		return PreferenceConverter.getColor( store, preferenceConstant);
 	}
-	
+
 	private String getColorPreferenceConstant(int streamType) {
 		switch(streamType) {
-		case INFO:
-			return CpUIPreferenceConstants.CONSOLE_INFO_COLOR;
-		case ERROR:
-			return  CpUIPreferenceConstants.CONSOLE_ERROR_COLOR;
-		case OUTPUT:
-		default:
-			return CpUIPreferenceConstants.CONSOLE_OUT_COLOR;
+			case INFO:
+				return CpUIPreferenceConstants.CONSOLE_INFO_COLOR;
+			case WARNING:
+				return CpUIPreferenceConstants.CONSOLE_WARNING_COLOR;
+			case ERROR:
+				return  CpUIPreferenceConstants.CONSOLE_ERROR_COLOR;
+			case OUTPUT:
+			default:
+				return CpUIPreferenceConstants.CONSOLE_OUT_COLOR;
 		}
 	}
-	
+
 	private int getStreamType(String preferenceConstant) {
 		switch(preferenceConstant) {
-		case CpUIPreferenceConstants.CONSOLE_INFO_COLOR:
-			return INFO;
-		case CpUIPreferenceConstants.CONSOLE_ERROR_COLOR:
-			return ERROR;
-		case CpUIPreferenceConstants.CONSOLE_OUT_COLOR:
-		default:
-			return OUTPUT;
+			case CpUIPreferenceConstants.CONSOLE_INFO_COLOR:
+				return INFO;
+			case CpUIPreferenceConstants.CONSOLE_WARNING_COLOR:
+				return WARNING;
+			case CpUIPreferenceConstants.CONSOLE_ERROR_COLOR:
+				return ERROR;
+			case CpUIPreferenceConstants.CONSOLE_OUT_COLOR:
+			default:
+				return OUTPUT;
 		}
 	}
-	
+
 	/**
 	 * Outputs the message to specified console stream
 	 * @param streamType stream type: OUTPUT, INFO, ERROR
-	 * @param msg message to output 
+	 * @param msg message to output
 	 */
 	public void output(int streamType, String msg) {
 		MessageConsoleStream stream = getStream(streamType);
 		stream.println(msg);
 	}
 
-//	static public void output(final IProject project, final int streamType, final String message){
-//		// console can be opened only by main GUI thread - use runnable
-//		Display.getDefault().asyncExec(new Runnable() {
-//			public void run() {
-//				RteConsole rteConsole = openConsole(project);
-//				if(rteConsole != null)
-//					rteConsole.output(streamType, message);
-//			}}); 
-//	}
-//	
-
-	public void output(final String message){
+	public void output(final String message) {
 		output(OUTPUT, message);
 	}
-	
-	public void outputInfo( final String message){
+
+	public void outputInfo(final String message) {
 		output(INFO, message);
 	}
 
-	public void outputError( final String message){
-		output( ERROR, message);
+	public void outputWarning(final String message) {
+		output(WARNING, message);
 	}
 
-	
-	/** 
-	 * Opens RteConsole for given project 
+	public void outputError(final String message) {
+		output(ERROR, message);
+	}
+
+	/**
+	 * Opens RteConsole for given project
 	 * @param project IProject to open console for
 	 * @return RteConsole
 	 */
@@ -206,10 +207,10 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 		}
 		return openConsole(name);
 	}
-	
-	
-	/** 
-	 * Opens RteConsole for given project name 
+
+
+	/**
+	 * Opens RteConsole for given project name
 	 * @param projectName name of the project to open console for
 	 * @return RteConsole
 	 */
@@ -217,56 +218,111 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 		// add it if necessary
 		String consoleName = BASE_NAME;
 		if(projectName != null && !projectName.isEmpty() && !projectName.equals(BASE_NAME))
+		{
 			consoleName += " [" + projectName + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-		
+		}
+
 		RteConsole rteConsole = null;
 		RteConsole rteBaseConsole = null;
 		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		if(consoles != null) {
 			for (IConsole console : consoles) {
-				if(console.getType() == null)
+				if(!CONSOLE_TYPE.equals(console.getType())) {
 					continue;
-				if(!console.getType().equals(CONSOLE_TYPE))
-					continue;
+				}
 				if(consoleName.equals(BASE_NAME)) {
 					rteConsole = (RteConsole) console;
 					break;
 				}
 				String name = console.getName();
-				if(name ==null) 
-					continue;
-				if (name.equals(consoleName)) {
+				if (consoleName.equals(name)) {
 					rteConsole = (RteConsole) console;
 					break;
-				} else if(name.equals(BASE_NAME)) {
+				} else if(BASE_NAME.equals(name)) {
 					rteBaseConsole = (RteConsole) console;
-				} 
+				}
 			}
 		}
 		if (rteConsole == null && rteBaseConsole!= null) {
 			rteConsole = rteBaseConsole;
-			if(!consoleName.equals(BASE_NAME))
+			if(!consoleName.equals(BASE_NAME)) {
 				rteConsole.setName(consoleName);
+			}
 		} else if (rteConsole == null) {
 			ImageDescriptor imageDescriptor = CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_CONSOLE);
 			rteConsole = new RteConsole(consoleName, imageDescriptor);
 			ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { rteConsole });
 		}
-		
-		if(CpPlugInUI.getDefault().getPreferenceStore().getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT))
+
+		if(CpPlugInUI.getDefault().getPreferenceStore().getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT)) {
 			showConsole(rteConsole);
+		}
+		return rteConsole;
+	}
+
+	synchronized public static RteConsole openPackManagerConsole() {
+		RteConsole rteConsole = null;
+		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+		if(consoles != null) {
+			for (IConsole console : consoles) {
+				if(!CONSOLE_TYPE.equals(console.getType())) {
+					continue;
+				}
+				if (PACK_MANAGER_CONSOLE_NAME.equals(console.getName())) {
+					rteConsole = (RteConsole) console;
+					break;
+				}
+			}
+		}
+		if (rteConsole == null) {
+			ImageDescriptor imageDescriptor = CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_CONSOLE);
+			rteConsole = new RteConsole(PACK_MANAGER_CONSOLE_NAME, imageDescriptor);
+			CpPlugIn.addRteListener(rteConsole);
+			ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { rteConsole });
+		}
+
+		if(CpPlugInUI.getDefault().getPreferenceStore().getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT)) {
+			showConsole(rteConsole);
+		}
 		return rteConsole;
 	}
 
 	synchronized public static void showConsole(final RteConsole console) {
-		asyncExec(new Runnable() {
-			public void run() {
-				ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console);
-			}}); 
+		asyncExec(() -> ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console));
 	}
-	
+
 	protected static void asyncExec(Runnable runnable) {
 		Display.getDefault().asyncExec(runnable);
 	}
-	
+
+
+	@Override
+	public void handle(RteEvent event) {
+		asyncExec(() -> {
+			String topic = event.getTopic();
+			if(topic.startsWith(RteEvent.PRINT)) {
+				String message = (String) event.getData();
+				switch (topic) {
+					case RteEvent.PRINT_OUTPUT :
+						output(message);
+						break;
+					case RteEvent.PRINT_INFO:
+						outputInfo(message);
+						break;
+					case RteEvent.PRINT_WARNING:
+						outputWarning(message);
+						break;
+					case RteEvent.PRINT_ERROR:
+						outputError(message);
+						break;
+					default :
+						break;
+				}
+			} else if (RteEvent.GPDSC_LAUNCH_ERROR.equals(topic)) {
+				String message = (String) event.getData();
+				outputError(message);
+			}
+		});
+	}
+
 }

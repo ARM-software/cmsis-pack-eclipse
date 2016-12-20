@@ -45,4 +45,14 @@ public class CpConfigParser extends CpXmlParser {
 		return new CpConfigurationInfo(tag, xmlFile);
 	}
 	
+	@Override
+	protected boolean isItemIgnored(ICpItem item) {
+		if(item == null)
+			return true;
+		if(item.isGenerated()) {
+			return true;
+		}
+		return super.isItemIgnored(item);
+	}
+
 }

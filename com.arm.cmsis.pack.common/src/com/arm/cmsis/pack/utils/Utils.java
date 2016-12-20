@@ -7,6 +7,10 @@
 *
 * Contributors:
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+*
+* OS type detection is based on algorithm published here:
+* http://stackoverflow.com/questions/228477/how-do-i-programmatically-determine-operating-system-in-java
+*
 *******************************************************************************/
 
 package com.arm.cmsis.pack.utils;
@@ -19,8 +23,17 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Path;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 
@@ -30,6 +43,8 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 public class Utils {
 
 	static public final String QUOTE = "\"";  //$NON-NLS-1$
+	static private String host = null;  	  // name of a running host OS : win, mac, or linux
+
 	/**
 	 * Find all pdsc recursively from given directory
 	 * @param dir directory to start search
@@ -46,20 +61,16 @@ public class Utils {
         if (list == null) {
 			return  files;
 		}
-        boolean found = false;
+
         // search dir for pdsc files
         for ( File f : list ) {
             if( f.isFile() && !f.isHidden()) {
             	String name = f.getName();
-            	if(!name.startsWith(".") && name.endsWith(".pdsc")){   //$NON-NLS-1$ //$NON-NLS-2$
+            	if(!name.startsWith(".") && name.endsWith(CmsisConstants.EXT_PDSC)){   //$NON-NLS-1$
             		files.add(f.getAbsolutePath());
-            		found = true;
             	}
             }
         }
-        if(found) {
-			return files;
-		}
 
         if(depth <= 0) {
 			return files;
@@ -191,14 +202,13 @@ public class Utils {
 	/**
 	 * Extracts path portion out of supplied pathname (removes section out last slash)
 	 * @param path absolute or relative path with forward slashes as delimiters
-	 * @param keepSlash flag if to keep or remove trailing slash 
+	 * @param keepSlash flag if to keep or remove trailing slash
 	 * @return the result path
 	 */
 	static public String extractPath(String path, boolean keepSlash) {
 		if(path == null || path.isEmpty()) {
 			return path;
 		}
-
 		int pos = path.lastIndexOf('/');
 		if(pos < 0) {
 			pos = path.lastIndexOf('\\');
@@ -210,6 +220,22 @@ public class Utils {
 			return path.substring(0, pos);
 		}
 		return path;
+	}
+
+	/**
+	 * Returns a path equivalent to this path, but relative to the given base path if possible.
+	 * @param path path to make relative
+	 * @param basePath absolute base directory
+	 * @return A path relative to the base path, or this path if it could not be made relative to the given base
+	 */
+	static public String makePathRelative(String path, String basePath) {
+		if(path == null || basePath ==null || basePath.isEmpty()) {
+			return path;
+		}
+		IPath p = new Path(path);
+		IPath base = new Path(basePath);
+		p = p.makeRelativeTo(base);
+		return p.toString();
 	}
 
 	/**
@@ -346,12 +372,14 @@ public class Utils {
 	 * @throws IOException
 	 */
 	public static void copyDirectory(File sourceLocation, File destLocation) throws IOException {
-		if(sourceLocation == null)
+		if(sourceLocation == null) {
 			return;
+		}
 		if (sourceLocation.isDirectory()) {
 			String[] children = sourceLocation.list();
-			if(children == null)
+			if(children == null) {
 				return;
+			}
 			for (String child : children) {
 				copyDirectory(new File(sourceLocation, child), new File(destLocation, child));
 			}
@@ -364,6 +392,48 @@ public class Utils {
 	}
 
 	/**
+	 * Copy from one directory to another
+	 *
+	 * @param srcDir source directory
+	 * @param dstDir destination directory
+	 * @param ignoreDir directories that should ignore during copy (directories w/ absolute path)
+	 * @throws IOException
+	 */
+	public static void copyDirectoryWithProgress(File srcDir, File dstDir, Set<String> ignoreDir, IProgressMonitor monitor) throws IOException {
+		if(srcDir == null || (ignoreDir != null && ignoreDir.contains(srcDir.getAbsolutePath()))) {
+			return;
+		}
+		if (srcDir.isDirectory()) {
+			String[] children = srcDir.list();
+			if(children == null) {
+				return;
+			}
+			for (String child : children) {
+				copyDirectoryWithProgress(new File(srcDir, child), new File(dstDir, child), ignoreDir, monitor);
+			}
+		} else {
+			if (!dstDir.getParentFile().exists()) {
+				dstDir.getParentFile().mkdirs();
+			}
+			copy(srcDir, dstDir);
+			monitor.worked(1);
+		}
+	}
+
+	/**
+	 * Get the String of current date in the format of "dd-mm-yyyy"
+	 * @return String of current date in the format of "dd-mm-yyyy"
+	 */
+	public static String getCurrentDate() {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy"); //$NON-NLS-1$
+		LocalDate localDate = LocalDate.now();
+		String[] date = dtf.format(localDate).split("/"); //$NON-NLS-1$
+		return String.valueOf(Integer.parseInt(date[0])) + '-'
+				+ String.valueOf(Integer.parseInt(date[1])) + '-'
+				+ String.valueOf(Integer.parseInt(date[2]));
+	}
+
+	/**
 	 * Copy sourceFile to destFile
 	 *
 	 * @param source source file
@@ -372,6 +442,9 @@ public class Utils {
 	public static void copy(File source, File dest) throws IOException {
 		InputStream input = null;
 		OutputStream output = null;
+		if (!dest.getParentFile().exists()) {
+			dest.getParentFile().mkdirs();
+		}
 		try {
 			input = new FileInputStream(source);
 			if (dest.exists()) {
@@ -405,8 +478,9 @@ public class Utils {
 		}
 		if (folder.exists()) {
 			File[] files = folder.listFiles();
-			if(files == null)
+			if(files == null) {
 				return;
+			}
 			for (File f : files) {
 				if (f.isDirectory()) {
 					deleteFolderRecursive(f);
@@ -422,4 +496,191 @@ public class Utils {
 		}
 	}
 
+	/**
+	 * @param archiveFile the zip file
+	 * @return the number of files contained in this zip file
+	 * @throws IOException
+	 */
+	public static int getFilesCount(File archiveFile) throws IOException {
+		ZipInputStream zipInput;
+		zipInput = new ZipInputStream(new FileInputStream(archiveFile));
+		ZipEntry zipEntry = zipInput.getNextEntry();
+		int count = 0;
+		while (zipEntry != null) {
+			if (!zipEntry.isDirectory()) {
+				count++;
+			}
+			zipEntry = zipInput.getNextEntry();
+		}
+		zipInput.closeEntry();
+		zipInput.close();
+
+		return count;
+	}
+
+	/**
+	 * Delete the folder recursively with progress monitor: first file, then folder
+	 *
+	 * @param folder the folder
+	 */
+	public static void deleteFolderRecursiveWithProgress(File folder, IProgressMonitor monitor) {
+
+		if (folder == null) {
+			return;
+		}
+
+		if (folder.isFile()) {
+			folder.setWritable(true, false);
+			folder.delete();
+			return;
+		}
+
+		if (folder.exists()) {
+			File[] files = folder.listFiles();
+			if(files == null) {
+				return;
+			}
+			for (File f : files) {
+				if (f.isDirectory()) {
+					deleteFolderRecursiveWithProgress(f, monitor);
+					f.setWritable(true, false);
+					f.delete();
+				} else {
+					f.setWritable(true, false);
+					f.delete();
+					monitor.worked(1);
+				}
+			}
+			folder.setWritable(true, false);
+			folder.delete();
+		}
+	}
+
+	/**
+	 * Count the number of files in specific folder
+	 * @param folder the root folder
+	 * @return the number of files in folder
+	 */
+	public static int countFiles(File folder) {
+		if (folder == null) {
+			return 0;
+		}
+
+		if (folder.isFile()) {
+			return 1;
+		}
+
+		int count = 0;
+		if (folder.exists()) {
+			File[] files = folder.listFiles();
+			if(files == null) {
+				return 0;
+			}
+			for (File f : files) {
+				if (f.isDirectory()) {
+					count += countFiles(f);
+				} else {
+					count++;
+				}
+			}
+		}
+		return count;
+	}
+
+	/**
+	 * Clear the read-only flag
+	 *
+	 * @param folder the root folder
+	 * @param extension extension of the files whose read-only flag should be cleared,
+	 * use an empty string to clear the read-only flag on all the files
+	 */
+	public static void clearReadOnly(File folder, String extension) {
+		if (folder == null) {
+			return;
+		}
+
+		if (folder.exists()) {
+			File[] files = folder.listFiles();
+			if(files == null) {
+				return;
+			}
+			for (File f : files) {
+				if (f.isDirectory()) {
+					clearReadOnly(f, extension);
+					f.setWritable(true, false);
+				} else if (extension == null || extension.isEmpty() || f.getName().endsWith(extension)) {
+					f.setWritable(true, false);
+				}
+			}
+			folder.setWritable(true, false);
+		}
+	}
+
+	/**
+	 * Set the read-only flag
+	 *
+	 * @param folder the folder
+	 */
+	public static void setReadOnly(File folder) {
+		if (folder == null) {
+			return;
+		}
+
+		if (folder.exists()) {
+			File[] files = folder.listFiles();
+			if(files == null) {
+				return;
+			}
+			for (File f : files) {
+				if (f.isDirectory()) {
+					setReadOnly(f);
+					f.setReadOnly();
+				} else {
+					f.setReadOnly();
+				}
+			}
+			folder.setReadOnly();
+		}
+	}
+
+	/**
+	 * Checks if two sets intersect
+	 * @param set1 first set
+	 * @param set2 second set
+	 * @return true if both sets contain at least one common member
+	 */
+	public static <T> boolean checkIfIntersect(Set<T> set1, Set<T> set2) {
+		if(set1 == null || set2 == null) {
+			return false;
+		}
+		if (set1.size() > set2.size()) {
+			return checkIfIntersect(set2, set1);
+		}
+		for (T o : set1) {
+			if (set2.contains(o)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * Returns host type: win, mac or linux
+	 * @return host type
+	 */
+	public static String getHostType(){
+		if(host == null) {
+			String os = System.getProperty("os.name", CmsisConstants.EMPTY_STRING).toLowerCase(); //$NON-NLS-1$
+			if (os.contains(CmsisConstants.MAC) || os.contains("darwin")) { //$NON-NLS-1$
+				host = CmsisConstants.MAC;
+			} else if (os.contains("nux") || os.contains("nix")) { //$NON-NLS-1$ //$NON-NLS-2$
+				host = CmsisConstants.LINUX;
+			} else if (os.contains(CmsisConstants.WIN)) {
+				host = CmsisConstants.WIN;
+			} else {
+				host = CmsisConstants.EMPTY_STRING;
+			}
+		}
+		return host;
+	}
 }
