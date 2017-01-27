@@ -12,31 +12,26 @@
 
 package com.arm.cmsis.pack.installer.ui;
 
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
-import java.util.TimerTask;
 
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
-import org.eclipse.ui.services.IEvaluationService;
 import org.osgi.framework.BundleContext;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.ICpPackInstaller;
-import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.installer.ui.perspectives.PackManagerPerspective;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
 import com.arm.cmsis.pack.ui.console.RteConsole;
@@ -54,8 +49,6 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 	private static CpInstallerPlugInUI plugin;
 
 	static PackInstallerViewController viewController = null;
-
-	static boolean isOnline = true;
 
 	volatile static Timer timer = null;
 	boolean timerStarted = false;
@@ -124,11 +117,6 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 		return plugin;
 	}
 
-
-	public static boolean isOnline() {
-		return isOnline;
-	}
-
 	/**
 	 * start the automatic tasks such as checking online-status and check-for-updates
 	 * @param page
@@ -137,10 +125,6 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 	void startAutomaticTasks(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
 		if (PackManagerPerspective.ID.equals(page.getPerspective().getId())) {
 			page.setEditorAreaVisible(false);
-			if (!timerStarted) {
-				startMonitorOnlineStatus();
-				timerStarted = true;
-			}
 			String now = Utils.getCurrentDate();
 			if (checkForUpdates && CpPreferenceInitializer.getAutoUpdateFlag() && !now.equals(CpPreferenceInitializer.getLastUpdateTime())) {
 				checkForUpdates = false; // check only once
@@ -155,64 +139,30 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 		}
 	}
 
-	void startMonitorOnlineStatus() {
-		if (timer == null) {
-			timer = new Timer();
-		} else if (timerStarted) {
-			return;
-		}
-		timer.scheduleAtFixedRate(new TimerTask() {
-			@Override
-			public void run() {
-				Socket socket = new Socket();
-				InetSocketAddress addr = new InetSocketAddress(CmsisConstants.REPO_KEIL_SERVER, 80);
-				try {
-					socket.connect(addr, 8000);
-					updateOnlineStatus(true);
-				} catch (Exception e) {
-					updateOnlineStatus(false);
-				} finally {
-					try {
-						socket.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}, 0, 10000);
-	}
-
 	void startCheckForUpdates() {
 		if (CpPlugIn.getPackManager() != null && CpPlugIn.getPackManager().getPackInstaller() != null) {
-			new Thread(() -> {
-				CpPlugIn.getPackManager().getPackInstaller().updatePacks(new NullProgressMonitor());
-			}).start();
+			if (PlatformUI.getWorkbench() != null &&
+					PlatformUI.getWorkbench().getProgressService() != null) {
+				Display.getDefault().asyncExec(() -> {
+					try {
+						PlatformUI.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {
+							@Override
+							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+								CpPlugIn.getPackManager().getPackInstaller().updatePacks(monitor);
+							}
+						});
+					} catch (InvocationTargetException e) {
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				});
+			} else {
+				new Thread(() -> {
+					CpPlugIn.getPackManager().getPackInstaller().updatePacks(new NullProgressMonitor());
+				}).start();
+			}
 		}
-	}
-
-	void updateOnlineStatus(boolean online) {
-		final boolean connectionStateChanged = isOnline != online;
-		if (!connectionStateChanged) {
-			return;
-		}
-		isOnline = online;
-		Display.getDefault().asyncExec(() -> {
-			IWorkbench wb = PlatformUI.getWorkbench();
-			if(wb == null) {
-				return;
-			}
-			IWorkbenchWindow wbw = wb.getActiveWorkbenchWindow();
-			if(wbw == null) {
-				return;
-			}
-
-			@SuppressWarnings("cast")
-			IEvaluationService es = (IEvaluationService) wbw.getService(IEvaluationService.class);
-			if(es != null) {
-				es.requestEvaluation("com.arm.cmsis.pack.installer.ui.onlineTest"); //$NON-NLS-1$
-			}
-			viewController.emitRteEvent(RteEvent.PACK_OLNLINE_STATE_CHANGED, null);
-		});
 	}
 
 	@Override

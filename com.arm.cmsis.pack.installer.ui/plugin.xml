@@ -158,11 +158,6 @@
       <handler
             class="com.arm.cmsis.pack.installer.ui.handlers.UpdatePacksHandler"
             commandId="com.arm.cmsis.pack.installer.commands.updateCommand">
-         <enabledWhen>
-            <test
-                  property="com.arm.cmsis.pack.installer.ui.onlineTest">
-            </test>
-         </enabledWhen>
       </handler>
       <handler
             class="com.arm.cmsis.pack.installer.ui.handlers.ImportPacksHandler"
@@ -176,16 +171,6 @@
             class="com.arm.cmsis.pack.installer.ui.handlers.ImportFolderPacksHandler"
             commandId="com.arm.cmsis.pack.installer.commands.importFolderPacksCommand">
       </handler>
-   </extension>
-   <extension
-         point="org.eclipse.core.expressions.propertyTesters">
-      <propertyTester
-            class="com.arm.cmsis.pack.installer.ui.OnlineTester"
-            id="com.arm.cmsis.pack.installer.ui.onlineTester"
-            namespace="com.arm.cmsis.pack.installer.ui"
-            properties="onlineTest"
-            type="java.lang.Object">
-      </propertyTester>
    </extension>
 
 </plugin>

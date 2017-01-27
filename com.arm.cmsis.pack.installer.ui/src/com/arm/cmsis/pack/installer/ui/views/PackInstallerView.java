@@ -486,13 +486,6 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 		if(mgr == null) {
 			return;
 		}
-		boolean online = CpInstallerPlugInUI.isOnline();
-		if (online) {
-			mgr.setErrorMessage(null);
-			mgr.setMessage(Messages.CpInstallerPlugInUI_ONLINE);
-		} else {
-			mgr.setErrorMessage(Messages.CpInstallerPlugInUI_OFFLINE);
-		}
 		if (isFilterClient() && fViewer != null && !fViewer.getControl().isDisposed()) {
 			fViewer.refresh();
 		}

@@ -542,9 +542,6 @@ public class PackPropertyView extends PackInstallerView {
 		super.fillContextMenu(manager);
 
 		manager.add(new Separator());
-		if(!CpInstallerPlugInUI.isOnline()) {
-			return;
-		}
 		ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
 		if(packInstaller == null) {
 			return;

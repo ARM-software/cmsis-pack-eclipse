@@ -30,6 +30,7 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Tree;
+
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.ICpPackInstaller;
@@ -39,7 +40,6 @@ import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
-import com.arm.cmsis.pack.installer.ui.CpInstallerPlugInUI;
 import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
@@ -84,14 +84,13 @@ public class ExamplesView extends PackInstallerView {
 		public boolean isEnabled(Object obj, int columnIndex) {
 			if (getCellControlType(obj, columnIndex) == CellControlType.BUTTON) {
 				ICpPackInstaller packInstaller = getPackInstaller();
-				if(packInstaller == null)
+				if(packInstaller == null) {
 					return false;
+				}
 				IRteExampleItem example = getRteExampleItem(obj);
 				if (example != null) {
 					ICpExample e = example.getExample();
 					if (e == null || packInstaller.isProcessing(e.getPackId())) {
-						return false;
-					} else if (!CpInstallerPlugInUI.isOnline() 	&& e.getPack().getPackState() == PackState.AVAILABLE) {
 						return false;
 					} else {
 						return true;
@@ -180,8 +179,9 @@ public class ExamplesView extends PackInstallerView {
 						break;
 					case CmsisConstants.BUTTON_INSTALL :
 						ICpPackInstaller packInstaller = getPackInstaller();
-						if(packInstaller != null)
+						if(packInstaller != null) {
 							packInstaller.installPack(example.getExample().getPackId());
+						}
 					default :
 						break;
 				}
@@ -194,8 +194,9 @@ public class ExamplesView extends PackInstallerView {
 	} /// end of ColumnAdviser
 
 	void copyExample(ICpExample cpExample) {
-		if(fViewController == null)
+		if(fViewController == null) {
 			return;
+		}
 		fViewController.copyExample(cpExample);
 	}
 

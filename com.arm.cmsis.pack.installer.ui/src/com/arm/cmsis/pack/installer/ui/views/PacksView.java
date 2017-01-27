@@ -44,7 +44,6 @@ import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.data.ICpPackFamily;
-import com.arm.cmsis.pack.installer.ui.CpInstallerPlugInUI;
 import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.item.ICmsisItem;
@@ -154,12 +153,6 @@ public class PacksView extends PackInstallerView {
 			if (cpItem != null && !ROOT.equals(cpItem.getTag())) {
 				if (cpItem instanceof ICpPackCollection) {
 					return false;
-				} else if (!CpInstallerPlugInUI.isOnline() &&
-						(CmsisConstants.BUTTON_INSTALL.equals(buttonString) ||
-								CmsisConstants.BUTTON_INSTALL_PLUS.equals(buttonString) ||
-								CmsisConstants.BUTTON_UPDATE.equals(buttonString) ||
-								CmsisConstants.BUTTON_UPDATE_PLUS.equals(buttonString))){
-					return false;
 				} else if (cpItem instanceof ICpPackFamily) {
 					return !packInstaller.isProcessing(cpItem.getPackId());
 				} else if (CmsisConstants.PREVIOUS.equals(cpItem.getTag())){
@@ -206,31 +199,31 @@ public class PacksView extends PackInstallerView {
 		public Image getImage(Object obj, int columnIndex) {
 			if (getCellControlType(obj, columnIndex) == CellControlType.BUTTON) {
 				switch (getString(obj, columnIndex)) {
-					case CmsisConstants.BUTTON_UPTODATE: // the latest pack is installed
-						ICpPackFamily pf = (ICpPackFamily) obj;
-						if (pf != null && !pf.getPack().isRequiredPacksInstalled()) {
-							return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_SUB_WARNING);
-						}
+				case CmsisConstants.BUTTON_UPTODATE: // the latest pack is installed
+					ICpPackFamily pf = (ICpPackFamily) obj;
+					if (pf != null && !pf.getPack().isRequiredPacksInstalled()) {
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_SUB_WARNING);
+					}
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
-					
-					case CmsisConstants.BUTTON_UPDATE:
-					case CmsisConstants.BUTTON_UPDATE_PLUS:
-					case CmsisConstants.BUTTON_OFFLINE:
-					case CmsisConstants.BUTTON_DEPRECATED:
-					case CmsisConstants.BUTTON_RESOLVE:
-						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_WARNING);
-					case CmsisConstants.BUTTON_INSTALL:
-					case CmsisConstants.BUTTON_INSTALL_PLUS:
-						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALL);
-					case CmsisConstants.BUTTON_UNPACK:
-					case CmsisConstants.BUTTON_UNPACK_PLUS:
-						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_UNPACK);
-					case CmsisConstants.BUTTON_REMOVE:
-					case CmsisConstants.BUTTON_DELETE:
-					case CmsisConstants.BUTTON_DELETE_ALL:
-						return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE);
-					default:
-						break;
+
+				case CmsisConstants.BUTTON_UPDATE:
+				case CmsisConstants.BUTTON_UPDATE_PLUS:
+				case CmsisConstants.BUTTON_OFFLINE:
+				case CmsisConstants.BUTTON_DEPRECATED:
+				case CmsisConstants.BUTTON_RESOLVE:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_WARNING);
+				case CmsisConstants.BUTTON_INSTALL:
+				case CmsisConstants.BUTTON_INSTALL_PLUS:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALL);
+				case CmsisConstants.BUTTON_UNPACK:
+				case CmsisConstants.BUTTON_UNPACK_PLUS:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_UNPACK);
+				case CmsisConstants.BUTTON_REMOVE:
+				case CmsisConstants.BUTTON_DELETE:
+				case CmsisConstants.BUTTON_DELETE_ALL:
+					return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_TOOL_DELETE);
+				default:
+					break;
 				}
 			}
 			return null;
@@ -376,31 +369,31 @@ public class PacksView extends PackInstallerView {
 
 				String packId = CpPack.getFullPackId(cpItem);
 				switch (getString(element, colIndex)) {
-					case CmsisConstants.BUTTON_INSTALL:
-					case CmsisConstants.BUTTON_INSTALL_PLUS:
-					case CmsisConstants.BUTTON_UPDATE:
-					case CmsisConstants.BUTTON_UPDATE_PLUS:
-					case CmsisConstants.BUTTON_UNPACK:
-					case CmsisConstants.BUTTON_UNPACK_PLUS:
-						packInstaller.installPack(packId);
-						break;
-					case CmsisConstants.BUTTON_REMOVE:
-						packInstaller.removePack((ICpPack) cpItem, false);
-						break;
-					case CmsisConstants.BUTTON_DELETE:
-						packInstaller.removePack((ICpPack) cpItem, true);
-						break;
-					case CmsisConstants.BUTTON_RESOLVE:
-						packInstaller.installRequiredPacks((ICpPack) cpItem);
-						break;
-					case CmsisConstants.BUTTON_DELETE_ALL:
-						for (Iterator<? extends ICpItem> iter = cpItem.getChildren().iterator(); iter.hasNext();) {
-							ICpPack pack = (ICpPack) iter.next();
-							packInstaller.removePack(pack, true);
-						}
-						break;
-					default:
-						break;
+				case CmsisConstants.BUTTON_INSTALL:
+				case CmsisConstants.BUTTON_INSTALL_PLUS:
+				case CmsisConstants.BUTTON_UPDATE:
+				case CmsisConstants.BUTTON_UPDATE_PLUS:
+				case CmsisConstants.BUTTON_UNPACK:
+				case CmsisConstants.BUTTON_UNPACK_PLUS:
+					packInstaller.installPack(packId);
+					break;
+				case CmsisConstants.BUTTON_REMOVE:
+					packInstaller.removePack((ICpPack) cpItem, false);
+					break;
+				case CmsisConstants.BUTTON_DELETE:
+					packInstaller.removePack((ICpPack) cpItem, true);
+					break;
+				case CmsisConstants.BUTTON_RESOLVE:
+					packInstaller.installRequiredPacks((ICpPack) cpItem);
+					break;
+				case CmsisConstants.BUTTON_DELETE_ALL:
+					for (Iterator<? extends ICpItem> iter = cpItem.getChildren().iterator(); iter.hasNext();) {
+						ICpPack pack = (ICpPack) iter.next();
+						packInstaller.removePack(pack, true);
+					}
+					break;
+				default:
+					break;
 				}
 
 				setButtonPressed(null, COLBUTTON, null);
@@ -806,35 +799,35 @@ public class PacksView extends PackInstallerView {
 		ICpPack pack = getPackItem();
 		if (pack != null) {
 			switch (pack.getPackState()) {
-				case INSTALLED:
-					manager.add(fRemovePack);
-					manager.add(fDeletePack);
-					fDeletePack.setText(Messages.PacksView_RemovePlusDelete);
-					if (!pack.isRequiredPacksInstalled()) {
-						manager.add(new Separator());
-						manager.add(fInstallRequiredPacks);
-					}
-					break;
-				case DOWNLOADED:
-					manager.add(fDeletePack);
-					fDeletePack.setText(Messages.PacksView_Delete);
-					if (!pack.isRequiredPacksInstalled()) {
-						manager.add(new Separator());
-						manager.add(fInstallSinglePack);
-						fInstallSinglePack.setText(Messages.PacksView_UnpackSinglePack);
-						fInstallSinglePack.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_UNPACK));
-					}
-					break;
-				case AVAILABLE:
-					if (!pack.isRequiredPacksInstalled()) {
-						manager.add(new Separator());
-						manager.add(fInstallSinglePack);
-						fInstallSinglePack.setText(Messages.PacksView_InstallSinglePack);
-						fInstallSinglePack.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_INSTALL));
-					}
-					break;
-				default:
-					break;
+			case INSTALLED:
+				manager.add(fRemovePack);
+				manager.add(fDeletePack);
+				fDeletePack.setText(Messages.PacksView_RemovePlusDelete);
+				if (!pack.isRequiredPacksInstalled()) {
+					manager.add(new Separator());
+					manager.add(fInstallRequiredPacks);
+				}
+				break;
+			case DOWNLOADED:
+				manager.add(fDeletePack);
+				fDeletePack.setText(Messages.PacksView_Delete);
+				if (!pack.isRequiredPacksInstalled()) {
+					manager.add(new Separator());
+					manager.add(fInstallSinglePack);
+					fInstallSinglePack.setText(Messages.PacksView_UnpackSinglePack);
+					fInstallSinglePack.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_UNPACK));
+				}
+				break;
+			case AVAILABLE:
+				if (!pack.isRequiredPacksInstalled()) {
+					manager.add(new Separator());
+					manager.add(fInstallSinglePack);
+					fInstallSinglePack.setText(Messages.PacksView_InstallSinglePack);
+					fInstallSinglePack.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_INSTALL));
+				}
+				break;
+			default:
+				break;
 			}
 
 			if (packInstaller.isProcessing(pack.getId())) {
