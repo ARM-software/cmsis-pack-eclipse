@@ -4,13 +4,15 @@ The **CMSIS-Pack Management for Eclipse** is created by ARM to provide a open-so
 
 ARM is commited to maintain this **CMSIS-Pack Management for Eclipse** to ensure consistency with future extensions and modifications to the [CMSIS-Pack Specification].  
 
-This release 2.0 provides the following functionality:
+This release 2.1 provides the following functionality:
 * CMSIS Pack manager to install, remove, delete Packs as well as to import examples
 * creation and management of an CDT-based C/C++ projects
 * an editor for configuration files that use [Configuration Wizard Annotations]
 * version tracking of configuration files with merge functionality
 * integrated help based on Eclipse help framework
 * extensible interfaces to integrate the plug-ins into development environments  
+* support for [gpdsc] files to connect to configuration utilities
+
 
 For evaluation you need CMSIS-Pack compliant Software Packs that are available for download from the [CMSIS Pack Repository].
 
@@ -120,4 +122,4 @@ _Copyright (c) 2014-2016, ARM Limited and Contributors. All rights reserved._
 [EclipseConEurope2015]:     ./images/EclipseConEurope2015.png
 [YouTube]: https://www.youtube.com/watch?v=z8n2I1s6zgg&list=PLy7t4z5SYNaR0yp9EQ9txQhO-JgCLJAga&index=29
 [Enhanced Project Management for Embedded C/C++ Programming using Software Components]: https://www.eclipsecon.org/europe2015/session/enhanced-project-management-embedded-cc-programming-using-software-components
-
+[gpdsc]:  http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_generators_pg.html
