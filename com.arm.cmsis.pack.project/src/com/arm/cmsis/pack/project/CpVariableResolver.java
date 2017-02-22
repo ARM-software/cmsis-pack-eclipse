@@ -33,7 +33,7 @@ import com.arm.cmsis.pack.project.utils.ProjectUtils;
  */
 public class CpVariableResolver extends PathVariableResolver implements IDynamicVariableResolver {
 
-	public static final String[] supportedPathVariables = new String[] {CmsisConstants.CMSIS_PACK_ROOT_VAR, CmsisConstants.CMSIS_PACK_ROOT};
+	public static final String[] supportedPathVariables = new String[] {CmsisConstants.CMSIS_PACK_ROOT_VAR, CmsisConstants.CMSIS_PACK_ROOT, CmsisConstants.CMSIS_RTE, CmsisConstants.CMSIS_RTE_VAR};
 	
 	@Override
 	public String getValue(String variable, IResource resource) {
@@ -46,6 +46,8 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 		} else if (resource != null && variable.equals(CmsisConstants.CMSIS_DFP)) {
 			IProject project = resource.getProject();
 			return getDfpPath(project);
+		} else if(variable.equals(CmsisConstants.CMSIS_RTE_VAR) || variable.equals(CmsisConstants.CMSIS_RTE)){
+			return CmsisConstants.EMPTY_STRING;
 		}
 		return null;
 	}

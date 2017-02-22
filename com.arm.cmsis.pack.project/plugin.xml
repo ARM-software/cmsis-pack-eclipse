@@ -110,9 +110,11 @@
             variable="${cmsis_pack_root}">
       </variableResolver>
       <variableResolver
+            class="com.arm.cmsis.pack.project.CpVariableResolver"
             variable="${cmsis_rte}">
       </variableResolver>
       <variableResolver
+            class="com.arm.cmsis.pack.project.CpVariableResolver"
             variable="cmsis_rte">
       </variableResolver>
    </extension>
