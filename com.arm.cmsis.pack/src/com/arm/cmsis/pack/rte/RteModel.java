@@ -569,6 +569,14 @@ public class RteModel implements IRteModel {
 		fComponentFilter = new CpConditionContext();
 		if(fDeviceInfo != null) {
 			fComponentFilter.setAttributes(fDeviceInfo.attributes().getAttributesAsMap());
+			// Set proper Dname attribute for condition  evaluation
+			String deviceName = fDeviceInfo.getDeviceName();
+			int i = deviceName.indexOf(':');
+			if (i >= 0) {
+				deviceName = deviceName.substring(0, i);
+			}
+			
+			fComponentFilter.setAttribute(CmsisConstants.DNAME, deviceName); 
 			fComponentFilter.removeAttribute(CmsisConstants.URL); // this attribute is not needed for filtering
 		}
 		if(fToolchainInfo != null) {
