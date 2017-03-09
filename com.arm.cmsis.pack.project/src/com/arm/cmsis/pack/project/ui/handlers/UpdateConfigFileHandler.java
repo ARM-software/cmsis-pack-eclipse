@@ -44,7 +44,7 @@ public class UpdateConfigFileHandler extends AbstractHandler implements IElement
 
 			ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
 			ICpFile f = fi.getFile();
-			String srcFile = fi.getAbsolutePath(f.getName());
+			String srcFile = f.getAbsolutePath(f.getName());
 
 			EFileRole role = fi.getRole();
 			if (role == EFileRole.CONFIG || role == EFileRole.COPY) {
