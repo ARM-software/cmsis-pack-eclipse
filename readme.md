@@ -1,4 +1,4 @@
-#CMSIS-Pack Management for Eclipse
+# CMSIS-Pack Management for Eclipse
 
 The **CMSIS-Pack Management for Eclipse** is created by ARM to provide a open-source reference implementation for the support of the CMSIS-Pack specification in the [Eclipse] environment. It implements the fundamentals to access the information and resources contained in Software Packs and can be re-used by the ARM eco-system in any type of tools, for example configuration utilities or development environments.
 
@@ -20,7 +20,7 @@ For evaluation you need CMSIS-Pack compliant Software Packs that are available f
 
 **Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.4.0 (Luna) and 4.5.1 (Mars).
 
-##Source Code 
+## Source Code 
 This repository contains the source code of the **CMSIS-Pack Management for Eclipse** that consists of the following plug-ins:
 * **com.arm.cmsis.pack** 	- core responsible for loading pack data and managing the RTE (Run-Time Environment) configurations
 * **com.arm.cmsis.pack.common** 	- generic base code, constants and utilities
@@ -38,18 +38,18 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 
 **Requirements:** This release of the CMSIS-Pack Management for Eclipse requires JRE 1.8 to run and JDK 1.8 to build.
 
-###CMSIS-Pack Management Plug-In 1.0 has been presented at the Eclipse Conference Europe 2015
+### CMSIS-Pack Management Plug-In 1.0 has been presented at the Eclipse Conference Europe 2015
 
 ![EclipseConEurope2015] 
 
 The presentation is available on [YouTube], slides to download:
 [Enhanced Project Management for Embedded C/C++ Programming using Software Components]
 
-##Hands-On : Using the CMSIS-Pack Management Plug-In   
+## Hands-On : Using the CMSIS-Pack Management Plug-In   
 
 ![Eclipse Plug-In Overview] 
 
-###Installing the CMSIS-Pack Management Plug-In
+### Installing the CMSIS-Pack Management Plug-In
 
 1. Download the **CMSISPackPlugin_x.x.zip** from corresponding release
 
@@ -57,7 +57,7 @@ The presentation is available on [YouTube], slides to download:
 
 3. (Optional) Download com.arm.cmsis.pack.refclient_x.x.x.x.jar to **dropin** folder of your Eclipse installation.
 
-###Installing Software Packs the CMSIS-Pack Management Plug-In
+### Installing Software Packs the CMSIS-Pack Management Plug-In
 1. Start Eclipse with installed **CMSIS-Pack Management Plug-In**.
 
 2. Specify the location of the installed Software Packs with the Eclipse menu command **Window - Preferences - CMSIS Packs**. The **CMSIS Pack root folder** is the base directory, for example *C:\Keil_v5\ARM\Pack*.
@@ -91,7 +91,7 @@ You may change the component selection and use the **Resolve** toolbar button.
 
 6. Save the configuration by pressing **Save** toolbar button. This will trigger project update. You can now investigate project content, compiler settings and build the project.
 
-###Refer to integrated help for further information
+### Refer to integrated help for further information
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
