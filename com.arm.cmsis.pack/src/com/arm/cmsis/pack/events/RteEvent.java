@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.events;
 
@@ -24,6 +24,7 @@ public class RteEvent {
 
 	public static final String COMPONENT_SELECTION_MODIFIED = "com.arm.cmsis.pack.rte.component.modified"; //$NON-NLS-1$
 	public static final String COMPONENT_SHOW 	= "com.arm.cmsis.pack.rte.component.show"; //$NON-NLS-1$
+	public static final String PACK_FAMILY_SHOW		= "com.arm.cmsis.pack.rte.pack.show"; //$NON-NLS-1$
 
 	public static final String PACKS_RELOADED 	= "com.arm.cmsis.pack.reloaded"; //$NON-NLS-1$ - all packs reloaded
 	public static final String PACKS_UPDATED  	= "com.arm.cmsis.pack.updated"; //$NON-NLS-1$  - some packs changed (added, removed)

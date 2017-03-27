@@ -1,0 +1,17 @@
+  <sequence name="ResetCatchClear">
+  
+    <block>
+      // System Control Space (SCS) offset as defined
+      // in ARMv6-M/ARMv7-M. Reimplement this sequence
+      // if the SCS is located at a different offset.
+      
+      __var SCS_Addr   = 0xE000E000;
+      __var DEMCR_Addr = SCS_Addr + 0xDFC;
+      __var value      = 0;
+      
+      // Disable Reset Vector Catch in DEMCR
+      value = Read32(DEMCR_Addr);
+      Write32(DEMCR_Addr, (value &amp; (~0x00000001)));
+    </block>
+    
+  </sequence>

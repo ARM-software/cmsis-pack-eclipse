@@ -1,0 +1,143 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- Schema file written by PDE -->
+<schema targetNamespace="com.arm.cmsis.pack" xmlns="http://www.w3.org/2001/XMLSchema">
+<annotation>
+      <appinfo>
+         <meta.schema plugin="com.arm.cmsis.pack" id="DsqEngineFactory" name="Debug Sequence Engine to execute Sequence"/>
+      </appinfo>
+      <documentation>
+         This exstension point defines a hook to supply an implementation of IDsqEngine
+      </documentation>
+   </annotation>
+
+   <element name="extension">
+      <annotation>
+         <appinfo>
+            <meta.element />
+         </appinfo>
+         <documentation>
+            Contribute to this extendion point to provide functionality to execute debug sequences
+         </documentation>
+      </annotation>
+      <complexType>
+         <sequence>
+            <element ref="DsqEngineFactory"/>
+         </sequence>
+         <attribute name="point" type="string" use="required">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="id" type="string">
+            <annotation>
+               <documentation>
+                  Id for the extension in the extender plugin.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string">
+            <annotation>
+               <documentation>
+                  Optional name attribute.
+               </documentation>
+               <appinfo>
+                  <meta.attribute translatable="true"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <element name="DsqEngineFactory">
+      <annotation>
+         <documentation>
+            DsqEngineFactory is responsible to create Debug Sequence Engine to execute sequence
+         </documentation>
+      </annotation>
+      <complexType>
+         <attribute name="id" type="string" use="required">
+            <annotation>
+               <documentation>
+                  The unique identifier of this debug sequence engine factory.
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="name" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Human-readable name of the debug sequence engine factory
+               </documentation>
+            </annotation>
+         </attribute>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <documentation>
+                  Class implementing com.arm.cmsis.pack.dsq.IDsqEngineFactory interface.
+               </documentation>
+               <appinfo>
+                  <meta.attribute kind="java" basedOn=":com.arm.cmsis.pack.dsq.IDsqEngineFactory"/>
+               </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="Description" type="string">
+            <annotation>
+               <documentation>
+                  Short description of the debug sequence engine factory implementation.
+               </documentation>
+            </annotation>
+         </attribute>
+      </complexType>
+   </element>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="since"/>
+      </appinfo>
+      <documentation>
+         2.1.0
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="examples"/>
+      </appinfo>
+      <documentation>
+         [Enter extension point usage example here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="apiinfo"/>
+      </appinfo>
+      <documentation>
+         [Enter API information here.]
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="implementation"/>
+      </appinfo>
+      <documentation>
+         A reference implementation of this extension point is supplied by &lt;samp&gt;com.arm.cmsis.pack.dsq.engine&lt;/samp&gt; plug-in
+      </documentation>
+   </annotation>
+
+   <annotation>
+      <appinfo>
+         <meta.section type="copyright"/>
+      </appinfo>
+      <documentation>
+         Copyright (c) 2016 ARM Inc. All rights reserved. 
+This program and the accompanying materials are made available under the terms
+of the Eclipse Public License v1.0 which accompanies this distribution, 
+and is available at 
+http://www.eclipse.org/legal/epl-v10.html
+      </documentation>
+   </annotation>
+
+</schema>

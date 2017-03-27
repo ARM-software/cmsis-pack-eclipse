@@ -25,6 +25,7 @@ public interface ICpExpression extends ICpItem {
 	final static char COMPONENT_EXPRESSION 	= 'C';
 	final static char REFERENCE_EXPRESSION 	= 'R';
 	final static char ERROR_EXPRESSION 		= 'E';
+	final static char UNKNOWN_EXPRESSION 	= 'U';
 	
 	/**
 	 * Returns expression domain: 
@@ -33,7 +34,7 @@ public interface ICpExpression extends ICpItem {
 	 * <dt>'C' <dd>Component 
      * <dt>'T' <dd>Toolchain 
 	 * <dt>'R' <dd>Reference to condition
-	 * <dt>'E' <dd>Error (mixed attribute types)
+	 * <dt>'E' <dd>Error (mixed attribute types or missing attributes)
 	 * <dt>'U' <dd>Unknown
 	 * </dl>
 	 * <p>

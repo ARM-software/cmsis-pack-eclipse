@@ -420,6 +420,14 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	}
 
 	@Override
+	public boolean isDeprecated() {
+		ICpPack pack = getPack();
+		if(pack != null)
+			return pack.isDeprecated();
+		return false;
+	}
+	
+	@Override
 	public ICpItem getEffectiveContent() {
 		return null;
 	}

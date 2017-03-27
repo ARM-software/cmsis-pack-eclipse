@@ -1,0 +1,71 @@
+  <sequence name="DebugPortSetup">
+    <block>
+      __var isSWJ    = ((__protocol &amp; 0x00010000) != 0);
+      __var protType = __protocol &amp; 0x0000FFFF;
+    </block>
+  
+    <!-- JTAG Protocol -->
+    <control if="protType == 1">
+    
+      <control if="isSWJ">
+      
+        <block atomic="1">
+          // Ensure current debug interface is in reset state
+          DAP_SWJ_Sequence(51, 0x0007FFFFFFFFFFFF);
+          
+          // Execute SWJ-DP Switch Sequence SWD to JTAG (0xE73C)
+          // Change if SWJ-DP uses deprecated switch code (0xAEAE)
+          DAP_SWJ_Sequence(16, 0xE73C);
+          
+          // Ensure JTAG interface is reset
+          DAP_SWJ_Sequence(6, 0x3F);
+        </block>
+        
+      </control>
+    
+      <block atomic="1">
+        // JTAG "Soft" Reset
+        DAP_JTAG_Sequence(6, 1, 0x3F);
+        DAP_JTAG_Sequence(1, 0, 0x01);
+      </block>
+
+    </control>
+    
+    <!-- SWD Protocol -->
+    <control if="protType == 2">
+    
+      <control if="isSWJ">
+        
+        <block atomic="1">
+          // Ensure current debug interface is in reset state
+          DAP_SWJ_Sequence(51, 0x0007FFFFFFFFFFFF);
+          
+          // Execute SWJ-DP Switch Sequence JTAG to SWD (0xE79E)
+          // Change if SWJ-DP uses deprecated switch code (0xEDB6)
+          DAP_SWJ_Sequence(16, 0xE79E);
+          
+          // Enter SWD Line Reset State
+          DAP_SWJ_Sequence(51, 0x0007FFFFFFFFFFFF);  // &gt; 50 cycles SWDIO/TMS High
+          DAP_SWJ_Sequence(3,  0x00);                // At least 2 idle cycles (SWDIO/TMS Low)
+      </block>
+      
+      </control>
+    
+      <control if="!isSWJ">
+      
+        <block atomic="1">
+          // Enter SWD Line Reset State
+          DAP_SWJ_Sequence(51, 0x0007FFFFFFFFFFFF);  // &gt; 50 cycles SWDIO/TMS High
+          DAP_SWJ_Sequence(3,  0x00);                // At least 2 idle cycles (SWDIO/TMS Low)
+        </block>
+        
+      </control>
+      
+      <block>
+        // Read DPIDR to enable SWD interface (SW-DPv1 and SW-DPv2)
+        ReadDP(0x0);
+      </block>
+
+    </control>
+    
+  </sequence>

@@ -34,7 +34,8 @@ public class CpPack extends CpRootItem implements ICpPack {
 	protected Set<String> deviceNames = null; // names of all declared and referenced devices
 	protected Set<String> boardNames = null; // names of boards described in the pack
 	protected int deviceLess = -1; // -1 means uninitialized
-
+	protected int deprecated = -1; // -1 means uninitialized
+	
 	public CpPack() {
 		this(NULL_CPITEM);
 	}
@@ -344,6 +345,21 @@ public class CpPack extends CpRootItem implements ICpPack {
 		return (getParent() != null && getParent().getFirstChild() == this);
 	}
 
+	@Override
+	public boolean isDeprecated() {
+		if(deprecated < 0 ) {
+			Collection<? extends ICpItem> releases = getReleases();
+			if (releases != null) {
+				ICpItem latestRelease = releases.iterator().next();
+				deprecated = latestRelease.hasAttribute(CmsisConstants.DEPRECATED) ? 1 : 0; 
+			} else {
+				deprecated = 0;
+			}
+		}
+		return deprecated == 1;
+	}
+	
+	
 	@Override
 	public Collection<? extends ICpItem> getReleases() {
 		return getGrandChildren(CmsisConstants.RELEASES_TAG);

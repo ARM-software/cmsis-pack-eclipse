@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<?eclipse version="3.0"?>
+<plugin>
+   <extension-point id="ScriptGenerator" name="Script Generator to generate script code for Debug Sequence Model" schema="schema/ScriptGenerator.exsd"/>
+	<extension point="org.eclipse.emf.ecore.generated_package">
+		<package 
+			uri = "http://www.arm.com/cmsis/pack/debugseq/DebugSeq"
+			class = "com.arm.cmsis.pack.debugseq.debugSeq.DebugSeqPackage"
+			genModel = "model/generated/DebugSeq.genmodel" />
+	</extension>
+ <extension
+       point="com.arm.cmsis.pack.DsqEngineFactory">
+    <DsqEngineFactory
+          Description="Default factory produces XText-based IDsqEngine"
+          class="com.arm.cmsis.pack.debugseq.factory.DsqEngineFactory"
+          id="com.arm.cmsis.pack.dsq.engine.DsqEngineFactory"
+          name="Default Debug Sequence Engine Factory">
+    </DsqEngineFactory>
+ </extension>
+ <extension
+       point="com.arm.cmsis.pack.dsq.engine.ScriptGenerator">
+    <ScriptGenerator
+          class="com.arm.cmsis.pack.debugseq.generator.DsqPhytonScriptGenerator"
+          description="Generate Python script to run on Debug Server"
+          id="com.arm.cmsis.pack.dsq.engine.generator.python"
+          name="Python Generator">
+    </ScriptGenerator>
+ </extension>
+</plugin>

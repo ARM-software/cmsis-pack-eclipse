@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.preferences;
 
@@ -98,7 +98,7 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 	public static String getPackRoot() {
 		IPreferencesService prefs = Platform.getPreferencesService();
 		String defaultRoot = getDefaultPackRoot();
-		if(!defaultRoot.isEmpty()) {
+		if(!defaultRoot.isEmpty() && !isCmsisRootEditable()) {
 			setPackRoot(defaultRoot);  // synchronize preferences with external provider
 			return defaultRoot;
 		}
@@ -148,8 +148,12 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 		return lastUpdateTime;
 	}
 
-	public static void updateLastUpdateTime() {
-		lastUpdateTime = Utils.getCurrentDate();
+	public static void updateLastUpdateTime(boolean useCurrentDate) {
+		if (useCurrentDate) {
+			lastUpdateTime = Utils.getCurrentDate();
+		} else {
+			lastUpdateTime = CmsisConstants.EMPTY_STRING;
+		}
 		writeUpdateFile();
 	}
 
@@ -173,16 +177,16 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 	 */
 	private static void readUpdateFile() {
 		try (Stream<String> stream = Files.lines(Paths.get(CpPlugIn.getPackManager().getCmsisPackWebDir(), UPDATE_CFG))) {
-	        stream.forEach(line -> {
-	        	if (line.startsWith("Date=")) { //$NON-NLS-1$
-	        		lastUpdateTime = line.substring(5);
-	        	} else if (line.startsWith("Auto=")) { //$NON-NLS-1$
-	        		autoUpdateFlag = line.substring(5);
-	        	}
-	        });
+			stream.forEach(line -> {
+				if (line.startsWith("Date=")) { //$NON-NLS-1$
+					lastUpdateTime = line.substring(5);
+				} else if (line.startsWith("Auto=")) { //$NON-NLS-1$
+					autoUpdateFlag = line.substring(5);
+				}
+			});
 		} catch (NoSuchFileException e) {
 			autoUpdateFlag = Boolean.toString(false);
-			updateLastUpdateTime();
+			updateLastUpdateTime(false);
 		} catch (IOException e) {
 			// do nothing
 		}
@@ -228,6 +232,12 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 
 	public static boolean hasCmsisRootProvider() {
 		return getCmsisRootProvider() != null;
+	}
+
+	public static boolean isCmsisRootEditable() {
+		ICpPackRootProvider rootProvider = getCmsisRootProvider();
+
+		return rootProvider == null || rootProvider.isUserEditable();
 	}
 
 	public static void destroy() {

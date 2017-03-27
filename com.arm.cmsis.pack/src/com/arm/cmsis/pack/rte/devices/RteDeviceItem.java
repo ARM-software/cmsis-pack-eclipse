@@ -21,6 +21,7 @@ import java.util.TreeMap;
 import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
+import com.arm.cmsis.pack.data.CpPackIdComparator;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -29,7 +30,6 @@ import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.item.CmsisMapItem;
 import com.arm.cmsis.pack.utils.AlnumComparator;
-import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Default implementation of IRteDeviceItem
@@ -39,6 +39,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	protected int fLevel = EDeviceHierarchyLevel.NONE.ordinal();
 	protected Map<String, ICpDeviceItem> fDevices = null;
 	protected Set<String> fDeviceNames = null;
+	protected  boolean fbDeprecated = false;
 
 	/**
 	 *
@@ -144,6 +145,11 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	}
 
 	@Override
+	public boolean isDeprecated() {
+		return fbDeprecated;
+	}
+	
+	@Override
 	public void addDevice(ICpDeviceItem item) {
 		if(item == null) {
 			return;
@@ -154,17 +160,28 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 
 		if(fLevel == level || fLevel == EDeviceHierarchyLevel.PROCESSOR.ordinal()) {
 			ICpPack pack = item.getPack();
+			boolean deprecated = pack.isDeprecated();
 			String packId = pack.getId();
 			if(fDevices == null) {
-				fDevices = new TreeMap<String, ICpDeviceItem>(new VersionComparator());
+				fDevices = new TreeMap<String, ICpDeviceItem>(new CpPackIdComparator());
 			}
-
+			
 			ICpDeviceItem device = fDevices.get(packId);
-			if(device == null ||
-					// new item's pack is installed/downloaded and the one in the tree is not
-					(item.getPack().getPackState().ordinal() < device.getPack().getPackState().ordinal())) {
-				fDevices.put(packId, item);
+			if(device != null) {
+				if(pack == device.getPack()) // not from the same pack 
+					return;
+				// installed/downloaded pack has preference 
+				if(pack.getPackState().ordinal() > device.getPack().getPackState().ordinal()) {
+					return;
+				}
 			}
+			if(fDevices.isEmpty() || fbDeprecated )  {
+				fbDeprecated = deprecated;
+			} else if(deprecated) {
+				return;
+			}
+			fDevices.put(packId, item);			
+			
 			if(fLevel == EDeviceHierarchyLevel.PROCESSOR.ordinal()) {
 				return;
 			}
@@ -427,8 +444,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	@Override
 	public String getDoc() {
 		ICpDeviceItem device = getDevice();
-		if(device != null)
-		{
+		if(device != null) {
 			return device.getDoc(); // TODO: return a collection of documents
 		}
 		return null;
@@ -479,5 +495,6 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 			getParent().removeDeviceName(name);
 		}
 	}
+
 
 }

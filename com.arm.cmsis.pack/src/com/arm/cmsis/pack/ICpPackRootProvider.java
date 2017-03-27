@@ -22,4 +22,11 @@ public interface ICpPackRootProvider {
 	 */
 	String getPackRoot();
 	
+	
+	/**
+	 * Checks if the user can edit CMSIS Pack root preference supplied by the provider 
+	 * @return true if f the user can edit the preference  
+	 */
+	default boolean isUserEditable() { return false; }
+	
 }

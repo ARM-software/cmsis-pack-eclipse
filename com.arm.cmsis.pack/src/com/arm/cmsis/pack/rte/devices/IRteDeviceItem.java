@@ -85,7 +85,12 @@ public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem>  {
 	 */
 	boolean isDevice();
 
-
+	/**
+	 * Checks if the item represent device from deprecated pack
+	 * @return true if deprecated
+	 */
+	boolean isDeprecated();
+	
 	/**
 	 * Returns sorted collection of device items
 	 * @return sorted collection of devices stored in this item

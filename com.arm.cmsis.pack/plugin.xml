@@ -3,6 +3,7 @@
 <plugin>
    <extension-point id="PackInstaller" name="Pack Installer to install/remove CMSIS packs" schema="schema/PackInstaller.exsd"/>
    <extension-point id="EnvironmentProvider" name="Provider to bind CMSIS plug-ins to  a specific development environment" schema="schema/EnvironmentProvider.exsd"/>
+   <extension-point id="DsqEngineFactory" name="Debug Sequence Engine Factory to create IDsqEngine objects to execute Sequences" schema="schema/DsqEngineFactory.exsd"/>
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer

@@ -29,6 +29,14 @@
             id="com.arm.cmsis.pack.refclient.ui.ConfigView"
             name="Active RTE Configuration (Sample view)">
       </view>
+      <view
+            category="com.arm.cmsis.pack.refclient.category"
+            class="com.arm.cmsis.pack.refclient.ui.SequenceView"
+            icon="icons/launch.gif"
+            id="com.arm.cmsis.pack.refclient.ui.SequenceView"
+            name="Device Sequences"
+            restorable="true">
+      </view>
    </extension>
  <extension
        point="com.arm.cmsis.pack.EnvironmentProvider">
@@ -37,6 +45,13 @@
           id="com.arm.cmsis.pack.refclient.EnvironmentProvider"
           name="RefClient">
     </EnvironmentProvider>
+ </extension>
+ <extension
+       point="org.eclipse.ui.console.consoleFactories">
+    <consoleFactory
+          class="com.arm.cmsis.pack.refclient.ui.console.SequenceConsoleFactory"
+          label="CMSIS Sequence Console">
+    </consoleFactory>
  </extension>
 
 </plugin>

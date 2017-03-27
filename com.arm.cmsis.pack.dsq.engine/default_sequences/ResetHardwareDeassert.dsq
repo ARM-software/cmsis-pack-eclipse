@@ -1,0 +1,17 @@
+  <sequence name="ResetHardwareDeassert">
+
+    <block>
+      __var nReset      = 0x80;
+      __var canReadPins = 0;
+      
+      // Assert nRESET line and check if nRESET is readable
+      canReadPins = (DAP_SWJ_Pins(nReset, nReset, 0) != 0xFFFFFFFF);
+    </block>
+
+    <!-- Wait max. 1s for nRESET to recover from reset if readable-->
+    <control if="canReadPins" while="(DAP_SWJ_Pins(nReset, nReset, 0) &amp; nReset) == 0" timeout="1000000"/>
+    
+    <!-- Wait 100ms for recovery if nRESET not readable -->
+   <control if="!canReadPins" while="1" timeout="100000"/>
+  
+  </sequence>

@@ -23,7 +23,7 @@ public class CpExpression extends CpItem implements ICpExpression {
 										// 'C' Component), 
 									    // 'T' Toolchain), 
 										// 'R' Reference to condition
-										// 'E' Error (mixed attribute types)
+										// 'E' Error (mixed attribute types or missing attributes)
 										// 'U' Unknown
 	
 	/**
@@ -48,16 +48,34 @@ public class CpExpression extends CpItem implements ICpExpression {
 	@Override
 	public char getExpressionDomain() {
 		if(expressionType == 0) {
-			if(hasCondition())
-				expressionType = 'R';
-			else if(attributes().containsAttribute("C*")) //$NON-NLS-1$
+			int nTypes = 0;
+			boolean bError = false;
+
+			if(hasCondition()) {
+				nTypes++;
+				expressionType = REFERENCE_EXPRESSION;
+			}
+			if(attributes().containsAttribute("C*")) {  //$NON-NLS-1$
+				nTypes++;
 				expressionType = 'C';
-			else if(attributes().containsAttribute("D*")) //$NON-NLS-1$
-				expressionType = 'D';
-			else if(attributes().containsAttribute("T*")) //$NON-NLS-1$
-				expressionType = 'T';
-			else 
-				expressionType = 'U';
+				if(!attributes().hasAttribute(CmsisConstants.CCLASS) || !attributes().hasAttribute(CmsisConstants.CGROUP)){
+					bError = true;
+				}
+			}
+			if(attributes().containsAttribute("D*") || attributes().hasAttribute(CmsisConstants.PNAME)){ //$NON-NLS-1$
+				nTypes++;
+				expressionType = DEVICE_EXPRESSION;
+			}
+			if(attributes().containsAttribute("T*")){//$NON-NLS-1$
+				nTypes++;
+				expressionType = TOOLCHAIN_EXPRESSION;
+			}
+
+			if(bError || nTypes > 1) {
+				expressionType = ERROR_EXPRESSION;
+			} else 	if(expressionType == 0) {
+				expressionType = UNKNOWN_EXPRESSION;
+			} 
 		}
 		return expressionType;
 	}

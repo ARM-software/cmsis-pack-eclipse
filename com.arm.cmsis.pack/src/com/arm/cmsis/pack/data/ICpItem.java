@@ -286,6 +286,11 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 */
 	boolean isGenerated();
 
+	/**
+	 * Checks if the item comes from deprecated pack
+	 * @return true if deprecated
+	 */
+	boolean isDeprecated();
 	
 	/**
 	 * Returns absolute path of supplied relative one, if supplied path is an URL or absolute, returns it 
@@ -306,5 +311,6 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 * @return true if matches
 	 */
 	boolean matchesHost();
+	
 	
 }

@@ -1,0 +1,60 @@
+  <sequence name="DebugPortStart">
+    
+    <block>
+      __var SW_DP_ABORT  = 0x0;
+      __var DP_CTRL_STAT = 0x4;
+      __var DP_SELECT    = 0x8;
+      __var powered_down = 0;
+
+      // Switch to DP Register Bank 0
+      WriteDP(DP_SELECT, 0x00000000);
+    
+      // Read DP CTRL/STAT Register and check if CSYSPWRUPACK and CDBGPWRUPACK bits are set
+      powered_down = ((ReadDP(DP_CTRL_STAT) &amp; 0xA0000000) != 0xA0000000);
+    </block>
+    
+    <control if="powered_down">
+    
+      <block>
+        // Request Debug/System Power-Up
+        WriteDP(DP_CTRL_STAT, 0x50000000);
+      </block>
+      
+      <!-- Wait for Power-Up Request to be acknowledged -->
+      <control while="(ReadDP(DP_CTRL_STAT) &amp; 0xA0000000) != 0xA0000000" timeout="1000000"/>
+      
+      <block>
+        // Request Debug Reset
+        WriteDP(DP_CTRL_STAT, 0x54000000);
+      </block>
+      
+      <!-- Wait for Debug Reset to be acknowledged, don't issue error on timeout to deal with improperly connected Debug Reset -->
+      <control while="(ReadDP(DP_CTRL_STAT) &amp; 0xA8000000) != 0xA8000000" timeout="300000"/>
+      
+      <!-- JTAG Specific Part of sequence -->
+      <control if="__protocol == 1">
+      
+        <block>
+          // Init AP Transfer Mode, Transaction Counter, and Lane Mask (Normal Transfer Mode, Include all Byte Lanes)
+          // Additionally clear STICKYORUN, STICKYCMP, and STICKYERR bits by writing '1'
+          WriteDP(DP_CTRL_STAT, 0x50000F32);
+        </block>
+        
+      </control>
+      
+      <!-- SWD Specific Part of sequence -->
+      <control if="__protocol == 2">
+      
+        <block>
+          // Init AP Transfer Mode, Transaction Counter, and Lane Mask (Normal Transfer Mode, Include all Byte Lanes)
+          WriteDP(DP_CTRL_STAT, 0x50000F00);
+          
+          // Clear WDATAERR, STICKYORUN, STICKYCMP, and STICKYERR bits of CTRL/STAT Register by write to ABORT register
+          WriteDP(SW_DP_ABORT, 0x0000001E);
+        </block>
+
+      </control>
+      
+    </control>
+    
+  </sequence>

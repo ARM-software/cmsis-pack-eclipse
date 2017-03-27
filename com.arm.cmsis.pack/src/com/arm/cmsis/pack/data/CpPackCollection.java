@@ -12,11 +12,10 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
@@ -120,7 +119,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 	@Override
 	public Collection<ICpPack> getPacks() {
-		Collection<ICpPack> packs = new LinkedList<ICpPack>();
+		Set<ICpPack> packs = new TreeSet<ICpPack>(new CpPackComparator());
 		for(ICpPackFamily f : fPackFamilies.values()) {
 			Collection<ICpPack> familyPacks = f.getPacks();
 			if(familyPacks == null) {
@@ -142,7 +141,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 			return getLatestPacks();
 		}
 
-		Collection<ICpPack> packs = new LinkedList<ICpPack>();
+		Set<ICpPack> packs = new TreeSet<ICpPack>(new CpPackComparator());
 		for(ICpPackFamily f : fPackFamilies.values()) {
 			Collection<? extends ICpItem> children = f.getChildren();
 			if(children == null) {
@@ -176,7 +175,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 
 	@Override
 	public Collection<ICpPack> getLatestPacks() {
-		Collection<ICpPack> latestPacks = new LinkedList<ICpPack>();
+		Set<ICpPack> latestPacks = new TreeSet<ICpPack>(new CpPackComparator());
 		if (fPackFamilies == null) {
 			return latestPacks;
 		}
@@ -206,7 +205,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 	@Override
 	public synchronized Set<String> getLatestPackIDs() {
 		if(fLatestPackIDs == null) {
-			fLatestPackIDs = new HashSet<String>();
+			fLatestPackIDs = new TreeSet<String>(new CpPackIdComparator());
 			if (fPackFamilies != null) {
 				for(ICpPackFamily f : fPackFamilies.values()) {
 					String packId = f.getPackId();
