@@ -16,7 +16,6 @@ import java.util.Map;
 import org.eclipse.cdt.internal.ui.editor.CEditor;
 import org.eclipse.cdt.internal.ui.editor.asm.AsmTextEditor;
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.IResourceChangeListener;
@@ -79,7 +78,6 @@ import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.TextEditor;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -293,11 +291,6 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
 		setPartName(title);
 	}
 
-	public void gotoMarker(IMarker marker) {
-		setActivePage(0);
-		IDE.gotoMarker(getEditor(0), marker);
-	}
-
 	/**
 	 * The <code>MultiPageEditorExample</code> implementation of this method
 	 * checks that the input is an instance of <code>IFileEditorInput</code>.
@@ -373,7 +366,7 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
 							|| (flags & IResourceDelta.MARKERS) != 0) { // markers have changed
 						Display.getDefault().asyncExec(() -> {
 							ConfigEditor.this.getEditorSite().getPage()
-									.closeEditor(ConfigEditor.this, true);
+							.closeEditor(ConfigEditor.this, true);
 						});
 						return false;
 					}
@@ -584,20 +577,20 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
 			IConfigWizardItem item = getConfigWizardItem(obj);
 			EItemType type = item.getItemType();
 			switch (type) {
-				case HEADING_ENABLE:
-				case OPTION_CHECK:
-				case CODE_ENABLE:
-				case CODE_DISABLE:
-					return CellControlType.CHECK;
-				case OPTION_SELECT:
-					return CellControlType.MENU;
-				case OPTION:
-					if (item.getSpinStep() != 0) {
-						return CellControlType.SPIN;
-					}
-					break;
-				default:
-					break;
+			case HEADING_ENABLE:
+			case OPTION_CHECK:
+			case CODE_ENABLE:
+			case CODE_DISABLE:
+				return CellControlType.CHECK;
+			case OPTION_SELECT:
+				return CellControlType.MENU;
+			case OPTION:
+				if (item.getSpinStep() != 0) {
+					return CellControlType.SPIN;
+				}
+				break;
+			default:
+				break;
 			}
 
 			return CellControlType.TEXT;
@@ -614,20 +607,20 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
 			IConfigWizardItem item = getConfigWizardItem(obj);
 			EItemType type = item.getItemType();
 			switch (type) {
-				case HEADING:
-					return false;
-				case HEADING_ENABLE:
-				case CODE_ENABLE:
-				case CODE_DISABLE:
-					return isEnabled(item.getParent(), columnIndex);
-				case OPTION:
-				case OPTION_CHECK:
-				case OPTION_SELECT:
-				case OPTION_STRING:
-					return isEnabled(obj, columnIndex);
+			case HEADING:
+				return false;
+			case HEADING_ENABLE:
+			case CODE_ENABLE:
+			case CODE_DISABLE:
+				return isEnabled(item.getParent(), columnIndex);
+			case OPTION:
+			case OPTION_CHECK:
+			case OPTION_SELECT:
+			case OPTION_STRING:
+				return isEnabled(obj, columnIndex);
 
-				default:
-					break;
+			default:
+				break;
 			}
 			return false;
 		}
@@ -682,7 +675,10 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
 			if (item.getItemType() == EItemType.OPTION_STRING) {
 				return item.getString().replace("\\\"", "\""); //$NON-NLS-1$ //$NON-NLS-2$
 			}
-			if (item.getItemType() == EItemType.HEADING || item.getItemType() == EItemType.ROOT) {
+
+			// for heading item and notification item, there is no value to show
+			if (item.getItemType() == EItemType.HEADING || item.getItemType() == EItemType.ROOT
+					|| item.getItemType() == EItemType.NOTIFICATION) {
 				return null;
 			}
 

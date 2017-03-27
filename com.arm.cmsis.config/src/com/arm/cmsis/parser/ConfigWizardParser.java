@@ -195,42 +195,45 @@ public class ConfigWizardParser {
 	protected IConfigWizardItem parseItem(IConfigWizardItem parent) {
 		IConfigWizardItem item;
 		switch (cType) {
-			case HEADING:
-				return parseHeading(parent);
-			case HEADING_ENABLE:
-				return parseHeadingEnable(parent);
-			case CODE_ENABLE:
-			case CODE_DISABLE:
-				return parseCodeComment(parent);
-			case OPTION:
-				item = new ConfigWizardItem(EItemType.OPTION, fScanner.getCurrentLineNumber(), parent);
-				return parseOption(item);
-			case OPTION_CHECK:
-				item = new ConfigWizardItem(EItemType.OPTION_CHECK, fScanner.getCurrentLineNumber(), parent);
-				return parseOption(item);
-			case OPTION_STRING:
-				item = new ConfigWizardItem(EItemType.OPTION_STRING, fScanner.getCurrentLineNumber(), parent);
-				return parseOptionString(item);
-			case TOOLTIP:
-				item = parent.getLastChild();
-				if (item == null) {
-					item = parent;
-				}
-				return parseTooltip(item);
-			case NUMBER:
-				parseNumber();
-				return parent;
-			case STRING:
-				parseString();
-				return parent;
-			case START:
-				getNextToken();
-				return parent;
-			default:
-				fParsingErrorMessage = NLS.bind(Messages.ConfigWizardParser_UnknownTokenType,
-						fScanner.getTokenContent(cToken));
-				syntaxError();
-				break;
+		case HEADING:
+			return parseHeading(parent);
+		case HEADING_ENABLE:
+			return parseHeadingEnable(parent);
+		case CODE_ENABLE:
+		case CODE_DISABLE:
+			return parseCodeComment(parent);
+		case OPTION:
+			item = new ConfigWizardItem(EItemType.OPTION, fScanner.getCurrentLineNumber(), parent);
+			return parseOption(item);
+		case OPTION_CHECK:
+			item = new ConfigWizardItem(EItemType.OPTION_CHECK, fScanner.getCurrentLineNumber(), parent);
+			return parseOption(item);
+		case OPTION_STRING:
+			item = new ConfigWizardItem(EItemType.OPTION_STRING, fScanner.getCurrentLineNumber(), parent);
+			return parseOptionString(item);
+		case NOTIFICATION:
+			item = new ConfigWizardItem(EItemType.NOTIFICATION, fScanner.getCurrentLineNumber(), parent);
+			return parseNotification(item);
+		case TOOLTIP:
+			item = parent.getLastChild();
+			if (item == null) {
+				item = parent;
+			}
+			return parseTooltip(item);
+		case NUMBER:
+			parseNumber();
+			return parent;
+		case STRING:
+			parseString();
+			return parent;
+		case START:
+			getNextToken();
+			return parent;
+		default:
+			fParsingErrorMessage = NLS.bind(Messages.ConfigWizardParser_UnknownTokenType,
+					fScanner.getTokenContent(cToken));
+			syntaxError();
+			break;
 		}
 
 		return null;
@@ -592,6 +595,15 @@ public class ConfigWizardParser {
 		return item;
 	}
 
+	protected IConfigWizardItem parseNotification(IConfigWizardItem item) {
+		item.setName(fScanner.readLine());
+		getNextToken();
+		while (cType == ETokenType.TOOLTIP) {
+			parseTooltip(item);
+		}
+		return item;
+	}
+
 	protected void parseNumber() {
 		String tokenContent = fScanner.getTokenContent(cToken);
 		fNumberContainer.put(fScanner.getTokenOffset(), tokenContent);
@@ -621,27 +633,27 @@ public class ConfigWizardParser {
 		char lastChar = number.charAt(number.length() - 1);
 		if (radix != 16 && radix != 2 && radix != 8 && !Character.isDigit(lastChar)) {
 			switch (lastChar) {
-				case 'b':
-				case 'B':
-					radix = 2;
-					break;
-				case 'o':
-				case 'O':
-				case 'q':
-				case 'Q':
-					radix = 8;
-					break;
-				case 'd':
-				case 'D':
-					radix = 10;
-					break;
-				case 'h':
-				case 'H':
-					radix = 16;
-					break;
-				default:
-					item.setItemErrorType(EItemErrorType.NUMBER_PARSE_ERROR);
-					return 0;
+			case 'b':
+			case 'B':
+				radix = 2;
+				break;
+			case 'o':
+			case 'O':
+			case 'q':
+			case 'Q':
+				radix = 8;
+				break;
+			case 'd':
+			case 'D':
+				radix = 10;
+				break;
+			case 'h':
+			case 'H':
+				radix = 16;
+				break;
+			default:
+				item.setItemErrorType(EItemErrorType.NUMBER_PARSE_ERROR);
+				return 0;
 			}
 			number = number.substring(0, number.length() - 1);
 		}
@@ -730,38 +742,40 @@ public class ConfigWizardParser {
 
 	private String getTokenTypeString(ETokenType type) {
 		switch (type) {
-			case HEADING:
-				return "<h>"; //$NON-NLS-1$
-			case HEADING_ENABLE:
-				return "<e>"; //$NON-NLS-1$
-			case HEADING_ENABLE_END:
-				return "</e>"; //$NON-NLS-1$
-			case HEADING_END:
-				return "</h>"; //$NON-NLS-1$
-			case OPTION:
-				return "<o>"; //$NON-NLS-1$
-			case OPTION_CHECK:
-				return "<q>"; //$NON-NLS-1$
-			case OPTION_STRING:
-				return "<s>"; //$NON-NLS-1$
-			case TOOLTIP:
-				return "<i>"; //$NON-NLS-1$
-			case VALUE:
-				return "<\\d+=>"; //$NON-NLS-1$
-			case EOC:
-				return Messages.ConfigWizardParser_EndOfConfiguration;
-			case BLOCK_COMMENT:
-				return Messages.ConfigWizardParser_BlockComment;
-			case COMMENT:
-				return Messages.ConfigWizardParser_Comment;
-			case DEFAULT:
-				return Messages.ConfigWizardParser_Unknown;
-			case NUMBER:
-				return Messages.ConfigWizardParser_Number;
-			case STRING:
-				return Messages.ConfigWizardParser_String;
-			default:
-				return Messages.ConfigWizardParser_Unknown;
+		case HEADING:
+			return "<h>"; //$NON-NLS-1$
+		case HEADING_ENABLE:
+			return "<e>"; //$NON-NLS-1$
+		case HEADING_ENABLE_END:
+			return "</e>"; //$NON-NLS-1$
+		case HEADING_END:
+			return "</h>"; //$NON-NLS-1$
+		case OPTION:
+			return "<o>"; //$NON-NLS-1$
+		case OPTION_CHECK:
+			return "<q>"; //$NON-NLS-1$
+		case OPTION_STRING:
+			return "<s>"; //$NON-NLS-1$
+		case NOTIFICATION:
+			return "<n>"; //$NON-NLS-1$
+		case TOOLTIP:
+			return "<i>"; //$NON-NLS-1$
+		case VALUE:
+			return "<\\d+=>"; //$NON-NLS-1$
+		case EOC:
+			return Messages.ConfigWizardParser_EndOfConfiguration;
+		case BLOCK_COMMENT:
+			return Messages.ConfigWizardParser_BlockComment;
+		case COMMENT:
+			return Messages.ConfigWizardParser_Comment;
+		case DEFAULT:
+			return Messages.ConfigWizardParser_Unknown;
+		case NUMBER:
+			return Messages.ConfigWizardParser_Number;
+		case STRING:
+			return Messages.ConfigWizardParser_String;
+		default:
+			return Messages.ConfigWizardParser_Unknown;
 		}
 	}
 
@@ -787,51 +801,51 @@ public class ConfigWizardParser {
 
 		EItemType type = item.getItemType();
 		switch (type) {
-			case HEADING_ENABLE:
-			case OPTION:
-			case OPTION_CHECK:
-			case OPTION_SELECT:
-				Collection<String> numbers = fNumberContainer.tailMap(offset).values();
-				Iterator<String> iter = numbers.iterator();
-				String valueText = ""; //$NON-NLS-1$
-				long value = 0;
-				while (iter.hasNext() && skip >= 0) {
-					valueText = iter.next();
-					skip--;
-				}
-				if (skip >= 0) {
-					item.setItemErrorType(EItemErrorType.LOCATE_POSITION_ERROR);
-					return;
-				}
-				value = parseNumber(item, valueText);
-				if (item.getItemErrorType() != EItemErrorType.NO_ERROR) {
-					return;
-				}
-				int base = getBaseFromValue(valueText);
-				item.setBase(base);
-				long realValue = value;
-				if (value >= 0) {
-					realValue = (value >> minBit) & mask;
-				}
-				item.setValue(realValue);
-				break;
-			case OPTION_STRING:
-				Collection<String> strings = fStringContainer.tailMap(offset).values();
-				Iterator<String> siter = strings.iterator();
-				String str = ""; //$NON-NLS-1$
-				while (siter.hasNext() && skip >= 0) {
-					str = siter.next();
-					skip--;
-				}
-				if (skip >= 0) {
-					item.setItemErrorType(EItemErrorType.LOCATE_POSITION_ERROR);
-					return;
-				}
-				item.setItemErrorType(EItemErrorType.NO_ERROR);
-				item.setString(str);
-				break;
-			default:
-				break;
+		case HEADING_ENABLE:
+		case OPTION:
+		case OPTION_CHECK:
+		case OPTION_SELECT:
+			Collection<String> numbers = fNumberContainer.tailMap(offset).values();
+			Iterator<String> iter = numbers.iterator();
+			String valueText = ""; //$NON-NLS-1$
+			long value = 0;
+			while (iter.hasNext() && skip >= 0) {
+				valueText = iter.next();
+				skip--;
+			}
+			if (skip >= 0) {
+				item.setItemErrorType(EItemErrorType.LOCATE_POSITION_ERROR);
+				return;
+			}
+			value = parseNumber(item, valueText);
+			if (item.getItemErrorType() != EItemErrorType.NO_ERROR) {
+				return;
+			}
+			int base = getBaseFromValue(valueText);
+			item.setBase(base);
+			long realValue = value;
+			if (value >= 0) {
+				realValue = (value >> minBit) & mask;
+			}
+			item.setValue(realValue);
+			break;
+		case OPTION_STRING:
+			Collection<String> strings = fStringContainer.tailMap(offset).values();
+			Iterator<String> siter = strings.iterator();
+			String str = ""; //$NON-NLS-1$
+			while (siter.hasNext() && skip >= 0) {
+				str = siter.next();
+				skip--;
+			}
+			if (skip >= 0) {
+				item.setItemErrorType(EItemErrorType.LOCATE_POSITION_ERROR);
+				return;
+			}
+			item.setItemErrorType(EItemErrorType.NO_ERROR);
+			item.setString(str);
+			break;
+		default:
+			break;
 		}
 
 		if (item.hasChildren()) {
@@ -861,17 +875,17 @@ public class ConfigWizardParser {
 			return 8;
 		}
 		switch (valueText.charAt(valueText.length() - 1)) {
-			case 'b':
-				return 2;
-			case 'o':
-			case 'q':
-				return 8;
-			case 'd':
-				return 10;
-			case 'h':
-				return 16;
-			default:
-				return 10;
+		case 'b':
+			return 2;
+		case 'o':
+		case 'q':
+			return 8;
+		case 'd':
+			return 10;
+		case 'h':
+			return 16;
+		default:
+			return 10;
 		}
 	}
 
@@ -961,51 +975,51 @@ public class ConfigWizardParser {
 		EItemType type = item.getItemType();
 		String value = newVal;
 		switch (type) {
-			case OPTION_STRING:
-				value = value.replace("\"", "\\\""); //$NON-NLS-1$ //$NON-NLS-2$
-				if (item.getString().equals(value)) {
-					return;
-				}
-				item.setString(value);
-				updateDocument(item, value);
+		case OPTION_STRING:
+			value = value.replace("\"", "\\\""); //$NON-NLS-1$ //$NON-NLS-2$
+			if (item.getString().equals(value)) {
 				return;
-			case OPTION_SELECT:
-				if (item.getItems().get(item.getValue()) != null
-						&& item.getItems().get(item.getValue()).equals(value)) {
+			}
+			item.setString(value);
+			updateDocument(item, value);
+			return;
+		case OPTION_SELECT:
+			if (item.getItems().get(item.getValue()) != null
+			&& item.getItems().get(item.getValue()).equals(value)) {
+				return;
+			}
+			for (Entry<Long, String> entry : item.getItems().entrySet()) {
+				if (entry.getValue().equals(value)) {
+					item.setValue(entry.getKey());
+					updateDocument(item, entry.getKey());
 					return;
 				}
-				for (Entry<Long, String> entry : item.getItems().entrySet()) {
-					if (entry.getValue().equals(value)) {
-						item.setValue(entry.getKey());
-						updateDocument(item, entry.getKey());
-						return;
-					}
-				}
-				break;
-			case OPTION:
-				int radix = item.getBase();
-				if (value.toLowerCase().startsWith("0x")) { //$NON-NLS-1$
-					value = value.substring(2);
-					radix = 16;
-				}
-				value = value.replaceAll("[\\s<>]",""); //$NON-NLS-1$ //$NON-NLS-2$
-				try {
-					long realValue = Utils.modifyValue(Long.parseLong(value, radix),
-							item.getModification(), item.getModifier(),
-							item.getMaxValue(), item.getMinValue());
-					item.setItemErrorType(EItemErrorType.NO_ERROR);
-					if (item.getValue() == realValue) {
-						return;
-					}
-					item.setValue(realValue);
-					updateDocument(item, realValue);
+			}
+			break;
+		case OPTION:
+			int radix = item.getBase();
+			if (value.toLowerCase().startsWith("0x")) { //$NON-NLS-1$
+				value = value.substring(2);
+				radix = 16;
+			}
+			value = value.replaceAll("[\\s<>]",""); //$NON-NLS-1$ //$NON-NLS-2$
+			try {
+				long realValue = Utils.modifyValue(Long.parseLong(value, radix),
+						item.getModification(), item.getModifier(),
+						item.getMaxValue(), item.getMinValue());
+				item.setItemErrorType(EItemErrorType.NO_ERROR);
+				if (item.getValue() == realValue) {
 					return;
-				} catch (NumberFormatException e) {
-					item.setItemErrorType(EItemErrorType.NUMBER_PARSE_ERROR);
 				}
-				break;
-			default:
-				break;
+				item.setValue(realValue);
+				updateDocument(item, realValue);
+				return;
+			} catch (NumberFormatException e) {
+				item.setItemErrorType(EItemErrorType.NUMBER_PARSE_ERROR);
+			}
+			break;
+		default:
+			break;
 		}
 	}
 

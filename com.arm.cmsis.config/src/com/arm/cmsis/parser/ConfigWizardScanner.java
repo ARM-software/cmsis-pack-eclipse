@@ -51,6 +51,7 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 		OPTION,
 		OPTION_CHECK,
 		OPTION_STRING,
+		NOTIFICATION,
 		TOOLTIP,
 		EOC,	// End of Config
 		VALUE,
@@ -244,6 +245,8 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 				return ETokenType.OPTION_CHECK;
 			case 's':
 				return ETokenType.OPTION_STRING;
+			case 'n':
+				return ETokenType.NOTIFICATION;
 			case 'i':
 				return ETokenType.TOOLTIP;
 			case '/':
