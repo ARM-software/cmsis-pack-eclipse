@@ -20,6 +20,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Tree;
+
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -51,7 +52,7 @@ public class DevicesView extends PackInstallerView {
 		}
 		return null;
 	}
-	
+
 	static boolean stopAtCurrentLevel(IRteDeviceItem rteDeviceItem) {
 		IRteDeviceItem firstChild = rteDeviceItem.getFirstChild();
 		if (firstChild == null || firstChild.getLevel() == EDeviceHierarchyLevel.PROCESSOR.ordinal()) {
@@ -103,7 +104,12 @@ public class DevicesView extends PackInstallerView {
 			IRteDeviceItem rteDeviceItem = getDeviceTreeItem(obj);
 			if (rteDeviceItem != null) {
 				// added spaces at last of text as a workaround to show the complete text in the views
-				return removeColon(rteDeviceItem.getName()) + ' ';
+				String name = removeColon(rteDeviceItem.getName()) + ' ';
+				if (!rteDeviceItem.hasChildren() && rteDeviceItem.getDevice() != null
+						&& rteDeviceItem.getDevice().isDeprecated()) {
+					name += Messages.DevicesView_DeprecatedDevice + ' ';
+				}
+				return name;
 			}
 			return CmsisConstants.EMPTY_STRING;
 		}
@@ -123,10 +129,12 @@ public class DevicesView extends PackInstallerView {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
 				} else if (rteDeviceItem.hasChildren() && !stopAtCurrentLevel(rteDeviceItem)) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
+				} else if (rteDeviceItem.getDevice() != null && rteDeviceItem.getDevice().isDeprecated()) {
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE_DEPR);
 				} else if (packInstalledAndContainsDevice(rteDeviceItem)) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
 				} else {
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEPRDEVICE);
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE_GREY);
 				}
 			}
 
@@ -144,8 +152,7 @@ public class DevicesView extends PackInstallerView {
 			} else {
 				deviceItem = rteDeviceItem;
 			}
-			return deviceItem.getDevice().getPack().getPackState() == PackState.INSTALLED ||
-					deviceItem.getDevice().getPack().getPackState() == PackState.GENERATED;
+			return deviceItem.getDevice().getPack().getPackState() == PackState.INSTALLED;
 		}
 
 		@Override
@@ -268,13 +275,13 @@ public class DevicesView extends PackInstallerView {
 	public boolean isFilterSource() {
 		return true;
 	}
-	
+
 	@Override
 	protected String getHelpContextId() {
 		return IHelpContextIds.DEVICES_VIEW;
 	}
 
-	
+
 	@Override
 	public void createTreeColumns() {
 
@@ -294,6 +301,7 @@ public class DevicesView extends PackInstallerView {
 		fViewer.setAutoExpandLevel(2);
 	}
 
+	@Override
 	protected void refresh() {
 		if(CpPlugIn.getDefault() == null) {
 			return;

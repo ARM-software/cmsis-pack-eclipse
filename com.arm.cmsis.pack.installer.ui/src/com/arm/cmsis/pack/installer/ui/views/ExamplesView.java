@@ -92,9 +92,8 @@ public class ExamplesView extends PackInstallerView {
 					ICpExample e = example.getExample();
 					if (e == null || packInstaller.isProcessing(e.getPackId())) {
 						return false;
-					} else {
-						return true;
 					}
+					return true;
 				}
 			}
 			return false;
@@ -104,12 +103,16 @@ public class ExamplesView extends PackInstallerView {
 		public Image getImage(Object obj, int columnIndex) {
 			if (getCellControlType(obj,	columnIndex) == CellControlType.BUTTON) {
 				switch (getString(obj, columnIndex)) {
-					case CmsisConstants.BUTTON_COPY :
-						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
-					case CmsisConstants.BUTTON_INSTALL :
-						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALL);
-					default :
-						break;
+				case CmsisConstants.BUTTON_COPY:
+					IRteExampleItem item = getRteExampleItem(obj);
+					if (item != null && item.getExample().isDeprecated()) {
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_WARNING);
+					}
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+				case CmsisConstants.BUTTON_INSTALL:
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALL);
+				default :
+					break;
 				}
 			}
 			return null;
@@ -139,7 +142,7 @@ public class ExamplesView extends PackInstallerView {
 							.getPackState() != PackState.INSTALLED) {
 						StringBuilder str = new StringBuilder(
 								Messages.ExamplesView_CopyExampleInstallPack)
-										.append(item.getExample().getPackId());
+								.append(item.getExample().getPackId());
 						return str.toString();
 					}
 					return constructExampleTooltipText(item.getExample());
@@ -168,22 +171,22 @@ public class ExamplesView extends PackInstallerView {
 			IRteExampleItem example = getRteExampleItem(element);
 			if (example != null) {
 				switch (getString(element, colIndex)) {
-					case CmsisConstants.BUTTON_COPY :
-						ICpExample cpExample = example.getExample();
-						copyExample(cpExample);
-						Utils.clearReadOnly(ResourcesPlugin
-								.getWorkspace().getRoot().getLocation()
-								.append(Utils.extractBaseFileName(
-										cpExample.getFolder()))
-								.toFile(), CmsisConstants.EMPTY_STRING);
-						break;
-					case CmsisConstants.BUTTON_INSTALL :
-						ICpPackInstaller packInstaller = getPackInstaller();
-						if(packInstaller != null) {
-							packInstaller.installPack(example.getExample().getPackId());
-						}
-					default :
-						break;
+				case CmsisConstants.BUTTON_COPY :
+					ICpExample cpExample = example.getExample();
+					copyExample(cpExample);
+					Utils.clearReadOnly(ResourcesPlugin
+							.getWorkspace().getRoot().getLocation()
+							.append(Utils.extractBaseFileName(
+									cpExample.getFolder()))
+							.toFile(), CmsisConstants.EMPTY_STRING);
+					break;
+				case CmsisConstants.BUTTON_INSTALL :
+					ICpPackInstaller packInstaller = getPackInstaller();
+					if(packInstaller != null) {
+						packInstaller.installPack(example.getExample().getPackId());
+					}
+				default :
+					break;
 				}
 			}
 
@@ -332,7 +335,7 @@ public class ExamplesView extends PackInstallerView {
 	protected boolean hasManagerCommands() {
 		return true;
 	}
-	
+
 	@Override
 	protected void refresh() {
 		if (CpPlugIn.getDefault() == null) {

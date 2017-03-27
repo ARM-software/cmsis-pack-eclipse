@@ -240,19 +240,18 @@ public class PacksView extends PackInstallerView {
 				if (CmsisConstants.ERRORS.equals(packFamily.getTag())) {
 					return CmsisConstants.BUTTON_DELETE_ALL;
 				}
-				if (packFamily.getPack() == null) {
+				ICpPack latestPack = packFamily.getPack(); 
+				if ( latestPack == null) {
 					return text;
 				}
-				Collection<? extends ICpItem> releases = packFamily.getPack().getReleases();
+				Collection<? extends ICpItem> releases = latestPack.getReleases();
 				if (releases == null) {
 					return CmsisConstants.BUTTON_DELETE;
 				}
-				ICpItem latestRelease = releases.iterator().next();
-				if (latestRelease.hasAttribute(CmsisConstants.DEPRECATED)) {
+				if (latestPack.isDeprecated()) {
 					return CmsisConstants.BUTTON_DEPRECATED;
 				}
-
-				ICpPack latestPack = packFamily.getPack();
+				
 				if (latestPack.getPackState() == PackState.INSTALLED) {
 					return CmsisConstants.BUTTON_UPTODATE;
 				}

@@ -21,6 +21,7 @@ public class Messages extends NLS {
 	public static String BoardsView_AllBoards;
 	public static String BoardsView_AvailableInPack;
 	public static String BoardsView_Boards;
+	public static String BoardsView_DeprecatedBoard;
 	public static String PackInstallerView_Help;
 	public static String BoardsView_RemoveSelection;
 	public static String BoardsView_SearchBoard;
@@ -34,6 +35,7 @@ public class Messages extends NLS {
 	public static String CpInstallerPlugInUI_ONLINE;
 	public static String DevicesView_1Device;
 	public static String DevicesView_AvailableInPack;
+	public static String DevicesView_DeprecatedDevice;
 	public static String DevicesView_Devices;
 	public static String DevicesView_Processor;
 	public static String DevicesView_RemoveSelection;

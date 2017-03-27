@@ -324,6 +324,9 @@ public class PackPropertyView extends PackInstallerView {
 			}
 			// Board node
 			else if (item instanceof ICpBoard) {
+				if (item.isDeprecated()) {
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_DEPR);
+				}
 				if (installed) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
 				}
@@ -333,43 +336,46 @@ public class PackPropertyView extends PackInstallerView {
 			else if (item instanceof ICpDeviceItem) {
 				ICpDeviceItem di = (ICpDeviceItem) item;
 				if (di.getDeviceItems() == null) {
+					if (di.isDeprecated()) {
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE_DEPR);
+					}
 					if (installed) {
 						return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
 					}
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEPRDEVICE);
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE_GREY);
 				}
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
 			}
 			switch (item.getTag()) {
-				case CmsisConstants.COMPONENTS_TAG:
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
-				case CmsisConstants.DEVICES_TAG:
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
-				case CmsisConstants.BOARDS_TAG:
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
-				case CmsisConstants.BUNDLE_TAG:
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
-				case CmsisConstants.COMPATIBLE_DEVICE_TAG:
-				case CmsisConstants.MOUNTED_DEVICE_TAG:
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
-				case CmsisConstants.EXAMPLES_TAG:
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_EXAMPLE);
-				case CmsisConstants.PACKAGES_TAG:
-					if (pack != null && pack.getPackState() == PackState.INSTALLED
-							&& !pack.isRequiredPacksInstalled()) {
-						return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_RED);
-					}
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES);
-				case CmsisConstants.PACKAGE_TAG:
-					String familyId = item.getAttribute(CmsisConstants.VENDOR) + '.'
-							+ item.getAttribute(CmsisConstants.NAME);
-					if (isRequiredPackInstalled(familyId,
-							item.getAttribute(CmsisConstants.VERSION))) {
-						return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
-					}
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE_RED);
-				default:
-					break;
+			case CmsisConstants.COMPONENTS_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+			case CmsisConstants.DEVICES_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+			case CmsisConstants.BOARDS_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
+			case CmsisConstants.BUNDLE_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+			case CmsisConstants.COMPATIBLE_DEVICE_TAG:
+			case CmsisConstants.MOUNTED_DEVICE_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+			case CmsisConstants.EXAMPLES_TAG:
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_EXAMPLE);
+			case CmsisConstants.PACKAGES_TAG:
+				if (pack != null && pack.getPackState() == PackState.INSTALLED
+				&& !pack.isRequiredPacksInstalled()) {
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_RED);
+				}
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES);
+			case CmsisConstants.PACKAGE_TAG:
+				String familyId = item.getAttribute(CmsisConstants.VENDOR) + '.'
+				+ item.getAttribute(CmsisConstants.NAME);
+				if (isRequiredPackInstalled(familyId,
+						item.getAttribute(CmsisConstants.VERSION))) {
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
+				}
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE_RED);
+			default:
+				break;
 			}
 
 			return null;

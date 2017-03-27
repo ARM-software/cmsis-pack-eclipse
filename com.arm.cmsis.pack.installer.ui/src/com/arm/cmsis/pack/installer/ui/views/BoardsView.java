@@ -25,6 +25,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Tree;
+
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -155,7 +156,11 @@ public class BoardsView extends PackInstallerView {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
 				}
 
-				if (packInstalledAndContainsBoard(((IRteBoardDeviceItem) element).getBoard())) {
+				if (bdItem.getBoard().isDeprecated()) {
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_DEPR);
+				}
+
+				if (packInstalledAndContainsBoard(bdItem.getBoard())) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
 				}
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_GREY);
@@ -170,8 +175,7 @@ public class BoardsView extends PackInstallerView {
 			if (board == null) {
 				return false;
 			}
-			return board.getPack().getPackState() == PackState.INSTALLED
-					|| board.getPack().getPackState() == PackState.GENERATED;
+			return board.getPack().getPackState() == PackState.INSTALLED;
 		}
 
 		@Override
@@ -316,12 +320,15 @@ public class BoardsView extends PackInstallerView {
 		if (!cpBoard.getAttribute(CmsisConstants.REVISION).isEmpty()) {
 			boardTitle += " (" + cpBoard.getAttribute(CmsisConstants.REVISION) + ')'; //$NON-NLS-1$
 		}
+		if (cpBoard.isDeprecated()) {
+			boardTitle += ' ' + Messages.BoardsView_DeprecatedBoard;
+		}
 		return boardTitle;
 	}
 
 	public BoardsView() {
 	}
-	
+
 	@Override
 	protected String getHelpContextId() {
 		return IHelpContextIds.BOARDS_VIEW;
