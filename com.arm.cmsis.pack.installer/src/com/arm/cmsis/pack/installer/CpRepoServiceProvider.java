@@ -67,8 +67,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 
 		URL sourceUrl = new URL(pdscUrl + pdscName);
 
-		String destFileNameTmp = destFileName + CmsisConstants.EXT_TEMP;
-		File destFileTmp = new File(destFileNameTmp);
+		File destFileTmp = File.createTempFile("temp-pdsc", ".tmp"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		URLConnection connection = null;
 		while (true) {
@@ -95,10 +94,6 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 		}
 
 		if (connection != null) {
-			if (destFileTmp.exists()) {
-				destFileTmp.delete();
-			}
-
 			InputStream input = connection.getInputStream();
 			OutputStream output = new FileOutputStream(destFileTmp);
 			boolean finished = true;
@@ -121,7 +116,9 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 				Utils.copy(destFileTmp, destFile);
 				destFile.setReadOnly();
 			}
-			destFileTmp.delete();
+			if (destFileTmp.exists()) {
+				destFileTmp.delete();
+			}
 			if (connection instanceof HttpURLConnection) {
 				((HttpURLConnection) connection).disconnect();
 			}
@@ -178,16 +175,12 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 			downloadDir.toFile().mkdir();
 		}
 		File downloadFile = downloadDir.append(destFileName).toFile();
-		File downloadFileTmp = downloadDir.append(destFileName + CmsisConstants.EXT_TEMP).toFile();
+		File downloadFileTmp = File.createTempFile("temp-pack", ".tmp"); //$NON-NLS-1$ //$NON-NLS-2$
 
 		InputStream input = null;
 		OutputStream output = null;
 		try {
 			input = connection.getInputStream();
-
-			if (downloadFileTmp.exists()) {
-				downloadFileTmp.delete();
-			}
 			output = new FileOutputStream(downloadFileTmp);
 
 			byte[] buf = new byte[1024];
@@ -209,7 +202,9 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 			if (output != null) {
 				output.close();
 			}
-			downloadFileTmp.delete();
+			if (downloadFileTmp.exists()) {
+				downloadFileTmp.delete();
+			}
 			if (connection instanceof HttpURLConnection) {
 				((HttpURLConnection) connection).disconnect();
 			}

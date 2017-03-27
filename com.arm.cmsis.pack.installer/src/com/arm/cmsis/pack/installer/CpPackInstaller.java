@@ -520,20 +520,20 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	@Override
 	public void printInConsole(String message, ConsoleType type) {
 		switch (type) {
-			case OUTPUT:
-				CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_OUTPUT, message);
-				break;
-			case INFO:
-				CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_INFO, message);
-				break;
-			case WARNING:
-				CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_WARNING, message);
-				break;
-			case ERROR:
-				CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_ERROR, message);
-				break;
-			default :
-				break;
+		case OUTPUT:
+			CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_OUTPUT, message);
+			break;
+		case INFO:
+			CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_INFO, message);
+			break;
+		case WARNING:
+			CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_WARNING, message);
+			break;
+		case ERROR:
+			CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_ERROR, message);
+			break;
+		default :
+			break;
 		}
 	}
 
@@ -556,6 +556,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		// String[] { url, name, version }
 		List<String[]> list = new LinkedList<String[]>();
 		try {
+			boolean needsUpdate = false;
 			List<ICpRepository> reposList = repos.getList();
 			for (ICpRepository repo : reposList) {
 
@@ -571,8 +572,9 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 					int count = readCmsisIndex(indexUrl, list);
 					if (count > 0) {
 						list.add(0, new String[]{Utils.extractPath(indexUrl, true),
-										Utils.extractFileName(indexUrl),
-										CmsisConstants.EMPTY_STRING});
+								Utils.extractFileName(indexUrl),
+								CmsisConstants.EMPTY_STRING});
+						needsUpdate = true;
 					} else if (count == -1) { // this index file is not correctly downloaded/parsed
 						success = false;
 					}
@@ -585,8 +587,10 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			// Set total number of work units to the number of pdsc files
 			fMonitor.beginTask(Messages.CpPackInstaller_RefreshAllPacks, list.size() + 3);
 
-			// Read all .pdsc files and collect summary
-			aggregateCmsis(list);
+			// Read all .pdsc files and collect summary if index.pidx's time stamp changes
+			if (needsUpdate) {
+				aggregateCmsis(list);
+			}
 
 			fMonitor.worked(1); // Should reach 100% now
 
@@ -598,7 +602,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			printInConsole(Messages.CpPackInstaller_JobCancelled, ConsoleType.WARNING);
 		} else if (success) {
 			cleanWebFolder(list);
-			CpPreferenceInitializer.updateLastUpdateTime();
+			CpPreferenceInitializer.updateLastUpdateTime(true);
 		}
 
 		printInConsole(Messages.CpPackInstaller_PackUpdatesCompleted, ConsoleType.INFO);
@@ -633,7 +637,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	 *
 	 * @param indexUrl url of .index file
 	 * @param pdscList list of pdsc files
-	 * @return number of pdsc files. -1 if exception occurs.
+	 * @return number of pdsc files that needs to be updated. -1 if exception occurs.
 	 */
 	protected int readCmsisIndex(String indexUrl, List<String[]> pdscList) {
 
@@ -675,7 +679,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			}
 
 			// Make url always ends in '/'
-			final String pdscUrl = Utils.addTrailingSlash(pdsc[0]);
+			final String pdscUrl = CmsisConstants.REPO_KEIL_PACK_SERVER/*Utils.addTrailingSlash(pdsc[0])*/;
 			final String pdscName = pdsc[1];
 			final String pdscVersion = pdsc[2];
 			final String packFamilyId = Utils.extractBaseFileName(pdscName);
@@ -720,16 +724,6 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 			// One more unit completed
 			fMonitor.worked(1);
-		}
-
-		// delete all the temp files in the .Web folder
-		for (String fileName : webFolder.toFile().list((dir, name) -> {
-			return name.endsWith(CmsisConstants.EXT_TEMP);
-		})) {
-			File file = new File(fileName);
-			if (file.exists()) {
-				file.delete();
-			}
 		}
 
 	}

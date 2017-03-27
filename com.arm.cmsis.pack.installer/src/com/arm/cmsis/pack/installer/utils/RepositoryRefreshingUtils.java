@@ -21,7 +21,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -41,12 +43,12 @@ import com.arm.cmsis.pack.common.CmsisConstants;
  */
 public class RepositoryRefreshingUtils {
 
-	private static long timestamp = 0;
+	private static Map<String, Long> timestamps = new HashMap<>();
 
 	/**
 	 * @param inputStream the input stream
 	 * @param pdscList a list of .pdsc files
-	 * @return the number of .pdsc files in the list that needs parsing
+	 * @return the number of .pdsc files in the list that needs updating
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
@@ -63,18 +65,34 @@ public class RepositoryRefreshingUtils {
 		buffer.append("<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\n"); //$NON-NLS-1$
 		buffer.append("<root>\n"); //$NON-NLS-1$
 
+		// Check time stamp and url of the index.pidx
+		boolean timeChanged = true;
+		String pidxUrl = CmsisConstants.EMPTY_STRING;
+		long timestamp = 0;
+
 		while ((line = in.readLine()) != null) {
 			line = line.trim();
 			if (line.startsWith("<pdsc ")) { //$NON-NLS-1$
 				buffer.append(line + '\n');
+			} else if (line.startsWith("<url")) { //$NON-NLS-1$
+				int start = line.indexOf('>') + 1;
+				int end = line.indexOf('<', start);
+				pidxUrl = line.substring(start, end);
 			} else if (line.startsWith("<timestamp")) { //$NON-NLS-1$
 				int start = line.indexOf('>') + 1;
 				int end = line.indexOf('<', start);
-				if (!parseTimestamp(line.substring(start, end))) { // timestamp not changed
-					return 0;
-				}
+				timestamp = parseTime(pidxUrl, line.substring(start, end));
 			}
 		}
+		if (!pidxUrl.isEmpty()) {
+			if (timestamps.containsKey(pidxUrl) && timestamp == timestamps.get(pidxUrl)) {
+				timeChanged = false;
+			} else {
+				timeChanged = true;
+				timestamps.put(pidxUrl, timestamp);
+			}
+		}
+
 		buffer.append("</root>\n"); //$NON-NLS-1$
 
 		// Parse from local buffer
@@ -113,7 +131,7 @@ public class RepositoryRefreshingUtils {
 			++count;
 		}
 
-		return count;
+		return timeChanged ? count : 0;
 
 	}
 
@@ -142,23 +160,31 @@ public class RepositoryRefreshingUtils {
 	 * e.g. <code> 2016-04-05T12:00:00 </code>
 	 * @return true if the time stamp of the index file has changed
 	 */
-	private static boolean parseTimestamp(String time) {
+	private static long parseTime(String url, String time) {
 		StringBuilder dateFormat = new StringBuilder("yyyy-MM-dd'T'HH:mm:ss"); //$NON-NLS-1$
 		// if the date contains time zone info, add a 'Z' in the end of the date format
-		int fromIndex = time.lastIndexOf(':');
-		if (time.indexOf('+', fromIndex) > 0 || time.indexOf('-', fromIndex) > 0) {
-			dateFormat.append('Z');
+		int fromIndex = time.indexOf('T');
+		int msIndex = time.indexOf('.'); // milliseconds index
+		int timeZoneIndex = Math.max(time.indexOf('+', fromIndex), time.indexOf('-', fromIndex));
+		if (timeZoneIndex < 0) {
+			timeZoneIndex = time.length();
+		}
+		if (msIndex != -1) {
+			dateFormat.append('.');
+			for (int i = msIndex + 1; i < timeZoneIndex; i++) {
+				dateFormat.append('S');
+			}
+		}
+		if (timeZoneIndex > 0) {
+			dateFormat.append("XXX"); //$NON-NLS-1$
 		}
 		try {
 			Date date = new SimpleDateFormat(dateFormat.toString()).parse(time);
-			long ms = date.getTime();
-			if (ms != timestamp) {
-				timestamp = ms;
-				return true;
-			}
+			return date.getTime();
 		} catch (ParseException e) {
+			// do nothing, just return -1 to make sure time stamp changes
+			return -1;
 		}
-		return false;
 	}
 
 }
