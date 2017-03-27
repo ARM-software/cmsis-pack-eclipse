@@ -1,18 +1,18 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* Eclipse Project - generation from template
-* ARM Ltd and ARM Germany GmbH - application-specific implementation
-* Liviu Ionescu - device icons
-*
-* Snippet to obtain resource from selection is taken from here:
-* https://wiki.eclipse.org/FAQ_How_do_I_access_the_active_project%3F
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Eclipse Project - generation from template
+ * ARM Ltd and ARM Germany GmbH - application-specific implementation
+ * Liviu Ionescu - device icons
+ *
+ * Snippet to obtain resource from selection is taken from here:
+ * https://wiki.eclipse.org/FAQ_How_do_I_access_the_active_project%3F
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.ui;
 
@@ -44,6 +44,7 @@ import org.osgi.framework.BundleContext;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
+import com.arm.cmsis.pack.ICpPackRootProvider;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
 
 /**
@@ -56,6 +57,10 @@ public class CpPlugInUI extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.arm.cmsis.pack.ui"; //$NON-NLS-1$
+
+	// Markers for the RTE Editor
+	public static final String RTE_PROBLEM_MARKER = PLUGIN_ID + ".rteproblemmarker"; //$NON-NLS-1$
+	public static final String RTE_PROBLEM_MARKER_DEP_ITEM = RTE_PROBLEM_MARKER + ".dependencyitem"; //$NON-NLS-1$
 
 	public static final String ICONS_PATH  		= "icons/"; 		//$NON-NLS-1$
 	// icons
@@ -129,13 +134,15 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_CHIP_48 		= "chip48.png"; 		//$NON-NLS-1$
 
 	public static final String ICON_DEVICE 			= ICON_CHIP;
-	public static final String ICON_DEPRDEVICE 		= ICON_CHIP_GREY;
+	public static final String ICON_DEVICE_GREY		= ICON_CHIP_GREY;
+	public static final String ICON_DEVICE_DEPR		= ICON_CHIP_GREY;
 
 	public static final String ICON_DEVICE_32 		= "device32.png"; 		//$NON-NLS-1$
 	public static final String ICON_DEVICE_48 		= "device48.png"; 		//$NON-NLS-1$
 
 	public static final String ICON_BOARD 			= "board.png";	 		//$NON-NLS-1$
 	public static final String ICON_BOARD_GREY		= "boardGrey.png";		//$NON-NLS-1$
+	public static final String ICON_BOARD_DEPR		= "boardDepr.png";		//$NON-NLS-1$
 
 	public static final String ICON_RUN 			= "run.gif"; 			//$NON-NLS-1$
 	public static final String ICON_RUN_GREY 		= "runGrey.gif"; 		//$NON-NLS-1$
@@ -190,7 +197,8 @@ public class CpPlugInUI extends AbstractUIPlugin {
 			if (event.getProperty() == CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE) {
 				String newPackRoot = event.getNewValue().toString();
 				ICpPackManager pm  = CpPlugIn.getPackManager();
-				if(pm != null && CpPreferenceInitializer.getCmsisRootProvider() == null
+				ICpPackRootProvider rootProvider = CpPreferenceInitializer.getCmsisRootProvider();
+				if(pm != null && (rootProvider == null || rootProvider.isUserEditable())
 						&& !newPackRoot.equals(pm.getCmsisPackRootDirectory()) ) {
 					pm.setCmsisPackRootDirectory(newPackRoot);
 				}
@@ -267,7 +275,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		}
 		IServiceLocator serviceLocator = PlatformUI.getWorkbench();
 		if(serviceLocator != null) {
-			return (ICommandService) serviceLocator.getService(ICommandService.class);
+			return (ICommandService)serviceLocator.getService(ICommandService.class);
 		}
 		return null;
 	}
@@ -326,11 +334,11 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	 * @return Image object
 	 */
 	private static Image createImage(String file) {
-	  ImageDescriptor image = getImageDescriptor(file);
-	  if(image != null) {
-		return image.createImage();
-	}
-	  return null;
+		ImageDescriptor image = getImageDescriptor(file);
+		if(image != null) {
+			return image.createImage();
+		}
+		return null;
 
 	}
 
@@ -403,9 +411,9 @@ public class CpPlugInUI extends AbstractUIPlugin {
 			IResource res = getResourceFromSelectedObject(element);
 
 			IProject project = 	(res != null) ? res.getProject() : null;
-		    if (project != null && res == project) { // consider only selected projects
-		    	projects.add(project);
-		    }
+			if (project != null && res == project) { // consider only selected projects
+				projects.add(project);
+			}
 		}
 		return projects;
 	}

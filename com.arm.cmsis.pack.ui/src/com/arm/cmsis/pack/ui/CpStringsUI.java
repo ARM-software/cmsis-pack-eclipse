@@ -16,6 +16,7 @@ public class CpStringsUI extends NLS {
 	public static String CpConsolePreferencePage_ErrorColor;
 	public static String CpConsolePreferencePage_InfoColor;
 	public static String CpConsolePreferencePage_OutputColor;
+	public static String CpConsolePreferencePage_PrintInCdtConsole;
 	public static String CpConsolePreferencePage_WarnColor;
 	public static String CpPreferencePage_CheckForUpdatesEveryday;
 	public static String CpPreferencePage_HttpProxy;
@@ -61,6 +62,8 @@ public class CpStringsUI extends NLS {
 	public static String RteComponentSelectorWidget_ErrorExecutingGeneratorMessage;
 	public static String RteComponentSelectorWidget_ErrorExecutingGeneratorTitle;
 	public static String RteComponentTreeWidget_Description;
+	public static String RteComponentTreeWidget_Install;
+	public static String RteComponentTreeWidget_InstallMissingPacks;
 	public static String RteComponentTreeWidget_Sel;
 	public static String RteComponentTreeWidget_SoftwareComponents;
 	public static String RteComponentTreeWidget_StickToFixedVersion;

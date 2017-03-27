@@ -44,7 +44,6 @@ import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
-import com.arm.cmsis.pack.info.ICpItemInfo;
 import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.project.CpVariableResolver;
 import com.arm.cmsis.pack.project.Messages;
@@ -68,16 +67,25 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
 	// source files included in project: project relative path -> absPath
 	protected Map<String, ICpFileInfo> projectFiles = new HashMap<String, ICpFileInfo>();
+
 	// root of the code template hierarchy
 	protected ICpCodeTemplate fCodeTemplateRoot = new CpCodeTemplate(null);
+
+	// scvd files for component viewer: project relative path -> absPath
+	protected Map<String, ICpFileInfo> fScvdFiles = new HashMap<String, ICpFileInfo>();
+
 	// paths to library sources (for debugger)
 	protected Set<String> libSourcePaths = new TreeSet<String>(new RtePathComparator());
+
 	// pieces of code put into RTE_Components.h file
 	protected List<String> rteComponentsH = new LinkedList<String>();
+
 	// header -> comment (for editor)
 	protected Map<String, String> headers = new TreeMap<String, String>(new AlnumComparator(false));
+
 	// documentation files relevant to configuration
 	protected Map<String, String>  docs = new TreeMap<String, String>(new AlnumComparator(false));
+
 	protected String svdFile = null;
 
 	protected ICpComponentInfo deviceStartupComponent = null;
@@ -109,6 +117,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		valid = true;
 
 		fMissingPacks.clear();
+		fScvdFiles.clear();
 	}
 
 
@@ -133,18 +142,20 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		return null;
 	}
 
-	
+
 	@Override
 	public ICpPack getDfp() {
-		if(fConfigInfo == null)
+		if(fConfigInfo == null) {
 			return null;
+		}
 		return fConfigInfo.getPack();
 	}
 
 	@Override
 	public String getDfpPath() {
-		if(fConfigInfo == null)
+		if(fConfigInfo == null) {
 			return null;
+		}
 		return fConfigInfo.getDfpPath();
 	}
 
@@ -225,6 +236,11 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	@Override
 	public ICpCodeTemplate getCmsisCodeTemplate() {
 		return fCodeTemplateRoot;
+	}
+
+	@Override
+	public Map<String, ICpFileInfo> getScvdFiles() {
+		return fScvdFiles;
 	}
 
 	@Override
@@ -400,9 +416,19 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 			addLibrarySourcePaths(f);
 		}
 
+		collectCodeTemplates(fi, ci);
+
+		collectScvdFile(fi);
+	}
+
+	/**
+	 * Collects file of code templates
+	 * @param fi ICpFileInfo
+	 * @param ci parent ICpComponentInfo
+	 */
+	protected void collectCodeTemplates(ICpFileInfo fi, ICpComponentInfo ci) {
 		ICpPack pack = ci.getPack();
-		if (role == EFileRole.TEMPLATE && pack != null &&
-				(pack.getPackState() == PackState.INSTALLED )) {
+		if (fi.getRole() == EFileRole.TEMPLATE && pack != null && (pack.getPackState() == PackState.INSTALLED)) {
 			String className = ci.getAttribute(CmsisConstants.CCLASS);
 			ICpCodeTemplate component = (ICpCodeTemplate) fCodeTemplateRoot.getFirstChild(className);
 			if (component == null) {
@@ -417,25 +443,39 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 			}
 			codeTemplate.addCodeTemplate(fi.getAttribute(CmsisConstants.NAME));
 		}
+
 	}
 
 	/**
-	 * Adds CmsisConstants.PROJECT_LOCAL_PATH  prefix if path is relative
+	 * Collects scvd files for component viewer
+	 * @param fi ICpFileInfo
+	 */
+	protected void collectScvdFile(ICpFileInfo fi) {
+		ICpPack pack = fi.getPack();
+		if (fi.getCategory() == EFileCategory.OTHER && fi.getName().endsWith(CmsisConstants.EXT_SCVD)
+				&& pack != null && pack.getPackState() == PackState.INSTALLED) {
+			fScvdFiles.put(pack.getAbsolutePath(fi.getName()), fi);
+		}
+	}
+
+	/**
+	 * Adds {@link CmsisConstants#PROJECT_LOCAL_PATH}  prefix if path is relative
 	 * @param path path to adjust
 	 * @return
 	 */
 	protected String adjustRelativePath(String path){
-		if(path == null || path.isEmpty())
+		if(path == null || path.isEmpty()) {
 			return path;
+		}
 		if(path.startsWith(CmsisConstants.RTE)) {
 			return CmsisConstants.PROJECT_LOCAL_PATH + path;
 		}
 		if(path.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR)) {
 			return path;
-		} 
+		}
 		if(path.startsWith(CmsisConstants.CMSIS_RTE_VAR)) {
 			return path;
-		} 
+		}
 		return CmsisConstants.CMSIS_RTE_VAR + path;
 	}
 
@@ -550,7 +590,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		if(isGeneratedAndRelativeToProject(fi)) {
 			return true;
 		}
-		
+
 		EFileRole role = fi.getRole();
 		boolean includeInProject = false;
 		switch(role) {
@@ -582,12 +622,12 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		}
 		return includeInProject;
 	}
-	
-	
+
+
 	/**
 	 * Check if file is generated and relative to project (=> to config file directory)
 	 * @param fi {@link ICpFileInfo} to check
-	 * @return true if file is resolved to a generated file that is relative to project directory  
+	 * @return true if file is resolved to a generated file that is relative to project directory
 	 */
 	protected boolean isGeneratedAndRelativeToProject(ICpFileInfo fi) {
 		ICpFile f= fi.getFile();
@@ -597,14 +637,14 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 			if(abs.startsWith(base)) {
 				return true;
 			}
-		}		
+		}
 		return false;
 	}
 
-	
+
 	/**
-	 * 
-	 * @param fi {@link ICpFileInfo} 
+	 *
+	 * @param fi {@link ICpFileInfo}
 	 * @param className
 	 * @param deviceName
 	 * @param index
@@ -623,7 +663,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 				return Utils.makePathRelative(absPath, baseDir);
 			}
 		}
-		
+
 		String path = CmsisConstants.RTE;
 		path += '/';
 		if(className != null && !className.isEmpty()) {
@@ -666,29 +706,13 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	}
 
 	@Override
-	public Collection<String> validate() {
+	public Collection<? extends IRteDependencyItem> validate() {
 		EEvaluationResult res = fModel.getEvaluationResult();
-		if(res.ordinal() >= EEvaluationResult.MISSING.ordinal()) {
+		if(res.ordinal() >= EEvaluationResult.INSTALLED.ordinal()) {
 			valid = true;
 			return null;
 		}
-		List<String> errors = new LinkedList<String>();
-		Collection<? extends IRteDependencyItem> results = fModel.getDependencyItems();
-		Set<String> familyIds = new HashSet<String>();
-		for(IRteDependencyItem item : results ){
-			String msg = item.getName() + " - " + item.getDescription(); //$NON-NLS-1$
-			errors.add(msg);
-			ICpItem cpItem = item.getCpItem();
-			if (cpItem instanceof ICpItemInfo && item.getEvaluationResult() != EEvaluationResult.FULFILLED) {
-				ICpItemInfo ci = (ICpItemInfo) cpItem;
-				ICpPackInfo pi = ci.getPackInfo();
-				if (familyIds.add(pi.getPackFamilyId())) {
-					fMissingPacks.add(pi);
-				}
-			}
-		}
-		valid = false;
-		return errors;
+		return fModel.getDependencyItems();
 	}
 
 	@Override
@@ -697,28 +721,26 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	}
 
 	@Override
-	public Collection<ICpPackInfo> getMissingPacks() {
-		return fMissingPacks;
-	}
-
-	@Override
 	public EEvaluationResult getEvaluationResult() {
-		if(fModel != null)
+		if(fModel != null) {
 			return fModel.getEvaluationResult();
+		}
 		return EEvaluationResult.UNDEFINED;
 	}
 
 	@Override
 	public void setEvaluationResult(EEvaluationResult result) {
-		if(fModel != null)
+		if(fModel != null) {
 			fModel.setEvaluationResult(result);
+		}
 	}
 
 	@Override
 	public boolean isGeneratedPackUsed(String gpdsc) {
-		if(fModel != null)
+		if(fModel != null) {
 			return fModel.isGeneratedPackUsed(gpdsc);
+		}
 		return false;
 	}
-	
+
 }

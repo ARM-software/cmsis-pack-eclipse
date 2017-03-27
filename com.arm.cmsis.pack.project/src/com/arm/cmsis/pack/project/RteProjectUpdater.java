@@ -6,14 +6,17 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.eclipse.cdt.managedbuilder.core.IConfiguration;
 import org.eclipse.cdt.managedbuilder.core.IManagedBuildInfo;
 import org.eclipse.cdt.managedbuilder.core.ManagedBuildManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspace;
@@ -46,12 +49,16 @@ import com.arm.cmsis.pack.info.ICpFileInfo;
 import com.arm.cmsis.pack.parser.CpConfigParser;
 import com.arm.cmsis.pack.project.ui.RteProjectDecorator;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
+import com.arm.cmsis.pack.rte.components.IRteComponentItem;
+import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.console.RteConsole;
 import com.arm.cmsis.pack.utils.Utils;
 
 public class RteProjectUpdater extends WorkspaceJob {
 
+	public static final String RTE_PROBLEM_MARKER = CpPlugInUI.RTE_PROBLEM_MARKER;
+	public static final String RTE_PROBLEM_MARKER_DEP_ITEM = CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM;
 
 	public static final int LOAD_CONFIGS = 0x01;
 	public static final int UPDATE_TOOLCHAIN = 0x02; // forces update of all relevant toolchain settings
@@ -91,7 +98,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 			return status;
 		}
 
-		
+
 		this.monitor = monitor;
 		bSaveProject = false;
 		Status status = null;
@@ -100,7 +107,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 			long startTime = System.currentTimeMillis();
 			String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date(startTime)); //$NON-NLS-1$
 			String msg = timestamp + " **** " + Messages.RteProjectUpdater_UpdatingProject + " " + project.getName(); //$NON-NLS-1$ //$NON-NLS-2$
-			rteConsole.outputInfo(msg);
+			rteConsole.outputInfo(msg, project);
 
 			String packRoot = CpVariableResolver.getCmsisPackRoot();
 			if(packRoot == null || packRoot.isEmpty()){
@@ -109,7 +116,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 			}
 
 			if (bLoadConfigs) {
-			//	rteConsole.outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
+				//	rteConsole.outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
 				res = loadConfigFile();
 			}
 			// rteConsole.outputInfo(Messages.RteProjectUpdater_UpdatingResources);
@@ -133,31 +140,66 @@ public class RteProjectUpdater extends WorkspaceJob {
 			res = EEvaluationResult.FAILED;
 		} catch (Exception e) {
 			e.printStackTrace();
-			status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, 
+			status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID,
 					Messages.RteProjectUpdater_ErrorUpdatingRteProject, e);
 			res = EEvaluationResult.FAILED;
-		} 
-		if (res.ordinal() <  EEvaluationResult.MISSING.ordinal() || status != null) {
-			rteConsole.outputError(Messages.RteProjectUpdater_Fail);
+		}
+
+		// Output the error message to the RTE console
+		if (res.ordinal() < EEvaluationResult.INSTALLED.ordinal() || status != null) {
+			rteConsole.outputError(Messages.RteProjectUpdater_Fail, project);
 			if(status != null) {
-				rteConsole.outputInfo(status.getMessage());
+				rteConsole.outputInfo(status.getMessage(), project);
 				IStatus[] statusArray = status.getChildren();
 				if (statusArray != null && statusArray.length > 0) {
 					for (IStatus s : statusArray) {
-						rteConsole.outputInfo(s.getMessage());
+						rteConsole.outputInfo(s.getMessage(), project);
 					}
 				}
 			}
 		} else {
-			rteConsole.outputInfo(Messages.RteProjectUpdater_Success);
+			rteConsole.outputInfo(Messages.RteProjectUpdater_Success, project);
 		}
-		rteConsole.output(CmsisConstants.EMPTY_STRING);
+		rteConsole.output(CmsisConstants.EMPTY_STRING, project);
 		RteProjectDecorator.refresh();
-		if(status == null)
+		if(status == null) {
 			status = new Status(IStatus.OK, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ProjectUpdated);
+		}
 
-		CpProjectPlugIn.getRteProjectManager().updateFinished(rteProject);
+		rteProject.setUpdateCompleted(true);
+
 		return status;
+	}
+
+	protected void collectErrors(Collection<? extends IRteDependencyItem> errors) throws CoreException {
+		IFile rteFile = rteProject.getProject().getFile(rteProject.getName() + CmsisConstants.DOT_RTECONFIG);
+		rteFile.deleteMarkers(RTE_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE);
+		if (!rteFile.exists()) {
+			return;
+		}
+
+		if (errors == null || errors.isEmpty()) {
+			return;
+		}
+
+		IRteConfiguration conf = rteProject.getRteConfiguration();
+		if(conf == null) {
+			return;
+		}
+
+		for (IRteDependencyItem depItem : errors) {
+			IMarker marker = rteFile.createMarker(RTE_PROBLEM_MARKER);
+			Map<String, Object> attributes = new HashMap<>();
+			attributes.put(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+			attributes.put(IMarker.MESSAGE, depItem.getName() + " - " + depItem.getDescription()); //$NON-NLS-1$
+			IRteComponentItem item = depItem.getComponentItem();
+			if (item != null) {
+				attributes.put(IMarker.LOCATION, String.join("->", //$NON-NLS-1$
+						item.getKeyPath().stream().filter(s -> !s.isEmpty()).collect(Collectors.toList())));
+				attributes.put(RTE_PROBLEM_MARKER_DEP_ITEM, depItem);
+			}
+			marker.setAttributes(attributes);
+		}
 	}
 
 	protected void updateIndex() {
@@ -168,16 +210,20 @@ public class RteProjectUpdater extends WorkspaceJob {
 	protected EEvaluationResult loadConfigFile() throws CoreException {
 		String savedRteConfigName = rteProject.getRteConfigurationName();
 		IRteConfiguration rteConf = loadRteConfiguration(savedRteConfigName);
-		Collection<String> errors = rteConf.validate();
+		Collection<? extends IRteDependencyItem> errors = rteConf.validate();
+
+		collectErrors(errors);
+
 		EEvaluationResult res = rteConf.getEvaluationResult();
 
-		if ( errors == null || errors.isEmpty()) {
+		if (errors == null || errors.isEmpty()) {
 			return res;
 		}
 		String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + savedRteConfigName + "':"; //$NON-NLS-1$ //$NON-NLS-2$
-		rteConsole.outputError(msg);
-		for (String s : errors) {
-			rteConsole.output(s);
+		rteConsole.outputError(msg, project);
+		for (IRteDependencyItem item : errors) {
+			String s = item.getName() + " - " + item.getDescription(); //$NON-NLS-1$
+			rteConsole.output(s, project);
 			msg += System.lineSeparator() + s;
 		}
 
@@ -190,7 +236,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 
 	protected IRteConfiguration loadRteConfiguration(String savedRteConfigName) throws CoreException {
 		if (savedRteConfigName == null || savedRteConfigName.isEmpty()) {
-			String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '' " + //$NON-NLS-1$ 
+			String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '' " + //$NON-NLS-1$
 					Messages.RteProjectUpdater_ErrorConfigFileNotExist;
 			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, msg);
 			throw new CoreException(status);
@@ -239,7 +285,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 	}
 
 	/**
-	 * Removes resources that are no longer belong to project and refreshes remaining ones   
+	 * Removes resources that are no longer belong to project and refreshes remaining ones
 	 * @throws CoreException
 	 */
 	protected void removeResources() throws CoreException {
@@ -286,10 +332,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 			IPath gpdsc = res.getLocation();
 			IRteConfiguration rteConf = rteProject.getRteConfiguration();
 			return rteConf.isGeneratedPackUsed(gpdsc.toString());
-		} 
+		}
 		return rteProject.isFileUsed(path.toString());
 	}
-	
+
 	protected void addResources() throws CoreException {
 		IRteConfiguration rteConf = rteProject.getRteConfiguration();
 		addResources(rteConf);
@@ -319,15 +365,15 @@ public class RteProjectUpdater extends WorkspaceJob {
 			return;
 		}
 
-		boolean generated = f.isGenerated(); 
+		boolean generated = f.isGenerated();
 		ICpConfigurationInfo cpConf = rteConf.getConfigurationInfo();
 		String base = cpConf.getDir(true);
 		boolean local = srcFile.startsWith(base);
 		EFileRole role = fi.getRole();
 		if(generated || local) {
-			role = EFileRole.NONE; // prevent generated files from copy   
+			role = EFileRole.NONE; // prevent generated files from copy
 		}
-		
+
 		if (role == EFileRole.CONFIG) {
 			int index = -1;
 			EFileCategory cat = fi.getCategory();
@@ -466,18 +512,18 @@ public class RteProjectUpdater extends WorkspaceJob {
 		IBuildSettings buildSettings = rteConfig.getBuildSettings();
 
 		boolean bInit = deviceInfo != null && !deviceInfo.attributes().matchCommonAttributes(deviceAttributes);
-		if (bInit) {
+		if (bInit || bForceUpdateToolchain) {
 			bSaveProject = true;
 			ps.setDeviceInfo(deviceInfo);
 			String linkerScriptFile = buildSettings.getSingleLinkerScriptFile();
 			if (linkerScriptFile == null) {
 				ILinkerScriptGenerator lsGen = adapter.getLinkerScriptGenerator();
 				if (lsGen != null) {
+					linkerScriptFile = getLinkerScriptFile(lsGen);
 					try {
 						IMemorySettings memorySettings = RteConfiguration.createMemorySettings(deviceInfo);
 						String script = lsGen.generate(memorySettings);
 						if (script != null && !script.isEmpty()) {
-							linkerScriptFile = getLinkerScriptFile(lsGen);
 							writeLinkerScriptFile(linkerScriptFile, script);
 							buildSettings.addStringListValue(IBuildSettings.RTE_LINKER_SCRIPT,
 									CmsisConstants.PROJECT_LOCAL_PATH + linkerScriptFile);

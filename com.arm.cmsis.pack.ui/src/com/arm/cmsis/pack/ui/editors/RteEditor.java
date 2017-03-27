@@ -36,7 +36,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IFileEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
@@ -44,13 +44,21 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
+import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
+import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.parser.CpConfigParser;
 import com.arm.cmsis.pack.rte.IRteModelController;
 import com.arm.cmsis.pack.rte.RteModel;
+import com.arm.cmsis.pack.rte.components.IRteComponentItem;
+import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
+import com.arm.cmsis.pack.rte.packs.IRtePackFamily;
+import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 
 /**
@@ -62,7 +70,7 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
  * <li>page 1 contains an RtePackSelectorWidget
  * </ul>
  */
-public class RteEditor extends MultiPageEditorPart implements IResourceChangeListener, IRteEventListener {
+public class RteEditor extends MultiPageEditorPart implements IResourceChangeListener, IRteEventListener, IGotoMarker {
 
 	private RteComponentPage rteComponentPage;
 	private RteDevicePage rteDevicePage;
@@ -187,9 +195,33 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		firePropertyChange(IEditorPart.PROP_DIRTY);
 	}
 
+	@Override
 	public void gotoMarker(IMarker marker) {
-		setActivePage(0);
-		IDE.gotoMarker(getEditor(0), marker);
+		try {
+			IRteDependencyItem depItem = (IRteDependencyItem) marker.getAttribute(CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM);
+			if (depItem == null) {
+				return;
+			}
+			IRteComponentItem rteComponent = depItem.getComponentItem();
+			if (rteComponent == null) {
+				return;
+			}
+
+			ICpComponentInfo ci = rteComponent.getActiveCpComponentInfo();
+			boolean packInstalled = ci == null ? false : ci.getPackInfo().getPack() != null;
+			if (ci != null && depItem.getEvaluationResult() != EEvaluationResult.UNAVAILABLE && !packInstalled) {
+				setActivePage(2);
+				ICpPackInfo pi = ci.getPackInfo();
+				String packId = pi.isVersionFixed() ? pi.getId() : pi.getPackFamilyId();
+				IRtePackFamily packFamily = fModelController.getRtePackCollection().getRtePackFamily(CpPack.familyFromId(packId));
+				fModelController.emitRteEvent(RteEvent.PACK_FAMILY_SHOW, packFamily);
+			} else {
+				setActivePage(0);
+				fModelController.emitRteEvent(RteEvent.COMPONENT_SHOW,
+							fModelController.getComponents().findChild(rteComponent.getKeyPath(), false));
+			}
+		} catch (CoreException e) {
+		}
 	}
 
 	/**
@@ -228,25 +260,25 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		}
 
 		switch (event.getTopic()) {
-			case RteEvent.CONFIGURATION_MODIFIED:
-			case RteEvent.COMPONENT_SELECTION_MODIFIED:
-			case RteEvent.FILTER_MODIFIED:
-				firePropertyChange(IEditorPart.PROP_DIRTY);
-				return;
-			case RteEvent.PACKS_RELOADED:
-			case RteEvent.PACKS_UPDATED:
-				if (fModelController != null) {
-					fModelController.reloadPacks();
+		case RteEvent.CONFIGURATION_MODIFIED:
+		case RteEvent.COMPONENT_SELECTION_MODIFIED:
+		case RteEvent.FILTER_MODIFIED:
+			firePropertyChange(IEditorPart.PROP_DIRTY);
+			return;
+		case RteEvent.PACKS_RELOADED:
+		case RteEvent.PACKS_UPDATED:
+			if (fModelController != null) {
+				fModelController.reloadPacks();
+			}
+			break;
+		case RteEvent.GPDSC_CHANGED:
+			if (fModelController != null) {
+				if(fModelController.isGeneratedPackUsed((String)event.getData())){
+					fModelController.update();
 				}
-				break;
-			case RteEvent.GPDSC_CHANGED:
-				if (fModelController != null) {
-					if(fModelController.isGeneratedPackUsed((String)event.getData())){
-						fModelController.update();
-					}
-				}
-				break;
-			default:
+			}
+			break;
+		default:
 		}
 	}
 
@@ -304,7 +336,7 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 						} else if (flags == 0) { // project deleted
 							Display.getDefault().asyncExec(() -> {
 								RteEditor.this.getEditorSite().getPage()
-										.closeEditor(RteEditor.this, true);
+								.closeEditor(RteEditor.this, true);
 							});
 							return false;
 						}

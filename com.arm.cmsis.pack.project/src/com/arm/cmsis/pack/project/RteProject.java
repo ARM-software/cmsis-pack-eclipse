@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.project;
 
@@ -133,7 +133,7 @@ public class RteProject extends PlatformObject implements IRteProject {
 
 	@Override
 	public void reload() {
-		update(RteProjectUpdater.LOAD_CONFIGS  | RteProjectUpdater.UPDATE_TOOLCHAIN);
+		update(RteProjectUpdater.LOAD_CONFIGS | RteProjectUpdater.UPDATE_TOOLCHAIN);
 	}
 
 	@Override
@@ -143,7 +143,7 @@ public class RteProject extends PlatformObject implements IRteProject {
 
 	@Override
 	public void cleanup() {
-		update(RteProjectUpdater.LOAD_CONFIGS| RteProjectUpdater.CLEANUP_RTE_FILES);
+		update(RteProjectUpdater.LOAD_CONFIGS | RteProjectUpdater.CLEANUP_RTE_FILES);
 	}
 
 	protected void update(int updateFlags) {

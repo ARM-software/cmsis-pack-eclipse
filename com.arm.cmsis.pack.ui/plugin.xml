@@ -48,5 +48,16 @@
             class="com.arm.cmsis.pack.ui.preferences.CpUIPreferenceInitializer">
       </initializer>
    </extension>
+   <extension
+         id="com.arm.cmsis.pack.ui.rteproblemmarker"
+         name="RTE Problem"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+      <attribute
+            name="com.arm.cmsis.pack.ui.rteproblemmarker.dependencyitem">
+      </attribute>
+   </extension>
 
 </plugin>

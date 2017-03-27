@@ -110,7 +110,7 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 
 		Composite parent = getFieldEditorParent();
 		StringFieldEditor cmsisRootEditor;
-		if(CpPreferenceInitializer.hasCmsisRootProvider()) {
+		if(!CpPreferenceInitializer.isCmsisRootEditable()) {
 			cmsisRootEditor = new StringFieldEditor(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
 			cmsisRootEditor.setEnabled(false, parent);
 			cmsisRootEditor.getLabelControl(parent).setEnabled(true);

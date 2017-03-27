@@ -13,6 +13,9 @@ package com.arm.cmsis.pack.ui.widgets;
 
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TreePath;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
@@ -49,13 +52,13 @@ public class RtePackSelectorWidget extends RteWidget {
 	static final Color YELLOW = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
 
 	static final String[] PACK_ICONS = new String[]{CpPlugInUI.ICON_PACKAGE,
-													CpPlugInUI.ICON_PACKAGE_EMPTY,
-													CpPlugInUI.ICON_PACKAGE_GREY,
-													CpPlugInUI.ICON_PACKAGE_RED,
-													CpPlugInUI.ICON_PACKAGES,
-													CpPlugInUI.ICON_PACKAGES_EMPTY,
-													CpPlugInUI.ICON_PACKAGES_GREY,
-													CpPlugInUI.ICON_PACKAGES_RED};
+			CpPlugInUI.ICON_PACKAGE_EMPTY,
+			CpPlugInUI.ICON_PACKAGE_GREY,
+			CpPlugInUI.ICON_PACKAGE_RED,
+			CpPlugInUI.ICON_PACKAGES,
+			CpPlugInUI.ICON_PACKAGES_EMPTY,
+			CpPlugInUI.ICON_PACKAGES_GREY,
+			CpPlugInUI.ICON_PACKAGES_RED};
 	public static final int ICON_INDEX_EMPTY = 1;
 	public static final int ICON_INDEX_GREY = 2;
 	public static final int ICON_INDEX_RED = 3;
@@ -412,7 +415,7 @@ public class RtePackSelectorWidget extends RteWidget {
 		gridData.horizontalSpan = 2;
 		tree.setLayoutData(gridData);
 
-//		hookContextMenu();
+		//		hookContextMenu();
 		return tree;
 	}
 
@@ -428,9 +431,49 @@ public class RtePackSelectorWidget extends RteWidget {
 		update();
 	}
 
+	protected IRtePackFamily getSelectedItem() {
+		if (viewer != null) {
+			IStructuredSelection sel = (IStructuredSelection)viewer.getSelection();
+			if(sel != null) {
+				return getRtePackFamily(sel.getFirstElement());
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Highlights given RTE Pack Family item
+	 * @param item Pack Family item to select
+	 */
+	public void showPackFamilyItem(IRtePackFamily item) {
+		if(viewer == null) {
+			return;
+		}
+		if(item == null) {
+			return;
+		}
+
+		if(item == getSelectedItem()) {
+			return;
+		}
+
+		Object[] path = {item};
+		TreePath tp = new TreePath(path);
+		TreeSelection ts = new TreeSelection(tp);
+
+		viewer.setSelection(ts, true);
+
+	}
 
 	@Override
 	public void handle(RteEvent event) {
+		switch (event.getTopic()) {
+		case RteEvent.PACK_FAMILY_SHOW:
+			showPackFamilyItem((IRtePackFamily) event.getData());
+			return;
+		default:
+			super.handle(event);
+		}
 	}
 
 	@Override

@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 package com.arm.cmsis.pack.ui.preferences;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
@@ -35,6 +35,7 @@ public class CpUIPreferenceInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE.getNode(CpPlugInUI.PLUGIN_ID);
 
+		defaultPreferences.putBoolean(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT, true);
 		defaultPreferences.putBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT, true);
 
 		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_BG_COLOR, StringConverter.asString(new RGB(255, 255, 255)));

@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.ui.preferences;
 
@@ -27,7 +27,7 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
  *
  */
 public class CpConsolePreferencePage extends FieldEditorPreferencePage implements
-		IWorkbenchPreferencePage {
+IWorkbenchPreferencePage {
 
 	public CpConsolePreferencePage() {
 		super(GRID);
@@ -48,6 +48,7 @@ public class CpConsolePreferencePage extends FieldEditorPreferencePage implement
 	@Override
 	protected void createFieldEditors() {
 
+		addField(new BooleanFieldEditor(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT, CpStringsUI.CpConsolePreferencePage_PrintInCdtConsole, SWT.NONE, getFieldEditorParent()));
 		addField(new BooleanFieldEditor(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT, CpStringsUI.CpConsolePreferencePage_AutoOpen, SWT.NONE, getFieldEditorParent()));
 
 		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_OUT_COLOR, CpStringsUI.CpConsolePreferencePage_OutputColor, getFieldEditorParent()));

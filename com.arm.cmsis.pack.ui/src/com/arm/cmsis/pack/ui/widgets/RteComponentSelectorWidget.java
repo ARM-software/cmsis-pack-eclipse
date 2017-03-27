@@ -403,7 +403,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 						if (res.isFulfilled()) {
 							baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
 						} else {
-							baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_DEPRDEVICE);
+							baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE_GREY);
 						}
 					} else if (item instanceof RteMoreClass) {
 						baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_FILTER);

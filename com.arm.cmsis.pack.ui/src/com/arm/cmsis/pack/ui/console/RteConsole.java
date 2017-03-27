@@ -15,7 +15,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.cdt.core.ConsoleOutputStream;
+import org.eclipse.cdt.ui.CUIPlugin;
+import org.eclipse.cdt.ui.IBuildConsoleManager;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -143,29 +147,29 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 
 	private String getColorPreferenceConstant(int streamType) {
 		switch(streamType) {
-			case INFO:
-				return CpUIPreferenceConstants.CONSOLE_INFO_COLOR;
-			case WARNING:
-				return CpUIPreferenceConstants.CONSOLE_WARNING_COLOR;
-			case ERROR:
-				return  CpUIPreferenceConstants.CONSOLE_ERROR_COLOR;
-			case OUTPUT:
-			default:
-				return CpUIPreferenceConstants.CONSOLE_OUT_COLOR;
+		case INFO:
+			return CpUIPreferenceConstants.CONSOLE_INFO_COLOR;
+		case WARNING:
+			return CpUIPreferenceConstants.CONSOLE_WARNING_COLOR;
+		case ERROR:
+			return  CpUIPreferenceConstants.CONSOLE_ERROR_COLOR;
+		case OUTPUT:
+		default:
+			return CpUIPreferenceConstants.CONSOLE_OUT_COLOR;
 		}
 	}
 
 	private int getStreamType(String preferenceConstant) {
 		switch(preferenceConstant) {
-			case CpUIPreferenceConstants.CONSOLE_INFO_COLOR:
-				return INFO;
-			case CpUIPreferenceConstants.CONSOLE_WARNING_COLOR:
-				return WARNING;
-			case CpUIPreferenceConstants.CONSOLE_ERROR_COLOR:
-				return ERROR;
-			case CpUIPreferenceConstants.CONSOLE_OUT_COLOR:
-			default:
-				return OUTPUT;
+		case CpUIPreferenceConstants.CONSOLE_INFO_COLOR:
+			return INFO;
+		case CpUIPreferenceConstants.CONSOLE_WARNING_COLOR:
+			return WARNING;
+		case CpUIPreferenceConstants.CONSOLE_ERROR_COLOR:
+			return ERROR;
+		case CpUIPreferenceConstants.CONSOLE_OUT_COLOR:
+		default:
+			return OUTPUT;
 		}
 	}
 
@@ -174,26 +178,72 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 	 * @param streamType stream type: OUTPUT, INFO, ERROR
 	 * @param msg message to output
 	 */
-	public void output(int streamType, String msg) {
-		MessageConsoleStream stream = getStream(streamType);
-		stream.println(msg);
+	public void output(int streamType, String msg, IProject project) {
+		if (project != null && CpPlugInUI.getDefault().getPreferenceStore()
+				.getBoolean(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT)) {
+			writeToCDTConsole(streamType, msg + '\n', project);
+		} else {
+			MessageConsoleStream stream = getStream(streamType);
+			stream.println(msg);
+		}
 	}
 
-	public void output(final String message) {
-		output(OUTPUT, message);
+	public void output(final String message, IProject project) {
+		output(OUTPUT, message, project);
 	}
 
-	public void outputInfo(final String message) {
-		output(INFO, message);
+	public void outputInfo(final String message, IProject project) {
+		output(INFO, message, project);
 	}
 
-	public void outputWarning(final String message) {
-		output(WARNING, message);
+	public void outputWarning(final String message, IProject project) {
+		output(WARNING, message, project);
 	}
 
-	public void outputError(final String message) {
-		output(ERROR, message);
+	public void outputError(final String message, IProject project) {
+		output(ERROR, message, project);
 	}
+
+	private void writeToCDTConsole(int streamType, String msg, IProject project) {
+		IBuildConsoleManager manager = CUIPlugin.getDefault().getConsoleManager();
+		if (manager == null) {
+			return;
+		}
+
+		org.eclipse.cdt.core.resources.IConsole console = manager.getProjectConsole(project);
+		if (console == null) {
+			return;
+		}
+
+		ConsoleOutputStream infoStream = null;
+		try {
+			switch (streamType) {
+			case OUTPUT:
+				infoStream = console.getOutputStream();
+				break;
+			case INFO:
+				infoStream = console.getInfoStream();
+				break;
+			case ERROR:
+				infoStream = console.getErrorStream();
+				break;
+			default:
+				infoStream = console.getOutputStream();
+				break;
+			}
+			infoStream.write(msg.getBytes());
+		} catch (IOException | CoreException e) {
+		} finally {
+			if (infoStream != null) {
+				try {
+					infoStream.close();
+				} catch (IOException exception) {
+					// Can't do much about it.
+				}
+			}
+		}
+	}
+
 
 	/**
 	 * Opens RteConsole for given project
@@ -303,24 +353,24 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 			if(topic.startsWith(RteEvent.PRINT)) {
 				String message = (String) event.getData();
 				switch (topic) {
-					case RteEvent.PRINT_OUTPUT :
-						output(message);
-						break;
-					case RteEvent.PRINT_INFO:
-						outputInfo(message);
-						break;
-					case RteEvent.PRINT_WARNING:
-						outputWarning(message);
-						break;
-					case RteEvent.PRINT_ERROR:
-						outputError(message);
-						break;
-					default :
-						break;
+				case RteEvent.PRINT_OUTPUT :
+					output(message, null);
+					break;
+				case RteEvent.PRINT_INFO:
+					outputInfo(message, null);
+					break;
+				case RteEvent.PRINT_WARNING:
+					outputWarning(message, null);
+					break;
+				case RteEvent.PRINT_ERROR:
+					outputError(message, null);
+					break;
+				default :
+					break;
 				}
 			} else if (RteEvent.GPDSC_LAUNCH_ERROR.equals(topic)) {
 				String message = (String) event.getData();
-				outputError(message);
+				outputError(message, null);
 			}
 		});
 	}
