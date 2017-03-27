@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.common;
 
@@ -93,7 +93,7 @@ public class CmsisConstants {
 	static public final String PUNITS 		= "Punits";			//$NON-NLS-1$
 
 	static public final String TCOMPILER	= "Tcompiler";		//$NON-NLS-1$
-	static public final String TVARIANT		= "Tvariant";		//$NON-NLS-1$
+	static public final String TOPTIONS		= "Toptions";		//$NON-NLS-1$
 	static public final String TOUTPUT		= "Toutput";		//$NON-NLS-1$
 
 	static public final String TOUTPUT_EXE	= "exe";			//$NON-NLS-1$
@@ -354,9 +354,9 @@ public class CmsisConstants {
 	static public final String EXT_GPDSC 		= ".gpdsc"; //$NON-NLS-1$
 	static public final String EXT_CPDSC 		= ".cpdsc"; //$NON-NLS-1$
 	static public final String EXT_PACK 		= ".pack"; //$NON-NLS-1$
-	static public final String EXT_TEMP			= ".tmp"; //$NON-NLS-1$
 	static public final String EXT_CPROJECT		= ".cproject"; //$NON-NLS-1$
 	static public final String EXT_SCT			= ".sct"; //$NON-NLS-1$
+	static public final String EXT_SCVD			= ".scvd"; //$NON-NLS-1$
 
 	// repository constants
 	public static final String REPO_PACK_TYPE	= "CMSIS Pack"; //$NON-NLS-1$
@@ -388,9 +388,11 @@ public class CmsisConstants {
 	static public final String DOT_DOWNLOAD = ".Download"; 						//$NON-NLS-1$
 	static public final String DOT_WEB = ".Web";		 						//$NON-NLS-1$
 
+	static public final String KEIL =  "Keil";									//$NON-NLS-1$
+
 	// variable that is used as markers, all are are expanded to empty string
 	static public final String CMSIS_RTE = "cmsis_rte";		 						//$NON-NLS-1$
-	static public final String CMSIS_RTE_VAR = "${cmsis_rte}";		 						//$NON-NLS-1$
+	static public final String CMSIS_RTE_VAR = "${cmsis_rte}";		 				//$NON-NLS-1$
 	static public final String CMSIS_RTE_BEGIN_VAR = "${cmsis_rte:begin}"; 			//$NON-NLS-1$
 	static public final String CMSIS_RTE_END_VAR   = "${cmsis_rte:end}";			//$NON-NLS-1$
 
@@ -407,14 +409,15 @@ public class CmsisConstants {
 	// standard key sequences (http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_generators_pg.html)
 	static public final String[] STANDARD_KEY_SEQENCES =
 			new String[]{	"$D",   // Directory name corresponding to project's device, equals to #D_@D if @D is not empty, to #D otherwise   //$NON-NLS-1$
-							"#D", 	// Device device item without processor name   //$NON-NLS-1$
-							"@D",   // Processor name if not empty  //$NON-NLS-1$
-							"$P", 	// PATH to current project //$NON-NLS-1$
-							"#P", 	// PATH and name of the current project  //$NON-NLS-1$
-							"$S",	// PATH to PACK folder containing the Device description used by the current project  //$NON-NLS-1$
-							"$K"	// PATH to environment-specific "kernel" directory  //$NON-NLS-1$
-						};
+					"#D", 	// Device device item without processor name   //$NON-NLS-1$
+					"@D",   // Processor name if not empty  //$NON-NLS-1$
+					"$P", 	// PATH to current project //$NON-NLS-1$
+					"#P", 	// PATH and name of the current project  //$NON-NLS-1$
+					"$S",	// PATH to PACK folder containing the Device description used by the current project  //$NON-NLS-1$
+					"$K"	// PATH to environment-specific "kernel" directory  //$NON-NLS-1$
+	};
 
 	static public final String[] LAUNCH_TYPES = new String[]{ECLIPSE, EXE, WEB};
+
 
 }
