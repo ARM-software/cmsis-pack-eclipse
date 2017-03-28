@@ -1,7 +1,7 @@
 # Debug Sequence Framework
 
 This document describes implementation of Debug Sequence Framework for Eclipse and provides instructions for engineers how to integrate the framework into their development environments. 
-The framework provides support for CMSIS Debug access sequences (https://arm-software.github.io/CMSIS_5/Pack/html/pdsc_SequenceNameEnum_pg.html).
+The framework provides support for [CMSIS Debug Access Sequences].
 The framework is split into two parts to separate interfaces from implementation:
 * **com.arm.cmsis.pack** plug-in defines interfaces and datatypes
 * **com.arm.cmsis.pack.dsq.engine** plug-in provides default Debug Sequence Engine implementation that consists of parser, executer and script generator.  
@@ -71,13 +71,10 @@ The left side of ‘->’ in a line corresponds to a statement in the Debug Sequ
 _Copyright (c) 2014-2017, ARM Limited and Contributors. All rights reserved._
 
 
-[CMSIS-Pack Debug Sequences]: https://arm-software.github.io/CMSIS_5/Pack/html/pdsc_SequenceNameEnum_pg.html
-[Eclipse]:                  http://www.eclipse.org
-[CMSIS-Pack specification]: http://www.keil.com/pack/doc/CMSIS/Pack/html/index.html
-[Configuration Wizard Annotations]: http://www.keil.com/pack/doc/CMSIS/Pack/html/_config_wizard.html
+[CMSIS Debug Access Sequences]: https://arm-software.github.io/CMSIS_5/Pack/html/pdsc_SequenceNameEnum_pg.html
 
-[Dsq Engine Architecture]:      ./images/DsqEngineArchitecture.png
-[Dsq Engine Script Generator]:  ./images/DsqScriptGenerator.png
-[RefClient Dsq View]:  			./images/DsqRefClientView.png
+[Dsq Engine Architecture]:    ./images/DsqEngineArchitecture.png
+[Dsq Engine Script Generator]:./images/DsqScriptGenerator.png
+[RefClient Dsq View]:  			  ./images/DsqRefClientView.png
 [RefClient Dsq Console]:  		./images/DsqRefClientConsole.png
 
