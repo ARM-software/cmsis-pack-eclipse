@@ -73,7 +73,7 @@ import com.arm.cmsis.pack.debugseq.debugSeq.DapJtagSequence
  * Generates Python script from Debug access sequence descriptions 
  * 
  */
-class DsqPhytonScriptGenerator extends AbstractGenerator implements IDsqScriptGenerator {
+class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqScriptGenerator {
 	
 	var generateFile = false
 	static val predefinedVars =

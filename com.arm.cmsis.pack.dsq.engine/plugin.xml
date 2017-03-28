@@ -20,7 +20,7 @@
  <extension
        point="com.arm.cmsis.pack.dsq.engine.ScriptGenerator">
     <ScriptGenerator
-          class="com.arm.cmsis.pack.debugseq.generator.DsqPhytonScriptGenerator"
+          class="com.arm.cmsis.pack.debugseq.generator.DsqPythonScriptGenerator"
           description="Generate Python script to run on Debug Server"
           id="com.arm.cmsis.pack.dsq.engine.generator.python"
           name="Python Generator">

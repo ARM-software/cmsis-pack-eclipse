@@ -88,7 +88,7 @@ import org.eclipse.xtext.xbase.lib.IteratorExtensions;
  * Generates Python script from Debug access sequence descriptions
  */
 @SuppressWarnings("all")
-public class DsqPhytonScriptGenerator extends AbstractGenerator implements IDsqScriptGenerator {
+public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqScriptGenerator {
   private boolean generateFile = false;
   
   private final static String predefinedVars = new Function0<String>() {
@@ -166,7 +166,7 @@ public class DsqPhytonScriptGenerator extends AbstractGenerator implements IDsqS
     _builder.append("def ");
     String _name = seq.getName();
     _builder.append(_name, "");
-    _builder.append(DsqPhytonScriptGenerator.predefinedVars, "");
+    _builder.append(DsqPythonScriptGenerator.predefinedVars, "");
     _builder.append(":");
     _builder.newLineIfNotEmpty();
     _builder.append("    ");
@@ -693,7 +693,7 @@ public class DsqPhytonScriptGenerator extends AbstractGenerator implements IDsqS
         StringConcatenation _builder = new StringConcatenation();
         String _seqname = ((SequenceCall)e).getSeqname();
         _builder.append(_seqname, "");
-        _builder.append(DsqPhytonScriptGenerator.predefinedVars, "");
+        _builder.append(DsqPythonScriptGenerator.predefinedVars, "");
         _switchResult = _builder.toString();
       }
     }

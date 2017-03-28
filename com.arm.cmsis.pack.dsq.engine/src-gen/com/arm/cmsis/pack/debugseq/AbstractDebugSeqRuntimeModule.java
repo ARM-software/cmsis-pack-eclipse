@@ -3,7 +3,7 @@
  */
 package com.arm.cmsis.pack.debugseq;
 
-import com.arm.cmsis.pack.debugseq.generator.DsqPhytonScriptGenerator;
+import com.arm.cmsis.pack.debugseq.generator.DsqPythonScriptGenerator;
 import com.arm.cmsis.pack.debugseq.parser.antlr.DebugSeqAntlrTokenFileProvider;
 import com.arm.cmsis.pack.debugseq.parser.antlr.DebugSeqParser;
 import com.arm.cmsis.pack.debugseq.parser.antlr.internal.InternalDebugSeqLexer;
@@ -195,7 +195,7 @@ public abstract class AbstractDebugSeqRuntimeModule extends DefaultRuntimeModule
 	
 	// contributed by org.eclipse.xtext.xtext.generator.generator.GeneratorFragment2
 	public Class<? extends IGenerator2> bindIGenerator2() {
-		return DsqPhytonScriptGenerator.class;
+		return DsqPythonScriptGenerator.class;
 	}
 	
 }
