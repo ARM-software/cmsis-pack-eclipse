@@ -11,12 +11,12 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.core.resources,
  org.eclipse.core.filesystem,
  org.eclipse.ui.ide,
- com.arm.cmsis.pack.common;bundle-version="2.0.0",
- com.arm.cmsis.pack;bundle-version="2.0.0",
- com.arm.cmsis.pack.ui;bundle-version="2.0.0",
- com.arm.cmsis.pack.build.settings;bundle-version="2.0.0",
- com.arm.cmsis.pack.build.gnuarmeclipse;bundle-version="2.0.0",
- com.arm.cmsis.pack.project;bundle-version="2.0.0",
- com.arm.cmsis.pack.installer;bundle-version="2.0.0"
+ com.arm.cmsis.pack.common,
+ com.arm.cmsis.pack,
+ com.arm.cmsis.pack.ui,
+ com.arm.cmsis.pack.build.settings,
+ com.arm.cmsis.pack.build.gnuarmeclipse,
+ com.arm.cmsis.pack.project,
+ com.arm.cmsis.pack.installer
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
