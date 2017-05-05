@@ -32,6 +32,7 @@ import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -429,6 +430,14 @@ public class RteDeviceSelectorWidget extends Composite {
 		updateEndian();
 
 		updateStatus(message);
+		
+		//check if new layout is needed to display complete URL
+		Point curSize = linkUrl.getSize();
+		Point newSize = linkUrl.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+		if (newSize.x > curSize.x) {
+			this.layout();
+		}
+		
 		updatingControls = false;
 	}
 
