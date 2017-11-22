@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: com.arm.cmsis.pack.dsq
 Bundle-Vendor: ARM
-Bundle-Version: 0.9.0.qualifier
+Bundle-Version: 2.3.0.qualifier
 Bundle-SymbolicName: com.arm.cmsis.pack.dsq.engine;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
@@ -16,6 +16,7 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.core.runtime,
  org.antlr.runtime,
  com.arm.cmsis.pack.common,
+ com.arm.cmsis.pack.data,
  com.arm.cmsis.pack
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.arm.cmsis.pack.debugseq,
@@ -31,4 +32,3 @@ Export-Package: com.arm.cmsis.pack.debugseq,
  com.arm.cmsis.pack.debugseq.services,
  com.arm.cmsis.pack.debugseq.util,
  com.arm.cmsis.pack.debugseq.validation
-Import-Package: org.apache.log4j

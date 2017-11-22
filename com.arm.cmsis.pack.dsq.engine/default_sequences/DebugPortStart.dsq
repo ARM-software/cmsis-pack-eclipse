@@ -32,7 +32,7 @@
       <control while="(ReadDP(DP_CTRL_STAT) &amp; 0xA8000000) != 0xA8000000" timeout="300000"/>
       
       <!-- JTAG Specific Part of sequence -->
-      <control if="__protocol == 1">
+      <control if="(__protocol &amp; 0xFFFF) == 1">
       
         <block>
           // Init AP Transfer Mode, Transaction Counter, and Lane Mask (Normal Transfer Mode, Include all Byte Lanes)
@@ -43,7 +43,7 @@
       </control>
       
       <!-- SWD Specific Part of sequence -->
-      <control if="__protocol == 2">
+      <control if="(__protocol &amp; 0xFFFF) == 2">
       
         <block>
           // Init AP Transfer Mode, Transaction Counter, and Lane Mask (Normal Transfer Mode, Include all Byte Lanes)

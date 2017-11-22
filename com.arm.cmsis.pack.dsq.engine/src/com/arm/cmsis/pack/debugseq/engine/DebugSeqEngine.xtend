@@ -189,7 +189,7 @@ class DebugSeqEngine implements IDsqEngine {
 		generator.generate(dsqModel, header)
 	}
 	
-	def private Sequence getSequence(IDsqSequence seqContext) throws Exception {
+	def private Sequence getSequence(IDsqSequence seqContext) throws DsqException {
 		if (seqContext === null) {
 			throw new DsqException("Predefined variables are not provided")
 		}
@@ -555,12 +555,8 @@ class DebugSeqEngine implements IDsqEngine {
 			LoadDebugInfo: executeCommand(IDsqCommand.DSQ_LOAD_DEBUG_INFO, #[], #[deviceInfo.getAbsolutePath(e.path)])
 			Message: {
 				val parameters = e.parameters.map[interpret]
-				try {
-					val message = e.format.formatWithValues(parameters)
-					executeCommand(IDsqCommand.DSQ_MESSAGE, #[e.type.interpret.toLong], #[message])
-				} catch (Exception exp) {
-					throw new DsqException(exp.message)
-				}
+				val message = e.format.formatWithValues(parameters)
+				executeCommand(IDsqCommand.DSQ_MESSAGE, #[e.type.interpret.toLong], #[message])
 			}
 			Read8: executeCommand(IDsqCommand.DSQ_READ_8, #[e.addr.interpret.toLong])
 			Read16: executeCommand(IDsqCommand.DSQ_READ_16, #[e.addr.interpret.toLong])
@@ -583,13 +579,13 @@ class DebugSeqEngine implements IDsqEngine {
 		}
 	}
 	
-	def private long executeCommand(String cmdName, List<Long> params) {
+	def private long executeCommand(String cmdName, List<Long> params) throws DsqException {
 		executeCommand(cmdName, params, null)
 	}
 	
-	def private long executeCommand(String cmdName, List<Long> params, List<String> strings) {
+	def private long executeCommand(String cmdName, List<Long> params, List<String> strings) throws DsqException {
 		if (!inAtomic) {
-			val command = new DsqCommand(cmdName, params, strings)
+			val command = createCommand(cmdName, params, strings)
 			debugSeqClient.execute(#[command], false)
 			command.output
 		} else if (!collectingCommands) { // all the results are returned
@@ -602,7 +598,7 @@ class DebugSeqEngine implements IDsqEngine {
 	}
 	
 	def private void addCommand(String cmdName, List<Long> params, List<String> strings) {
-		val command = new DsqCommand(cmdName, params, strings)
+		val command = createCommand(cmdName, params, strings)
 		commands.add(command)
 	}
 	
@@ -610,12 +606,24 @@ class DebugSeqEngine implements IDsqEngine {
 		commands.get(commandIndex++) // all the commands are added in order
 	}
 	
+	def private IDsqCommand createCommand(String cmdName, List<Long> params, List<String> strings) {
+		val predefinedVars = newHashMap
+		predefinedVars.put(IDsqContext::AP, IDsqContext::AP.context?.get(IDsqContext::AP))
+		predefinedVars.put(IDsqContext::DP, IDsqContext::DP.context?.get(IDsqContext::DP))
+		predefinedVars.put(IDsqContext::PROTOCOL, IDsqContext::PROTOCOL.context?.get(IDsqContext::PROTOCOL))
+		predefinedVars.put(IDsqContext::CONNECTION, IDsqContext::CONNECTION.context?.get(IDsqContext::CONNECTION))
+		predefinedVars.put(IDsqContext::TRACEOUT, IDsqContext::TRACEOUT.context?.get(IDsqContext::TRACEOUT))
+		predefinedVars.put(IDsqContext::ERRORCONTROL, IDsqContext::ERRORCONTROL.context?.get(IDsqContext::ERRORCONTROL))
+		new DsqCommand(cmdName, params, strings, predefinedVars)
+	}
+	
 	def dispatch Long interpret(VariableDeclaration vardecl) throws DsqException {
 		if (contexts.isEmpty) {
 			enterScope(false)
 		}
-		contexts.peek.put(vardecl.name, vardecl.value.interpret.toLong)
-		0L
+		val value = vardecl.value.interpret.toLong
+		contexts.peek.put(vardecl.name, value)
+		value
 	}
 	
 	def private Map<String, Long> getContext(String k) {
@@ -645,9 +653,9 @@ class DebugSeqEngine implements IDsqEngine {
 		if (!store) {
 			contexts.push(newHashMap)
 		} else {
-			val dp = contexts.peek.get(IDsqContext::DP)
-			val ap = contexts.peek.get(IDsqContext::AP)
-			val ec = contexts.peek.get(IDsqContext::ERRORCONTROL)
+			val dp = IDsqContext::DP.context.get(IDsqContext::DP)
+			val ap = IDsqContext::AP.context.get(IDsqContext::AP)
+			val ec = IDsqContext::ERRORCONTROL.context.get(IDsqContext::ERRORCONTROL)
 			contexts.push(newHashMap)
 			contexts.peek.put(IDsqContext::DP, dp)
 			contexts.peek.put(IDsqContext::AP, ap)

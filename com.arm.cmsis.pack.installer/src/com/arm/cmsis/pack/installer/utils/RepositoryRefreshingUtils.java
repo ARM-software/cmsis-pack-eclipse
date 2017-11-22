@@ -47,7 +47,7 @@ public class RepositoryRefreshingUtils {
 
 	/**
 	 * @param inputStream the input stream
-	 * @param pdscList a list of .pdsc files
+	 * @param pdscList files list to collect .pdsc files
 	 * @return the number of .pdsc files in the list that needs updating
 	 * @throws ParserConfigurationException
 	 * @throws SAXException

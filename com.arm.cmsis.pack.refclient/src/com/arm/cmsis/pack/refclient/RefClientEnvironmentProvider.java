@@ -11,16 +11,20 @@
 
 package com.arm.cmsis.pack.refclient;
 
+import java.io.File;
+
 import com.arm.cmsis.pack.CpEnvironmentProvider;
 import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpPackRootProvider;
 import com.arm.cmsis.pack.build.gnuarmeclipse.GnuarmeclipseToolChainAdapter;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpExample;
 
 /**
  *  A sample environment provider 
  */
-public class RefClientEnvironmentProvider extends CpEnvironmentProvider {
+public class RefClientEnvironmentProvider extends CpEnvironmentProvider implements ICpPackRootProvider {
 
 
 	static public final String REF_CLIENT = "RefClient"; //$NON-NLS-1$
@@ -51,8 +55,28 @@ public class RefClientEnvironmentProvider extends CpEnvironmentProvider {
 
 	@Override
 	public boolean isExampleSupported(ICpExample example) {
-		// return true to see all examples, even those that are not supported
-		return super.isExampleSupported(example);
+		return true; // to see all examples, even those that are not supported
+		//return super.isExampleSupported(example);
+	}
+
+	
+	@Override
+	public ICpPackRootProvider getCmsisRootProvider() {
+		return this;
+	}
+
+	@Override
+	public String getPackRoot() {
+		String dir = System.getProperty("user.home"); //$NON-NLS-1$
+		if(dir == null || dir.isEmpty())
+			return CmsisConstants.EMPTY_STRING;
+		
+		return dir + File.separator + "com.arm.cmsis.pack.refclient" + File.separator + "PACK"; //$NON-NLS-1$ //$NON-NLS-2$
+	}
+
+	@Override
+	public boolean isUserEditable() {
+		return true;
 	}
 
 	

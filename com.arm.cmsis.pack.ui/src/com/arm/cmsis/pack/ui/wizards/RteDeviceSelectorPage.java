@@ -31,11 +31,17 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 	private IRteDeviceItem fDevices = null;
 	private ICpDeviceInfo fDeviceInfo = null;
 	private boolean fbInitialized = false;
+	protected boolean fbShowProcessors = true;
+
 
 	public RteDeviceSelectorPage() {
+		this(true);
+	}
+
+	public RteDeviceSelectorPage(boolean bShowProcessors) {
 		this(CpStringsUI.RteDeviceWizard_PageName,
 				CpStringsUI.RteDeviceWizard_SelectDevice,
-				CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_CHIP_48));
+				CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_CHIP_48), bShowProcessors);
 	}
 
 	/**
@@ -43,14 +49,15 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 	 * @param title
 	 * @param titleImage
 	 */
-	public RteDeviceSelectorPage(String pageName, String title,	ImageDescriptor titleImage) {
+	public RteDeviceSelectorPage(String pageName, String title,	ImageDescriptor titleImage, boolean bShowProcessors) {
 		super(pageName, title, titleImage);
+		fbShowProcessors = bShowProcessors;
 		setPageComplete(false);
 	}
 
 	@Override
 	public void createControl(Composite parent) {
-		fDeviceWidget = new RteDeviceSelectorWidget(parent);
+		fDeviceWidget = new RteDeviceSelectorWidget(parent, fbShowProcessors);
 		fDeviceWidget.addListener(this);
 		fDeviceWidget.setDevices(fDevices);
 
@@ -79,8 +86,10 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 
 	@Override
 	public void setVisible(boolean visible) {
-		fDeviceWidget.setDeviceInfo(fDeviceInfo);
-		fbInitialized = true;
+		if(!fbInitialized) {
+			fDeviceWidget.setDeviceInfo(fDeviceInfo);
+			fbInitialized = true;
+		}
 		super.setVisible(visible);
 	}
 
@@ -97,7 +106,7 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 		updateStatus(message);
 	}
 
-	protected void updateStatus(String message) {
+	public void updateStatus(String message) {
 		setErrorMessage(message);
 		if (fbInitialized) {
 			fDeviceInfo = fDeviceWidget.getDeviceInfo();

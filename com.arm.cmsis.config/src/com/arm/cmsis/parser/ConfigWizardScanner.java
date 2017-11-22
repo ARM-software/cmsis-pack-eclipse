@@ -219,9 +219,12 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 		if (tag.equals(CONFIG_DEFAULT)) {
 			return ETokenType.DEFAULT;
 		} else if (tag.equals(CONFIG_MARK)) {
-			if (tokenContent.equalsIgnoreCase("<<< Use Configuration Wizard In Context Menu >>>")) { //$NON-NLS-1$
+			String[] startTokens = {"Use", "Configuration", "Wizard", "In", "Context", "Menu"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+			String[] endTokens = {"End", "Of", "Configuration", "Section"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+			
+			if (tokenMatch(tokenContent, startTokens)) {
 				return ETokenType.START;
-			} else if (tokenContent.equalsIgnoreCase("<<< End Of Configuration Section >>>")) { //$NON-NLS-1$
+			} else if (tokenMatch(tokenContent, endTokens)) {
 				return ETokenType.EOC;
 			} else {
 				return ETokenType.DEFAULT;
@@ -273,6 +276,25 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 		}
 
 		return ETokenType.UNKNOWN;
+	}
+	
+	private boolean tokenMatch(String tokenContent, String[] correctTokens) {
+		String[] tokens = tokenContent.trim().split("<<<|>>>| "); //$NON-NLS-1$
+		int j = 0;
+		for (int i = 0; i < tokens.length; i++) {
+			if (tokens[i].isEmpty()) {
+				continue;
+			}
+			if (j == correctTokens.length) {
+				return false;
+			}
+			if (tokens[i].equalsIgnoreCase(correctTokens[j])) {
+				j++;
+			} else {
+				return false;
+			}
+		}
+		return j == correctTokens.length;
 	}
 
 	private ETokenType getEndTokenType(char token) {

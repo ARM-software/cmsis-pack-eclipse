@@ -224,29 +224,25 @@ public class DebugSeqEngine implements IDsqEngine {
   
   @Override
   public void execute(final IDsqSequence seqContext) throws DsqException {
-    try {
-      final Sequence seq = this.getSequence(seqContext);
-      if ((seq != null)) {
-        this.contexts.clear();
-        this.enterScope(false);
-        DebugVars _debugvars = this.dsqModel.getDebugvars();
-        this.interpret(_debugvars);
-        this.setPredefinedVariableValues(seqContext);
-        this.interpret(seq);
-        this.exitScope();
-      } else {
-        String _sequenceName = seqContext.getSequenceName();
-        boolean _isEmptyDefaultSequence = DebugSeqUtil.isEmptyDefaultSequence(_sequenceName);
-        boolean _not = (!_isEmptyDefaultSequence);
-        if (_not) {
-          String _sequenceName_1 = seqContext.getSequenceName();
-          String _plus = ("Sequence named \'" + _sequenceName_1);
-          String _plus_1 = (_plus + "\' is undefined");
-          throw new DsqException(_plus_1);
-        }
+    final Sequence seq = this.getSequence(seqContext);
+    if ((seq != null)) {
+      this.contexts.clear();
+      this.enterScope(false);
+      DebugVars _debugvars = this.dsqModel.getDebugvars();
+      this.interpret(_debugvars);
+      this.setPredefinedVariableValues(seqContext);
+      this.interpret(seq);
+      this.exitScope();
+    } else {
+      String _sequenceName = seqContext.getSequenceName();
+      boolean _isEmptyDefaultSequence = DebugSeqUtil.isEmptyDefaultSequence(_sequenceName);
+      boolean _not = (!_isEmptyDefaultSequence);
+      if (_not) {
+        String _sequenceName_1 = seqContext.getSequenceName();
+        String _plus = ("Sequence named \'" + _sequenceName_1);
+        String _plus_1 = (_plus + "\' is undefined");
+        throw new DsqException(_plus_1);
       }
-    } catch (Throwable _e) {
-      throw Exceptions.sneakyThrow(_e);
     }
   }
   
@@ -271,7 +267,7 @@ public class DebugSeqEngine implements IDsqEngine {
     return _xblockexpression;
   }
   
-  private Sequence getSequence(final IDsqSequence seqContext) throws Exception {
+  private Sequence getSequence(final IDsqSequence seqContext) throws DsqException {
     if ((seqContext == null)) {
       throw new DsqException("Predefined variables are not provided");
     }
@@ -1165,28 +1161,12 @@ public class DebugSeqEngine implements IDsqEngine {
             return this.interpret(it);
           };
           final List<Object> parameters = ListExtensions.<Parameter, Object>map(_parameters, _function);
-          long _xtrycatchfinallyexpression = (long) 0;
-          try {
-            long _xblockexpression_1 = (long) 0;
-            {
-              String _format = ((Message)e).getFormat();
-              final String message = DebugSeqUtil.formatWithValues(_format, parameters);
-              Expression _type = ((Message)e).getType();
-              Object _interpret = this.interpret(_type);
-              long _long = DebugSeqUtil.toLong(_interpret);
-              _xblockexpression_1 = this.executeCommand(IDsqCommand.DSQ_MESSAGE, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long))), Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(message)));
-            }
-            _xtrycatchfinallyexpression = _xblockexpression_1;
-          } catch (final Throwable _t) {
-            if (_t instanceof Exception) {
-              final Exception exp = (Exception)_t;
-              String _message = exp.getMessage();
-              throw new DsqException(_message);
-            } else {
-              throw Exceptions.sneakyThrow(_t);
-            }
-          }
-          _xblockexpression = _xtrycatchfinallyexpression;
+          String _format = ((Message)e).getFormat();
+          final String message = DebugSeqUtil.formatWithValues(_format, parameters);
+          Expression _type = ((Message)e).getType();
+          Object _interpret = this.interpret(_type);
+          long _long = DebugSeqUtil.toLong(_interpret);
+          _xblockexpression = this.executeCommand(IDsqCommand.DSQ_MESSAGE, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long))), Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(message)));
         }
         _switchResult = Long.valueOf(_xblockexpression);
       }
@@ -1389,16 +1369,16 @@ public class DebugSeqEngine implements IDsqEngine {
     return _switchResult;
   }
   
-  private long executeCommand(final String cmdName, final List<Long> params) {
+  private long executeCommand(final String cmdName, final List<Long> params) throws DsqException {
     return this.executeCommand(cmdName, params, null);
   }
   
-  private long executeCommand(final String cmdName, final List<Long> params, final List<String> strings) {
+  private long executeCommand(final String cmdName, final List<Long> params, final List<String> strings) throws DsqException {
     long _xifexpression = (long) 0;
     if ((!this.inAtomic)) {
       long _xblockexpression = (long) 0;
       {
-        final DsqCommand command = new DsqCommand(cmdName, params, strings);
+        final IDsqCommand command = this.createCommand(cmdName, params, strings);
         this.debugSeqClient.execute(Collections.<IDsqCommand>unmodifiableList(CollectionLiterals.<IDsqCommand>newArrayList(command)), false);
         _xblockexpression = command.getOutput();
       }
@@ -1426,13 +1406,58 @@ public class DebugSeqEngine implements IDsqEngine {
   }
   
   private void addCommand(final String cmdName, final List<Long> params, final List<String> strings) {
-    final DsqCommand command = new DsqCommand(cmdName, params, strings);
+    final IDsqCommand command = this.createCommand(cmdName, params, strings);
     this.commands.add(command);
   }
   
   private IDsqCommand findCommand(final String cmdName, final List<Long> params) {
     int _plusPlus = this.commandIndex++;
     return this.commands.get(_plusPlus);
+  }
+  
+  private IDsqCommand createCommand(final String cmdName, final List<Long> params, final List<String> strings) {
+    DsqCommand _xblockexpression = null;
+    {
+      final HashMap<String, Long> predefinedVars = CollectionLiterals.<String, Long>newHashMap();
+      Map<String, Long> _context = this.getContext(IDsqContext.AP);
+      Long _get = null;
+      if (_context!=null) {
+        _get=_context.get(IDsqContext.AP);
+      }
+      predefinedVars.put(IDsqContext.AP, _get);
+      Map<String, Long> _context_1 = this.getContext(IDsqContext.DP);
+      Long _get_1 = null;
+      if (_context_1!=null) {
+        _get_1=_context_1.get(IDsqContext.DP);
+      }
+      predefinedVars.put(IDsqContext.DP, _get_1);
+      Map<String, Long> _context_2 = this.getContext(IDsqContext.PROTOCOL);
+      Long _get_2 = null;
+      if (_context_2!=null) {
+        _get_2=_context_2.get(IDsqContext.PROTOCOL);
+      }
+      predefinedVars.put(IDsqContext.PROTOCOL, _get_2);
+      Map<String, Long> _context_3 = this.getContext(IDsqContext.CONNECTION);
+      Long _get_3 = null;
+      if (_context_3!=null) {
+        _get_3=_context_3.get(IDsqContext.CONNECTION);
+      }
+      predefinedVars.put(IDsqContext.CONNECTION, _get_3);
+      Map<String, Long> _context_4 = this.getContext(IDsqContext.TRACEOUT);
+      Long _get_4 = null;
+      if (_context_4!=null) {
+        _get_4=_context_4.get(IDsqContext.TRACEOUT);
+      }
+      predefinedVars.put(IDsqContext.TRACEOUT, _get_4);
+      Map<String, Long> _context_5 = this.getContext(IDsqContext.ERRORCONTROL);
+      Long _get_5 = null;
+      if (_context_5!=null) {
+        _get_5=_context_5.get(IDsqContext.ERRORCONTROL);
+      }
+      predefinedVars.put(IDsqContext.ERRORCONTROL, _get_5);
+      _xblockexpression = new DsqCommand(cmdName, params, strings, predefinedVars);
+    }
+    return _xblockexpression;
   }
   
   protected Long _interpret(final VariableDeclaration vardecl) throws DsqException {
@@ -1442,13 +1467,13 @@ public class DebugSeqEngine implements IDsqEngine {
       if (_isEmpty) {
         this.enterScope(false);
       }
-      Map<String, Long> _peek = this.contexts.peek();
-      String _name = vardecl.getName();
       Expression _value = vardecl.getValue();
       Object _interpret = this.interpret(_value);
-      long _long = DebugSeqUtil.toLong(_interpret);
-      _peek.put(_name, Long.valueOf(_long));
-      _xblockexpression = 0L;
+      final long value = DebugSeqUtil.toLong(_interpret);
+      Map<String, Long> _peek = this.contexts.peek();
+      String _name = vardecl.getName();
+      _peek.put(_name, Long.valueOf(value));
+      _xblockexpression = value;
     }
     return Long.valueOf(_xblockexpression);
   }
@@ -1498,20 +1523,20 @@ public class DebugSeqEngine implements IDsqEngine {
       HashMap<String, Long> _newHashMap = CollectionLiterals.<String, Long>newHashMap();
       this.contexts.push(_newHashMap);
     } else {
-      Map<String, Long> _peek = this.contexts.peek();
-      final Long dp = _peek.get(IDsqContext.DP);
-      Map<String, Long> _peek_1 = this.contexts.peek();
-      final Long ap = _peek_1.get(IDsqContext.AP);
-      Map<String, Long> _peek_2 = this.contexts.peek();
-      final Long ec = _peek_2.get(IDsqContext.ERRORCONTROL);
+      Map<String, Long> _context = this.getContext(IDsqContext.DP);
+      final Long dp = _context.get(IDsqContext.DP);
+      Map<String, Long> _context_1 = this.getContext(IDsqContext.AP);
+      final Long ap = _context_1.get(IDsqContext.AP);
+      Map<String, Long> _context_2 = this.getContext(IDsqContext.ERRORCONTROL);
+      final Long ec = _context_2.get(IDsqContext.ERRORCONTROL);
       HashMap<String, Long> _newHashMap_1 = CollectionLiterals.<String, Long>newHashMap();
       this.contexts.push(_newHashMap_1);
-      Map<String, Long> _peek_3 = this.contexts.peek();
-      _peek_3.put(IDsqContext.DP, dp);
-      Map<String, Long> _peek_4 = this.contexts.peek();
-      _peek_4.put(IDsqContext.AP, ap);
-      Map<String, Long> _peek_5 = this.contexts.peek();
-      _peek_5.put(IDsqContext.ERRORCONTROL, ec);
+      Map<String, Long> _peek = this.contexts.peek();
+      _peek.put(IDsqContext.DP, dp);
+      Map<String, Long> _peek_1 = this.contexts.peek();
+      _peek_1.put(IDsqContext.AP, ap);
+      Map<String, Long> _peek_2 = this.contexts.peek();
+      _peek_2.put(IDsqContext.ERRORCONTROL, ec);
     }
   }
   

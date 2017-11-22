@@ -29,11 +29,11 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.data.ICpPackCollection;
+import com.arm.cmsis.pack.data.ICpPackFamily;
 import com.arm.cmsis.pack.installer.ui.views.BoardsView;
 import com.arm.cmsis.pack.installer.ui.views.DevicesView;
-import com.arm.cmsis.pack.data.ICpPackFamily;
 import com.arm.cmsis.pack.item.ICmsisItem;
-import com.arm.cmsis.pack.rte.boards.IRteBoardDeviceItem;
+import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
 import com.arm.cmsis.pack.utils.Utils;
@@ -44,7 +44,7 @@ import com.arm.cmsis.pack.utils.Utils;
 public class PackInstallerViewFilter extends ViewerFilter {
 
 	protected IRteDeviceItem 		fDeviceItem = null ;
-	protected IRteBoardDeviceItem	fBoardItem = null;
+	protected IRteBoardItem	fBoardItem = null;
 
 	
 	protected boolean bAllDevices = false;
@@ -160,11 +160,11 @@ public class PackInstallerViewFilter extends ViewerFilter {
 		}
 		if(item != null && item instanceof IRteDeviceItem)
 			return setDeviceItem((IRteDeviceItem)item);
-		return setBoardItem((IRteBoardDeviceItem)item);
+		return setBoardItem((IRteBoardItem)item);
 	}
 	
 	
-	protected boolean setBoardItem(IRteBoardDeviceItem item) {
+	protected boolean setBoardItem(IRteBoardItem item) {
 		if(fBoardItem == item)
 			return false;
 		fBoardItem = item;
@@ -195,7 +195,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
 		}
 		ICmsisItem item = (ICmsisItem) selection.getFirstElement();
 		if (item != null) {
-			if (selectionPart instanceof BoardsView &&
+			if (selectionPart instanceof BoardsView && item.hasChildren() &&
 					(CmsisConstants.MOUNTED_DEVICES.equals(item.getName()) ||
 							CmsisConstants.COMPATIBLE_DEVICES.equals(item.getName()))) {
 				return item.getChildren().iterator().next().getName()
@@ -272,7 +272,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
 	 * @param pack	The pack
 	 * @return		true if pack contains this board, otherwise false
 	 */
-	private boolean packContainsBoard(IRteBoardDeviceItem board, ICpPack pack) {
+	private boolean packContainsBoard(IRteBoardItem board, ICpPack pack) {
 
 		// check if the pack contains a board
 		Set<String> boardNames = pack.getBoardNames();
@@ -398,7 +398,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
 			if (bAllDevices) {
 				return true;
 			}
-			return boardContainsDevice(example.getBoard(), fDeviceItem);
+			return boardContainsDevice(example.getBoardId(), fDeviceItem);
 		} else if (fBoardItem != null) {
 			if (bAllBoards) {
 				return true;
@@ -409,17 +409,21 @@ public class PackInstallerViewFilter extends ViewerFilter {
 	}
 
 	private boolean exampleContainsBoard(ICpExample example, ICpBoard board) {
-		if (example.getBoard() != null && board != null) {
-			return example.getBoard().getId().equals(board.getId());
-		}
-		return false;
+		if( example == null || board == null)
+			return false;
+		String boardId = example.getBoardId();
+		if (boardId == null || boardId.isEmpty())
+			return false;
+		
+		return boardId.equals(board.getId());
 	}
 
-	private boolean boardContainsDevice(ICpBoard b, IRteDeviceItem rteDeviceItem) {
-		if (b == null) {
+	private boolean boardContainsDevice(String boardId, IRteDeviceItem rteDeviceItem) {
+		if (boardId == null) {
 			return false;
 		}
-		IRteBoardDeviceItem board = CpPlugIn.getPackManager().getRteBoardDevices().findBoard(b.getId());
+		
+		IRteBoardItem board = CpPlugIn.getPackManager().getRteBoards().findBoard(boardId);
 		if (board != null) {
 			if (Utils.checkIfIntersect(board.getAllDeviceNames(), fSelectedDeviceNames)) {
 				return true;

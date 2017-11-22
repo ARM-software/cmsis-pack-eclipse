@@ -23,6 +23,7 @@ import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.handlers.HandlerUtil;
 
 import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpPackInstaller;
 
 /**
  * Handler of checking for updates
@@ -36,11 +37,15 @@ public class UpdatePacksHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IRunnableContext context = HandlerUtil.getActiveWorkbenchWindow(event)
 				.getWorkbench().getProgressService();
+		final ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+		if (packInstaller == null) {
+			return null;
+		}
 		try {
 			context.run(true, true, new IRunnableWithProgress() {
 				@Override
 				public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-					CpPlugIn.getPackManager().getPackInstaller().updatePacks(monitor);
+					packInstaller.updatePacks(monitor);
 				}
 			});
 

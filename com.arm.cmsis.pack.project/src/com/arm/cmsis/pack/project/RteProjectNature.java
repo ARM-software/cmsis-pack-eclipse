@@ -12,43 +12,17 @@
 package com.arm.cmsis.pack.project;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectNature;
-import org.eclipse.core.runtime.CoreException;
 
 /**
  *
  */
-public class RteProjectNature implements IProjectNature {
+public class RteProjectNature extends CmsisProjectNature {
 
 	public static final String RTE_NATURE_ID = "com.arm.cmsis.pack.project.RteNature";   //$NON-NLS-1$
 
-	
-	private IProject project = null;
-	
 	public RteProjectNature() {
+		super(RTE_NATURE_ID);
 	}
-	
-	@Override
-	public void configure() throws CoreException {
-		// does nothing
-	}
-
-	@Override
-	public void deconfigure() throws CoreException {
-		// does nothing
-	}
-
-	@Override
-	public IProject getProject() {
-		return project;
-	}
-
-	@Override
-	public void setProject(IProject project) {
-		this.project = project;
-
-	}
-	
 	
 	/**
 	 * Checks if supplied project has RteNature 
@@ -56,13 +30,7 @@ public class RteProjectNature implements IProjectNature {
 	 * @return true if RteNature is installed for this project
 	 */
 	public static boolean hasRteNature(IProject project){
-		try {
-			if(project != null && project.isOpen() && project.hasNature(RTE_NATURE_ID))
-				return true;
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-		return false;
+		return hasNature(project, RTE_NATURE_ID);
 	}
 
 }

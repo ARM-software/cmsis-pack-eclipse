@@ -54,7 +54,8 @@ import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependencySolver;
 import com.arm.cmsis.pack.rte.dependencies.RteDependencySolver;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
-import com.arm.cmsis.pack.rte.devices.RteDeviceItem;
+import com.arm.cmsis.pack.rte.devices.IRteDeviceRoot;
+import com.arm.cmsis.pack.rte.devices.RteDeviceRoot;
 import com.arm.cmsis.pack.utils.Utils;
 
 /**
@@ -66,7 +67,7 @@ public class RteModel implements IRteModel {
 	// object to store/load configuration meta data
 	protected ICpConfigurationInfo fConfigurationInfo = null;
 	// filtered Packs
-	protected ICpPackCollection   fAllPacks = null;
+	protected ICpPackCollection   fAllInstalledPacks = null;
 	protected Collection<ICpPack> fFilteredPacks = null;
 	protected ICpPackFilter 	  fPackFilter = null;
 	protected Map<String, ICpPackInfo> fUsedPackInfos = null;
@@ -82,7 +83,7 @@ public class RteModel implements IRteModel {
 	// filtered components tree
 	protected RteComponentRoot 	fComponentRoot = null;
 	// filtered device tree
-	protected IRteDeviceItem 	fRteDevices = null;
+	protected IRteDeviceRoot 	fRteDevices = null;
 
 	// engine to evaluate/resolve component dependencies
 	protected IRteDependencySolver fDependencySolver = null;
@@ -99,7 +100,7 @@ public class RteModel implements IRteModel {
 
 	@Override
 	public void clear() {
-		fAllPacks = null;
+		fAllInstalledPacks = null;
 		fRteDevices = null;
 		fComponentRoot = null;
 		fPackFilter = null;
@@ -171,12 +172,12 @@ public class RteModel implements IRteModel {
 	}
 
 	protected void collectPacks() {
-		fAllPacks = null;
+		fAllInstalledPacks = null;
 		fGeneratedPacks = null;
 		ICpPackManager pm  = CpPlugIn.getPackManager();
 		if(pm == null)
 			return;
-		fAllPacks = pm.getInstalledPacks();
+		fAllInstalledPacks = pm.getInstalledPacks();
 		// collect and load generated packs
 		collectGeneratedPacks();
 	}
@@ -187,6 +188,7 @@ public class RteModel implements IRteModel {
 		if(children == null)
 			return;
 		ICpPackManager pm  = CpPlugIn.getPackManager();
+		ICpEnvironmentProvider ep  = CpPlugIn.getEnvironmentProvider();
 		for(ICpItem item : children) {
 			if(!item.hasAttribute(CmsisConstants.GENERATOR))
 				continue;
@@ -195,9 +197,10 @@ public class RteModel implements IRteModel {
 			ICpComponentInfo ci = (ICpComponentInfo)item; 
 			if(ci.isGenerated())
 				continue; // consider only bootstrap
-			String gpdsc = ci.getGpdsc(true);
+			String gpdsc = ci.getGpdsc();
 			if(gpdsc == null || gpdsc.isEmpty())
 				continue;
+			gpdsc = ep.expandString(gpdsc, fConfigurationInfo, true);
 			if(fGeneratedPacks.containsKey(gpdsc)) {
 				ICpPack pack = fGeneratedPacks.get(gpdsc);
 				if(pack != null || !ci.isSaved())
@@ -211,9 +214,9 @@ public class RteModel implements IRteModel {
 	
 	protected void filterPacks() {
 		fFilteredPacks = null;
-		if(fAllPacks != null) {
-			fPackFilter.setLatestPackIDs(fAllPacks.getLatestPackIDs());
-			fFilteredPacks = fAllPacks.getFilteredPacks(fPackFilter);
+		if(fAllInstalledPacks != null) {
+			fPackFilter.setLatestPackIDs(fAllInstalledPacks.getLatestPackIDs());
+			fFilteredPacks = fAllInstalledPacks.getFilteredPacks(fPackFilter);
 		}
 	}
 	
@@ -234,7 +237,7 @@ public class RteModel implements IRteModel {
 			return allResolved;
 		}
 
-		if(fAllPacks == null) {
+		if(fAllInstalledPacks == null) {
 			return false;
 		}
 
@@ -247,11 +250,11 @@ public class RteModel implements IRteModel {
 			ICpPack pack = null;
 			switch(mode){
 			case FIXED:
-				pack = fAllPacks.getPack(packInfo.getId());
+				pack = fAllInstalledPacks.getPack(packInfo.getId());
 				break;
 			case EXCLUDED:
 			case LATEST:
-				pack = fAllPacks.getPack(packInfo.getPackFamilyId());
+				pack = fAllInstalledPacks.getPack(packInfo.getPackFamilyId());
 				break;
 			}
 			packInfo.setPack(pack);
@@ -267,10 +270,10 @@ public class RteModel implements IRteModel {
 		if(pack != null) {
 			return pack;
 		}
-		if(fAllPacks == null) {
+		if(fAllInstalledPacks == null) {
 			return null;
 		}
-		pack = fAllPacks.getPack(pi.getId());
+		pack = fAllInstalledPacks.getPack(pi.getId());
 		if(pack != null) {
 			pi.setPack(pack);
 		}
@@ -283,9 +286,11 @@ public class RteModel implements IRteModel {
 		if(fDeviceInfo == null) {
 			return false;
 		}
-		fDeviceInfo.setRteDevice(null);
+		fDeviceInfo.setDevice(null);
 		IRteDeviceItem rteDevice = getDevices().findItem(fDeviceInfo.attributes());
-		fDeviceInfo.setRteDevice(rteDevice);
+		if(rteDevice != null) {
+			fDeviceInfo.setDevice(rteDevice.getDevice(), rteDevice.getName());
+		}
 		ICpPackInfo packInfo = fDeviceInfo.getPackInfo();
 		if(rteDevice == null) {
 			resolvePack(packInfo);
@@ -552,7 +557,7 @@ public class RteModel implements IRteModel {
 	@Override
 	public IRteDeviceItem getDevices(){
 		if(fRteDevices == null){
-			fRteDevices = RteDeviceItem.createTree(fFilteredPacks);
+			fRteDevices = RteDeviceRoot.createTree(fFilteredPacks);
 		}
 		return fRteDevices;
 	}

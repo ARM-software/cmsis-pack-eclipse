@@ -165,27 +165,8 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 	 * @return integer build type
 	 */
 	protected int getOptionType(String tag) {
-		switch(tag){
-		case IBuildSettings.AMISC_TAG:
-			return IBuildSettings.RTE_ASMMISC;
-		case IBuildSettings.CMISC_TAG: 
-			return IBuildSettings.RTE_CMISC;
-		case IBuildSettings.CPPMISC_TAG:
-			return IBuildSettings.RTE_CPPMISC;
-		case IBuildSettings.LMISC_TAG:
-			return IBuildSettings.RTE_LMISC;
-		case IBuildSettings.ARMISC_TAG:
-			return IBuildSettings.RTE_ARMISC;
-		default:
-			break;
-		}
-		// pre and post build steps in packs are often given with a suffix like preBuild1, prebuild2, etc.
-		if(tag.startsWith(IBuildSettings.PRE_BUILD_TAG))
-			return IBuildSettings.PRE_BUILD_STEPS;
-		else if(tag.startsWith(IBuildSettings.POST_BUILD_TAG))
-			return IBuildSettings.POST_BUILD_STEPS;
-		
-		return IBuildSettings.UNKNOWN_OPTION;
+		// default solely uses IBuildSettings implementation  
+		return IBuildSettings.getMiscOptionType(tag);
 	}
 
 	@Override

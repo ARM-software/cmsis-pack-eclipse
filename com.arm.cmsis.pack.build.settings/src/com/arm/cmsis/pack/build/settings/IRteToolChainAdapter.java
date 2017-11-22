@@ -15,6 +15,7 @@ import org.eclipse.cdt.managedbuilder.core.IConfiguration;
 import org.eclipse.core.runtime.IAdaptable;
 
 import com.arm.cmsis.pack.build.IBuildSettings;
+import com.arm.cmsis.pack.generic.IAttributes;
 
 
 /**
@@ -45,5 +46,14 @@ public interface IRteToolChainAdapter extends IAdaptable {
 	 * @return ILinkerScriptGenerator or null if no generator is available
 	 */
 	ILinkerScriptGenerator getLinkerScriptGenerator();
+	
+	
+	/**
+	 * Returns RTE options extracted from toolchain settings such as Tcompiler, Toptions, Dfpu, Dendian.
+	 * The returning options must not be null to take any effect.  
+	 * @param configuration IConfiguration with build settings
+	 * @return IAttributes containing RTE options   
+	 */
+	default IAttributes getRteOptions(IConfiguration configuration) { return null;}
 
 }

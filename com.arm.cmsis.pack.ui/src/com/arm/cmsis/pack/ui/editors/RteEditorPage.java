@@ -17,17 +17,18 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 
+import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.ui.widgets.RteWidget;
 
 /**
  * Base abstract class for RTE configuration editor pages
  */
-public abstract class RteEditorPage extends RteWidget {
+public abstract class RteEditorPage<TController extends IRteController> extends RteWidget<TController> {
 
 	protected RteEditorPageHeader headerWidget = null;
     protected boolean bModified = false;
-	private IAction saveAction = null;
+	protected IAction saveAction = null;
 
 	/**
 	 * Creates page content
@@ -70,29 +71,26 @@ public abstract class RteEditorPage extends RteWidget {
     	update();
     	return pageComposite;
 	}
-
-	
 	
 	@Override
 	public void handle(RteEvent event) {
 		switch(event.getTopic()) {
 		case RteEvent.CONFIGURATION_COMMITED:
 		case RteEvent.CONFIGURATION_MODIFIED:
-			super.handle(event);
+			asyncUpdate();
 			return;
 		default:
 			break;
 		}
 		updateSaveAction(); // update on every event
 	}
-
 	@Override
 	public void update() {
 		updateSaveAction();
 	}
 
 	
-	private void updateSaveAction(){
+	protected void updateSaveAction(){
 		if(saveAction != null && getModelController() != null){
 			saveAction.setEnabled(getModelController().isModified());
 		}

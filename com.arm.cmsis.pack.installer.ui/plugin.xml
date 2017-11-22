@@ -61,6 +61,22 @@
                id="com.arm.cmsis.pack.installer.toolbar.main.packInstallerToolbar"
                label="%PackManagerToolbar.label">
             <command
+                  commandId="com.arm.cmsis.pack.installer.commands.reloadCommand"
+                  icon="icons/refresh_nav.gif"
+                  label="%ReloadCommand.label"
+                  style="push"
+                  tooltip="%ReloadCommand.tooltip">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="com.arm.cmsis.pack.installer.ui.perspectives.packmanager">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
+            <command
                   commandId="com.arm.cmsis.pack.installer.commands.updateCommand"
                   icon="icons/check4Update.gif"
                   label="%UpdateCommand.label"
@@ -82,22 +98,6 @@
                   label="%ImportCommand.label"
                   style="push"
                   tooltip="%ImportCommand.tooltip">
-               <visibleWhen
-                     checkEnabled="false">
-                  <with
-                        variable="activeWorkbenchWindow.activePerspective">
-                     <equals
-                           value="com.arm.cmsis.pack.installer.ui.perspectives.packmanager">
-                     </equals>
-                  </with>
-               </visibleWhen>
-            </command>
-            <command
-                  commandId="com.arm.cmsis.pack.installer.commands.reloadCommand"
-                  icon="icons/refresh_nav.gif"
-                  label="%ReloadCommand.label"
-                  style="push"
-                  tooltip="%ReloadCommand.tooltip">
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -134,6 +134,10 @@
             name="%PackManagerCommands.name">
       </category>
       <command
+            id="com.arm.cmsis.pack.installer.commands.reloadCommand"
+            name="%ReloadCommand.name">
+      </command>
+      <command
             categoryId="com.arm.cmsis.pack.installer.commands"
             id="com.arm.cmsis.pack.installer.commands.updateCommand"
             name="%UpdateCommand.name">
@@ -142,10 +146,6 @@
       		categoryId="com.arm.cmsis.pack.installer.commands"
             id="com.arm.cmsis.pack.installer.commands.importPackCommand"
             name="%ImportCommand.name">
-      </command>
-      <command
-            id="com.arm.cmsis.pack.installer.commands.reloadCommand"
-            name="%ReloadCommand.name">
       </command>
       <command
             categoryId="com.arm.cmsis.pack.installer.commands"

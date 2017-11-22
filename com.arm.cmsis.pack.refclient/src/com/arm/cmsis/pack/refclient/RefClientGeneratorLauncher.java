@@ -34,6 +34,12 @@ public class RefClientGeneratorLauncher {
 		
 	}
 
+	static public void launchGenerated(String gpdsc, String workDir) {
+		
+		Display.getDefault().asyncExec(() ->  doLaunchGenerator(gpdsc, workDir) );
+		
+	}
+
 
 	private static void doLaunchGenerator(String gpdsc) {
 		IWorkbench wb = PlatformUI.getWorkbench();
@@ -46,7 +52,6 @@ public class RefClientGeneratorLauncher {
 		if(page == null) 
 			return;
 		File fileToOpen = new File(gpdsc);
-		 
 		if (fileToOpen.exists() && fileToOpen.isFile()) {
 		    IFileStore fileStore = EFS.getLocalFileSystem().getStore(fileToOpen.toURI());
 		    try {
@@ -59,5 +64,9 @@ public class RefClientGeneratorLauncher {
 		}
 	}
 	
+	private static void doLaunchGenerator(String gpdsc, String workDir) {
+		doLaunchGenerator(gpdsc);
+	}
+
 	
 }

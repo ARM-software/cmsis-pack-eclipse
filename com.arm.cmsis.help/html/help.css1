@@ -1,0 +1,229 @@
+* {
+    font-family: Gill Sans MT,Gill Sans,Calibri,sans-serif;
+}
+table {
+    width: 100%;
+    margin: 5px;
+}
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th {
+    background-color:#454545;
+    color: white;
+}
+td {
+    vertical-align:top;
+    padding: 5px;
+}
+div.note {
+	clear:both;
+	color:#000;
+	background-color:#fafafa;
+	padding:5px;
+	border:1px solid #eee;
+}
+div.note p {
+	margin-top:1px;
+	margin-bottom:0;
+}
+.vam {
+    vertical-align: middle;
+}
+pre {
+	color:#000;
+	border-top:1px solid #eee;
+	border-bottom:1px solid #eee;
+	background:#fafafa;
+	font:normal courier new,courier;
+	margin:1px 0;
+	padding:5px;
+	overflow:auto
+}
+pre b {
+	color:red;
+	background:#fafafa;
+	font:normal 14px/120% courier new,courier,monospace
+}
+figure {
+    display: inline-block;
+    margin: 5px; /* adjust as needed */
+}
+figure img {
+    vertical-align: top;
+}
+figure figcaption {
+    text-align: center;
+}
+img {
+    margin: 5px;
+}
+
+
+
+/*-----------------------------------------------------------
+ CHM Style Sheet
+-----------------------------------------------------------*/
+body                    { color: #000; background: #FFF; font-size: 100%; }
+body.first              { background-image: url('lblue_chm.jpg'); background-repeat: repeat-y; }
+
+a:link                  { color: #00F; text-decoration: underline; }
+a:visited               { color: #00F; text-decoration: underline; }
+a:active                { color: #F00; text-decoration: underline; }
+a:hover                 { color: #F00; text-decoration: underline; }
+
+table                   { font-size: 100%; border-width: 0; padding: 0; }
+th                      { color: #FFF; background: #000080; text-align: left; vertical-align: bottom; padding-right: 6pt; }
+tr                      { text-align: left; vertical-align: top; }
+td                      { text-align: left; vertical-align: top; padding-right: 6pt; }
+
+/*-----------------------------------------------------------
+-----------------------------------------------------------*/
+h1                      { font-size: 125%; clear: both; }
+h2                      { font-size: 115%; clear: both; margin-top: 9pt; }
+h3                      { font-size: 105%; clear: both; margin-top: 9pt; }
+h4                      { font-size: 100%; clear: both; margin-top: 9pt; }
+h5                      { font-size: 100%; clear: both; margin-top: 9pt; }
+h6                      { font-size: 100%; clear: both; margin-top: 9pt; }
+
+ul                      { margin-bottom: 3px; margin-top: 6px;      list-style-type: square;  }
+ul li                   { margin-bottom: 6px;                  margin-left: 2px;              }
+ul li ul                { margin-bottom: 3px; margin-top: 6px;                                }
+ul li ul li             { margin-bottom: 6px;                  margin-left: 6px;              }
+ul li ol                { margin-bottom: 3px; margin-top: 6px;                                }
+ul li ol li             { margin-bottom: 6px;                  margin-left: 2px;              }
+
+
+ol                      { margin-bottom: 3px;  margin-top: 6px;                                  }
+ol li                   { margin-bottom: 6px;     margin-left: 2px;                              }
+ol li ul                { margin-bottom: 3px;  margin-top: 6px;         list-style-type: square; }
+ol li ul li             { margin-bottom: 6px;     margin-left: 2px;                              }
+
+pre                     { color: #000; background: #E0E0E0; font-family: Courier New, Courier; line-height: 120%; font-style: normal; }
+i.pre                   { font: italic 9pt Courier New, Courier;  }
+b.pre                   { font: bold 9pt Courier New, Courier;    }
+p.pre                   { font: normal 9pt; Courier New, Courier; }
+
+pre i                   { font: italic 9pt Courier New, Courier; }
+pre b                   { font: bold 9pt Courier New, Courier;   }
+pre strong              { font: normal 9pt Courier New, Courier; color: red; }
+
+.pre                    { font: normal 9pt Courier New, Courier; }
+
+code                    { color: #000; background: #E0E0E0; font-family: Courier New, Courier; line-height: 120%; font-style: normal; }
+
+/*-----------------------------------------------------------
+Procedure
+-----------------------------------------------------------*/
+p.proc                  { font-weight: bold; clear: both; }
+
+/*-----------------------------------------------------------
+Image Tags
+-----------------------------------------------------------*/
+img.part                { border: 1px dotted #000; }
+img.left                { margin-right: 10px; }
+img.right               { margin-left: 10px; }
+
+img.uvbutton            { border: none; margin-top: 2pt; margin-bottom: 2pt; vertical-align: middle; }
+img.uvtoolbar           { border: none; margin-top: 2pt; margin-bottom: 2pt; vertical-align: middle; }
+img.uvicon              { border: 1px solid #000; margin-top: 2pt; margin-bottom: 2pt; vertical-align: middle; }
+img.uvbuttonl           { border: none; margin-right: 10px; margin-bottom: 10px; clear: left; }
+img.uvbuttonr           { border: none; margin-left: 10px; margin-bottom: 10px; clear: right; }
+
+/*-----------------------------------------------------------
+Notes
+-----------------------------------------------------------*/
+p.note                  { font-weight: bold; clear: both; padding-top: 6px; margin-bottom: 3px; }
+p.res                   { font-weight: bold; clear: both; padding-top: 6px; margin-bottom: 3px; }
+
+/*-----------------------------------------------------------
+Tiny Text
+-----------------------------------------------------------*/
+p.tiny                  { font-size: 8pt; }
+p.copyright             { font-size: 8pt; clear: both; text-align: center; }
+
+/*-----------------------------------------------------------
+Expanding/Contracting Divisions
+-----------------------------------------------------------*/
+p.expand                { border: none; cursor: pointer; }
+img.expand              { border: none; }
+div.expand              { margin-top: 0; margin-left: 9pt; display: none; color:#000; background:#FFC; }
+
+/*-----------------------------------------------------------
+Where List Tags
+These are used to create a where item and the list.
+-----------------------------------------------------------*/
+p.wh                    { font-weight: bold; clear: both; margin-top: 6pt; margin-bottom: 3pt; }
+table.wh                { border-width: 0; padding: 0; }
+table.wh td             { text-align: left; vertical-align: top; padding-bottom: 6pt; padding-right: 6pt; }
+
+table.wh td.wh          { white-space: nowrap; }
+table.wh td.whI         { white-space: nowrap; font-style: italic; }
+table.wh td.whB         { white-space: nowrap; font-weight: bold; }
+table.wh td.whP         { white-space: nowrap; font: normal 9pt Courier New, Courier; }
+table.wh td.whPi        { white-space: nowrap; font: italic 9pt Courier New, Courier; }
+table.wh td.whPb        { white-space: nowrap; font: bold 9pt Courier New, Courier; }
+table.wh td.whP i       { white-space: nowrap; font: italic 9pt Courier New, Courier; }
+table.wh td.whP b       { white-space: nowrap; font: bold 9pt Courier New, Courier; }
+
+/*-----------------------------------------------------------
+Full-Width Table Tags
+-----------------------------------------------------------*/
+table.kt                { border-spacing: 0; width: 100%; border: 1px solid #000; padding: 0; border-collapse: collapse; }
+table.kt tr             { text-align: left; vertical-align: top; }
+table.kt th             { text-align: left; color: #FFF; background: #000080; vertical-align: bottom; padding: 4px 6px; white-space: nowrap; border-bottom: 1px solid #000; }
+table.kt th.ktC         { text-align: center; }
+table.kt th.ktR         { text-align: right; }
+table.kt td             { text-align: left; vertical-align: top;  padding: 2px 6px; color: #000; background: #E0E0E0; border-top: 1px solid #A0A0A0; }
+table.kt td.ktC         { text-align: center; }
+table.kt td.ktR         { text-align: right; }
+
+/*-----------------------------------------------------------
+Matched-Width Table Tags
+-----------------------------------------------------------*/
+table.kt_nowidth        { border-spacing: 0; border: 1px solid #000; padding: 0; border-collapse: collapse; }
+table.kt_nowidth tr     { text-align: left; vertical-align: top; }
+table.kt_nowidth th     { text-align: left; color: #FFF; background: #000080; vertical-align: bottom; padding: 4px 6px; white-space: nowrap; border-bottom: 1px solid #000; }
+table.kt_nowidth th.ktC { text-align: center; }
+table.kt_nowidth th.ktR { text-align: right; }
+table.kt_nowidth td     { text-align: left; color: #000; background: #E0E0E0; vertical-align: top; padding: 2px 6px; border-top: 1px solid #A0A0A0; }
+table.kt_nowidth td.ktC { text-align: center; }
+table.kt_nowidth td.ktR { text-align: right; }
+
+/*-----------------------------------------------------------
+Reference Table Tags
+These are used for function and directive references.
+-----------------------------------------------------------*/
+pre.rf                  { font-style: normal; line-height: 120%; font-family: Courier New, Courier; color: #000; background: #E0E0E0; margin-bottom: 0; }
+table.rf                { border-spacing: 0; width: 100%; border-width: 0; padding: 0; }
+tr.rf                   { }
+td.rfItem               { text-align: left; vertical-align: top; font-weight: bold; white-space: nowrap; padding: 6px 6px 6px; }
+td.rfDesc               { text-align: left; vertical-align: top; padding: 6px 6px 6px;}
+pre.def                 { font-style: normal; line-height: 120%; font-family: Courier New, Courier; color: #000; background: #E0E0E0; margin-bottom: 0; padding: 3px; border: 1px solid #808080; }
+pre.def b               { font-weight: bold; font-family: Courier New, Courier; }
+pre.def i               { font-style: italic; font-family: Courier New, Courier; }
+
+/*-----------------------------------------------------------
+Definition Lists
+These are used for the Dialog Help pages of uVision
+-----------------------------------------------------------*/
+dl.kd                   { }
+dt.kd                   { margin: 12px 0 3px 24px; font-weight: bold; }
+dd.kd                   { margin: 3px 0 12px 36px; }
+dd pre                  { font: normal 9pt/120% Courier New, Courier; color: #000; background: #FFF; margin-top: 3px; }
+
+/*-----------------------------------------------------------
+Assembler Instruction Set
+-----------------------------------------------------------*/
+table.psw               { border: 1px solid #000 ; border-collapse: collapse; }
+table.psw td.used       { border-right: 1px solid #000; color: #000; background: #FFF; font-weight: bold; width: 32px; height: 28px; text-align: center; }
+table.psw td.unused     { border-right: 1px solid #000; color: #d3d3d3; background: #FFF; font-weight: bold; width: 32px; height: 28px; text-align: center; }
+
+td.ins_encode           { border: 1px solid #000; text-align: center; font-family: Courier New; font-size: 9pt; padding: 0; margin: 0; width: 135px; height: 25px; }
+
+pre.ins_pseudo          { color: #000; background: #FFF; font: normal 9pt/120% Courier New, Courier; margin-bottom: 0; }
+
+/*-----------------------------------------------------------
+Revision: 2006.11.15
+-----------------------------------------------------------*/

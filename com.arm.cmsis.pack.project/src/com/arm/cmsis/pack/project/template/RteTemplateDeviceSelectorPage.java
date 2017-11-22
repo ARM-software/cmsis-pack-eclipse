@@ -35,7 +35,7 @@ public class RteTemplateDeviceSelectorPage extends RteDeviceSelectorPage impleme
 	protected IWizardPage next;
 
 	public RteTemplateDeviceSelectorPage() {
-		super();
+		super(true);
 	}
 
 	@Override

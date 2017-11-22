@@ -63,11 +63,11 @@ public class SequenceView extends ViewPart implements ISelectionListener, IRteEv
 		public Long getPredefinedVariableValue(String name) {
 			switch (name) {
 			case IDsqContext.AP:
-				return 4L;
+				return 2L;
 			case IDsqContext.DP:
 				return 0L;
 			case IDsqContext.PROTOCOL:
-				return 0x00010001L;
+				return 0x00010002L;
 			case IDsqContext.CONNECTION:
 				return 0L;
 			case IDsqContext.TRACEOUT:

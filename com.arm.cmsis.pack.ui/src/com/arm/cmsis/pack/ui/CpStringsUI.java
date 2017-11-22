@@ -120,6 +120,11 @@ public class CpStringsUI extends NLS {
 	public static String RteDeviceInfoWidget_lblSubFamily_text;
 	public static String RteDeviceInfoWidget_lblBoards_text;
 	public static String RteEditorPageHeader_ShowHelp;
+	public static String PathMustExist;
+	public static String PathMustBeAbsolute;
+	public static String PathMustBeDirectory;
+	public static String PathInvalidOrNonAccesible;
+	public static String PathErrorCreatingCmsisPackRootDirectory;
 
 	static {
 		// initialize resource bundle

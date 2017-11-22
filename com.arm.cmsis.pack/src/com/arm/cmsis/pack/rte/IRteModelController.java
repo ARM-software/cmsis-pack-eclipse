@@ -11,10 +11,11 @@
 
 package com.arm.cmsis.pack.rte;
 
+import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.EVersionMatchMode;
-import com.arm.cmsis.pack.events.IRteEventProxy;
-import com.arm.cmsis.pack.generic.ICommitable;
+import com.arm.cmsis.pack.events.IRteController;
+import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 import com.arm.cmsis.pack.rte.packs.IRtePack;
 import com.arm.cmsis.pack.rte.packs.IRtePackCollection;
@@ -24,7 +25,7 @@ import com.arm.cmsis.pack.rte.packs.IRtePackFamily;
  *  Interface represents a  controller to edit underlying RTE Configuration.</br>
  *  The interface also serves as a proxy to IRteModel to simplify its usage   
  */
-public interface IRteModelController extends ICommitable, IRteEventProxy, IRteModel{
+public interface IRteModelController extends IRteController, IRteModel{
 
 	/**
 	 * Returns controllable RTE model 
@@ -32,6 +33,24 @@ public interface IRteModelController extends ICommitable, IRteEventProxy, IRteMo
 	 */
 	IRteModel getModel();
 	
+	@Override
+	default ICpConfigurationInfo getDataInfo() {
+		return getConfigurationInfo();
+	}
+
+	@Override
+	default void setDataInfo(ICpItem info) {
+		if(info instanceof ICpConfigurationInfo)
+			setConfigurationInfo((ICpConfigurationInfo)info);
+		else
+			setConfigurationInfo(null);
+	}
+
+	@Override
+	default void updateDataInfo() {
+		updateConfigurationInfo();
+	}
+
 	/**
 	 * Returns RTE pack collection
 	 * @return IRtePackCollection
@@ -131,13 +150,5 @@ public interface IRteModelController extends ICommitable, IRteEventProxy, IRteMo
 	 * @param bUseLatest flag if to use latest 
 	 */
 	void setUseAllLatestPacks(boolean bUseLatest);
-	
-	
-	/**
-	 * Opens an URL in a browser or associated system editor 
-	 * @param url URL to open
-	 * @return null if successfully opened, otherwise reason why operation failed
-	 */
-	String openUrl(String url);
 
 }

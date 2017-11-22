@@ -25,9 +25,11 @@ public class Messages extends NLS {
 	public static String CopyExampleDialog_ProjectName;
 	public static String CopyExampleDialog_ReplaceExistingProject;
 	public static String CopyExampleDialog_ProjectLocation;
+	public static String CpPackImportFolderJob_ContainMorePdscFile;
 	public static String CpPackImportFolderJob_ImportingPack;
 	public static String CpPackImportFolderJob_ImportingPacksFrom;
 	public static String CpPackImportFolderJob_FolderNotExist;
+	public static String CpPackImportFolderJob_FoldersNotImport;
 	public static String CpPackInstaller_Completed;
 	public static String CpPackInstaller_CreatingNewProject;
 	public static String CpPackInstaller_DeletingPack;
@@ -76,6 +78,7 @@ public class Messages extends NLS {
 	public static String CpPackInstallJob_DownloadingFrom;
 	public static String CpPackInstallJob_FileNotFound;
 	public static String CpPackInstallJob_InstallingPack;
+	public static String CpPackInstallJob_InstallTimeoutMessage;
 	public static String CpPackInstallJob_MalformedURL;
 	public static String CpPackInstallJob_TimeoutConsoleMessage;
 	public static String CpPackInstallJob_UnknownHostException;
@@ -91,6 +94,8 @@ public class Messages extends NLS {
 	public static String CpPackUnpackJob_PathAlreadyExists;
 	public static String CpPackUnpackJob_FailToParsePdscFile;
 	public static String CpPackUnpackJob_PdscFileNotFoundInFolder;
+	public static String CpPackUnpackJob_PdscFileMoreThanOneFoundInPack;
+	public static String CpPackUnpackJob_PdscFileNotFoundInPack;	
 	public static String CpPackUnpackJob_SourceFileCannotBeFound;
 	public static String CpPackUnpackJob_Unpacking;
 

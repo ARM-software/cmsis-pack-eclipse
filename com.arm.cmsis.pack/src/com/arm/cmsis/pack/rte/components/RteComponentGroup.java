@@ -160,7 +160,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 	@Override
 	public ICpComponent getApi( final String version){
 		if(fApis != null) {
-			if(version == null)
+			if(version == null && !fApis.isEmpty())
 				return fApis.entrySet().iterator().next().getValue();
 			return fApis.get(version);
 		}
@@ -180,7 +180,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 
 	@Override
 	public String getActiveApiVersion() {
-		if(fApis != null && fActiveApiVersion == null ) {
+		if(fApis != null && !fApis.isEmpty() && fActiveApiVersion == null ) {
 			fActiveApiVersion = fApis.entrySet().iterator().next().getKey();
 		}
 		return fActiveApiVersion;
@@ -188,7 +188,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 
 	@Override
 	public boolean setActiveApi(final String version) {
-		if(fApis == null)
+		if(fApis == null || fApis.isEmpty())
 			return false;
 		String newVersion = version;
 		if(version == null || version.equals(getDefaultVersion())) {

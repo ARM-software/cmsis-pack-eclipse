@@ -11,6 +11,7 @@
 package com.arm.cmsis.pack.ui.tree;
 
 import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.StyledCellLabelProvider;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerColumn;
@@ -30,7 +31,7 @@ import org.eclipse.swt.widgets.Widget;
  * This is a generic class to support owner-draw cell label displayed in a
  * TreeViewer
  */
-public class AdvisedCellLabelProvider extends StyledCellLabelProvider {
+public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements ILabelProvider {
 
 	protected static final int ALPHA = 160;			// transparency value
 	protected static final int TEXTOFFSET = 4;
@@ -434,6 +435,16 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider {
 	@Override
 	public String getToolTipText(Object element) {
 		return columnAdvisor.getTooltipText(element, columnIndex);
+	}
+
+	@Override
+	public Image getImage(Object element) {
+		return columnAdvisor.getImage(element, columnIndex);
+	}
+
+	@Override
+	public String getText(Object element) {
+		return columnAdvisor.getString(element, columnIndex);
 	}
 
 }

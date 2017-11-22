@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpConditionContext;
 import com.arm.cmsis.pack.data.ICpComponent;
@@ -29,6 +31,7 @@ import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
+import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.rte.IRteModel;
 import com.arm.cmsis.pack.rte.components.IRteComponent;
@@ -284,6 +287,8 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 			return EEvaluationResult.IGNORED; // nothing to do
 		}
 
+		ICpEnvironmentProvider ep  = CpPlugIn.getEnvironmentProvider();
+		ICpConfigurationInfo configInfo = rteModel.getConfigurationInfo();
 		fDependencyItems = new LinkedHashMap<IRteComponentItem, IRteDependencyItem>();
 		IRteComponentItem devClass = getSelectedDeviceClass();
 		// first check if the selected device is available
@@ -317,10 +322,12 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 					if(ci.isGenerated() || !ci.isSaved()) {
 						continue;
 					}
-					String gpdsc = ci.getGpdsc(true);
-					if(gpdsc == null) {
+					String gpdsc = ci.getGpdsc();
+					if(gpdsc == null || gpdsc.isEmpty()) {
 						continue;
 					}
+					gpdsc = ep.expandString(gpdsc, configInfo, true);
+
 					ICpPack pack = rteModel.getGeneratedPack(gpdsc);
 					if(pack != null) {
 						continue;

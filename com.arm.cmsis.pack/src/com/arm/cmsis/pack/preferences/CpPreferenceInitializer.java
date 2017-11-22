@@ -185,8 +185,8 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 				}
 			});
 		} catch (NoSuchFileException e) {
-			autoUpdateFlag = Boolean.toString(false);
-			updateLastUpdateTime(false);
+			autoUpdateFlag = Boolean.toString(true);
+			updateLastUpdateTime(true);
 		} catch (IOException e) {
 			// do nothing
 		}

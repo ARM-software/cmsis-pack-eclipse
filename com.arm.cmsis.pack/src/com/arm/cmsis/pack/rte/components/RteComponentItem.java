@@ -453,6 +453,13 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 				return descr;
 			}
 		}
+		if(cpItem instanceof ICpComponentInfo) {
+			ICpComponentInfo ci = (ICpComponentInfo)cpItem;
+			if(ci.getComponent() == null) {
+				return CpStrings.CpComponentInfo_ComponentMissing;
+			}
+		}
+		
 		cpItem = getTaxonomy();
 		if(cpItem != null) {
 			return cpItem.getDescription();

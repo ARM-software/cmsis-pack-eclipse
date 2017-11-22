@@ -14,6 +14,7 @@ package com.arm.cmsis.pack.rte.dependencies;
 import java.util.Collection;
 
 import com.arm.cmsis.pack.enums.EEvaluationResult;
+import com.arm.cmsis.pack.rte.RteConstants;
 import com.arm.cmsis.pack.rte.components.IRteComponent;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 
@@ -64,6 +65,11 @@ public interface IRteDependency extends IRteDependencyItem {
 	void addStopItem(IRteComponentItem item, EEvaluationResult result);
 	
 	
+	/**
+	 * Returns RTE flags to resolve dependency  
+	 * @return resolve flags
+	 * @see RteConstants
+	 */
 	int getFlags();
 	
 }

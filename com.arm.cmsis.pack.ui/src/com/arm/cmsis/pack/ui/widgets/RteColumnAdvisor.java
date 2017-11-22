@@ -14,33 +14,33 @@ package com.arm.cmsis.pack.ui.widgets;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ColumnViewer;
 
-import com.arm.cmsis.pack.rte.IRteModelController;
+import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
 
 /**
  *  Extends ColumnAdvisor with IRteCobdelController support
  */
-public abstract class RteColumnAdvisor extends ColumnAdvisor implements IRteColumnAdvisor {
+public abstract class RteColumnAdvisor<TController extends IRteController> extends ColumnAdvisor implements IRteColumnAdvisor<TController> {
 
-	private IRteModelController fRteModelController = null;
+	private TController fRteModelController = null;
 	
 	public RteColumnAdvisor(ColumnViewer columnViewer) {
 		super(columnViewer);
 	}
 
-	public RteColumnAdvisor(ColumnViewer columnViewer, IRteModelController modelController) {
+	public RteColumnAdvisor(ColumnViewer columnViewer, TController modelController) {
 		this(columnViewer);
 		fRteModelController = modelController;
 	}
 
 	@Override
-	public void setModelController(IRteModelController modelController) {
+	public void setModelController(TController modelController) {
 		fRteModelController = modelController;
 	}
 
 	@Override
-	public IRteModelController getModelController() {
+	public TController getModelController() {
 		return fRteModelController;
 	}
 

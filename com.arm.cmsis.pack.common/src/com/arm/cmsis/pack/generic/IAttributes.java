@@ -44,10 +44,23 @@ public interface IAttributes {
 	void setAttributes(Map<String, String> attributes);
 	
 	/**
+	 * Adds collection of attributes to this element overwriting existing elements
+	 * @param attributes collection to set
+	 */
+	void addAttributes(Map<String, String> attributes);
+
+	/**
 	 * Copies attributes from supplied attributes to this element overwriting existing collection
 	 * @param attributes collection to set
 	 */
 	void setAttributes(final IAttributes attributes);
+
+	/**
+	 * Adds attributes from supplied attributes to this element overwriting existing ones
+	 * @param attributes collection to set
+	 */
+	void addAttributes(final IAttributes attributes);
+
 	
 	/**
 	 * Merges attributes from supplied attributes to this element, does not overwrite existing ones  
@@ -226,4 +239,21 @@ public interface IAttributes {
 	 */
 	String getDoc();
 
+	/**
+	 * Returns long integer representation of a supplied string value  
+	 * @param value string to convert
+	 * @param nDefault value to return if conversion is not successful
+	 * @return value as long or nDefault  
+	 */
+	static long stringToLong(String value, long nDefault) {
+		if(value != null && !value.isEmpty()) {
+			try {
+				return Long.decode(value);
+			} catch (NumberFormatException e) {
+				// do nothing, return default
+			}
+		}
+		return nDefault;
+	}
+	
 }

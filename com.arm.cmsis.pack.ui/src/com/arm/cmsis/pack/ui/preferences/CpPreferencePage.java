@@ -12,10 +12,10 @@
 
 package com.arm.cmsis.pack.ui.preferences;
 
+import java.io.File;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -51,6 +51,7 @@ import com.arm.cmsis.pack.utils.Utils;
 public class CpPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
 	private Composite fComposite;
+	private StringFieldEditor fCmsisRootEditor;
 
 	private Table fTable;
 	private TableColumn fColumnType;
@@ -109,15 +110,14 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 	protected void createFieldEditors() {
 
 		Composite parent = getFieldEditorParent();
-		StringFieldEditor cmsisRootEditor;
 		if(!CpPreferenceInitializer.isCmsisRootEditable()) {
-			cmsisRootEditor = new StringFieldEditor(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
-			cmsisRootEditor.setEnabled(false, parent);
-			cmsisRootEditor.getLabelControl(parent).setEnabled(true);
+			fCmsisRootEditor = new StringFieldEditor(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
+			fCmsisRootEditor.setEnabled(false, parent);
+			fCmsisRootEditor.getLabelControl(parent).setEnabled(true);
 		} else {
-			cmsisRootEditor = new DirectoryFieldEditor(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
+			fCmsisRootEditor = new CpDirectoryFieldEditor(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
 		}
-		addField(cmsisRootEditor);
+		addField(fCmsisRootEditor);
 	}
 
 	@Override
@@ -463,6 +463,7 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 
 		super.performDefaults();
 
+		
 		fContentList = fRepos.getDefaultList();
 		updateTableContent();
 
@@ -493,8 +494,12 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 
 	@Override
 	public boolean performOk() {
+		if(!checkCmsisRoot()) {
+			return false;
+		}
+		
 		fRepos.putList(fContentList);
-
+		
 		CpPreferenceInitializer.setAutoUpdateFlag(fAutoUpdate);
 
 		if (!checkProxyData()) {
@@ -503,6 +508,27 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 		saveProxyData();
 
 		return super.performOk();
+	}
+	
+	protected boolean checkCmsisRoot() {
+		if(!CpPreferenceInitializer.isCmsisRootEditable())
+			return true; // we can do nothing about it
+		
+		String cmsisRootDir = fCmsisRootEditor.getStringValue().trim();
+		if(cmsisRootDir.isEmpty())
+			return true; // valid value (though it is empty)
+		File file = new File(cmsisRootDir);
+		if(file.exists())
+			return true;
+		// try to create directory
+		if(!file.mkdirs()) {
+			String msg = CpStringsUI.PathErrorCreatingCmsisPackRootDirectory;
+			msg += ":\n\n"; //$NON-NLS-1$
+			msg += file.getAbsolutePath();
+			MessageDialog.openError(getShell(), CpStringsUI.PathErrorCreatingCmsisPackRootDirectory,	msg);
+			return false;
+		}
+		return true;
 	}
 
 	protected void loadProxyData() {

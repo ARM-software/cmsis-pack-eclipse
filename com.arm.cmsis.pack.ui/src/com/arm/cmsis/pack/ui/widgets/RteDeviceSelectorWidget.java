@@ -47,6 +47,7 @@ import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
+import com.arm.cmsis.pack.generic.ITreeObject;
 import com.arm.cmsis.pack.info.CpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
@@ -75,6 +76,7 @@ public class RteDeviceSelectorWidget extends Composite {
 	IRteDeviceItem fSelectedItem = null;
 	private ICpDeviceItem fSelectedDevice = null;
 	private ICpDeviceInfo fDeviceInfo = null;
+	
 
 	private TreeViewer treeViewer;
 
@@ -83,6 +85,7 @@ public class RteDeviceSelectorWidget extends Composite {
 	String fSearchString = CmsisConstants.EMPTY_STRING;
 	String selectedFpu;
 	String selectedEndian;
+	boolean fbShowProcessors = true;
 
 	boolean updatingControls = false;
 	private Label lblMemory;
@@ -90,15 +93,22 @@ public class RteDeviceSelectorWidget extends Composite {
 	String url = CmsisConstants.EMPTY_STRING;
 	private Label lblPack;
 	private Label lblClock;
-
+	
+	static IRteDeviceItem getDeviceTreeItem(Object obj) {
+		if (obj instanceof IRteDeviceItem) {
+			return (IRteDeviceItem)obj;
+		}
+		return null;
+	}
+	
 	public class RteDeviceLabeProvider extends LabelProvider{
 		@Override
 		public Image getImage(Object element) {
-			if(element instanceof IRteDeviceItem) {
-				IRteDeviceItem item = (IRteDeviceItem)element;
+			IRteDeviceItem item = getDeviceTreeItem(element);
+			if(item != null) {
 				if(item.getLevel() == EDeviceHierarchyLevel.VENDOR.ordinal()) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
-				} else if(item.hasChildren()) {
+				} else if(!isEndLeaf(item)) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
 				}
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
@@ -108,21 +118,46 @@ public class RteDeviceSelectorWidget extends Composite {
 
 		@Override
 		public String getText(Object element) {
-			if(element instanceof IRteDeviceItem) {
-				IRteDeviceItem item = (IRteDeviceItem)element;
+			IRteDeviceItem item = getDeviceTreeItem(element);
+			if(item != null) {
 				return item.getName();
 			}
 			return CmsisConstants.EMPTY_STRING;
 		}
 	}
 
+	public class RteDeviceContentProvider extends TreeObjectContentProvider {
+
+		@Override
+		public Object [] getChildren(Object parent) {
+			IRteDeviceItem item = getDeviceTreeItem(parent);
+			if(item != null) {
+				if(!isEndLeaf(item))
+					return super.getChildren(item);
+			}
+			return ITreeObject.EMPTY_OBJECT_ARRAY;
+		}
+
+		@Override
+		public boolean hasChildren(Object parent) {
+			IRteDeviceItem item = getDeviceTreeItem(parent);
+			if(item == null)
+				return false;
+			if(isEndLeaf(item))
+				return false;
+			return true;
+		}
+	}
+
+	
 	/**
 	 * Create the composite.
 	 * @param parent
 	 * @param style
 	 */
-	public RteDeviceSelectorWidget(Composite parent) {
+	public RteDeviceSelectorWidget(Composite parent, boolean bShowProcessors) {
 		super(parent, SWT.NONE);
+		fbShowProcessors = bShowProcessors;
 
 		GridLayout gridLayout = new GridLayout(6, false);
 		gridLayout.horizontalSpacing = 8;
@@ -247,7 +282,7 @@ public class RteDeviceSelectorWidget extends Composite {
 		gd_tree.minimumWidth = 240;
 		tree.setLayoutData(gd_tree);
 
-		treeViewer.setContentProvider(new TreeObjectContentProvider());
+		treeViewer.setContentProvider(new RteDeviceContentProvider());
 		treeViewer.setLabelProvider(new RteDeviceLabeProvider());
 		treeViewer.addFilter(new ViewerFilter() {
 
@@ -299,9 +334,23 @@ public class RteDeviceSelectorWidget extends Composite {
 		});
 
 	}
+	
+	
+	public boolean isShowProcessors() {
+		return fbShowProcessors;
+	}
 
+	public void setShowProcessors(boolean bShow) {
+		fbShowProcessors = bShow;
+	}
+
+	
 	boolean setSearchText(String s) {
-		// Search must be a substring of the existing value
+		// Search must be a substring of an existing value
+		if(fDevices == null || !fDevices.hasChildren()) {
+			return false;
+		}
+			
 		if(fSearchString  !=  s){
 			fSearchString = s;
 			IRteDeviceItem deviceItem = null;
@@ -381,7 +430,7 @@ public class RteDeviceSelectorWidget extends Composite {
 			if(vendorItem != null) {
 				vendorName = vendorItem.getName();
 			}
-			if(fSelectedItem.isDevice()) {
+			if(isEndLeaf(fSelectedItem)) {
 				deviceName = fSelectedItem.getName();
 				url = fSelectedItem.getUrl();
 				if(!url.isEmpty()) {
@@ -434,12 +483,12 @@ public class RteDeviceSelectorWidget extends Composite {
 
 
 	private void updateDeviceInfo() {
-		if(fSelectedItem != null && fSelectedItem.isDevice()) {
+		if(fSelectedItem != null && isEndLeaf(fSelectedItem)) {
 			fSelectedDevice = fSelectedItem.getDevice();
 			fDeviceInfo = null;
 			ICpItem props = fSelectedItem.getEffectiveProperties();
 			if(props != null) {
-				fDeviceInfo = new CpDeviceInfo(null, fSelectedItem);
+				fDeviceInfo = new CpDeviceInfo(null, fSelectedDevice, fSelectedItem.getName());
 			}
 		} else {
 			fSelectedDevice = null;
@@ -633,6 +682,24 @@ public class RteDeviceSelectorWidget extends Composite {
 			TreeSelection ts = new TreeSelection(tp);
 			treeViewer.setSelection(ts, true);
 		}
+	}
+	
+	
+	protected boolean isEndLeaf(IRteDeviceItem item) {
+		if(item == null)
+			return false;
+		
+		if(item.getLevel() < EDeviceHierarchyLevel.DEVICE.ordinal()) {
+			return false;
+		}
+		if(!item.hasChildren()) {
+			return true;
+		}
+		IRteDeviceItem child = item.getFirstChild();
+		if(isShowProcessors() && child.getLevel() == EDeviceHierarchyLevel.PROCESSOR.ordinal())
+			return false;
+
+		return item.getDevice() != null;
 	}
 
 }

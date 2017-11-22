@@ -25,9 +25,10 @@ public class CmsisConstants {
 
 	static public final String ARM			= "ARM";	//$NON-NLS-1$
 	static public final String CORTEX		= "Cortex";	//$NON-NLS-1$
+	static public final String CMSIS		= "CMSIS";	//$NON-NLS-1$
+	static public final String PACK			= "pack";	//$NON-NLS-1$
 
 	// commonly used values for component classes and groups
-	static public final String CMSIS		= "CMSIS";	//$NON-NLS-1$
 	static public final String RTOS			= "RTOS";	//$NON-NLS-1$
 	static public final String Core			= "Core";	//$NON-NLS-1$
 	static public final String Device		= "Device";	//$NON-NLS-1$
@@ -203,6 +204,9 @@ public class CmsisConstants {
 	static public final String GENERIC			= "Generic";	//$NON-NLS-1$
 	static public final String PREVIOUS 		= "Previous";	//$NON-NLS-1$
 
+	static public final String DOT_SZONE		= ".szone";		//$NON-NLS-1$
+	static public final String DOT_PZONE		= ".pzone";		//$NON-NLS-1$
+
 	// gpdsc-related property tags and attributes
 	static public final String GENERATOR		= "generator";	//$NON-NLS-1$
 	static public final String GENERATOR_TAG	=  GENERATOR;
@@ -262,6 +266,7 @@ public class CmsisConstants {
 	static public final String TIMEOUT			= "timeout";	//$NON-NLS-1$
 
 	static public final String START			= "start";		//$NON-NLS-1$
+	static public final String OFFSET			= "offset";		//$NON-NLS-1$
 	static public final String SIZE				= "size";		//$NON-NLS-1$
 	static public final String STARTUP			= "startup";	//$NON-NLS-1$
 	static public final String DEFAULT			= "default";	//$NON-NLS-1$
@@ -272,6 +277,7 @@ public class CmsisConstants {
 	static public final String INFO				= "info";		//$NON-NLS-1$
 	static public final String CLOCK			= "clock";		//$NON-NLS-1$
 	static public final String TYPE				= "type";		//$NON-NLS-1$
+	static public final String ALIAS			= "alias";		//$NON-NLS-1$
 
 	static public final String RAMSTART			= "RAMstart";	//$NON-NLS-1$
 	static public final String RAMSIZE			= "RAMsize";	//$NON-NLS-1$
@@ -304,6 +310,9 @@ public class CmsisConstants {
 	static public final String TITLE			= "title";		//$NON-NLS-1$
 	static public final String ERRORS			= "ERRORS";		//$NON-NLS-1$
 	// 	board tags and attributes
+	static public final String ALL_BOARDS		= "All Boards"; //$NON-NLS-1$
+	static public final String ALL_DEVICES		= "All Devices"; //$NON-NLS-1$
+
 	static public final String BOARD_TAG		= "board";		//$NON-NLS-1$
 	static public final String BOARDS_TAG		= "boards";		//$NON-NLS-1$
 	static public final String REVISION			= "revision";	//$NON-NLS-1$
@@ -372,9 +381,6 @@ public class CmsisConstants {
 	static public final String REPO_KEIL_PINDEX_FILE = "index.pidx"; //$NON-NLS-1$
 	static public final String REPO_KEIL_INDEX_URL = REPO_KEIL_PACK_SERVER + REPO_KEIL_PINDEX_FILE;
 
-	static public final String ALL_BOARDS		= "All Boards"; //$NON-NLS-1$
-	static public final String ALL_DEVICES		= "All Devices"; //$NON-NLS-1$
-
 	static public final String ZERO	= "0"; //$NON-NLS-1$
 
 	// paths and variables
@@ -387,8 +393,24 @@ public class CmsisConstants {
 
 	static public final String DOT_DOWNLOAD = ".Download"; 						//$NON-NLS-1$
 	static public final String DOT_WEB = ".Web";		 						//$NON-NLS-1$
+	static public final String DOT_LOCAL = ".Local";	 						//$NON-NLS-1$
 
 	static public final String KEIL =  "Keil";									//$NON-NLS-1$
+
+	static public final String SYSTEM_TAG = "system";		 					//$NON-NLS-1$
+	static public final String MEMORY_MAP_TAG = "memory_map"; 					//$NON-NLS-1$
+	static public final String MAP_TAG = 		"map";		 					//$NON-NLS-1$
+	static public final String REGION_TAG = "region";							//$NON-NLS-1$
+	static public final String GROUP_TAG = "group";								//$NON-NLS-1$
+	static public final String RESOURCES_TAG = "resources";						//$NON-NLS-1$
+	static public final String PERIPHERAL_TAG = "peripheral";					//$NON-NLS-1$
+	static public final String PERIPHERALS_TAG = "peripherals";					//$NON-NLS-1$
+
+	public static final String ZONES_TAG 	 = "zones";							//$NON-NLS-1$
+	public static final String PZONE_TAG 	 = "pzone";							//$NON-NLS-1$
+	public static final String XZONE_TAG 	 = "xzone";							//$NON-NLS-1$
+	public static final String ASSIGN_TAG 	 = "assign";						//$NON-NLS-1$
+
 
 	// variable that is used as markers, all are are expanded to empty string
 	static public final String CMSIS_RTE = "cmsis_rte";		 						//$NON-NLS-1$
@@ -408,7 +430,8 @@ public class CmsisConstants {
 
 	// standard key sequences (http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_generators_pg.html)
 	static public final String[] STANDARD_KEY_SEQENCES =
-			new String[]{	"$D",   // Directory name corresponding to project's device, equals to #D_@D if @D is not empty, to #D otherwise   //$NON-NLS-1$
+			new String[]{	
+					"$D",   // Directory name corresponding to project's device, equals to #D_@D if @D is not empty, to #D otherwise   //$NON-NLS-1$
 					"#D", 	// Device device item without processor name   //$NON-NLS-1$
 					"@D",   // Processor name if not empty  //$NON-NLS-1$
 					"$P", 	// PATH to current project //$NON-NLS-1$
@@ -418,6 +441,7 @@ public class CmsisConstants {
 	};
 
 	static public final String[] LAUNCH_TYPES = new String[]{ECLIPSE, EXE, WEB};
+
 
 
 }

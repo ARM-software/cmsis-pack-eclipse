@@ -18,18 +18,26 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
+import org.eclipse.jface.viewers.IContentProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.IActionBars;
@@ -40,11 +48,13 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.help.IWorkbenchHelpSystem;
 import org.eclipse.ui.part.ViewPart;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackInstaller;
+import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -66,8 +76,12 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 
 	protected PackInstallerViewController fViewController;
 
+	protected Composite fParentComposite = null;
 	protected FilteredTree fTree = null;
 	protected TreeViewer fViewer = null;
+	protected StackLayout fStackLayout = null;
+	protected Link fLink = null;
+	protected Listener fLinkListener;
 
 
 	protected ViewerFilter[] fViewFilters = null;
@@ -192,7 +206,11 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 	public void createPartControl(Composite parent) {
 		createViewFilters();
 
-		fTree = new FilteredTree(parent,
+		fParentComposite = new Composite(parent, SWT.NONE);
+		fStackLayout = new StackLayout();
+		fParentComposite.setLayout(fStackLayout);
+
+		fTree = new FilteredTree(fParentComposite,
 				SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL,
 				fPatternFilter, true);
 
@@ -215,6 +233,10 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 		}
 		fViewController.addListener(this);
 		updateOnlineState();
+
+		fLink = new Link(fParentComposite, SWT.NONE);
+
+		showRelevantPage();
 	}
 
 	protected void createViewFilters() {
@@ -222,11 +244,23 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 			@Override
 			protected boolean isLeafMatch(final Viewer viewer, final Object element) {
 				TreeViewer treeViewer = (TreeViewer) viewer;
-				boolean isMatch = false;
 				ColumnLabelProvider labelProvider = (ColumnLabelProvider) treeViewer.getLabelProvider(0);
 				String labelText = labelProvider.getText(element);
-				isMatch |= wordMatches(labelText);
-				return isMatch;
+				if(wordMatches(labelText)) {
+					return true;
+				}
+				IContentProvider contentProvider = treeViewer.getContentProvider();
+				if(contentProvider instanceof ITreeContentProvider) {
+					ITreeContentProvider treeContentProvider = (ITreeContentProvider)contentProvider;
+					Object parent;
+					for(parent = treeContentProvider.getParent(element); parent != null; parent = treeContentProvider.getParent(parent)) {
+						labelText = labelProvider.getText(parent);
+						if(wordMatches(labelText)) {
+							return true;
+						}
+					}
+				}
+				return false;
 			}
 		};
 		fPatternFilter.setIncludeLeadingWildcard(true);
@@ -411,15 +445,17 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 			manager.add(fExpandAction);
 			manager.add(fCollapseAction);
 		}
-		manager.add(fHelpAction);
-		manager.add(new Separator());
 
 		if(isFilterSource()) {
+			manager.add(new Separator());
 			manager.add(fRemoveSelection);
 		}
 		if(hasManagerCommands())  {
+			manager.add(new Separator());
 			PackInstallerViewUtils.addManagementCommandsToLocalToolBar(this, manager);
 		}
+		manager.add(new Separator());
+		manager.add(fHelpAction);
 	}
 
 	protected void hookContextMenu() {
@@ -466,14 +502,14 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 	public void handle(RteEvent event) {
 		String topic = event.getTopic();
 		switch(topic) {
-			case PackInstallerViewController.INSTALLER_UI_FILTER_CHANGED:
-				if(isFilterClient()) {
-					Display.getDefault().asyncExec(() -> handleFilterChanged());
-				}
-				return;
-			case RteEvent.PACK_OLNLINE_STATE_CHANGED:
-				updateOnlineState(); // already in UI thread
-				return;
+		case PackInstallerViewController.INSTALLER_UI_FILTER_CHANGED:
+			if(isFilterClient()) {
+				Display.getDefault().asyncExec(() -> handleFilterChanged());
+			}
+			return;
+		case RteEvent.PACK_OLNLINE_STATE_CHANGED:
+			updateOnlineState(); // already in UI thread
+			return;
 		}
 		Display.getDefault().asyncExec(() -> handleRteEvent(event));
 	}
@@ -494,17 +530,47 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 
 	protected void handleRteEvent(RteEvent event) {
 		switch (event.getTopic()) {
-			case RteEvent.PACKS_RELOADED:
-				refresh();
-				break;
-			case RteEvent.PACK_INSTALL_JOB_FINISHED:
-			case RteEvent.PACK_REMOVE_JOB_FINISHED:
-			case RteEvent.PACK_DELETE_JOB_FINISHED:
-				fViewer.refresh();
-				break;
-			default:
-				return;
+		case RteEvent.PACKS_RELOADED:
+			refresh();
+			showRelevantPage();
+			break;
+		case RteEvent.PACK_INSTALL_JOB_FINISHED:
+		case RteEvent.PACK_REMOVE_JOB_FINISHED:
+		case RteEvent.PACK_DELETE_JOB_FINISHED:
+			fViewer.refresh();
+			break;
+		default:
+			return;
 		}
+	}
+
+	protected void showRelevantPage() {
+		Control topControl = fTree;
+		final ICpPackManager pm = CpPlugIn.getPackManager();
+		if (fLinkListener != null) {
+			fLink.removeListener(SWT.Selection, fLinkListener);
+		}
+
+		String rootDir = pm.getCmsisPackRootDirectory();
+		if (!pm.arePacksLoaded()) {
+			fLink.setText(Messages.PackInstallerView_OpenPreferenceLink);
+			fLinkListener = (event) -> {
+				PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(fParentComposite.getShell(),
+						"com.arm.cmsis.pack.ui.CpPreferencePage", null, null); //$NON-NLS-1$
+				dialog.open();
+			};
+			fLink.addListener(SWT.Selection, fLinkListener);
+			topControl = fLink;
+		} else if (pm.getPacks() == null || !pm.getPacks().hasChildren()) {
+			fLink.setText(NLS.bind(Messages.PackInstallerView_CheckForUpdatesLink, rootDir));
+			fLinkListener = (event) -> {
+				CpInstallerPlugInUI.startCheckForUpdates();
+			};
+			fLink.addListener(SWT.Selection, fLinkListener);
+			topControl = fLink;
+		}
+		fStackLayout.topControl = topControl;
+		fParentComposite.layout();
 	}
 
 }

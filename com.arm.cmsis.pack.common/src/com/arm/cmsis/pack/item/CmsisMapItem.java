@@ -122,7 +122,7 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public T getFirstChild() {
 		Map<String, ? extends T> childMap = getChildMap();
-		if(childMap != null) {
+		if(childMap != null && !childMap.isEmpty()) {
 			return fChildMap.entrySet().iterator().next().getValue();
 		}
 		return null;
@@ -131,7 +131,7 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public String getFirstChildKey() {
 		Map<String, ? extends T> childMap = getChildMap();
-		if(childMap != null) {
+		if(childMap != null && !childMap.isEmpty()) {
 			return fChildMap.entrySet().iterator().next().getKey();
 		}
 		return null;

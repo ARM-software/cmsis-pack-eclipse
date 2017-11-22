@@ -1,17 +1,17 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*
-* OS type detection is based on algorithm published here:
-* http://stackoverflow.com/questions/228477/how-do-i-programmatically-determine-operating-system-in-java
-*
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *
+ * OS type detection is based on algorithm published here:
+ * http://stackoverflow.com/questions/228477/how-do-i-programmatically-determine-operating-system-in-java
+ *
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.utils;
 
@@ -30,10 +30,6 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
-
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.Path;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 
@@ -58,31 +54,31 @@ public class Utils {
 		}
 
 		File[] list = dir.listFiles();
-        if (list == null) {
+		if (list == null) {
 			return  files;
 		}
 
-        // search dir for pdsc files
-        for ( File f : list ) {
-            if( f.isFile() && !f.isHidden()) {
-            	String name = f.getName();
-            	if(!name.startsWith(".") && name.endsWith(CmsisConstants.EXT_PDSC)){   //$NON-NLS-1$
-            		files.add(f.getAbsolutePath());
-            	}
-            }
-        }
+		// search dir for pdsc files
+		for ( File f : list ) {
+			if( f.isFile() && !f.isHidden()) {
+				String name = f.getName();
+				if(!name.startsWith(".") && name.endsWith(CmsisConstants.EXT_PDSC)){   //$NON-NLS-1$
+					files.add(f.getAbsolutePath());
+				}
+			}
+		}
 
-        if(depth <= 0) {
+		if(depth <= 0) {
 			return files;
 		}
-        // search sub-directories
-        // search dir for pdsc files
-        for ( File f : list ) {
-            if( f.isDirectory() && !f.isHidden() && !f.getName().startsWith(".")) { //$NON-NLS-1$
-            	findPdscFiles(f,  files, depth-1);
-            }
-        }
-       	return  files;
+		// search sub-directories
+		// search dir for pdsc files
+		for ( File f : list ) {
+			if( f.isDirectory() && !f.isHidden() && !f.getName().startsWith(".")) { //$NON-NLS-1$
+				findPdscFiles(f,  files, depth-1);
+			}
+		}
+		return  files;
 	}
 
 	/**
@@ -222,21 +218,6 @@ public class Utils {
 		return path;
 	}
 
-	/**
-	 * Returns a path equivalent to this path, but relative to the given base path if possible.
-	 * @param path path to make relative
-	 * @param basePath absolute base directory
-	 * @return A path relative to the base path, or this path if it could not be made relative to the given base
-	 */
-	static public String makePathRelative(String path, String basePath) {
-		if(path == null || basePath ==null || basePath.isEmpty()) {
-			return path;
-		}
-		IPath p = new Path(path);
-		IPath base = new Path(basePath);
-		p = p.makeRelativeTo(base);
-		return p.toString();
-	}
 
 	/**
 	 * Check if a URL string is valid
@@ -324,18 +305,18 @@ public class Utils {
 	 */
 	static public String getScaledClockFrequency(String dclock)
 	{
-	  if (dclock == null || dclock.isEmpty()) {
-	    return CmsisConstants.EMPTY_STRING;
-	  }
+		if (dclock == null || dclock.isEmpty()) {
+			return CmsisConstants.EMPTY_STRING;
+		}
 
-	  int len = dclock.length();
-	  if (len > 6) {
-	    return (dclock.substring(0, len - 6) + " MHz"); //$NON-NLS-1$
-	  } else if (len > 3) {
-	    return (dclock.substring(0, len - 3) + " kHz"); //$NON-NLS-1$
-	  } else {
-	    return (dclock.substring(0, len - 6) + " Hz"); //$NON-NLS-1$
-	  }
+		int len = dclock.length();
+		if (len > 6) {
+			return (dclock.substring(0, len - 6) + " MHz"); //$NON-NLS-1$
+		} else if (len > 3) {
+			return (dclock.substring(0, len - 3) + " kHz"); //$NON-NLS-1$
+		} else {
+			return (dclock.substring(0, len - 6) + " Hz"); //$NON-NLS-1$
+		}
 	}
 
 
@@ -346,22 +327,22 @@ public class Utils {
 	 */
 	static public String getMemorySizeString(long size)
 	{
-	  if (size == 0) {
-		  return CmsisConstants.EMPTY_STRING;
-	  }
+		if (size == 0) {
+			return CmsisConstants.EMPTY_STRING;
+		}
 
-	  if (size < 1024) {
-	    return Long.toString(size) + " Byte"; //$NON-NLS-1$
-	  }
+		if (size < 1024) {
+			return Long.toString(size) + " Byte"; //$NON-NLS-1$
+		}
 
-	  size >>= 10; // Scale to kByte
-	  if (size < 1024 || (size % 1024) != 0) {
-	    // Less than a MByte or division with rest => show kByte
-	    return Long.toString(size) + " kB"; //$NON-NLS-1$
-	  }
+		size >>= 10; // Scale to kByte
+		if (size < 1024 || (size % 1024) != 0) {
+			// Less than a MByte or division with rest => show kByte
+			return Long.toString(size) + " kB"; //$NON-NLS-1$
+		}
 
-	  size >>= 10; // Scale to MByte
-	  return Long.toString(size) + " MB"; //$NON-NLS-1$
+		size >>= 10; // Scale to MByte
+		return Long.toString(size) + " MB"; //$NON-NLS-1$
 	}
 
 	/**
@@ -392,35 +373,6 @@ public class Utils {
 	}
 
 	/**
-	 * Copy from one directory to another
-	 *
-	 * @param srcDir source directory
-	 * @param dstDir destination directory
-	 * @param ignoreDir directories that should ignore during copy (directories w/ absolute path)
-	 * @throws IOException
-	 */
-	public static void copyDirectoryWithProgress(File srcDir, File dstDir, Set<String> ignoreDir, IProgressMonitor monitor) throws IOException {
-		if(srcDir == null || (ignoreDir != null && ignoreDir.contains(srcDir.getAbsolutePath()))) {
-			return;
-		}
-		if (srcDir.isDirectory()) {
-			String[] children = srcDir.list();
-			if(children == null) {
-				return;
-			}
-			for (String child : children) {
-				copyDirectoryWithProgress(new File(srcDir, child), new File(dstDir, child), ignoreDir, monitor);
-			}
-		} else {
-			if (!dstDir.getParentFile().exists()) {
-				dstDir.getParentFile().mkdirs();
-			}
-			copy(srcDir, dstDir);
-			monitor.worked(1);
-		}
-	}
-
-	/**
 	 * Get the String of current date in the format of "dd-mm-yyyy"
 	 * @return String of current date in the format of "dd-mm-yyyy"
 	 */
@@ -446,12 +398,14 @@ public class Utils {
 			dest.getParentFile().mkdirs();
 		}
 		try {
-			input = new FileInputStream(source);
 			if (dest.exists()) {
+				if(dest.equals(source))
+					return; // do not copy to itself
 				dest.delete();
 			}
+			input = new FileInputStream(source);
 			output = new FileOutputStream(dest);
-			byte[] buf = new byte[1024];
+			byte[] buf = new byte[4096]; // 4096 is a common NTFS block size
 			int bytesRead;
 			while ((bytesRead = input.read(buf)) > 0) {
 				output.write(buf, 0, bytesRead);
@@ -518,43 +472,6 @@ public class Utils {
 		return count;
 	}
 
-	/**
-	 * Delete the folder recursively with progress monitor: first file, then folder
-	 *
-	 * @param folder the folder
-	 */
-	public static void deleteFolderRecursiveWithProgress(File folder, IProgressMonitor monitor) {
-
-		if (folder == null) {
-			return;
-		}
-
-		if (folder.isFile()) {
-			folder.setWritable(true, false);
-			folder.delete();
-			return;
-		}
-
-		if (folder.exists()) {
-			File[] files = folder.listFiles();
-			if(files == null) {
-				return;
-			}
-			for (File f : files) {
-				if (f.isDirectory()) {
-					deleteFolderRecursiveWithProgress(f, monitor);
-					f.setWritable(true, false);
-					f.delete();
-				} else {
-					f.setWritable(true, false);
-					f.delete();
-					monitor.worked(1);
-				}
-			}
-			folder.setWritable(true, false);
-			folder.delete();
-		}
-	}
 
 	/**
 	 * Count the number of files in specific folder

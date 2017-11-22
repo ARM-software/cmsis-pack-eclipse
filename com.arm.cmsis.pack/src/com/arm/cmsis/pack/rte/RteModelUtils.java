@@ -15,13 +15,18 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
+import com.arm.cmsis.pack.data.ICpPackCollection;
+import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpItemInfo;
 import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
+import com.arm.cmsis.pack.utils.VersionComparator;
 
 public class RteModelUtils {
 
@@ -43,10 +48,45 @@ public class RteModelUtils {
 				ICpPackInfo pi = ci.getPackInfo();
 				ICpPack pack = pi.getPack();
 				if (pack == null || pack.getPackState() != PackState.INSTALLED) {
-					missingPacks.add(CpPack.constructPackId(pi.attributes()));
+					missingPacks.add(constructEffectivePackId(pi.attributes()));
 				}
 			}
 		}
 		return missingPacks;
 	}
+	
+	/**
+	 * Constructs an effective pack ID from supplied attributes
+	 * @param packAttributes 
+	 * @return effective pack ID
+	 */
+	public static String constructEffectivePackId(IAttributes packAttributes) {
+		String vendor = packAttributes.getAttribute(CmsisConstants.VENDOR);
+		String name = packAttributes.getAttribute(CmsisConstants.NAME);
+		String version = VersionComparator.removeMetadata(packAttributes.getAttribute(CmsisConstants.VERSION));
+		String packId = vendor + '.' + name;
+		if (CmsisConstants.FIXED.equals(packAttributes.getAttribute(CmsisConstants.VERSION_MODE))) { // use fixed version of the pack
+			packId += '.' + version;
+		} else { // use latest compatible version of the pack
+			ICpPackCollection allPacks = CpPlugIn.getPackManager().getPacks();
+			if (allPacks == null) {
+				return CmsisConstants.EMPTY_STRING;
+			}
+			String familyId = CpPack.familyFromId(packId);
+			Collection<? extends ICpItem> packs = allPacks.getPacksByPackFamilyId(familyId);
+			if (packs == null) {
+				return CmsisConstants.EMPTY_STRING;
+			}
+			ICpItem latestPack = packs.iterator().next();
+			String latestVersion = VersionComparator.removeMetadata(latestPack.getVersion());
+			int verCmp = VersionComparator.versionCompare(latestVersion, version);
+			if (CpPack.isPackFamilyId(packId) && verCmp >= 0 && verCmp < 4) { // compatible
+				packId += '.' + latestVersion;
+			} else {
+				packId += '.' + version;
+			}
+		}
+		return packId;
+	}
+	
 }

@@ -20,6 +20,7 @@ import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
+import com.arm.cmsis.pack.utils.DeviceVendor;
 
 /**
  * The activator class controls the plug-in life cycle

@@ -19,7 +19,6 @@ import org.eclipse.cdt.managedbuilder.ui.wizards.MBSCustomPageManager;
 import org.eclipse.cdt.ui.templateengine.IPagesAfterTemplateSelectionProvider;
 import org.eclipse.cdt.ui.templateengine.IWizardDataPage;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 
@@ -51,10 +50,9 @@ public class RteProjectTemplate implements IPagesAfterTemplateSelectionProvider 
 
 		RteTemplateCmsisProjectPage toolChainAdapterPage = new RteTemplateCmsisProjectPage(
 				Messages.RteProjectTemplate_CMSIS_RTE_Project, Messages.RteProjectTemplate_CMSIS_RTE_Project, null,
-				wizard instanceof IImportWizard);
+				true); // always hide select main as it no longer corresponds to RTOS2 API
 
 		fPages.add(toolChainAdapterPage);
-
 		fPages.add(devicePage);
 		return getCreatedPages(wizard);
 	}

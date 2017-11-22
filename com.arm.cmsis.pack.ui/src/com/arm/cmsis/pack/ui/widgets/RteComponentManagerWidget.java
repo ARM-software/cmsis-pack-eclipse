@@ -23,7 +23,7 @@ import com.arm.cmsis.pack.rte.IRteModelController;
 /**
  * This class implements functionality of component selector page  
  */
-public class RteComponentManagerWidget extends RteWidget {
+public class RteComponentManagerWidget extends RteModelWidget {
 	private SashForm sashForm = null;
 
 	RteComponentSelectorWidget 	rteComponentTreeWidget = null;

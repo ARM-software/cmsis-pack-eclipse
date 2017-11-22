@@ -125,18 +125,6 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 		return fParent;
 	}
 
-	@SuppressWarnings("unchecked")
-	public T getThisItem() {
-		return (T)this; // we know that this item type is T : T extends ICmsisTreeItem<T>
-	}
-
-	@Override
-	public T getRoot() {
-		if(fParent == null) {
-			return getThisItem();
-		}
-		return fParent.getRoot();
-	}
 
 	@Override
 	public Object[] getHierachyPath() {

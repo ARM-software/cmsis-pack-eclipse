@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2017 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -10,25 +10,28 @@
 *******************************************************************************/
 package com.arm.cmsis.pack.ui.widgets;
 
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
+import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
-import com.arm.cmsis.pack.rte.IRteModelController;
+import com.arm.cmsis.pack.ui.CpPlugInUI;
 
-public abstract class RteWidget implements IRteEventListener {
+public abstract class RteWidget<TController extends IRteController> implements IRteEventListener {
 
-	protected IRteModelController fModelController = null;		// contains RteComponents
-	protected IRteColumnAdvisor fColumnAdvisor = null;
+	static final Color GREEN = new Color(Display.getCurrent(), CpPlugInUI.GREEN);
+	static final Color YELLOW = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
+
+	
+	protected TController fModelController = null;
 
 	/**
 	 * Sets an RTE model controller to be used by the widget 
-	 * @param IRteModelController controller to use
+	 * @param modelController IRteController controller to use
 	 */
-	public void setModelController(IRteModelController modelController) {
-		if(fColumnAdvisor != null)
-			fColumnAdvisor.setModelController(modelController);
+	protected void setModelController(TController modelController) {
 		if(fModelController == modelController)
 			return;
 		if(fModelController != null)
@@ -42,24 +45,8 @@ public abstract class RteWidget implements IRteEventListener {
 	 * Returns RTE model controller used by the widget
 	 * @return IRteModelController
 	 */
-	public IRteModelController getModelController() {
+	public TController getModelController() {
 		return fModelController;
-	}
-
-	/**
-	 * Returns Column adviser 
-	 * @return IColumnAdvisor
-	 */
-	public IRteColumnAdvisor getColumnAdvisor() {
-		return fColumnAdvisor;
-	}
-
-	/**
-	 * Sets column adviser
-	 * @param columnAdvisor IColumnAdvisor
-	 */
-	public void setColumnAdvisor(IRteColumnAdvisor columnAdvisor) {
-		fColumnAdvisor = columnAdvisor;
 	}
 	
 	/**
@@ -79,11 +66,13 @@ public abstract class RteWidget implements IRteEventListener {
 	 */
 	public abstract Composite createControl(Composite parent);
 
+	
 	/**
 	 * Returns Composite that should be used as focus widget
 	 * @return widget to set focus to 
 	 */
-	public abstract Composite getFocusWidget();
+	abstract public Composite getFocusWidget();
+	
 	
 	@Override
 	public void handle(RteEvent event) {
@@ -96,7 +85,7 @@ public abstract class RteWidget implements IRteEventListener {
 			break;
 		}
 	}
-
+	
 	/**
 	 *  Updates widget asynchronously, runs  in GUI thread 
 	 */
@@ -108,8 +97,4 @@ public abstract class RteWidget implements IRteEventListener {
 			}
 		});			
 	}
-	
-
-	
-	
 }

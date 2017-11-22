@@ -18,6 +18,8 @@ import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -25,12 +27,15 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.CpPlugIn;
-import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
@@ -44,13 +49,7 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.OpenURL;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
-
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.jface.viewers.TableViewer;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Tree;
-import org.eclipse.jface.viewers.TreeViewer;
+import com.arm.cmsis.pack.utils.DeviceVendor;
 
 
 /**
@@ -82,8 +81,8 @@ public class RteDeviceInfoWidget extends Composite {
 	private Tree tree;
 	private TreeViewer treeViewer;
 	private Label lblBoards;
-	protected IRteColumnAdvisor fBookColumnAdvisor = null;
-	protected IRteColumnAdvisor fBoardColumnAdvisor = null;
+	protected IRteColumnAdvisor<IRteModelController> fBookColumnAdvisor = null;
+	protected IRteColumnAdvisor<IRteModelController> fBoardColumnAdvisor = null;
 
 
 	ICpItem getCpItem(Object obj) {
@@ -174,7 +173,7 @@ public class RteDeviceInfoWidget extends Composite {
 	/**  
 	 * Column label provider for books tree 
 	 */
-	class RteBookColumnAdvisor extends RteColumnAdvisor {
+	class RteBookColumnAdvisor extends RteColumnAdvisor<IRteModelController> {
 		/**
 		 * Constructs advisor for a viewer
 		 * @param columnViewer ColumnViewer on which the advisor is installed

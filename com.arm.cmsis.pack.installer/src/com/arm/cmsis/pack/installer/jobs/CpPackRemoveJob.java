@@ -24,6 +24,8 @@ import org.eclipse.osgi.util.NLS;
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.data.CpPack;
+import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.events.RteEvent;
@@ -77,13 +79,31 @@ public class CpPackRemoveJob extends CpPackJob {
 
 		SubMonitor progress = SubMonitor.convert(monitor, Utils.countFiles(installedDir.toFile()));
 		progress.setTaskName(NLS.bind(Messages.CpPackRemoveJob_DeletingFilesFromFolder, installedDir.toOSString()));
-		Utils.deleteFolderRecursiveWithProgress(installedDir.toFile(), progress);
+		PackInstallerUtils.deleteFolderRecursiveWithProgress(installedDir.toFile(), progress);
+
+		String familyId = CpPack.familyFromId(fJobId);
+		IPath localPdscFilePath = new Path(CpPlugIn.getPackManager().getCmsisPackLocalDir())
+				.append(familyId + CmsisConstants.EXT_PDSC);
+		File localPdscFile = localPdscFilePath.toFile();
+
+		IPath webPdscFilePath = new Path(CpPlugIn.getPackManager().getCmsisPackWebDir())
+				.append(familyId + CmsisConstants.EXT_PDSC);
+		File webPdscFile = webPdscFilePath.toFile();
+
+		boolean bLocalPack = !webPdscFile.exists();
 
 		if (fDelete) {
-			downloadPackFile.delete();
-			downloadPdscFile.delete();
+			if(downloadPackFile.exists())
+				downloadPackFile.delete();
+			if(downloadPdscFile.exists())
+				downloadPdscFile.delete();
+			// delete local pdsc if no downloaded packs exist for this family id 
+			if(localPdscFile.exists()) {
+				ICpItem family = fPack.getParent();
+				if(family == null || family.getChildCount() == 1) // only one
+					localPdscFile.delete();
+			}
 		}
-
 		fResult.setPack(fPack);
 
 		// If the deleted pack is not an error pack, change the pack state
@@ -93,9 +113,9 @@ public class CpPackRemoveJob extends CpPackJob {
 				fPack.setPackState(PackState.DOWNLOADED);
 				fPack.setFileName(downloadPdscFile.getAbsolutePath());
 				fResult.setNewPack(fPack);
-			} else {
+			} else  {
 				fPack.setPackState(PackState.AVAILABLE);
-				newPack = PackInstallerUtils.loadLatesPack(fPack);
+				newPack = PackInstallerUtils.loadLatestPack(fPack);
 				fResult.setNewPack(newPack);
 			}
 		}

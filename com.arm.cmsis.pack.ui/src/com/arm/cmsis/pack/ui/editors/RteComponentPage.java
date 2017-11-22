@@ -29,7 +29,7 @@ import com.arm.cmsis.pack.ui.widgets.RteComponentManagerWidget;
  * Editor page that wraps RteManagerWidget
  *
  */
-public class RteComponentPage extends RteEditorPage {
+public class RteComponentPage extends RteModelEditorPage {
 
 	protected RteComponentManagerWidget rteManagerWidget;
 	IAction resolveAction = null;

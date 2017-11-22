@@ -8,3 +8,8 @@
 /.DebugSeqType.xtendbin
 /.DebugSeqTypeProvider.java._trace
 /.DebugSeqTypeProvider.xtendbin
+/BoolType.java
+/DebugSeqType.java
+/DebugSeqTypeProvider.java
+/IntType.java
+/StringType.java

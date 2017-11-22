@@ -29,18 +29,18 @@ public class PackInstallerViewUtils {
 	 * @param manager the contributionManager
 	 */
 	public static void addManagementCommandsToLocalToolBar(IViewPart viewPart, IContributionManager manager) {
-		String[] commandIds = { "com.arm.cmsis.pack.installer.commands.updateCommand", //$NON-NLS-1$
-				"com.arm.cmsis.pack.installer.commands.importPackCommand", //$NON-NLS-1$
-				"com.arm.cmsis.pack.installer.commands.reloadCommand", //$NON-NLS-1$
-				"com.arm.cmsis.pack.installer.commands.importFolderPacksCommand" }; //$NON-NLS-1$
-		String[] commandImages = { CpPlugInUI.ICON_CHECK4UPDATE, CpPlugInUI.ICON_RTE_UNPACK,
-				CpPlugInUI.ICON_REFRESH, CpPlugInUI.ICON_IMPORT_FOLDER };
+		String[][] commands = { // id, image
+				{ "com.arm.cmsis.pack.installer.commands.reloadCommand", CpPlugInUI.ICON_REFRESH }, //$NON-NLS-1$
+				{ "com.arm.cmsis.pack.installer.commands.updateCommand", CpPlugInUI.ICON_CHECK4UPDATE }, //$NON-NLS-1$
+				{ "com.arm.cmsis.pack.installer.commands.importPackCommand", CpPlugInUI.ICON_RTE_UNPACK }, //$NON-NLS-1$
+				{ "com.arm.cmsis.pack.installer.commands.importFolderPacksCommand", CpPlugInUI.ICON_IMPORT_FOLDER } //$NON-NLS-1$
+		};
 
-		for (int i = 0; i < commandIds.length; i++) {
-			String commandId = commandIds[i];
+		for (int i = 0; i < commands.length; i++) {
+			String commandId = commands[i][0];
 			CommandContributionItemParameter p = new CommandContributionItemParameter(viewPart.getSite(), commandId, commandId,
 					CommandContributionItem.STYLE_PUSH);
-			p.icon = CpPlugInUI.getImageDescriptor(commandImages[i]);
+			p.icon = CpPlugInUI.getImageDescriptor(commands[i][1]);
 			CommandContributionItem item = new CommandContributionItem(p);
 			manager.add(item);
 		}

@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.installer.ui.views;
 
+import java.io.File;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -29,7 +30,6 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Tree;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.PlatformUI;
 
@@ -51,6 +51,7 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.ColorConstants;
 import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
+import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 import com.arm.cmsis.pack.utils.Utils;
 import com.arm.cmsis.pack.utils.VersionComparator;
@@ -201,7 +202,7 @@ public class PacksView extends PackInstallerView {
 				switch (getString(obj, columnIndex)) {
 				case CmsisConstants.BUTTON_UPTODATE: // the latest pack is installed
 					ICpPackFamily pf = (ICpPackFamily) obj;
-					if (pf != null && !pf.getPack().isRequiredPacksInstalled()) {
+					if (pf != null && !CpPlugIn.getPackManager().isRequiredPacksInstalled(pf.getPack())) {
 						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_SUB_WARNING);
 					}
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
@@ -240,7 +241,7 @@ public class PacksView extends PackInstallerView {
 				if (CmsisConstants.ERRORS.equals(packFamily.getTag())) {
 					return CmsisConstants.BUTTON_DELETE_ALL;
 				}
-				ICpPack latestPack = packFamily.getPack(); 
+				ICpPack latestPack = packFamily.getPack();
 				if ( latestPack == null) {
 					return text;
 				}
@@ -251,7 +252,7 @@ public class PacksView extends PackInstallerView {
 				if (latestPack.isDeprecated()) {
 					return CmsisConstants.BUTTON_DEPRECATED;
 				}
-				
+
 				if (latestPack.getPackState() == PackState.INSTALLED) {
 					return CmsisConstants.BUTTON_UPTODATE;
 				}
@@ -267,14 +268,14 @@ public class PacksView extends PackInstallerView {
 					}
 				}
 				if (!bPackInstalled) {
-					if (latestPack.isRequiredPacksInstalled()) {
+					if (CpPlugIn.getPackManager().isRequiredPacksInstalled(latestPack)) {
 						return CmsisConstants.BUTTON_INSTALL;
 					}
 					return CmsisConstants.BUTTON_INSTALL_PLUS;
 				} else if (bPackOffline) {
 					return CmsisConstants.BUTTON_OFFLINE;
 				} else {
-					if (latestPack.isRequiredPacksInstalled()) {
+					if (CpPlugIn.getPackManager().isRequiredPacksInstalled(latestPack)) {
 						return CmsisConstants.BUTTON_UPDATE;
 					}
 					return CmsisConstants.BUTTON_UPDATE_PLUS;
@@ -282,7 +283,7 @@ public class PacksView extends PackInstallerView {
 			} else if (element instanceof ICpPack) {
 				ICpPack pack = (ICpPack) element;
 				PackState state = pack.getPackState();
-				boolean requiredPacksInstalled = pack.isRequiredPacksInstalled();
+				boolean requiredPacksInstalled = CpPlugIn.getPackManager().isRequiredPacksInstalled(pack);
 				if (state == PackState.INSTALLED) {
 					if (requiredPacksInstalled) {
 						return CmsisConstants.BUTTON_REMOVE;
@@ -402,11 +403,11 @@ public class PacksView extends PackInstallerView {
 
 	}
 
-	class PackTreeColumnComparator extends TreeColumnComparator {
+	class PackTreeColumnComparator extends PackInstallerTreeColumnComparator {
 
 		private VersionComparator versionComparator;
 
-		public PackTreeColumnComparator(TreeViewer viewer, ColumnAdvisor advisor) {
+		public PackTreeColumnComparator(TreeViewer viewer, IColumnAdvisor advisor) {
 			super(viewer, advisor);
 			versionComparator = new VersionComparator();
 		}
@@ -417,14 +418,15 @@ public class PacksView extends PackInstallerView {
 			ICpItem cp2 = (ICpItem)e2;
 
 			// Error packs should always be shown on top
+			// Never switch the Device Specific and Generic row
 			if (CmsisConstants.ERRORS.equals(cp1.getTag())) {
 				return -1;
 			} else if (CmsisConstants.ERRORS.equals(cp2.getTag())) {
 				return 1;
+			} else if (cp1 instanceof ICpPackCollection && cp2 instanceof ICpPackCollection) {
+				return 0;
 			}
-
-			Tree tree = treeViewer.getTree();
-
+			
 			// For this view we only sort ICpPackFamily
 			if (!(e1 instanceof ICpPackFamily || e1 instanceof ICpPack)
 					|| !(e2 instanceof ICpPackFamily || e2 instanceof ICpPack)) {
@@ -437,7 +439,7 @@ public class PacksView extends PackInstallerView {
 			}
 
 			// regular comparison
-			int result = cp1.getPackFamilyId().compareToIgnoreCase(cp2.getPackFamilyId());
+			int result = alnumComparator.compare(cp1.getPackFamilyId(), cp2.getPackFamilyId());
 			if (result == 0) {
 				if (cp1.hasAttribute(CmsisConstants.VERSION) && cp2.hasAttribute(CmsisConstants.VERSION)) {
 					result = versionComparator.compare(cp1.getAttribute(CmsisConstants.VERSION),
@@ -446,7 +448,7 @@ public class PacksView extends PackInstallerView {
 					result = 0;
 				}
 			}
-			return tree.getSortDirection() == SWT.DOWN ? -result : result;
+			return bDescending ? -result : result;
 		}
 	}
 
@@ -586,7 +588,7 @@ public class PacksView extends PackInstallerView {
 			return null;
 		}
 		ICpPack pack = (ICpPack) item;
-		if (pack.getPackState() != PackState.INSTALLED || pack.isRequiredPacksInstalled()) {
+		if (pack.getPackState() != PackState.INSTALLED || CpPlugIn.getPackManager().isRequiredPacksInstalled(pack)) {
 			return null;
 		}
 
@@ -689,7 +691,7 @@ public class PacksView extends PackInstallerView {
 			// Due to the multi-line table cell in Linux, we
 			// only use the first line when OS is Linux
 			private String formatDescription(String description) {
-				boolean isWinOS = System.getProperty("os.name").startsWith("Windows"); //$NON-NLS-1$ //$NON-NLS-2$
+				boolean isWinOS = CmsisConstants.WIN.equals(Utils.getHostType());
 				return isWinOS ? description : description.split("\\r?\\n")[0]; //$NON-NLS-1$
 			}
 		});
@@ -802,7 +804,7 @@ public class PacksView extends PackInstallerView {
 				manager.add(fRemovePack);
 				manager.add(fDeletePack);
 				fDeletePack.setText(Messages.PacksView_RemovePlusDelete);
-				if (!pack.isRequiredPacksInstalled()) {
+				if (!CpPlugIn.getPackManager().isRequiredPacksInstalled(pack)) {
 					manager.add(new Separator());
 					manager.add(fInstallRequiredPacks);
 				}
@@ -810,7 +812,7 @@ public class PacksView extends PackInstallerView {
 			case DOWNLOADED:
 				manager.add(fDeletePack);
 				fDeletePack.setText(Messages.PacksView_Delete);
-				if (!pack.isRequiredPacksInstalled()) {
+				if (!CpPlugIn.getPackManager().isRequiredPacksInstalled(pack)) {
 					manager.add(new Separator());
 					manager.add(fInstallSinglePack);
 					fInstallSinglePack.setText(Messages.PacksView_UnpackSinglePack);
@@ -818,11 +820,16 @@ public class PacksView extends PackInstallerView {
 				}
 				break;
 			case AVAILABLE:
-				if (!pack.isRequiredPacksInstalled()) {
+				if (!CpPlugIn.getPackManager().isRequiredPacksInstalled(pack)) {
 					manager.add(new Separator());
 					manager.add(fInstallSinglePack);
 					fInstallSinglePack.setText(Messages.PacksView_InstallSinglePack);
 					fInstallSinglePack.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_INSTALL));
+				}
+				if(isLocalPack(pack)) {
+					manager.add(new Separator());
+					manager.add(fDeletePack);
+					fDeletePack.setText(Messages.PacksView_Delete);
 				}
 				break;
 			default:
@@ -854,6 +861,12 @@ public class PacksView extends PackInstallerView {
 	@Override
 	protected String getHelpContextId() {
 		return IHelpContextIds.PACKS_VIEW;
+	}
+
+	protected boolean isLocalPack(ICpPack pack) {
+		String localPdscFileName = CpPlugIn.getPackManager().getCmsisPackLocalDir() + '/' + pack.getPackFamilyId() + CmsisConstants.EXT_PDSC;
+		File localPdscFile = new File(localPdscFileName);
+		return localPdscFile.exists();
 	}
 
 }

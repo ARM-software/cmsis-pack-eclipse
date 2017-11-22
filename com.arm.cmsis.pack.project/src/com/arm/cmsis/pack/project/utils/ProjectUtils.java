@@ -528,4 +528,21 @@ public class ProjectUtils {
 		return CDataUtil.isExcluded(new Path(path), sourceEntries);
 	}
 
+	/**
+	 * Returns a path equivalent to this path, but relative to the given base path if possible.
+	 * @param path path to make relative
+	 * @param basePath absolute base directory
+	 * @return A path relative to the base path, or this path if it could not be made relative to the given base
+	 */
+	static public String makePathRelative(String path, String basePath) {
+		if(path == null || basePath ==null || basePath.isEmpty()) {
+			return path;
+		}
+		IPath p = new Path(path);
+		IPath base = new Path(basePath);
+		p = p.makeRelativeTo(base);
+		return p.toString();
+	}
+
+	
 }

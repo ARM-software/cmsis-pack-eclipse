@@ -17,7 +17,6 @@ import java.util.Map;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
@@ -36,7 +35,6 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -70,7 +68,7 @@ import com.arm.cmsis.pack.utils.Utils;
  * This class displays the component tree for selection.
  *
  */
-public class RteComponentSelectorWidget extends RteWidget {
+public class RteComponentSelectorWidget extends RteModelTreeWidget {
 
 	// constants for column number
 	static final int COLSWCOMP 	= 0;
@@ -80,17 +78,9 @@ public class RteComponentSelectorWidget extends RteWidget {
 	static final int COLVERSION = 4;
 	static final int COLDESCR 	= 5;
 
-	private Action expandAll;
-	private Action collapseAll;
 	private Action expandAllSelected;
 	
-	
 	protected Map<String, LaunchGeneratorAction> laGeneratorActions = new HashMap<>();
-	
-	TreeViewer viewer = null;					// the Tree Viewer
-
-	static final Color GREEN = new Color(Display.getCurrent(), CpPlugInUI.GREEN);
-	static final Color YELLOW = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
 
 	private List<String> selItemKeyPath = null;
 
@@ -131,7 +121,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 	/**
 	 * Column label provider for RteComponentTreeWidget
 	 */
-	public class RteComponentColumnAdvisor extends RteColumnAdvisor {
+	public class RteComponentColumnAdvisor extends RteColumnAdvisor<IRteModelController> {
 		/**
 		 * Constructs advisor for a viewer
 		 * @param columnViewer ColumnViewer on which the advisor is installed
@@ -563,7 +553,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 			default:
 				return;
 			}
-			viewer.update(item,  null);
+			fTreeViewer.update(item,  null);
 		}
 
 
@@ -710,8 +700,8 @@ public class RteComponentSelectorWidget extends RteWidget {
 	@Override
 	public void setModelController(IRteModelController model) {
 		super.setModelController(model);
-		if (viewer != null) {
-			viewer.setInput(model);
+		if (fTreeViewer != null) {
+			fTreeViewer.setInput(model);
 		}
 	}
 
@@ -721,58 +711,58 @@ public class RteComponentSelectorWidget extends RteWidget {
 		Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL|SWT.BORDER);
 		tree.setHeaderVisible(true);
 		tree.setLinesVisible(true);
-		viewer = new TreeViewer(tree);
-		ColumnViewerToolTipSupport.enableFor(viewer);
-		fColumnAdvisor = new RteComponentColumnAdvisor(viewer);
+		fTreeViewer = new TreeViewer(tree);
+		ColumnViewerToolTipSupport.enableFor(fTreeViewer);
+		fColumnAdvisor = new RteComponentColumnAdvisor(fTreeViewer);
 
 		// Tree item name
-		TreeViewerColumn column0 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column0 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column0.getColumn().setText(CpStringsUI.RteComponentTreeWidget_SoftwareComponents);
 		column0.getColumn().setWidth(180);
-		column0.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 0));
+		column0.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 0));
 		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, 0);
 		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
 		col0LabelProvider.setOwnerDrawEnabled(false);
 		column0.setLabelProvider(col0LabelProvider);
 
 		// Check box for selection
-		TreeViewerColumn column1 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column1 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column1.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Sel);
 		column1.getColumn().setWidth(35);
-		column1.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 1));
+		column1.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 1));
 		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 1));
 
 		// Variant
-		TreeViewerColumn column2 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column2 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column2.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Variant);
 		column2.getColumn().setWidth(110);
-		column2.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 2));
+		column2.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 2));
 		column2.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 2));
 
 		// Vendor
-		TreeViewerColumn column3 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column3 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column3.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Vendor);
 		column3.getColumn().setWidth(110);
-		column3.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 3));
+		column3.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 3));
 		column3.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 3));
 
 		// Version
-		TreeViewerColumn column4 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column4 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column4.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Version);
 		column4.getColumn().setWidth(70);
-		column4.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 4));
+		column4.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 4));
 		column4.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 4));
 
 		// Description/URL
-		TreeViewerColumn column5 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column5 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column5.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Description);
 		column5.getColumn().setWidth(400);
-		column5.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, 5));
+		column5.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 5));
 		column5.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 5));
 
 		RteComponentContentProvider rteContentProvider = new RteComponentContentProvider();
-		viewer.setContentProvider(rteContentProvider);
-		viewer.addSelectionChangedListener(event -> handleTreeSelectionChanged(event));
+		fTreeViewer.setContentProvider(rteContentProvider);
+		fTreeViewer.addSelectionChangedListener(event -> handleTreeSelectionChanged(event));
 
 		GridData gridData = new GridData();
 		gridData.horizontalAlignment = SWT.FILL;
@@ -783,15 +773,15 @@ public class RteComponentSelectorWidget extends RteWidget {
 		tree.setLayoutData(gridData);
 
 		if (getModelController() != null) {
-			viewer.setInput(getModelController());
+			fTreeViewer.setInput(getModelController());
 		}
 		hookContextMenu();
 		return tree;
 	}
 
 	protected IRteComponentItem getSelectedItem() {
-		if (viewer != null) {
-			IStructuredSelection sel = (IStructuredSelection)viewer.getSelection();
+		if (fTreeViewer != null) {
+			IStructuredSelection sel = (IStructuredSelection)fTreeViewer.getSelection();
 			if(sel != null) {
 				return getComponentItem(sel.getFirstElement());
 			}
@@ -831,8 +821,8 @@ public class RteComponentSelectorWidget extends RteWidget {
 
 	@Override
 	public void refresh() {
-		if (viewer != null) {
-			viewer.refresh();
+		if (fTreeViewer != null) {
+			fTreeViewer.refresh();
 		}
 	}
 
@@ -843,7 +833,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 	public void update() {
 		refresh();
 
-		if(viewer == null || getModelController() == null) {
+		if(fTreeViewer == null || getModelController() == null) {
 			return;
 		}
 		if( selItemKeyPath == null || selItemKeyPath.isEmpty()) {
@@ -874,7 +864,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 	 * @param item Component item to select
 	 */
 	public void showComponentItem(IRteComponentItem item) {
-		if(viewer == null) {
+		if(fTreeViewer == null) {
 			return;
 		}
 		if(item == null) {
@@ -907,29 +897,12 @@ public class RteComponentSelectorWidget extends RteWidget {
 		TreePath tp = new TreePath(path);
 		TreeSelection ts = new TreeSelection(tp);
 
-		viewer.setSelection(ts, true);
+		fTreeViewer.setSelection(ts, true);
 
 	}
 
-	/**
-	 * Return the tree viewer embedded in this widget
-	 * @return
-	 */
-	public TreeViewer getViewer() {
-		return viewer;
-	}
 
-	private void hookContextMenu() {
-
-		final MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
-		makeActions();
-		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(manager -> fillContextMenu(menuMgr));
-		Menu menu = menuMgr.createContextMenu(viewer.getControl());
-		viewer.getControl().setMenu(menu);
-	}
-
-	void addGeneratorActions(IMenuManager manager) {
+	private void addGeneratorActions(IMenuManager manager) {
 		ICpGenerator gen = getSelectedGenerator();
 		if(gen == null)
 			return;
@@ -952,7 +925,7 @@ public class RteComponentSelectorWidget extends RteWidget {
 			manager.add(new Separator());
 	}
 	
-	void fillContextMenu(IMenuManager manager) {
+	protected void fillContextMenu(IMenuManager manager) {
 		addGeneratorActions(manager);
 		manager.add(expandAll);
 		manager.add(collapseAll);
@@ -960,50 +933,26 @@ public class RteComponentSelectorWidget extends RteWidget {
 	}
 
 	protected void makeActions() {
-		expandAll = new Action() {
-			@Override
-			public void run() {
-				if(viewer == null) {
-					return;
-				}
-				viewer.expandAll();
-			}
-		};
-
-		expandAll.setText(CpStringsUI.ExpandAll);
-		expandAll.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL));
-
-		collapseAll = new Action() {
-			@Override
-			public void run() {
-				if(viewer == null) {
-					return;
-				}
-				viewer.collapseAll();
-			}
-		};
-		collapseAll.setText(CpStringsUI.CollapseAll);
-		collapseAll.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
-
+		super.makeActions();
 		expandAllSelected = new Action() {
 			@Override
 			public void run() {
-				if(viewer == null) {
+				if(fTreeViewer == null) {
 					return;
 				}
 				IRteModel model = getModelController();
 				if (model != null) {
-					viewer.getTree().setRedraw(false);
-					ISelection prevSel = viewer.getSelection();
+					fTreeViewer.getTree().setRedraw(false);
+					ISelection prevSel = fTreeViewer.getSelection();
 					Collection<IRteComponent> selectedComponents = model.getSelectedComponents();
 					for (IRteComponent comp: selectedComponents) {
 						Object[] path = comp.getEffectiveHierachyPath();
 						TreePath tp = new TreePath(path);
 						TreeSelection ts = new TreeSelection(tp);
-						viewer.setSelection(ts, false);
+						fTreeViewer.setSelection(ts, false);
 					}
-					viewer.setSelection(prevSel, true);
-					viewer.getTree().setRedraw(true);
+					fTreeViewer.setSelection(prevSel, true);
+					fTreeViewer.getTree().setRedraw(true);
 				}
 			}
 		};
@@ -1018,11 +967,6 @@ public class RteComponentSelectorWidget extends RteWidget {
 			LaunchGeneratorAction lga = new LaunchGeneratorAction(type);
 			laGeneratorActions.put(type, lga); 
 		}
-	}
-
-	@Override
-	public Composite getFocusWidget() {
-		return viewer.getTree();
 	}
 
 }

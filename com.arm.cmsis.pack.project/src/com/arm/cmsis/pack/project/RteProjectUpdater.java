@@ -58,7 +58,6 @@ import com.arm.cmsis.pack.utils.Utils;
 public class RteProjectUpdater extends WorkspaceJob {
 
 	public static final String RTE_PROBLEM_MARKER = CpPlugInUI.RTE_PROBLEM_MARKER;
-	public static final String RTE_PROBLEM_MARKER_DEP_ITEM = CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM;
 
 	public static final int LOAD_CONFIGS = 0x01;
 	public static final int UPDATE_TOOLCHAIN = 0x02; // forces update of all relevant toolchain settings
@@ -74,6 +73,11 @@ public class RteProjectUpdater extends WorkspaceJob {
 	protected boolean bSaveProject = false;
 	protected boolean bDeleteConfigFiles = false;
 	protected RteConsole rteConsole = null;
+	
+	protected RteProjectStorage projectStorage = null; 
+	protected IRteToolChainAdapter toolChainAdapter = null;
+	protected IAttributes rteOptionsFromToolchain = null;
+	
 
 	public RteProjectUpdater(IRteProject rteProject, int updateFlags) {
 		super("RTE Project Updater"); //$NON-NLS-1$
@@ -98,7 +102,6 @@ public class RteProjectUpdater extends WorkspaceJob {
 			return status;
 		}
 
-
 		this.monitor = monitor;
 		bSaveProject = false;
 		Status status = null;
@@ -115,6 +118,14 @@ public class RteProjectUpdater extends WorkspaceJob {
 				throw new CoreException(status);
 			}
 
+			projectStorage = rteProject.getProjectStorage();
+			if (projectStorage != null) {
+				// obtain toolchain adaper its RTE options from active configuration 
+				 toolChainAdapter = projectStorage.getToolChainAdapter();
+				 IConfiguration activeConfig = ProjectUtils.getDefaultConfiguration(project);
+				 rteOptionsFromToolchain = toolChainAdapter.getRteOptions(activeConfig);
+			}
+			
 			if (bLoadConfigs) {
 				//	rteConsole.outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
 				res = loadConfigFile();
@@ -196,7 +207,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 			if (item != null) {
 				attributes.put(IMarker.LOCATION, String.join("->", //$NON-NLS-1$
 						item.getKeyPath().stream().filter(s -> !s.isEmpty()).collect(Collectors.toList())));
-				attributes.put(RTE_PROBLEM_MARKER_DEP_ITEM, depItem);
+				attributes.put(CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM, depItem);
 			}
 			marker.setAttributes(attributes);
 		}
@@ -265,6 +276,11 @@ public class RteProjectUpdater extends WorkspaceJob {
 		IRteConfiguration rteConf = null;
 		if (root instanceof ICpConfigurationInfo) {
 			ICpConfigurationInfo info = (ICpConfigurationInfo) root;
+			// adjust RTE options
+			ICpItem toolChainInfo = info.getToolChainInfo();
+			if(rteOptionsFromToolchain != null && toolChainInfo != null) {
+				toolChainInfo.attributes().addAttributes(rteOptionsFromToolchain);
+			}
 			rteConf = new RteConfiguration();
 			rteConf.setConfigurationInfo(info);
 			rteProject.setRteConfiguration(rteConfigName, rteConf);
@@ -494,18 +510,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 	}
 
 	protected void updateBuildSettings(boolean bForceUpdateToolchain) {
-		RteProjectStorage ps = rteProject.getProjectStorage();
-		if (ps == null) {
+		if(projectStorage == null || toolChainAdapter == null)
 			return;
-		}
-
-		IRteToolChainAdapter adapter = ps.getToolChainAdapter();
-		if (adapter == null) {
-			return;
-		}
-
 		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
-		IAttributes deviceAttributes = ps.getDeviceAttributes();
+		IAttributes deviceAttributes = projectStorage.getDeviceAttributes();
 		IRteConfiguration rteConfig = rteProject.getRteConfiguration();
 		ICpConfigurationInfo configInfo = rteConfig.getConfigurationInfo();
 		ICpDeviceInfo deviceInfo = rteConfig.getDeviceInfo();
@@ -514,10 +522,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 		boolean bInit = deviceInfo != null && !deviceInfo.attributes().matchCommonAttributes(deviceAttributes);
 		if (bInit || bForceUpdateToolchain) {
 			bSaveProject = true;
-			ps.setDeviceInfo(deviceInfo);
+			projectStorage.setDeviceInfo(deviceInfo);
 			String linkerScriptFile = buildSettings.getSingleLinkerScriptFile();
 			if (linkerScriptFile == null) {
-				ILinkerScriptGenerator lsGen = adapter.getLinkerScriptGenerator();
+				ILinkerScriptGenerator lsGen = toolChainAdapter.getLinkerScriptGenerator();
 				if (lsGen != null) {
 					linkerScriptFile = getLinkerScriptFile(lsGen);
 					try {
@@ -541,10 +549,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 			IConfiguration config = ProjectUtils.getConfiguration(project, name);
 			if (bInit || bForceUpdateToolchain) {
 				envProvider.adjustInitialBuildSettings(buildSettings, configInfo);
-				adapter.setInitialToolChainOptions(config, buildSettings);
+				toolChainAdapter.setInitialToolChainOptions(config, buildSettings);
 			} else {
 				envProvider.adjustBuildSettings(buildSettings, configInfo);
-				adapter.setToolChainOptions(config, buildSettings);
+				toolChainAdapter.setToolChainOptions(config, buildSettings);
 			}
 
 		}

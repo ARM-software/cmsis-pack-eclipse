@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.Display;
 
 import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.installer.CpPackInstaller;
 import com.arm.cmsis.pack.installer.Messages;
 import com.arm.cmsis.pack.utils.Utils;
 
@@ -70,7 +71,7 @@ public class CpPackInstallJob extends CpPackUnpackJob {
 			} catch (SocketTimeoutException e) {
 				Display.getDefault().syncExec(() -> wait = MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
 						Messages.CpPackInstaller_Timout,
-						NLS.bind(Messages.CpPackInstaller_TimeoutMessage, fPackUrl)));
+						NLS.bind(Messages.CpPackInstallJob_InstallTimeoutMessage, fPackUrl, CpPackInstaller.TIME_OUT / 1000)));
 				if (!wait) {
 					fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_TimeoutConsoleMessage, fJobId, fPackUrl));
 					return false;

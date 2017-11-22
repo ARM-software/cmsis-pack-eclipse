@@ -34,7 +34,7 @@ import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.installer.Messages;
-import com.arm.cmsis.pack.parser.ICpXmlParser;
+import com.arm.cmsis.pack.installer.utils.PackInstallerUtils;
 import com.arm.cmsis.pack.parser.PdscParser;
 import com.arm.cmsis.pack.utils.Utils;
 
@@ -61,6 +61,15 @@ public class CpPackImportFolderJob extends CpPackJob {
 			fResult.setErrorString(NLS.bind(Messages.CpPackImportFolderJob_FolderNotExist, fRootPath));
 			fPackInstaller.jobFinished(CmsisConstants.EMPTY_STRING, RteEvent.PACK_IMPORT_FOLDER_JOB_FINISHED, fResult);
 			return Status.OK_STATUS;
+		} else if (rootFile.getName().equals(CmsisConstants.DOT_WEB)
+				|| rootFile.getName().equals(CmsisConstants.DOT_DOWNLOAD)
+				|| rootFile.getName().equals(CmsisConstants.DOT_LOCAL)) {
+			fResult.setSuccess(false);
+			fResult.setErrorString(
+					CmsisConstants.DOT_WEB + ", " + CmsisConstants.DOT_DOWNLOAD + ", " + CmsisConstants.DOT_LOCAL //$NON-NLS-1$ //$NON-NLS-2$
+							+ Messages.CpPackImportFolderJob_FoldersNotImport);
+			fPackInstaller.jobFinished(CmsisConstants.EMPTY_STRING, RteEvent.PACK_IMPORT_FOLDER_JOB_FINISHED, fResult);
+			return Status.OK_STATUS;
 		}
 		SubMonitor progress = SubMonitor.convert(monitor, Utils.countFiles(rootFile));
 		progress.setTaskName(NLS.bind(Messages.CpPackImportFolderJob_ImportingPacksFrom, fRootPath));
@@ -79,6 +88,9 @@ public class CpPackImportFolderJob extends CpPackJob {
 	}
 
 	protected boolean importFolderPacks(File parentFolder, Set<String> copiedFolder, IProgressMonitor progress) throws IOException {
+		if (parentFolder.listFiles() == null) {
+			return true;
+		}
 		for (File folder : parentFolder.listFiles()) {
 			if (progress.isCanceled()) {
 				fPackFolders.stream().forEach(path -> Utils.deleteFolderRecursive(new File(path)));
@@ -96,9 +108,14 @@ public class CpPackImportFolderJob extends CpPackJob {
 		Utils.findPdscFiles(parentFolder, files, 0);
 		if (files.isEmpty()) { // this is a normal folder
 			return true;
+		} else if (files.size() > 1) {
+			fResult.setSuccess(false);
+			fResult.setErrorString(parentFolder + Messages.CpPackImportFolderJob_ContainMorePdscFile);
+			return false;
 		}
-		ICpXmlParser parser = new PdscParser();
-		ICpPack pack = (ICpPack) parser.parseFile(files.get(0));
+		PdscParser parser = new PdscParser();
+		String pdscFileName = files.get(0);
+		ICpPack pack = (ICpPack) parser.parseFile(pdscFileName);
 		if (pack == null) {
 			fResult.setSuccess(false);
 			fResult.setErrorString(String.join("\n", parser.getErrorStrings())); //$NON-NLS-1$
@@ -117,12 +134,14 @@ public class CpPackImportFolderJob extends CpPackJob {
 				Utils.copy(file, dstFolder.append(file.getName()).toFile());
 				progress.worked(1);
 			} else if (file.isDirectory() && !copiedFolder.contains(file.getAbsolutePath())) {
-				Utils.copyDirectoryWithProgress(file, dstFolder.append(file.getName()).toFile(), copiedFolder, progress);
+				PackInstallerUtils.copyDirectoryWithProgress(file, dstFolder.append(file.getName()).toFile(), copiedFolder, progress);
 			}
 		}
 		fPackFolders.add(dstFolder.toOSString());
 		copiedFolder.add(parentFolder.getAbsolutePath()); // this folder has been copied, will not enter any subfolders
-
+		if(isLocalPack(pack)) { 
+			copyToLocal(pack); 
+		}
 		return true;
 	}
 

@@ -36,7 +36,7 @@ import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
 import com.arm.cmsis.pack.installer.ui.views.PackInstallerView;
 import com.arm.cmsis.pack.installer.ui.views.PackPropertyView;
-import com.arm.cmsis.pack.rte.boards.IRteBoardDeviceItem;
+import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
 
@@ -125,8 +125,8 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 		ICpItem item = null;
 		if(o instanceof ICpItem) {
 			item = (ICpItem)o;
-		} else 	if(o instanceof IRteBoardDeviceItem) {
-			IRteBoardDeviceItem board = (IRteBoardDeviceItem)o;
+		} else 	if(o instanceof IRteBoardItem) {
+			IRteBoardItem board = (IRteBoardItem)o;
 			item = board.getBoard();
 		} else if(o instanceof IRteDeviceItem) {
 			IRteDeviceItem device = (IRteDeviceItem)o;

@@ -12,6 +12,6 @@
     </block>
 
     <!-- Reset Recovery: Wait for DHCSR.S_RESET_ST bit to clear on read -->
-    <control while="(Read32(DHCSR_Addr) &amp; 0x02000000) == 0" timeout="500000"/>
+    <control while="(Read32(DHCSR_Addr) &amp; 0x02000000)" timeout="500000"/>
     
   </sequence>

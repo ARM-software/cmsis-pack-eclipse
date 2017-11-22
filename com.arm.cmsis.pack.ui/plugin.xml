@@ -19,7 +19,7 @@
    <extension
          point="org.eclipse.ui.editors">
       <editor
-            class="com.arm.cmsis.pack.ui.editors.RteEditor"
+            class="com.arm.cmsis.pack.ui.editors.RteModelEditor"
             contributorClass="com.arm.cmsis.pack.ui.editors.RteEditorContributor"
             extensions="rteconfig"
             icon="icons/rte.gif"

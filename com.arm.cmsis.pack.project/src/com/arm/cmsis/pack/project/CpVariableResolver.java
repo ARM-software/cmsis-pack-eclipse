@@ -159,6 +159,9 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 			}
 			
 		}
+		if (path.startsWith("www.") || (path.startsWith("http") && path.indexOf(':') != -1) ) {   //$NON-NLS-1$ //$NON-NLS-2$
+			return path;  // an URL
+		}
 		return CmsisConstants.CMSIS_RTE_VAR + path;
 	}
 }

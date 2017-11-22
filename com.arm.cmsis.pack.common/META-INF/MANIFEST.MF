@@ -1,14 +1,12 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Common
-Bundle-SymbolicName: com.arm.cmsis.pack.common;singleton:=true
-Bundle-Version: 2.2.0.qualifier
-Bundle-Activator: com.arm.cmsis.pack.common.Activator
+Bundle-SymbolicName: com.arm.cmsis.pack.common
+Bundle-Version: 2.3.0.qualifier
 Bundle-Vendor: ARM
-Require-Bundle: org.eclipse.core.runtime
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack.common,
+ com.arm.cmsis.pack.enums,
  com.arm.cmsis.pack.generic,
  com.arm.cmsis.pack.item,
  com.arm.cmsis.pack.utils

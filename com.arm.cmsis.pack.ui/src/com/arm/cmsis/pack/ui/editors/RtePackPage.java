@@ -33,7 +33,7 @@ import com.arm.cmsis.pack.ui.widgets.RtePackSelectorWidget;
  * Editor page that wraps RteManagerWidget
  *
  */
-public class RtePackPage extends RteEditorPage {
+public class RtePackPage extends RteModelEditorPage {
 
 	protected RtePackSelectorWidget rtePackSelectorTree = null;
 	IAction useLatestAction = null;

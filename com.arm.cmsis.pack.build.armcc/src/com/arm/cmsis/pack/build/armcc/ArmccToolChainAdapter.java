@@ -25,6 +25,8 @@ import com.arm.cmsis.pack.build.IBuildSettings;
 import com.arm.cmsis.pack.build.settings.ILinkerScriptGenerator;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapter;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.generic.Attributes;
+import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
  * Toolchain adapter for ARMCC 5.x compiler
@@ -76,26 +78,60 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 	
 	static protected final String CPP6_C99 		= "com.arm.tool.cpp.compiler.v6.base.option.lang.c99"; //$NON-NLS-1$
 	static protected final String CPP6_CPP11	= "com.arm.tool.cpp.compiler.v6.base.option.lang.c11"; //$NON-NLS-1$
+	static protected final String C99 			= "--C99"; //$NON-NLS-1$
 
-	
+	static protected final String AC5 			= "AC5"; //$NON-NLS-1$
+	static protected final String AC6 			= "AC6"; //$NON-NLS-1$
+	static protected final String AC6LTO 		= "AC6LTO"; //$NON-NLS-1$
 	
 	protected int compilerVersion = 5; // major compiler version : 5 or 6
+	protected Attributes rteOptions = null;
 
 	public ArmccToolChainAdapter() {
+		rteOptions = new Attributes();
 	}
 
+	protected int getCompilerVersion() {
+		return compilerVersion;
+	}
+
+	protected boolean isVersion6() {
+		return compilerVersion >= 6;
+	}
+
+	
+	
 	@Override
-	public void setToolChainOptions(IConfiguration configuration, IBuildSettings buildSettings) {
-		if(configuration == null)
-			return;
-		//String baseID =configuration.getBaseId();
+	public IAttributes getRteOptions(IConfiguration configuration) {
+		checkToolchainVersion(configuration);
+		collectRteAttributes(configuration);
+		return rteOptions;
+	}
+
+	protected void collectRteAttributes(IConfiguration configuration) {
+		rteOptions = new Attributes();
+		if(!isVersion6()) {
+			rteOptions.setAttribute(CmsisConstants.TOPTIONS, AC5);
+		} else {
+			rteOptions.setAttribute(CmsisConstants.TOPTIONS, AC6);
+		}
+	}
+
+	protected void checkToolchainVersion(IConfiguration configuration) {
 		IToolChain toolChain = configuration.getToolChain();
 		if(toolChain == null)
 			return;
 		String baseID = toolChain.getBaseId();
 		if(baseID.startsWith("com.arm.toolchain.v6")) //$NON-NLS-1$
 			compilerVersion = 6;
-		
+	}
+
+	
+	@Override
+	public void setToolChainOptions(IConfiguration configuration, IBuildSettings buildSettings) {
+		if(configuration == null)
+			return;
+		checkToolchainVersion(configuration);
 		super.setToolChainOptions(configuration, buildSettings);
 	}
 
@@ -132,7 +168,13 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 				}
 			}
 			return asmDefines; // paths are not needed as libs are absolute
-		}  		
+		} else if(oType == IBuildSettings.RTE_CMISC && isVersion6() ) { 		
+			Collection<String> values =  buildSettings.getStringListValue(oType);
+			if(values != null && values.contains(C99) )
+				values.remove(C99); // ARMCC 6 does not have --C99 flag 
+			return values;
+		}
+		
 		return super.getStringListValue(buildSettings, oType);
 	}	
 	
@@ -210,7 +252,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 				val = BIG;
 			}
 		}
-		String prefix = compilerVersion >= 6 ? ENDIAN_PREFICS_6 : ENDIAN_PREFICS_5;
+		String prefix = isVersion6() ? ENDIAN_PREFICS_6 : ENDIAN_PREFICS_5;
 		return prefix + val;
 	}
 
@@ -357,10 +399,10 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 		
 		switch(cpu) {
 		case "Cortex-M4": 	//$NON-NLS-1$
-			return compilerVersion >= 6 ? "FPv4_SP_D16" : "FPv4_SP"; //$NON-NLS-1$ //$NON-NLS-2$
+			return isVersion6() ? "FPv4_SP_D16" : "FPv4_SP"; //$NON-NLS-1$ //$NON-NLS-2$
 		
 		case "Cortex-M7": 	//$NON-NLS-1$
-			if(compilerVersion >= 6)
+			if(isVersion6())
 				return dp? "FPv5_D16" : "FPv5_SP_D16"; //$NON-NLS-1$ //$NON-NLS-2$
 			return dp? "FPv5_D16" : "FPv5_SP"; //$NON-NLS-1$ //$NON-NLS-2$
 		
@@ -377,18 +419,18 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 		case "Cortex-A53":	//$NON-NLS-1$
 		case "Cortex-A57":	//$NON-NLS-1$
 		case "Cortex-A72":	//$NON-NLS-1$
-			if(compilerVersion >= 6 )
+			if(isVersion6() )
 				return dp? "VFPv4" : "VFPv4.Neon"; //$NON-NLS-1$ //$NON-NLS-2$
 			return dp? "VFPv4_D16" : "VFPv4.Neon"; //$NON-NLS-1$ //$NON-NLS-2$
 	
 
 		case "Cortex-A8": 	//$NON-NLS-1$
-			if(compilerVersion >= 6) 
+			if(isVersion6()) 
 				return "VFPv3.Neon"; //$NON-NLS-1$
 			return "VFPv3"; //$NON-NLS-1$ 
 		
 		case "Cortex-A9": 	//$NON-NLS-1$
-			if(compilerVersion >= 6 )
+			if(isVersion6() )
 				return dp? "VFPv3_D16_FP16" : "VFPv3_FP16.Neon"; //$NON-NLS-1$ //$NON-NLS-2$
 			return dp? "VFPv3_D16_FP16" : "VFPv3_FP16.Neon"; //$NON-NLS-1$ //$NON-NLS-2$
 		

@@ -13,13 +13,10 @@ package com.arm.cmsis.pack.installer.ui.views;
 
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewer;
-import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
@@ -36,8 +33,8 @@ import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
+import com.arm.cmsis.pack.ui.tree.TreeColumnComparator;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
-import com.arm.cmsis.pack.utils.AlnumComparator;
 
 /**
  * Default implementation of the devices view in pack manager
@@ -173,7 +170,7 @@ public class DevicesView extends PackInstallerView {
 
 		private IRteDeviceItem getClosestParentRteDeviceItem(IRteDeviceItem item) {
 			IRteDeviceItem parent = item;
-			while (parent != null && parent.getAllDeviceNames().isEmpty()) {
+			while (parent.getParent() != null && parent.getParent().getAllDeviceNames().isEmpty()) {
 				parent = parent.getParent();
 			}
 			return parent;
@@ -205,8 +202,10 @@ public class DevicesView extends PackInstallerView {
 		public String getString(Object obj, int columnIndex) {
 			if (getCellControlType(obj, columnIndex) == CellControlType.URL) {
 				IRteDeviceItem item = getDeviceTreeItem(obj);
-				ICpDeviceInfo deviceInfo = new CpDeviceInfo(null, item);
-				return deviceInfo.getSummary();
+				if(item != null) {
+					ICpDeviceInfo deviceInfo = new CpDeviceInfo(null, item.getDevice(), item.getName());
+					return deviceInfo.getSummary();
+				}
 			} else if (columnIndex == COLURL) {
 				IRteDeviceItem item = getDeviceTreeItem(obj);
 				int nrofDevices = item.getAllDeviceNames().size();
@@ -232,42 +231,12 @@ public class DevicesView extends PackInstallerView {
 
 		@Override
 		public String getTooltipText(Object obj, int columnIndex) {
-			if (getCellControlType(obj, columnIndex) == CellControlType.URL) {
-				IRteDeviceItem item = getDeviceTreeItem(obj);
-				return item.getUrl();
-			}
-			return null;
+			return getUrl(obj, columnIndex);
 		}
 
 	}
 
-	class DeviceTreeColumnComparator extends TreeColumnComparator {
-
-		private final AlnumComparator alnumComparator;
-
-		public DeviceTreeColumnComparator(TreeViewer viewer, ColumnAdvisor advisor) {
-			super(viewer, advisor);
-			alnumComparator = new AlnumComparator(false, false);
-		}
-
-		@Override
-		public int compare(Viewer viewer, Object e1, Object e2) {
-			Tree tree = fViewer.getTree();
-			int index = getColumnIndex();
-			if (index != 0) {
-				return super.compare(viewer, e1, e2);
-			}
-
-			int result = 0;
-			ColumnLabelProvider colLabelProvider = (ColumnLabelProvider) treeViewer.getLabelProvider(index);
-			String str1 = colLabelProvider.getText(e1);
-			String str2 = colLabelProvider.getText(e2);
-			result = alnumComparator.compare(str1, str2);
-
-			return tree.getSortDirection() == SWT.DOWN ? -result : result;
-		}
-	}
-
+	
 	public DevicesView() {
 	}
 
@@ -297,7 +266,7 @@ public class DevicesView extends PackInstallerView {
 		column1.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, COLURL));
 
 		fViewer.setContentProvider(new DeviceViewContentProvider());
-		fViewer.setComparator(new DeviceTreeColumnComparator(fViewer, columnAdvisor));
+		fViewer.setComparator(new TreeColumnComparator(fViewer, columnAdvisor, 0));
 		fViewer.setAutoExpandLevel(2);
 	}
 

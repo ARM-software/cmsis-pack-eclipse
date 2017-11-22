@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2017 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -40,128 +39,78 @@ import org.eclipse.ui.ide.IGotoMarker;
 import org.eclipse.ui.ide.ResourceUtil;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.MultiPageEditorPart;
-import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 
-import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpItem;
-import com.arm.cmsis.pack.enums.EEvaluationResult;
+import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
-import com.arm.cmsis.pack.info.ICpComponentInfo;
-import com.arm.cmsis.pack.info.ICpConfigurationInfo;
-import com.arm.cmsis.pack.info.ICpPackInfo;
-import com.arm.cmsis.pack.parser.CpConfigParser;
-import com.arm.cmsis.pack.rte.IRteModelController;
-import com.arm.cmsis.pack.rte.RteModel;
-import com.arm.cmsis.pack.rte.components.IRteComponentItem;
-import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
-import com.arm.cmsis.pack.rte.packs.IRtePackFamily;
-import com.arm.cmsis.pack.ui.CpPlugInUI;
+import com.arm.cmsis.pack.parser.ICpXmlParser;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 
 /**
- * An example showing how to create an RTE configuration multi-page editor. This
- * example has 4 pages:
- * <ul>
- * <li>page 0 contains an RteManagerWidget
- * <li>page 1 contains an RteDesviceInfo
- * <li>page 1 contains an RtePackSelectorWidget
- * </ul>
+ * An abstract multi-page editor for IRteCondroller-backed models. 
  */
-public class RteEditor extends MultiPageEditorPart implements IResourceChangeListener, IRteEventListener, IGotoMarker {
+public abstract class RteEditor<TController extends IRteController> extends MultiPageEditorPart implements IResourceChangeListener, IRteEventListener, IGotoMarker {
 
-	private RteComponentPage rteComponentPage;
-	private RteDevicePage rteDevicePage;
-	private RtePackPage rtePackPage;
+	protected int activePageIndex = 0; // initially the page with index 0 is activated
 
-	private int componentPageIndex = 0;
-	private int devicePageIndex = 1;
-	private int packPageIndex = 2;
-	private int activePageIndex = 0; // initially the page with index 0 is activated
+	protected TController fModelController = null;
+	protected ICpXmlParser fParser = null;
+	protected IFile iFile = null;
 
-	IRteModelController fModelController = null;
-	CpConfigParser parser = null;
-	IFile iFile;
-
+	abstract protected ICpXmlParser createParser();
+	abstract protected TController createController();
+	
 	public RteEditor() {
 		super();
-		parser = new CpConfigParser();
-		CpPlugIn.addRteListener(this);
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 	}
 
-	void createRteManagerPage() {
-		rteComponentPage = new RteComponentPage();
-		Composite composite = rteComponentPage.createControl(getContainer());
-		componentPageIndex = addPage(composite);
-		setPageText(componentPageIndex, CpStringsUI.RteConfigurationEditor_ComponentsTab);
+	@Override
+	public void dispose() {
+		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+		fParser = null;
+		fModelController = null;
+		super.dispose();
 	}
 
-	void createPackSelectorPage() {
-		rtePackPage = new RtePackPage();
-		Composite composite = rtePackPage.createControl(getContainer());
-
-		packPageIndex = addPage(composite);
-		setPageText(packPageIndex, CpStringsUI.RteConfigurationEditor_PacksTab);
-	}
-
-	void createDeviceSelectorPage() {
-		rteDevicePage = new RteDevicePage();
-		Composite composite = rteDevicePage.createControl(getContainer());
-
-		devicePageIndex = addPage(composite);
-		setPageText(devicePageIndex, CpStringsUI.RteDevicePage_Device);
-	}
-
+	
 	@Override
 	protected void setInput(IEditorInput input) {
 		super.setInput(input);
 		iFile = ResourceUtil.getFile(input);
 		String title= input.getName();
 		setPartName(title);
+		loadData();
 	}
 
-	@Override
-	protected void createPages() {
-		createRteManagerPage();
-		createDeviceSelectorPage();
-		createPackSelectorPage();
-		createConfiguration();
-	}
 
-	protected void createConfiguration() {
-		File file = iFile.getLocation().toFile();
-		ICpItem root = parser.parseFile(file.getAbsolutePath());
-
-		fModelController = new RteEditorController(new RteModel());
-		if (root != null) {
-			ICpConfigurationInfo info = (ICpConfigurationInfo) root;
-			fModelController.setConfigurationInfo(info);
-			rteComponentPage.setModelController(fModelController);
-			rteDevicePage.setModelController(fModelController);
-			rtePackPage.setModelController(fModelController);
-			fModelController.addListener(this);
+	protected ICpXmlParser getParser() {
+		if(fParser == null) {
+			fParser = createParser();			
 		}
+		return fParser;
 	}
 
-	@Override
-	public void dispose() {
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		CpPlugIn.removeRteListener(this);
-		parser = null;
-		fModelController = null;
-		rteComponentPage = null;
-		rtePackPage = null;
-		rteDevicePage = null;
-		super.dispose();
-	}
+	protected void loadData() {
+		fModelController = createController();
+		if(fModelController != null)
+			fModelController.addListener(this);
 
+		File file = iFile.getLocation().toFile();
+		
+		ICpXmlParser parser = getParser();
+		if(parser == null)
+			return;
+		ICpItem root = parser.parseFile(file.getAbsolutePath());
+		fModelController.setDataInfo(root);
+	}
+	
 	protected String getXmlString() {
-		if (fModelController != null) {
-			ICpConfigurationInfo info = fModelController.getConfigurationInfo();
-			return parser.writeToXmlString(info);
+		if (fModelController != null && getParser()!= null) {
+			ICpItem info = fModelController.getDataInfo();
+			return fParser.writeToXmlString(info);
 		}
 		return CmsisConstants.EMPTY_STRING;
 	}
@@ -182,46 +131,12 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 
 	@Override
 	public void doSaveAs() {
-		fModelController.commit();
-
-		String xml = getXmlString();
-		try {
-			IProgressMonitor monitor = new NullProgressMonitor();
-			iFile.setContents(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())),
-					true, true, monitor);
-			iFile.refreshLocal(IResource.DEPTH_ZERO, monitor);
-		} catch (CoreException e) {
-		}
-		firePropertyChange(IEditorPart.PROP_DIRTY);
+		doSave( new NullProgressMonitor());
 	}
 
 	@Override
 	public void gotoMarker(IMarker marker) {
-		try {
-			IRteDependencyItem depItem = (IRteDependencyItem) marker.getAttribute(CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM);
-			if (depItem == null) {
-				return;
-			}
-			IRteComponentItem rteComponent = depItem.getComponentItem();
-			if (rteComponent == null) {
-				return;
-			}
-
-			ICpComponentInfo ci = rteComponent.getActiveCpComponentInfo();
-			boolean packInstalled = ci == null ? false : ci.getPackInfo().getPack() != null;
-			if (ci != null && depItem.getEvaluationResult() != EEvaluationResult.UNAVAILABLE && !packInstalled) {
-				setActivePage(2);
-				ICpPackInfo pi = ci.getPackInfo();
-				String packId = pi.isVersionFixed() ? pi.getId() : pi.getPackFamilyId();
-				IRtePackFamily packFamily = fModelController.getRtePackCollection().getRtePackFamily(CpPack.familyFromId(packId));
-				fModelController.emitRteEvent(RteEvent.PACK_FAMILY_SHOW, packFamily);
-			} else {
-				setActivePage(0);
-				fModelController.emitRteEvent(RteEvent.COMPONENT_SHOW,
-							fModelController.getComponents().findChild(rteComponent.getKeyPath(), false));
-			}
-		} catch (CoreException e) {
-		}
+		// default does nothing
 	}
 
 	/**
@@ -249,7 +164,7 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		}
 		activePageIndex = newPageIndex;
 		if (fModelController != null) {
-			fModelController.updateConfigurationInfo();
+			fModelController.updateDataInfo();
 		}
 	}
 
@@ -258,26 +173,14 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		if (fModelController == null) {
 			return;
 		}
-
 		switch (event.getTopic()) {
 		case RteEvent.CONFIGURATION_MODIFIED:
 		case RteEvent.COMPONENT_SELECTION_MODIFIED:
 		case RteEvent.FILTER_MODIFIED:
-			firePropertyChange(IEditorPart.PROP_DIRTY);
+			Display.getDefault().asyncExec(() -> {
+				firePropertyChange(IEditorPart.PROP_DIRTY);
+			});			
 			return;
-		case RteEvent.PACKS_RELOADED:
-		case RteEvent.PACKS_UPDATED:
-			if (fModelController != null) {
-				fModelController.reloadPacks();
-			}
-			break;
-		case RteEvent.GPDSC_CHANGED:
-			if (fModelController != null) {
-				if(fModelController.isGeneratedPackUsed((String)event.getData())){
-					fModelController.update();
-				}
-			}
-			break;
 		default:
 		}
 	}
@@ -290,7 +193,7 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 		return false;
 	}
 
-	public IRteModelController getModelController() {
+	public TController getModelController() {
 		return fModelController;
 	}
 
@@ -351,24 +254,6 @@ public class RteEditor extends MultiPageEditorPart implements IResourceChangeLis
 				e.printStackTrace();
 			}
 		}
-	}
-
-	// bind to framework
-	@Override
-	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public Object getAdapter(Class required) {
-		if (IContentOutlinePage.class.equals(required)) {
-			// two outline views for Components and xml views.
-			// These views must implements IContentOutlinePage or extends
-			// ContentOutlinePage
-			// OutlineView ov = new OutlineView();
-			// return ov;
-			if (getActivePage() == 1) {
-				// return new XMLContentOutlinePage(this);
-			}
-		}
-
-		return super.getAdapter(required);
 	}
 
 }

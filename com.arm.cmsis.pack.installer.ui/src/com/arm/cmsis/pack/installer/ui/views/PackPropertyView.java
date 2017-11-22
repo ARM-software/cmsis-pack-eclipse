@@ -303,7 +303,7 @@ public class PackPropertyView extends PackInstallerView {
 			// root node
 			if (pack != null && item == pack) {
 				if (installed) {
-					if (pack.isRequiredPacksInstalled()) {
+					if (CpPlugIn.getPackManager().isRequiredPacksInstalled(pack)) {
 						return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
 					}
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE_RED);
@@ -362,7 +362,7 @@ public class PackPropertyView extends PackInstallerView {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_EXAMPLE);
 			case CmsisConstants.PACKAGES_TAG:
 				if (pack != null && pack.getPackState() == PackState.INSTALLED
-				&& !pack.isRequiredPacksInstalled()) {
+				&& !CpPlugIn.getPackManager().isRequiredPacksInstalled(pack)) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_RED);
 				}
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES);
@@ -582,7 +582,7 @@ public class PackPropertyView extends PackInstallerView {
 			fInstallPackAction.setToolTipText(Messages.PackPropertyView_InstallTooltip);
 			fInstallPackAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_INSTALL));
 			manager.add(fInstallPackAction);
-		} else if (!pack.isRequiredPacksInstalled()) {
+		} else if (!CpPlugIn.getPackManager().isRequiredPacksInstalled(pack)) {
 			fInstallRequiredPacksAction.setText(Messages.PackInstallerView_InstallRequiredPacks);
 			fInstallRequiredPacksAction.setToolTipText(Messages.PackInstallerView_InstallRequiredPacksToolTip);
 			fInstallRequiredPacksAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_INSTALL));

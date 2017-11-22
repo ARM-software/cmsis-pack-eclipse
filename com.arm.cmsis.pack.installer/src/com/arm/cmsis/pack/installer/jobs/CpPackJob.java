@@ -11,10 +11,22 @@
 
 package com.arm.cmsis.pack.installer.jobs;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.jobs.Job;
 
+import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackInstaller;
-import com.arm.cmsis.pack.events.RtePackJobResult;
+import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.data.ICpPack;
+import com.arm.cmsis.pack.parser.PdscParser;
+import com.arm.cmsis.pack.repository.RtePackJobResult;
+import com.arm.cmsis.pack.utils.Utils;
+import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Basic class for the pack manager's job
@@ -48,6 +60,31 @@ public abstract class CpPackJob extends Job {
 	@Override
 	public boolean belongsTo(Object family) {
 		return getName().equals(family);
+	}
+	
+	protected boolean isLocalPack(ICpPack pack) {
+		String webPdscFileName = CpPlugIn.getPackManager().getCmsisPackWebDir() + '/' + pack.getPackFamilyId() + CmsisConstants.EXT_PDSC;
+		File webPdscFile = new File(webPdscFileName);
+		return !webPdscFile.exists();
+	}
+
+	protected void copyToLocal(ICpPack pack) throws IOException {
+		String pdscFile = pack.getFileName();  
+		String familyId = pack.getPackFamilyId();
+		String existingLocalVersion = null; 
+		IPath localPath = new Path(CpPlugIn.getPackManager().getCmsisPackLocalDir()).append(familyId + CmsisConstants.EXT_PDSC);
+		File localFile = localPath.toFile();
+		if(localFile.exists()) {
+			PdscParser parser = new PdscParser();
+			ICpItem existingLocalPack = parser.parseFile(localFile.toString());
+			if(existingLocalPack != null)
+				existingLocalVersion = existingLocalPack.getVersion(); 
+		}
+		// check if existing version is lower than the imported one  
+		if(existingLocalVersion == null || 
+				VersionComparator.versionCompare(existingLocalVersion, pack.getVersion()) < 0) {
+			Utils.copy(new File(pdscFile), localPath.toFile());
+		}
 	}
 
 }

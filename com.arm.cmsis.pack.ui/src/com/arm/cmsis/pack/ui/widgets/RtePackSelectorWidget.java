@@ -45,11 +45,9 @@ import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 /**
  * Tree widget to select pack versions
  */
-public class RtePackSelectorWidget extends RteWidget {
+public class RtePackSelectorWidget extends RteModelTreeWidget {
 	protected final static String[] VERSION_MODES = new String[]{CpStrings.Latest, CpStrings.Fixed, CpStrings.Excluded};
 
-	static final Color GREEN = new Color(Display.getCurrent(), CpPlugInUI.GREEN);
-	static final Color YELLOW = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
 
 	static final String[] PACK_ICONS = new String[]{CpPlugInUI.ICON_PACKAGE,
 			CpPlugInUI.ICON_PACKAGE_EMPTY,
@@ -65,7 +63,7 @@ public class RtePackSelectorWidget extends RteWidget {
 	public static final int ICON_INDEX_PACKAGES = 4;
 
 
-	TreeViewer viewer = null;					// the Tree Viewer
+	
 	private static final int COLPACK	= 0;
 	private static final int COLSEL 	= 1;
 	private static final int COLVERSION = 2;
@@ -129,7 +127,7 @@ public class RtePackSelectorWidget extends RteWidget {
 	/**
 	 * Column label provider for RtePackSelectorWidget
 	 */
-	public class RtePackSelectorColumnAdvisor extends RteColumnAdvisor {
+	public class RtePackSelectorColumnAdvisor extends RteColumnAdvisor<IRteModelController> {
 		/**
 		 * Constructs advisor for a viewer
 		 * @param columnViewer ColumnViewer on which the advisor is installed
@@ -368,44 +366,44 @@ public class RtePackSelectorWidget extends RteWidget {
 	public Composite createControl(Composite parent) {
 		Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL|SWT.BORDER);
 		tree.setHeaderVisible(true);
-		viewer = new TreeViewer(tree);
-		ColumnViewerToolTipSupport.enableFor(viewer);
+		fTreeViewer = new TreeViewer(tree);
+		ColumnViewerToolTipSupport.enableFor(fTreeViewer);
 
 		// Tree item name
-		TreeViewerColumn column0 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column0 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		tree.setLinesVisible(true);
 		column0.getColumn().setText(CpStrings.Pack);
 		column0.getColumn().setWidth(180);
-		fColumnAdvisor = new RtePackSelectorColumnAdvisor(viewer);
-		column0.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLPACK));
+		fColumnAdvisor = new RtePackSelectorColumnAdvisor(fTreeViewer);
+		column0.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, COLPACK));
 		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, COLPACK);
 		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
 		col0LabelProvider.setOwnerDrawEnabled(false);
 		column0.setLabelProvider(col0LabelProvider);
 
 		// Check/menu box for selection
-		TreeViewerColumn column1 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column1 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		tree.setLinesVisible(true);
 		column1.getColumn().setText(CpStrings.Selection);
 		column1.getColumn().setWidth(100);
-		column1.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLSEL));
+		column1.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, COLSEL));
 		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLSEL));
 
 		// Version
-		TreeViewerColumn column2 = new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column2 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column2.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Version);
 		column2.getColumn().setWidth(70);
-		column2.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLVERSION));
+		column2.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, COLVERSION));
 		column2.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLVERSION));
 
 		// Description/URL
-		TreeViewerColumn column3= new TreeViewerColumn(viewer, SWT.LEFT);
+		TreeViewerColumn column3= new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column3.getColumn().setText(CpStringsUI.RteComponentTreeWidget_Description);
 		column3.getColumn().setWidth(400);
-		column3.setEditingSupport(new AdvisedEditingSupport(viewer, fColumnAdvisor, COLDESCR));
+		column3.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, COLDESCR));
 		column3.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, COLDESCR));
 
-		viewer.setContentProvider(new RtePackProvider());
+		fTreeViewer.setContentProvider(new RtePackProvider());
 
 		GridData gridData = new GridData();
 		gridData.horizontalAlignment = SWT.FILL;
@@ -424,16 +422,16 @@ public class RtePackSelectorWidget extends RteWidget {
 	public void setModelController(IRteModelController model) {
 		super.setModelController(model);
 		if(model != null) {
-			viewer.setInput(fModelController);
+			fTreeViewer.setInput(fModelController);
 		} else {
-			viewer.setInput(null);
+			fTreeViewer.setInput(null);
 		}
 		update();
 	}
 
 	protected IRtePackFamily getSelectedItem() {
-		if (viewer != null) {
-			IStructuredSelection sel = (IStructuredSelection)viewer.getSelection();
+		if (fTreeViewer != null) {
+			IStructuredSelection sel = (IStructuredSelection)fTreeViewer.getSelection();
 			if(sel != null) {
 				return getRtePackFamily(sel.getFirstElement());
 			}
@@ -446,7 +444,7 @@ public class RtePackSelectorWidget extends RteWidget {
 	 * @param item Pack Family item to select
 	 */
 	public void showPackFamilyItem(IRtePackFamily item) {
-		if(viewer == null) {
+		if(fTreeViewer == null) {
 			return;
 		}
 		if(item == null) {
@@ -461,7 +459,7 @@ public class RtePackSelectorWidget extends RteWidget {
 		TreePath tp = new TreePath(path);
 		TreeSelection ts = new TreeSelection(tp);
 
-		viewer.setSelection(ts, true);
+		fTreeViewer.setSelection(ts, true);
 
 	}
 
@@ -478,17 +476,12 @@ public class RtePackSelectorWidget extends RteWidget {
 
 	@Override
 	public void refresh() {
-		viewer.refresh();
+		fTreeViewer.refresh();
 	}
 
 	@Override
 	public void update() {
 		refresh();
-	}
-
-	@Override
-	public Composite getFocusWidget() {
-		return viewer.getTree();
 	}
 
 }

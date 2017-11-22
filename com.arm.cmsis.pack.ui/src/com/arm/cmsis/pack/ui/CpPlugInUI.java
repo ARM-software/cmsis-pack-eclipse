@@ -144,6 +144,12 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_BOARD_GREY		= "boardGrey.png";		//$NON-NLS-1$
 	public static final String ICON_BOARD_DEPR		= "boardDepr.png";		//$NON-NLS-1$
 
+	public static final String ICON_PROCESSOR 		= "processor.gif";		//$NON-NLS-1$
+	public static final String ICON_MEMORY	 		= "memory.gif";		//$NON-NLS-1$
+	public static final String ICON_MEMORY_MAP 		= "memory_map.gif";		//$NON-NLS-1$
+	public static final String ICON_PEERIPHERALS	= "peripherals.gif";		//$NON-NLS-1$
+
+	
 	public static final String ICON_RUN 			= "run.gif"; 			//$NON-NLS-1$
 	public static final String ICON_RUN_GREY 		= "runGrey.gif"; 		//$NON-NLS-1$
 
@@ -275,7 +281,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		}
 		IServiceLocator serviceLocator = PlatformUI.getWorkbench();
 		if(serviceLocator != null) {
-			return (ICommandService)serviceLocator.getService(ICommandService.class);
+			return serviceLocator.getService(ICommandService.class);
 		}
 		return null;
 	}

@@ -131,6 +131,10 @@ public class LaunchGenerator {
 		Collection<ICpItem> argItems = fGenerator.getArguments(CmsisConstants.EXE);
 		ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
 		String command = ep.expandString(commandItem.getText(), fConfigInfo, true);
+		File file = new File(command);
+		if (!file.isAbsolute()) {
+		    command = commandItem.getAbsolutePath(command);
+		}
 
 		List<String> args = new LinkedList<>();
 		args.add(command);
@@ -143,7 +147,10 @@ public class LaunchGenerator {
 		ProcessBuilder pb = new ProcessBuilder(args);
 		String wkDir = ep.expandString(fGenerator.getWorkingDir(), fConfigInfo, true);
 		if (wkDir != null) {
-			pb.directory(new File(wkDir));
+			// ensure it working directory exists 
+			File workDir = new File(wkDir);
+			workDir.mkdirs();
+			pb.directory(workDir);
 		}
 		pb.start();
 	}

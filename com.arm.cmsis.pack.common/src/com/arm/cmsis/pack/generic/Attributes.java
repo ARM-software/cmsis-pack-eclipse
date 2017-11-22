@@ -80,14 +80,7 @@ public class Attributes implements IAttributes {
 	@Override
 	public long getAttributeAsLong(String key, long nDefault) {
 		String value = getAttribute(key);
-		if(value != null && !value.isEmpty()) {
-			try {
-				return Long.decode(value);
-			} catch (NumberFormatException e) {
-				// do nothing, return default
-			}
-		}
-		return nDefault;
+		return IAttributes.stringToLong(value, nDefault);
 	}
 
 
@@ -167,6 +160,18 @@ public class Attributes implements IAttributes {
 	}
 
 	@Override
+	synchronized public void addAttributes(Map<String, String> attributes) {
+		if(attributes != null && !attributes.isEmpty()) {
+			// make copy
+			if(fAttributes == null) {
+				setAttributes(attributes);
+			} else {
+				fAttributes.putAll(attributes);
+			}			
+		}
+	}
+	
+	@Override
 	public void setAttributes(String attributesString) {
 		fAttributes = splitString(attributesString);
 	}
@@ -179,9 +184,16 @@ public class Attributes implements IAttributes {
 		} else {
 			fAttributes = null;
 		}
-
 	}
 
+	@Override
+	synchronized public void addAttributes(IAttributes attributes) {
+		if(attributes != null && attributes.hasAttributes()) {
+			addAttributes(attributes.getAttributesAsMap());
+		} 
+	}
+
+	
 	@Override
 	synchronized public void mergeAttributes(final IAttributes attributes) {
 		if(attributes == null || !attributes.hasAttributes()) {

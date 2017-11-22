@@ -20,6 +20,7 @@ import com.arm.cmsis.pack.CpStrings;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpPackInfo;
+import com.arm.cmsis.pack.rte.RteConstants;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 
 /**
@@ -113,9 +114,9 @@ public class RteDependencyResult extends RteDependencyItem implements IRteDepend
 		if( fComponentItem != null && !res.isFulfilled() ) {
 			ICpComponentInfo ci = fComponentItem.getActiveCpComponentInfo();
 			if(ci != null && ci.getComponent() == null) {
-				s = EEvaluationResult.MISSING.getDescription();
+				s = RteConstants.getDescription(EEvaluationResult.MISSING);
 				s += ". "; //$NON-NLS-1$
-				s += res.getDescription();
+				s += RteConstants.getDescription(res);
 				if(res == EEvaluationResult.UNAVAILABLE_PACK) {
 					s += ": ";  //$NON-NLS-1$
 					ICpPackInfo pi = ci.getPackInfo();
@@ -125,7 +126,7 @@ public class RteDependencyResult extends RteDependencyItem implements IRteDepend
 				return s;
 			}
 		} 
-		s = res.getDescription();
+		s = RteConstants.getDescription(res);
 		
 		if(s != null)
 			return s;

@@ -11,7 +11,9 @@
 
 package com.arm.cmsis.pack.rte;
 
+import com.arm.cmsis.pack.CpStrings;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.enums.EEvaluationResult;
 
 /**
  *  Utility class to define constants comment to RTE framework
@@ -47,5 +49,58 @@ public class RteConstants {
 		}
 		return NONE;
 	}
+	
+	/**
+	 * Returns short evaluation result description
+	 * @param result EEvaluationResult to get description for 
+	 * @return short description
+	 */
+	static public String getDescription(EEvaluationResult result) {
+		switch(result) {
+		case CONFLICT:
+			return CpStrings.EvalResult_Confilct;
+		case INCOMPATIBLE:
+			return CpStrings.EvalResult_Incompatible;
+		case INCOMPATIBLE_API:
+			return CpStrings.EvalResult_IncompatibleApi;
+		case INCOMPATIBLE_BUNDLE:
+			return CpStrings.EvalResult_IncompatibleBundle;
+		case INCOMPATIBLE_VARIANT:
+			return CpStrings.EvalResult_IncompatibleVariant;
+		case INCOMPATIBLE_VENDOR:
+			return CpStrings.EvalResult_IncompatibleVendor;
+		case INCOMPATIBLE_VERSION:
+			return CpStrings.EvalResult_IncompatibleVersion;
+		case MISSING:
+			return CpStrings.EvalResult_MissingComponent;
+		case MISSING_API:
+			return CpStrings.EvalResult_MissingApi;
+		case MISSING_BUNDLE:
+			return CpStrings.EvalResult_MissingBundle;
+		case MISSING_VARIANT:
+			return CpStrings.EvalResult_MissingVariant;
+		case MISSING_VENDOR:
+			return CpStrings.EvalResult_MissingVendor;
+		case MISSING_VERSION:
+			return CpStrings.EvalResult_MissingVersion;
+		case SELECTABLE:
+			return CpStrings.EvalResult_SelectComponent;
+		case UNAVAILABLE:
+			return CpStrings.EvalResult_UnavailableComponent;
+		case UNAVAILABLE_PACK:
+			return CpStrings.EvalResult_UnavaliablePack;
+
+		case UNDEFINED:
+		case ERROR:
+		case FAILED:
+		case FULFILLED:
+		case IGNORED:
+		case INACTIVE:
+		default:
+			break;
+		}
+		return null;
+	}
+
 
 }

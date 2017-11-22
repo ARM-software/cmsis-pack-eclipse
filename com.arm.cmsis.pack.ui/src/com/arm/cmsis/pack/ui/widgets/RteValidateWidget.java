@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -41,9 +40,7 @@ import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.AdvisedEditingSupport;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 
-public class RteValidateWidget extends RteWidget {
-	TreeViewer fViewer = null;
-	
+public class RteValidateWidget extends RteModelTreeWidget {
 	
 	/** Column label provider for RteComponentTreeWidget 
 	 *
@@ -62,13 +59,13 @@ public class RteValidateWidget extends RteWidget {
 	@Override
 	public void setModelController(IRteModelController model) {
 		super.setModelController(model);
-		if (fViewer != null) {
-			fViewer.setInput(model);
+		if (fTreeViewer != null) {
+			fTreeViewer.setInput(model);
 			refresh();
 		}
 	}
 	
-	public class RteValidateColumnAdvisor extends RteColumnAdvisor {
+	public class RteValidateColumnAdvisor extends RteColumnAdvisor<IRteModelController> {
 		/**
 		 * Constructs advisor for a viewer
 		 * @param columnViewer ColumnViewer on which the advisor is installed
@@ -177,17 +174,17 @@ public class RteValidateWidget extends RteWidget {
     	
 		Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL|SWT.BORDER);
 		tree.setHeaderVisible(true);
-		fViewer = new TreeViewer(tree);
-		ColumnViewerToolTipSupport.enableFor(fViewer);
-		fColumnAdvisor = new RteValidateColumnAdvisor(fViewer);
+		fTreeViewer = new TreeViewer(tree);
+		ColumnViewerToolTipSupport.enableFor(fTreeViewer);
+		fColumnAdvisor = new RteValidateColumnAdvisor(fTreeViewer);
 		
-		TreeViewerColumn column0 = new TreeViewerColumn(fViewer, SWT.LEFT);
+		TreeViewerColumn column0 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		tree.setLinesVisible(true);
 		column0.getColumn().setText(CpStringsUI.RteValidateWidget_ValidationOutput);
 		column0.getColumn().setWidth(400);
-		column0.setEditingSupport(new AdvisedEditingSupport(fViewer, fColumnAdvisor, 0));
+		column0.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 0));
 		
-		fViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+		fTreeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				handleTreeSelectionChanged(event);
@@ -199,14 +196,14 @@ public class RteValidateWidget extends RteWidget {
 		col0LabelProvider.setOwnerDrawEnabled(false);   
 		column0.setLabelProvider(col0LabelProvider);
 		
-		TreeViewerColumn column1 = new TreeViewerColumn(fViewer, SWT.LEFT);
+		TreeViewerColumn column1 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column1.getColumn().setText(CpStringsUI.RteValidateWidget_Description);
 		column1.getColumn().setWidth(500);
-		column1.setEditingSupport(new AdvisedEditingSupport(fViewer, fColumnAdvisor, 1));
+		column1.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 1));
 		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 1));
 
 		RteValidateContentProvider validateProvider = new RteValidateContentProvider();
-		fViewer.setContentProvider(validateProvider);
+		fTreeViewer.setContentProvider(validateProvider);
     
     	GridData gridData = new GridData();
     	gridData.horizontalAlignment = SWT.FILL;
@@ -216,13 +213,13 @@ public class RteValidateWidget extends RteWidget {
     	tree.setLayoutData(gridData);
     	
     	if (getModelController() != null) {
-			fViewer.setInput(getModelController());
+			fTreeViewer.setInput(getModelController());
 		}
     	return tree;
     }
 
     private IRteDependencyItem getSelectedDependencyItem() {
-		IStructuredSelection sel= (IStructuredSelection)fViewer.getSelection();
+		IStructuredSelection sel= (IStructuredSelection)fTreeViewer.getSelection();
 		if(sel.size() == 1) {
 			Object o = sel.getFirstElement();
 			if(o instanceof IRteDependencyItem ){
@@ -263,33 +260,17 @@ public class RteValidateWidget extends RteWidget {
 	
 	@Override
 	public void refresh() {
-		if(fViewer != null) {
-			fViewer.refresh();
+		if(fTreeViewer != null) {
+			fTreeViewer.refresh();
 		}
 	}
 
 	@Override
 	public void update() {
 		refresh();
-		if(fViewer != null) {
-			fViewer.expandAll();
+		if(fTreeViewer != null) {
+			fTreeViewer.expandAll();
 		}
 	}
 
-	/**
-	 *  Updates widget asynchronously, must run in GUI thread 
-	 */
-	protected void asyncUpdate() {
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				update();
-			}
-		});			
-	}	
-	
-	@Override
-	public Composite getFocusWidget() {
-		return fViewer.getTree();
-	}
 }

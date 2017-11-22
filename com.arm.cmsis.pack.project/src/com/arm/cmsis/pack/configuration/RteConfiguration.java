@@ -660,7 +660,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 			String baseDir =  fConfigInfo.getDir(false);
 			if(absPath.startsWith(baseDir)) {
 				// the file is within project
-				return Utils.makePathRelative(absPath, baseDir);
+				return ProjectUtils.makePathRelative(absPath, baseDir);
 			}
 		}
 

@@ -39,9 +39,24 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 * Returns top-level parent of the hierarchy (the item that has no parent above) 
 	 * @return top parent item   
 	 */
-	T getRoot();
+	default T getRoot() {
+		if(getParent() == null) {
+			return getThisItem();
+		}
+		return getParent().getRoot();
+	}
 	
-		
+	
+	/**
+	 * Returns this item
+	 * @return this item
+	 */
+	@SuppressWarnings("unchecked")
+	default T getThisItem() {
+		return (T)this; // we know that this item type is T : T extends ICmsisTreeItem<T>
+	}
+
+	
 	/**
 	 * Returns object of type T effectively associated with this item  
 	 * @return effective object of type T
@@ -69,6 +84,23 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 */
 	T getEffectiveParent();
 
+
+    /**
+     * Returns closest parent of given type
+     * @param type class type to search
+     * @return parent of given type or null if not found
+     */
+    @SuppressWarnings("unchecked")
+	default <C> C getParentOfType(Class<C> type) {
+    	if(type == null)
+    		return null;
+    	for(T parent = getParent(); parent != null; parent = parent.getParent()) {
+    		if(type.isInstance(parent))
+    			return (C)parent;
+    	}
+    	return null;
+    }
+	
 
 	/**
 	 * Returns list of of child items
@@ -116,7 +148,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 * @return first child item  
 	 */
 	T getFirstChild();
-	
+		
 	/**
 	 * Returns implementation-depended string key of the first child 
 	 * @return key of the very first child
@@ -133,6 +165,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 */
 	T getFirstChild(final String key);
 
+	
 	/**
 	 * Returns first child's text
 	 * @param key implementation-dependent string to search for
@@ -142,7 +175,27 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 */
 	String getFirstChildText(final String key);
 
-	
+
+	/**
+	 * Searches child collection for the first item corresponding to the given class type
+     * @param type class type to search
+	 * @return child item if found, null otherwise
+	 */
+	 @SuppressWarnings("unchecked")
+	 default <C> C getFirstChildOfType(Class<C> type) {
+		 if(type == null)
+			 return null;
+		 Collection<? extends T> children = getChildren();
+		 if(children == null)
+			 return null;
+		 for(T child : children ) {
+			 if(type.isInstance(child))
+				 return (C)child;
+		 }
+		 return null;
+	 }
+
+
 	/**
 	 * Removes child from the collection
 	 * @param childToRemove child to remove
@@ -181,6 +234,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 */
 	T getFirstItem(final String pattern);
 	
+
 	/**
 	 * Returns collection of segments from root to this 
 	 * @return collection of items from root to this  

@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.installer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -79,48 +80,55 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 			connection.setReadTimeout(TIME_OUT);
 
 			if (connection instanceof HttpURLConnection) {
-				int responseCode = ((HttpURLConnection) connection).getResponseCode();
+				HttpURLConnection httpURLConnection = (HttpURLConnection) connection; 
+				int responseCode = httpURLConnection.getResponseCode();
 				if (responseCode == HttpURLConnection.HTTP_OK) {
 					break;
+				}else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+					httpURLConnection.disconnect();
+					throw new FileNotFoundException(); // we do not supply a message here, it is processed by caller
 				} else if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
 						|| responseCode == HttpURLConnection.HTTP_MOVED_PERM
 						|| responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
 					String newUrl = connection.getHeaderField(CmsisConstants.REPO_LOCATION);
 					sourceUrl = new URL(newUrl);
-				} else {
-					break;
+					continue;
 				}
 			}
+			break;
 		}
 
 		if (connection != null) {
-			InputStream input = connection.getInputStream();
-			OutputStream output = new FileOutputStream(destFileTmp);
-			boolean finished = true;
-			byte[] buf = new byte[1024];
-			int bytesRead;
-			while ((bytesRead = input.read(buf)) > 0) {
-				output.write(buf, 0, bytesRead);
-				// Check if the cancel button is pressed
-				if (monitor.isCanceled()) {
-					finished = false;
-					break;
+			try{
+				InputStream input = connection.getInputStream();
+				OutputStream output = new FileOutputStream(destFileTmp);
+				boolean finished = true;
+				byte[] buf = new byte[4096]; // 4096 is a common NTFS block size
+				int bytesRead;
+				while ((bytesRead = input.read(buf)) > 0) {
+					output.write(buf, 0, bytesRead);
+					// Check if the cancel button is pressed
+					if (monitor.isCanceled()) {
+						finished = false;
+						break;
+					}
 				}
-			}
-			output.close();
-			if (input != null) {
-				input.close();
-			}
-			if (finished) {
-				destFile = new File(destFileName);
-				Utils.copy(destFileTmp, destFile);
-				destFile.setReadOnly();
-			}
-			if (destFileTmp.exists()) {
-				destFileTmp.delete();
-			}
-			if (connection instanceof HttpURLConnection) {
-				((HttpURLConnection) connection).disconnect();
+				output.close();
+				if (input != null) {
+					input.close();
+				}
+				if (finished) {
+					destFile = new File(destFileName);
+					Utils.copy(destFileTmp, destFile);
+					destFile.setReadOnly();
+				}
+				if (destFileTmp.exists()) {
+					destFileTmp.delete();
+				} 
+			} finally {
+				if (connection instanceof HttpURLConnection) {
+					((HttpURLConnection) connection).disconnect();
+				}
 			}
 		}
 		return destFile;
@@ -143,18 +151,21 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 			connection.setConnectTimeout(TIME_OUT);
 			connection.setReadTimeout(TIME_OUT);
 			if (connection instanceof HttpURLConnection) {
-				int responseCode = ((HttpURLConnection) connection).getResponseCode();
-				if (responseCode == HttpURLConnection.HTTP_OK) {
+				HttpURLConnection httpURLConnection = (HttpURLConnection) connection; 
+				int responseCode = httpURLConnection.getResponseCode();				if (responseCode == HttpURLConnection.HTTP_OK) {
 					break;
+				}else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
+					httpURLConnection.disconnect();
+					throw new FileNotFoundException(); // we do not supply a message here, it is processed by caller
 				} else if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
 						|| responseCode == HttpURLConnection.HTTP_MOVED_PERM
 						|| responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
 					String newUrl = connection.getHeaderField(CmsisConstants.REPO_LOCATION);
 					url = new URL(newUrl);
-				} else {
-					break;
+					continue;
 				}
 			}
+			break;
 		}
 
 		if(connection == null) {
@@ -183,7 +194,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 			input = connection.getInputStream();
 			output = new FileOutputStream(downloadFileTmp);
 
-			byte[] buf = new byte[1024];
+			byte[] buf = new byte[4096]; // 4096 is a common NTFS block size
 			int bytesRead;
 			while ((bytesRead = input.read(buf)) > 0) {
 				output.write(buf, 0, bytesRead);

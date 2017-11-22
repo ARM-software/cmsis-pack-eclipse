@@ -11,25 +11,25 @@
 
 package com.arm.cmsis.pack.ui.widgets;
 
-import com.arm.cmsis.pack.rte.IRteModelController;
+import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 
 /**
  *  Extends IRteColumnAdvisor with IRteModelController awareness
  */
-public interface IRteColumnAdvisor extends IColumnAdvisor {
+public interface IRteColumnAdvisor<TController extends IRteController> extends IColumnAdvisor {
 	
 	/**
 	 * Sets an RTE model controller to be used by the advisor 
-	 * @param IRteModelController controller to use
+	 * @param IRteController controller to use
 	 */
-	public void setModelController(IRteModelController modelController);
+	public void setModelController(TController modelController);
 	
 	
 	/**
 	 * Returns RTE model controller used by the widget
-	 * @return IRteModelController
+	 * @return model controller 
 	 */
-	public IRteModelController getModelController();
+	public TController getModelController();
 
 }

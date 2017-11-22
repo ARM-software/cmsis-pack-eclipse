@@ -18,7 +18,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
-import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.CpPackIdComparator;
@@ -30,6 +29,7 @@ import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.item.CmsisMapItem;
 import com.arm.cmsis.pack.utils.AlnumComparator;
+import com.arm.cmsis.pack.utils.DeviceVendor;
 
 /**
  * Default implementation of IRteDeviceItem
@@ -46,7 +46,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 	 */
 	public RteDeviceItem() {
 		fLevel = EDeviceHierarchyLevel.ROOT.ordinal();
-		fName = "All Devices"; //$NON-NLS-1$
+		fName = CmsisConstants.ALL_DEVICES;
 	}
 
 	/**
@@ -65,22 +65,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		return new TreeMap<String, IRteDeviceItem>(new AlnumComparator(false, false));
 	}
 
-	/**
-	 * Creates device tree from list of Packs
-	 * @param packs collection of packs to use
-	 * @return device tree as root IRteDeviceItem
-	 */
-	public static IRteDeviceItem createTree(Collection<ICpPack> packs){
-		IRteDeviceItem root = new RteDeviceItem();
-		if(packs == null || packs.isEmpty()) {
-			return root;
-		}
-		for(ICpPack pack : packs) {
-			root.addDevices(pack);
-		}
-		return root;
-	}
-
+	
 	@Override
 	public int getLevel() {
 		return fLevel;
@@ -192,7 +177,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 				}
 			} else if(level >= EDeviceHierarchyLevel.DEVICE.ordinal()) {
 				addDeviceName(getName()); 
-				if( item.getProcessorCount() > 1) {
+				if( isToAddProcessors(item)) {
 					// add processor leaves
 					Map<String, ICpItem> processors = item.getProcessors();
 					for(Entry<String, ICpItem> e : processors.entrySet()) {
@@ -213,43 +198,27 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		addDeviceItem(item, item.getName(), level);
 	}
 
-	protected void addDeviceItem(ICpDeviceItem item, final String itemName, final int level) {
-		String fullName = itemName;
-		if(level >= EDeviceHierarchyLevel.DEVICE.ordinal()){
-			Map<String, ICpItem> processors = item.getProcessors();
-			if(processors.size() == 1) {
-				Entry<String, ICpItem> e = processors.entrySet().iterator().next();
-				String procName = e.getKey();
-				if(procName != null && ! procName.isEmpty()) {
-					fullName += ':' + procName;
-				}
-			}
+	protected boolean isToAddProcessors(ICpDeviceItem item) {
+		Map<String, ICpItem> processors = item.getProcessors();
+		if(processors.size() > 1)
+			return true;
+		Entry<String, ICpItem> e = processors.entrySet().iterator().next();
+		String procName = e.getKey();
+		if(procName != null && !procName.isEmpty()) {
+			return true;
 		}
+		return false;
+	}
 
-		IRteDeviceItem di = getChild(fullName);
+	
+	protected void addDeviceItem(ICpDeviceItem item, final String itemName, final int level) {
+
+		IRteDeviceItem di = getChild(itemName);
 		if(di == null ) {
-			di = new RteDeviceItem(fullName, level, this);
+			di = new RteDeviceItem(itemName, level, this);
 			addChild(di);
 		}
 		di.addDevice(item);
-	}
-
-	@Override
-	public void addDevices(ICpPack pack) {
-		if(pack == null) {
-			return;
-		}
-		Collection<? extends ICpItem> devices = pack.getGrandChildren(CmsisConstants.DEVICES_TAG);
-		if(devices == null) {
-			return;
-		}
-		for(ICpItem item : devices) {
-			if(!(item instanceof ICpDeviceItem)) {
-				continue;
-			}
-			ICpDeviceItem deviceItem = (ICpDeviceItem)item;
-			addDevice(deviceItem);
-		}
 	}
 
 	@Override
@@ -320,23 +289,6 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 		IRteDeviceItem di = getChild(itemName);
 		if (di != null) {
 			di.removeDevice(item);
-		}
-	}
-
-	@Override
-	public void removeDevices(ICpPack pack) {
-		if(pack == null) {
-			return;
-		}
-		Collection<? extends ICpItem> devices = pack.getGrandChildren(CmsisConstants.DEVICES_TAG);
-		if(devices != null) {
-			for(ICpItem item : devices) {
-				if(!(item instanceof ICpDeviceItem)) {
-					continue;
-				}
-				ICpDeviceItem deviceItem = (ICpDeviceItem)item;
-				removeDevice(deviceItem);
-			}
 		}
 	}
 

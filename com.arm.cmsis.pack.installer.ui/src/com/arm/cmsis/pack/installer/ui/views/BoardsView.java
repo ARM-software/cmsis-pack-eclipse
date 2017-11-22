@@ -24,7 +24,6 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
@@ -35,14 +34,14 @@ import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.item.CmsisMapItem;
 import com.arm.cmsis.pack.item.ICmsisMapItem;
-import com.arm.cmsis.pack.rte.boards.IRteBoardDeviceItem;
+import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
+import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
+import com.arm.cmsis.pack.ui.tree.TreeColumnComparator;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
-import com.arm.cmsis.pack.utils.AlnumComparator;
-import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Default implementation of the boards view in pack manager
@@ -51,13 +50,13 @@ public class BoardsView extends PackInstallerView {
 
 	public static final String ID = "com.arm.cmsis.pack.installer.ui.views.BoardsView"; //$NON-NLS-1$
 
-	static final String ALL_BOARDS = Messages.BoardsView_AllBoards;
+	private static final String ALL_BOARDS = CmsisConstants.ALL_BOARDS;
 	private static final String MOUNTED_DEVICES = CmsisConstants.MOUNTED_DEVICES;
 	private static final String COMPATIBLE_DEVICES = CmsisConstants.COMPATIBLE_DEVICES;
 
-	IRteBoardDeviceItem getBoardDeviceTreeItem(Object obj) {
-		if (obj instanceof IRteBoardDeviceItem) {
-			return (IRteBoardDeviceItem) obj;
+	IRteBoardItem getBoardDeviceTreeItem(Object obj) {
+		if (obj instanceof IRteBoardItem) {
+			return (IRteBoardItem) obj;
 		}
 		return null;
 	}
@@ -65,7 +64,7 @@ public class BoardsView extends PackInstallerView {
 	class BoardViewContentProvider extends TreeObjectContentProvider {
 
 		private DevicesView.DeviceViewContentProvider deviceViewContentProvider = new DevicesView.DeviceViewContentProvider();
-		private Map<IRteDeviceItem, IRteBoardDeviceItem> deviceToBoardMap = new HashMap<>();
+		private Map<IRteDeviceItem, IRteBoardItem> deviceToBoardMap = new HashMap<>();
 
 		@Override
 		public Object[] getElements(Object inputElement) {
@@ -74,7 +73,7 @@ public class BoardsView extends PackInstallerView {
 
 		@Override
 		public Object[] getChildren(Object parentElement) {
-			IRteBoardDeviceItem rteBoardDeviceItem = getBoardDeviceTreeItem(parentElement);
+			IRteBoardItem rteBoardDeviceItem = getBoardDeviceTreeItem(parentElement);
 			if (rteBoardDeviceItem != null) {
 				if (ALL_BOARDS.equals(rteBoardDeviceItem.getName())) { // All boards
 					return rteBoardDeviceItem.getChildArray();
@@ -104,8 +103,8 @@ public class BoardsView extends PackInstallerView {
 
 		@Override
 		public Object getParent(Object element) {
-			if (element instanceof IRteBoardDeviceItem) { // Board Node
-				return ((IRteBoardDeviceItem) element).getParent();
+			if (element instanceof IRteBoardItem) { // Board Node
+				return ((IRteBoardItem) element).getParent();
 			} else if (element instanceof IRteDeviceItem) {
 				IRteDeviceItem item = (IRteDeviceItem) element;
 				if (MOUNTED_DEVICES.equals(item.getName()) || COMPATIBLE_DEVICES.equals(item.getName())) {
@@ -132,8 +131,8 @@ public class BoardsView extends PackInstallerView {
 
 		@Override
 		public String getText(Object element) {
-			if (element instanceof IRteBoardDeviceItem) {
-				IRteBoardDeviceItem bdItem = (IRteBoardDeviceItem) element;
+			if (element instanceof IRteBoardItem) {
+				IRteBoardItem bdItem = (IRteBoardItem) element;
 				// added spaces at last of text as a workaround to show the complete text in the views
 				if (ALL_BOARDS.equals(bdItem.getName()) || MOUNTED_DEVICES.equals(bdItem.getName())
 						|| COMPATIBLE_DEVICES.equals(bdItem.getName())) {
@@ -148,9 +147,9 @@ public class BoardsView extends PackInstallerView {
 
 		@Override
 		public Image getImage(Object element) {
-			if (element instanceof IRteBoardDeviceItem) {
+			if (element instanceof IRteBoardItem) {
 
-				IRteBoardDeviceItem bdItem = (IRteBoardDeviceItem) element;
+				IRteBoardItem bdItem = (IRteBoardItem) element;
 				if (ALL_BOARDS.equals(bdItem.getName()) || MOUNTED_DEVICES.equals(bdItem.getName())
 						|| COMPATIBLE_DEVICES.equals(bdItem.getName())) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
@@ -180,8 +179,8 @@ public class BoardsView extends PackInstallerView {
 
 		@Override
 		public String getToolTipText(Object obj) {
-			if (obj instanceof IRteBoardDeviceItem) {
-				IRteBoardDeviceItem board = (IRteBoardDeviceItem) obj;
+			if (obj instanceof IRteBoardItem) {
+				IRteBoardItem board = (IRteBoardItem) obj;
 				if (board.getBoard() != null) {
 					return NLS.bind(Messages.BoardsView_AvailableInPack, board.getBoard().getPackId());
 				}
@@ -203,7 +202,7 @@ public class BoardsView extends PackInstallerView {
 		@Override
 		public CellControlType getCellControlType(Object obj, int columnIndex) {
 			if (columnIndex == COLURL) {
-				IRteBoardDeviceItem item = getBoardDeviceTreeItem(obj);
+				IRteBoardItem item = getBoardDeviceTreeItem(obj);
 				if (item != null && item.getBoard() != null) {
 					return CellControlType.URL;
 				} else if (obj instanceof IRteDeviceItem) {
@@ -216,7 +215,7 @@ public class BoardsView extends PackInstallerView {
 		@Override
 		public String getString(Object obj, int columnIndex) {
 			if (getCellControlType(obj, columnIndex) == CellControlType.URL) {
-				IRteBoardDeviceItem item = getBoardDeviceTreeItem(obj);
+				IRteBoardItem item = getBoardDeviceTreeItem(obj);
 				if (item != null) {
 					if (item.getMountedDevices() != null) {
 						return item.getMountedDevices().getFirstChildKey();
@@ -229,7 +228,7 @@ public class BoardsView extends PackInstallerView {
 					return devicesViewColumnAdvisor.getString(obj, columnIndex);
 				}
 			} else if (columnIndex == COLURL) {
-				IRteBoardDeviceItem item = getBoardDeviceTreeItem(obj);
+				IRteBoardItem item = getBoardDeviceTreeItem(obj);
 				if (item != null) {
 					if (ALL_BOARDS.equals(item.getName())) {
 						int nrofBoards = item.getChildCount();
@@ -245,7 +244,7 @@ public class BoardsView extends PackInstallerView {
 		@Override
 		public String getUrl(Object obj, int columnIndex) {
 			if (getCellControlType(obj, columnIndex) == CellControlType.URL) {
-				IRteBoardDeviceItem item = getBoardDeviceTreeItem(obj);
+				IRteBoardItem item = getBoardDeviceTreeItem(obj);
 				if (item != null) {
 					return item.getUrl();
 				} else if (obj instanceof IRteDeviceItem) {
@@ -258,7 +257,7 @@ public class BoardsView extends PackInstallerView {
 		@Override
 		public String getTooltipText(Object obj, int columnIndex) {
 			if (getCellControlType(obj, columnIndex) == CellControlType.URL) {
-				IRteBoardDeviceItem item = getBoardDeviceTreeItem(obj);
+				IRteBoardItem item = getBoardDeviceTreeItem(obj);
 				if (item != null) {
 					return item.getUrl();
 				} else if (obj instanceof IRteDeviceItem) {
@@ -272,33 +271,27 @@ public class BoardsView extends PackInstallerView {
 
 	class BoardTreeColumnComparator extends TreeColumnComparator {
 
-		private final AlnumComparator alnumComparator;
-		private VersionComparator versionComparator;
-
-		public BoardTreeColumnComparator(TreeViewer viewer, ColumnAdvisor advisor) {
-			super(viewer, advisor);
-			alnumComparator = new AlnumComparator(false);
-			versionComparator = new VersionComparator(false);
+		public BoardTreeColumnComparator(TreeViewer viewer, IColumnAdvisor advisor) {
+			super(viewer, advisor, 0);
 		}
 
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 
-			Tree tree = treeViewer.getTree();
 			if (getColumnIndex() != 0) {
 				return super.compare(viewer, e1, e2);
 			}
 
 			int result = 0;
-			if ((e1 instanceof IRteBoardDeviceItem) && (e2 instanceof IRteBoardDeviceItem)) {
+			if ((e1 instanceof IRteBoardItem) && (e2 instanceof IRteBoardItem)) {
 
-				IRteBoardDeviceItem cp1 = (IRteBoardDeviceItem) e1;
-				IRteBoardDeviceItem cp2 = (IRteBoardDeviceItem) e2;
+				IRteBoardItem cp1 = (IRteBoardItem) e1;
+				IRteBoardItem cp2 = (IRteBoardItem) e2;
 
 				String title1 = getBoardTitle(cp1.getBoard());
 				String title2 = getBoardTitle(cp2.getBoard());
 
-				result = versionComparator.compare(title1, title2);
+				result = alnumComparator.compare(title1, title2);
 
 			} else if ((e1 instanceof IRteDeviceItem) && (e2 instanceof IRteDeviceItem)) {
 				IRteDeviceItem d1 = (IRteDeviceItem) e1;
@@ -308,7 +301,7 @@ public class BoardsView extends PackInstallerView {
 				}
 				result = alnumComparator.compare(d1.getName(), d2.getName());
 			}
-			return tree.getSortDirection() == SWT.DOWN ? -result : result;
+			return bDescending ? -result : result;
 		}
 	}
 
@@ -365,8 +358,8 @@ public class BoardsView extends PackInstallerView {
 		}
 		ICpPackManager packManager = CpPlugIn.getPackManager();
 		if (packManager != null && packManager.getBoards() != null) {
-			ICmsisMapItem<IRteBoardDeviceItem> root = new CmsisMapItem<>();
-			IRteBoardDeviceItem allBoardRoot = packManager.getRteBoardDevices();
+			ICmsisMapItem<IRteBoardItem> root = new CmsisMapItem<>();
+			IRteBoardItem allBoardRoot = packManager.getRteBoards();
 			root.addChild(allBoardRoot);
 			if (!fViewer.getControl().isDisposed()) {
 				fViewer.setInput(root);

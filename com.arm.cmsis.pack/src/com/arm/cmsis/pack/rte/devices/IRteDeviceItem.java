@@ -16,7 +16,6 @@ import java.util.Set;
 
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
-import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.item.ICmsisMapItem;
 
@@ -43,22 +42,10 @@ public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem>  {
 	void addDevice(ICpDeviceItem item);
 
 	/**
-	 * Adds devices (family, sub-family device or variant) from supplied pack
-	 * @param pack IcpPack to add devices from
-	 */
-	void addDevices(ICpPack pack);
-
-	/**
 	 * Removes device (family, sub-family device or variant) recursively
 	 * @param item
 	 */
 	void removeDevice(ICpDeviceItem item);
-
-	/**
-	 * Removes device (family, sub-family device or variant) from supplied pack
-	 * @param pack IcpPack to add devices from
-	 */
-	void removeDevices(ICpPack pack);
 
 	/**
 	 * Returns first device stored in the item

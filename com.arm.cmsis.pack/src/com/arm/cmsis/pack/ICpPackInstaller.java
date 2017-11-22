@@ -21,8 +21,8 @@ import org.eclipse.core.runtime.IProgressMonitor;
 
 import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpPack;
-import com.arm.cmsis.pack.events.RtePackJobResult;
 import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.repository.RtePackJobResult;
 
 /**
  *  Interface responsible for installing/uninstalling packs

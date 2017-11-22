@@ -12,10 +12,10 @@
 package com.arm.cmsis.pack.rte.components;
 
 import com.arm.cmsis.pack.CpStrings;
-import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
+import com.arm.cmsis.pack.utils.DeviceVendor;
 
 /**
  *  An artificial component that describes selected device. 

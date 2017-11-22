@@ -29,10 +29,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Tree;
+import org.eclipse.swt.widgets.Display;
 
 import com.arm.cmsis.pack.CpPlugIn;
-import com.arm.cmsis.pack.DeviceVendor;
 import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -40,14 +39,17 @@ import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
+import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
+import com.arm.cmsis.pack.repository.RtePackJobResult;
 import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
+import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
-import com.arm.cmsis.pack.utils.AlnumComparator;
+import com.arm.cmsis.pack.utils.DeviceVendor;
 import com.arm.cmsis.pack.utils.Utils;
 
 /**
@@ -58,6 +60,7 @@ public class ExamplesView extends PackInstallerView {
 	public static final String ID = "com.arm.cmsis.pack.installer.ui.views.ExamplesView"; //$NON-NLS-1$
 
 	Action fShowInstOnlyAction;
+	ICpExample fInstalledExample = null;
 
 	IRteExampleItem getRteExampleItem(Object obj) {
 		if (obj instanceof IRteExampleItem) {
@@ -183,6 +186,7 @@ public class ExamplesView extends PackInstallerView {
 				case CmsisConstants.BUTTON_INSTALL :
 					ICpPackInstaller packInstaller = getPackInstaller();
 					if(packInstaller != null) {
+						fInstalledExample = example.getExample();
 						packInstaller.installPack(example.getExample().getPackId());
 					}
 				default :
@@ -204,8 +208,11 @@ public class ExamplesView extends PackInstallerView {
 	}
 
 	String constructExampleTooltipText(ICpExample example) {
-		ICpBoard b = example.getBoard();
 		String tooltip = CmsisConstants.EMPTY_STRING;
+
+		String boardId = example.getBoardId();
+		ICpBoard b = CpPlugIn.getPackManager().getBoard(boardId);
+		
 		if(b != null) {
 			String line1 = NLS.bind(Messages.ExamplesView_Board, b.getName(), b.getVendor());
 			StringBuilder lb2 = new StringBuilder(Messages.ExamplesView_Device);
@@ -238,20 +245,15 @@ public class ExamplesView extends PackInstallerView {
 		return tooltip + line3 + line4;
 	}
 
-	class ExampleTreeColumnComparator extends TreeColumnComparator {
+	class ExampleTreeColumnComparator extends PackInstallerTreeColumnComparator {
 
-		private final AlnumComparator alnumComparator;
-
-		public ExampleTreeColumnComparator(TreeViewer viewer,
-				ColumnAdvisor advisor) {
+		public ExampleTreeColumnComparator(TreeViewer viewer, IColumnAdvisor advisor) {
 			super(viewer, advisor);
-			alnumComparator = new AlnumComparator(false, false);
 		}
 
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
 
-			Tree tree = treeViewer.getTree();
 			if (getColumnIndex() != 0) {
 				return super.compare(viewer, e1, e2);
 			}
@@ -260,7 +262,7 @@ public class ExamplesView extends PackInstallerView {
 			ICpExample cp2 = ((IRteExampleItem) e2).getExample();
 
 			int result = alnumComparator.compare(cp1.getId(), cp2.getId());
-			return tree.getSortDirection() == SWT.DOWN ? -result : result;
+			return bDescending ? -result : result;
 		}
 	}
 
@@ -280,9 +282,15 @@ public class ExamplesView extends PackInstallerView {
 
 			@Override
 			public String getText(Object element) {
-				ICpExample e = ((IRteExampleItem) element).getExample();
-
-				return e.getId();
+				IRteExampleItem ei = getRteExampleItem(element);
+				if(ei == null) {
+					return null;
+				}
+				ICpExample e = ei.getExample();
+				if(e != null) {
+					return e.getId();
+				}
+				return null;
 			}
 
 			@Override
@@ -390,6 +398,20 @@ public class ExamplesView extends PackInstallerView {
 		manager.add(aci);
 		manager.add(new Separator());
 		super.fillLocalToolBar(manager);
+	}
+
+	@Override
+	protected void handleRteEvent(RteEvent event) {
+		super.handleRteEvent(event);
+		if (RteEvent.PACK_INSTALL_JOB_FINISHED.equals(event.getTopic())) {
+			RtePackJobResult result = (RtePackJobResult) event.getData();
+			if (result.isSuccess() && fInstalledExample != null && result.getPackId().equals(fInstalledExample.getPackId())) {
+				Display.getDefault().asyncExec(() -> {
+					copyExample(fInstalledExample);
+					fInstalledExample = null;
+				});
+			}
+		}
 	}
 
 }

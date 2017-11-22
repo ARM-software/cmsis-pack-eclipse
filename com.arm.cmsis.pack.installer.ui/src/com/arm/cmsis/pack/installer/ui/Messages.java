@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2016 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2016 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.installer.ui;
 
@@ -18,10 +18,10 @@ import org.eclipse.osgi.util.NLS;
  */
 public class Messages extends NLS {
 	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.installer.ui.messages"; //$NON-NLS-1$
-	public static String BoardsView_AllBoards;
 	public static String BoardsView_AvailableInPack;
 	public static String BoardsView_Boards;
 	public static String BoardsView_DeprecatedBoard;
+	public static String PackInstallerView_CheckForUpdatesLink;
 	public static String PackInstallerView_Help;
 	public static String BoardsView_RemoveSelection;
 	public static String BoardsView_SearchBoard;
@@ -59,6 +59,7 @@ public class Messages extends NLS {
 	public static String PackPropertyView_InstallAction;
 	public static String PackInstallerView_InstallRequiredPacks;
 	public static String PackInstallerView_InstallRequiredPacksToolTip;
+	public static String PackInstallerView_OpenPreferenceLink;
 	public static String PackPropertyView_InstallTooltip;
 	public static String PackPropertyView_UnpackAction;
 	public static String PackPropertyView_UnpackTooltip;

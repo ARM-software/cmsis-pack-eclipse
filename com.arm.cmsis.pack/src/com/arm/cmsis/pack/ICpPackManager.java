@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack;
 
+import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Map;
@@ -27,7 +28,7 @@ import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.parser.ICpXmlParser;
 import com.arm.cmsis.pack.repository.CpRepositoryList;
-import com.arm.cmsis.pack.rte.boards.IRteBoardDeviceItem;
+import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
 
@@ -146,11 +147,18 @@ public interface ICpPackManager {
 	Map<String, ICpBoard> getBoards();
 
 	/**
+	 * Returns ICpBoard for supplied board ID  
+	 * @param boardId board ID string
+	 * @return ICpBoard object or null if not found
+	 */
+	ICpBoard getBoard(String boardId);
+	
+	/**
 	 * Returns collection of all items, which contains
 	 * all mounted and compatible devices
-	 * @return IRteBoardDeviceItem root
+	 * @return IRteBoardItem root
 	 */
-	IRteBoardDeviceItem getRteBoardDevices();
+	IRteBoardItem getRteBoards();
 
 
 	/**
@@ -210,8 +218,9 @@ public interface ICpPackManager {
 		String root = getCmsisPackRootDirectory();
 		if(root != null) {
 			IPath path = new Path(root).append(CmsisConstants.DOT_DOWNLOAD);
-			if (!path.toFile().exists()) {
-				path.toFile().mkdirs();
+			File f = path.toFile();
+			if (!f.exists()) {
+				f.mkdirs();
 			}
 			return path.toOSString();
 		}
@@ -226,8 +235,26 @@ public interface ICpPackManager {
 		String root = getCmsisPackRootDirectory();
 		if(root != null) {
 			IPath path = new Path(root).append(CmsisConstants.DOT_WEB);
-			if (!path.toFile().exists()) {
-				path.toFile().mkdirs();
+			File f = path.toFile();
+			if (!f.exists()) {
+				f.mkdirs();
+			}
+			return path.toOSString();
+		}
+		return null;
+	}
+
+	/**
+	 * Return CMSIS-Pack Local directory (local packs)
+	 * @return absolute local directory of all the Packs
+	 */
+	default String getCmsisPackLocalDir() {
+		String root = getCmsisPackRootDirectory();
+		if(root != null) {
+			IPath path = new Path(root).append(CmsisConstants.DOT_LOCAL);
+			File f = path.toFile();
+			if (!f.exists()) {
+				f.mkdirs();
 			}
 			return path.toOSString();
 		}
@@ -262,4 +289,10 @@ public interface ICpPackManager {
 	 *  Triggers reload of the pack if the have already been loaded
 	 */
 	void reload();
+	
+	/**
+	 * Check if all packs required by supplied pack are installed
+	 * @return true if all required packs are installed
+	 */
+	boolean isRequiredPacksInstalled(ICpPack pack);
 }

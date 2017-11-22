@@ -4,3 +4,6 @@
 /.DsqScriptGeneratorFactory.java._trace
 /.DsqPhytonScriptGenerator.java._trace
 /.DsqPythonScriptGenerator.java._trace
+/DsqPythonScriptGenerator.java
+/DsqScriptGeneratorFactory.java
+/IDsqScriptGenerator.java

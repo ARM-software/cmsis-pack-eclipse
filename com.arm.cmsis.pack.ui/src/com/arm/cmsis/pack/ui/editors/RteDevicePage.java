@@ -32,7 +32,7 @@ import com.arm.cmsis.pack.ui.wizards.RteWizardDialog;
  * Editor page that wraps RteManagerWidget
  *
  */
-public class RteDevicePage extends RteEditorPage {
+public class RteDevicePage extends RteModelEditorPage {
 
 	private RteDeviceInfoWidget deviceWidget = null;
 	

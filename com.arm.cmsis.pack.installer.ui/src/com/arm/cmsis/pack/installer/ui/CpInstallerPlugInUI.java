@@ -68,7 +68,7 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 
 		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
 		if(envProvider != null) {
-			viewController = (PackInstallerViewController)envProvider.getAdapter(PackInstallerViewController.class);
+			viewController = envProvider.getAdapter(PackInstallerViewController.class);
 		}
 		if(viewController == null) {
 			viewController = new PackInstallerViewController();
@@ -139,7 +139,7 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 		}
 	}
 
-	void startCheckForUpdates() {
+	public static void startCheckForUpdates() {
 		if (CpPlugIn.getPackManager() != null && CpPlugIn.getPackManager().getPackInstaller() != null) {
 			if (PlatformUI.getWorkbench() != null &&
 					PlatformUI.getWorkbench().getProgressService() != null) {

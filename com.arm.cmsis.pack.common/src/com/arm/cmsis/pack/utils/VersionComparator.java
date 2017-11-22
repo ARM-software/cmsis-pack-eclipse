@@ -144,6 +144,17 @@ public class VersionComparator extends AlnumComparator{
 		return true;  
 	}
 	
+	/**
+	 * Removes build meta data from version string (after +)
+	 * @param ver version string
+	 * @return version without meta data 
+	 */
+	static public String removeMetadata(String ver) {
+		int pos = ver.indexOf('+');
+		if(pos >= 0)
+			return ver.substring(0,  pos);
+		return ver;
+	}
 	
     /**
      * Internal helper class
@@ -163,12 +174,10 @@ public class VersionComparator extends AlnumComparator{
     			throw new IllegalArgumentException("Version can not be null"); //$NON-NLS-1$
     		
     		// 1. drop build metadata 
-    		int pos = ver.indexOf('+');
-    		if(pos >= 0)
-    			ver = ver.substring(0,  pos);
+    		ver = VersionComparator.removeMetadata(ver); 
     		
     		// 2. extract release
-    		pos = ver.indexOf('-');
+    		int pos = ver.indexOf('-');
     		if(pos >=0 ) {
     			release = ver.substring(pos + 1);
     			ver = ver.substring(0, pos);
