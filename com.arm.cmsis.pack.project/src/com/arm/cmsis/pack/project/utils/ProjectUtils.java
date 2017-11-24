@@ -344,6 +344,10 @@ public class ProjectUtils {
 		}
 		try{
 			IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
+			if (buildInfo == null) {
+				// not a MBS project
+				return null;
+			}
 			IConfiguration[] configs = buildInfo.getManagedProject().getConfigurations();
 			for(IConfiguration c : configs) {
 				if(c.getName().equals(name)) {
@@ -509,6 +513,10 @@ public class ProjectUtils {
 	 */
 	static public void setExcludeFromBuild(IProject project, String path, boolean bExclude) throws CoreException {
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
+		if (buildInfo == null) {
+			// not a MBS project
+			return;
+		}
 		IConfiguration activeConfig = buildInfo.getDefaultConfiguration();
 		ICSourceEntry[] sourceEntries = activeConfig.getSourceEntries();
 		sourceEntries = CDataUtil.setExcluded(new Path(path), false, bExclude, sourceEntries);
@@ -523,6 +531,10 @@ public class ProjectUtils {
 	 */
 	static public boolean isExcludedFromBuild(IProject project, String path) {
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
+		if (buildInfo == null) {
+			// not a MBS project
+			return false;
+		}
 		IConfiguration activeConfig = buildInfo.getDefaultConfiguration();
 		ICSourceEntry[] sourceEntries = activeConfig.getSourceEntries();
 		return CDataUtil.isExcluded(new Path(path), sourceEntries);

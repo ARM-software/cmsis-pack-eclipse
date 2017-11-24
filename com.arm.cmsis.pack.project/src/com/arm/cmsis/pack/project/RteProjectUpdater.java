@@ -544,6 +544,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 		}
 
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
+		if (buildInfo == null) {
+			return;
+		}
+		
 		String[] configNames = buildInfo.getConfigurationNames();
 		for (String name : configNames) {
 			IConfiguration config = ProjectUtils.getConfiguration(project, name);

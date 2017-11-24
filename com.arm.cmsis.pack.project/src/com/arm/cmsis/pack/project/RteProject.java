@@ -154,6 +154,10 @@ public class RteProject extends PlatformObject implements IRteProject {
 		IProject project = getProject();
 		CoreModel model = CoreModel.getDefault();
 		ICProjectDescription projDes = model.getProjectDescription(project);
+		if (projDes == null) {
+			// not a MBS project
+			return;
+		}
 		if (save) {
 			saveRteStorage(projDes);
 			model.setProjectDescription(project, projDes);
