@@ -122,8 +122,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 			if (projectStorage != null) {
 				// obtain toolchain adaper its RTE options from active configuration 
 				 toolChainAdapter = projectStorage.getToolChainAdapter();
-				 IConfiguration activeConfig = ProjectUtils.getDefaultConfiguration(project);
-				 rteOptionsFromToolchain = toolChainAdapter.getRteOptions(activeConfig);
+				if (toolChainAdapter != null) {
+					IConfiguration activeConfig = ProjectUtils.getDefaultConfiguration(project);
+					rteOptionsFromToolchain = toolChainAdapter.getRteOptions(activeConfig);
+				}
 			}
 			
 			if (bLoadConfigs) {
