@@ -730,7 +730,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			}
 
 			// Make url always ends in '/'
-			final String pdscUrl = CmsisConstants.REPO_KEIL_PACK_SERVER;
+			final String pdscUrl = Utils.addTrailingSlash(pdsc[0]);
 			final String pdscName = pdsc[1];
 			final String pdscVersion = pdsc[2];
 			final String packFamilyId = Utils.extractBaseFileName(pdscName);
