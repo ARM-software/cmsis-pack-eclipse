@@ -17,6 +17,7 @@ import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Default implementation of ICpPackInfo interface 
@@ -125,7 +126,9 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	@Override
 	public String constructId() {
 		// construct Pack ID in the form "Vendor.Name.Version"
-		return getPackFamilyId() + '.' + getVersion();
+		String version = VersionComparator.removeMetadata(getVersion());
+		
+		return getPackFamilyId() + '.' + version;
 	}
 
 	@Override
