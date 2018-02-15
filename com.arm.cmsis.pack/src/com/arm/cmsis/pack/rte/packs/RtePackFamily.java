@@ -269,8 +269,10 @@ public class RtePackFamily extends RtePackItem implements IRtePackFamily {
 	public Set<String> getSelectedVersions() {
 		Set<String> versions = new HashSet<String>();  
 		for(IRtePack pack : fPacks.values()){
-			if(pack.isSelected())
-				versions.add(pack.getVersion());
+			if(pack.isSelected()) {
+				String version = VersionComparator.removeMetadata(pack.getVersion()); 
+				versions.add(version);
+			}
 		}	
 		return versions;
 	}
