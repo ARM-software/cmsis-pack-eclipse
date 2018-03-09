@@ -132,7 +132,7 @@ public class RteDeviceSelectorWidget extends Composite {
 		public Object [] getChildren(Object parent) {
 			IRteDeviceItem item = getDeviceTreeItem(parent);
 			if(item != null) {
-				if(!isEndLeaf(item))
+				if(item.hasChildren() && !isEndLeaf(item))
 					return super.getChildren(item);
 			}
 			return ITreeObject.EMPTY_OBJECT_ARRAY;
@@ -142,6 +142,8 @@ public class RteDeviceSelectorWidget extends Composite {
 		public boolean hasChildren(Object parent) {
 			IRteDeviceItem item = getDeviceTreeItem(parent);
 			if(item == null)
+				return false;
+			if(!item.hasChildren())
 				return false;
 			if(isEndLeaf(item))
 				return false;
@@ -696,10 +698,10 @@ public class RteDeviceSelectorWidget extends Composite {
 			return true;
 		}
 		IRteDeviceItem child = item.getFirstChild();
-		if(isShowProcessors() && child.getLevel() == EDeviceHierarchyLevel.PROCESSOR.ordinal())
-			return false;
+		if(!isShowProcessors() && child.getLevel() == EDeviceHierarchyLevel.PROCESSOR.ordinal())
+			return true;
 
-		return item.getDevice() != null;
+		return false;
 	}
 
 }
