@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.installer.ui;
 
+import java.util.Optional;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
@@ -188,11 +190,15 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 			return;
 		}
 
+		Optional<String> perspectiveId = envProvider.getCopyExamplePerspectiveSwitchId();
+		if (!perspectiveId.isPresent())
+		    return;
+		        
 		IWorkbench wb = PlatformUI.getWorkbench();
 		if (wb != null) {
 			IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
 			if (window != null) {
-				IPerspectiveDescriptor persDescription = wb.getPerspectiveRegistry().findPerspectiveWithId("org.eclipse.cdt.ui.CPerspective"); //$NON-NLS-1$
+				IPerspectiveDescriptor persDescription = wb.getPerspectiveRegistry().findPerspectiveWithId(perspectiveId.get());
 				IWorkbenchPage page = window.getActivePage();
 				if (page != null && persDescription != null) {
 					page.setPerspective(persDescription);

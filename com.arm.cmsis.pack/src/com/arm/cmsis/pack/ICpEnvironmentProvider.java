@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack;
 
+import java.util.Optional;
+
 import org.eclipse.core.runtime.IAdaptable;
 
 import com.arm.cmsis.pack.build.IBuildSettings;
@@ -81,6 +83,17 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
 	 * @return the adaptable object that is created from the example, for instance IProject
 	 */
 	IAdaptable copyExample(ICpExample example);
+
+    /**
+     * Returns an optional id of a perspective to switch to after copying an
+     * example.
+     * 
+     * @return An optional containing a perspective id.
+     * @since 2.3.2
+     */
+    default Optional<String> getCopyExamplePerspectiveSwitchId() {
+        return Optional.of("org.eclipse.cdt.ui.CPerspective");
+    }
 
 	/**
 	 * Adjusts build settings every time RTE changes
