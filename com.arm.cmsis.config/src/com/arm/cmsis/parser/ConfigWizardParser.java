@@ -65,7 +65,8 @@ public class ConfigWizardParser {
 
 	private TreeMap<Integer, String> fCommentContainer; // offset->string
 
-	String fParsingErrorMessage;
+	String fParsingErrorMessage = null;
+    private boolean showErrorDialog = true;
 
 	/**
 	 * Parser for the config wizard
@@ -103,6 +104,23 @@ public class ConfigWizardParser {
 		clear();
 		setParseRange(0, fDocument.getLength());
 		return doParse();
+	}
+
+	/**
+	 * Control the appears of the MessageDialog for parse errors.
+	 * Defaults to {@code true}.
+	 */
+	public void setShowErrorDialog(boolean show) {
+        this.showErrorDialog = show;
+    }
+	
+	/**
+	 * Return the parsing error message.  Note: callers should rely on
+	 * the {@link #parse()} method to determine the valid nature of the
+	 * parsing.
+     */
+    public String getParsingErrorMessage() {
+        return fParsingErrorMessage;
 	}
 
 	public boolean findConfigurationWizard() {
@@ -676,6 +694,7 @@ public class ConfigWizardParser {
 	protected void syntaxError() {
 		fParsingErrorOffset = fScanner.getTokenOffset();
 		int line = fScanner.getCurrentLineNumber();
+		if (showErrorDialog)
 		Display.getDefault().asyncExec(() -> MessageDialog.openError(Display.getDefault().getActiveShell(),
 				Messages.ConfigWizardParser_ErrorInConfigWizard,
 				Messages.ConfigWizardParser_SyntaxErrorAtLine + (line + 1) + ": " + fParsingErrorMessage)); //$NON-NLS-1$

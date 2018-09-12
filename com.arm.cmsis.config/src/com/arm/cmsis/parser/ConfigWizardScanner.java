@@ -199,10 +199,10 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 			if (CONFIG_STRING.equals(getTokenTag(token))) {
 				return text;
 			} else if (CONFIG_MARK.equals(getTokenTag(token))) {
-				return text.trim().replaceAll("\\s+"," "); //$NON-NLS-1$ //$NON-NLS-2$
+				return usePattern(ExtraWhitespacePattern, text.trim(), " "); //$NON-NLS-1$ 
 			} else {
 				// Get the pure text in the <>
-				return text.replaceAll("[\\s<>]",""); //$NON-NLS-1$ //$NON-NLS-2$
+				return usePattern(WhitespaceAndDelimitersPattern, text, ""); //$NON-NLS-1$ 
 			}
 		} catch (BadLocationException e) {
 		}
@@ -210,6 +210,13 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 		return null;
 	}
 
+    static Pattern ExtraWhitespacePattern = Pattern.compile("\\s+");  //$NON-NLS-1$ 
+    static Pattern WhitespaceAndDelimitersPattern = Pattern.compile("[\\s<>]");  //$NON-NLS-1$ 
+	static String usePattern(Pattern p, String str, String replacement)
+	{
+	    return p.matcher(str).replaceAll(replacement);
+	}
+	
 	public ETokenType getTokenType(IToken token) {
 		if (token.isEOF()) {
 			return ETokenType.EOC;
