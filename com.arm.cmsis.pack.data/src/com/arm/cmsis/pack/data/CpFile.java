@@ -16,7 +16,7 @@ import com.arm.cmsis.pack.enums.EFileCategory;
 import com.arm.cmsis.pack.enums.EFileRole;
 
 /**
- *  Defautt implementation of ICpFile interface 
+ *  Default implementation of ICpFile interface 
  */
 public class CpFile extends CpItem implements ICpFile {
 
@@ -56,7 +56,5 @@ public class CpFile extends CpItem implements ICpFile {
 			return c.isDeviceDependent();
 		return false;
 	}
-
-	
 	
 }

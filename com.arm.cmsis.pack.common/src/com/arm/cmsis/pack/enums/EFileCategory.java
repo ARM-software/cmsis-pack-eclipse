@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.enums;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
+
 /**
  * 	Enumeration value corresponding <code>"category"</code> attribute in pdsc file
  *  That represents 
@@ -32,6 +34,8 @@ public enum EFileCategory {
 	IMAGE, 
 	SVD,
 	SRC, // library source paths
+	PRE_INCLUDE_GLOBAL,
+	PRE_INCLUDE_LOCAL,
 	OTHER;
 
 	/**
@@ -42,34 +46,38 @@ public enum EFileCategory {
 		if(str == null)
 			return OTHER;
 		switch(str) {
-		case  "doc": //$NON-NLS-1$
+		case CmsisConstants.DOC:
 			return DOC;
-		case  "header": //$NON-NLS-1$
+		case CmsisConstants.HEADER:
 			return HEADER;
-		case  "include": //$NON-NLS-1$
+		case CmsisConstants.INCLUDE:
 			return INCLUDE;
-		case  "library": //$NON-NLS-1$
+		case  CmsisConstants.LIBRARY:
 			return LIBRARY;
-		case  "object": //$NON-NLS-1$
+		case CmsisConstants.OBJECT:
 			return OBJECT;
-		case  "source": //$NON-NLS-1$
+		case CmsisConstants.SOURCE:
 			return SOURCE;
-		case  "sourceAsm": //$NON-NLS-1$
+		case CmsisConstants.SOURCE_ASM:
 			return SOURCE_ASM;
-		case  "sourceC": //$NON-NLS-1$
+		case CmsisConstants.SOURCE_C:
 			return SOURCE_C;
-		case  "sourceCpp": //$NON-NLS-1$
+		case CmsisConstants.SOURCE_CPP:
 			return SOURCE_CPP;
-		case  "linkerScript": //$NON-NLS-1$
+		case CmsisConstants.LINKER_SCRIPT:
 			return LINKER_SCRIPT;
-		case  "utility": //$NON-NLS-1$
+		case CmsisConstants.UTILITY:
 			return UTILITY;
-		case  "image": //$NON-NLS-1$
+		case CmsisConstants.IMAGE:
 			return IMAGE;
-		case  "svd": //$NON-NLS-1$
+		case CmsisConstants.SVD:
 			return SVD;
-		case  "src": //$NON-NLS-1$
+		case CmsisConstants.SRC:
 			return SRC;
+		case CmsisConstants.PRE_INCLUDE_GLOBAL:
+			return PRE_INCLUDE_GLOBAL;
+		case CmsisConstants.PRE_INCLUDE_LOCAL:
+			return PRE_INCLUDE_LOCAL;
 		default:
 			return OTHER;
 		}
@@ -82,6 +90,7 @@ public enum EFileCategory {
 	public boolean isHeader() {
 		return this == HEADER; 
 	}
+
 
 	/**
 	 * Checks if file category is source 

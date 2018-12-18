@@ -4,9 +4,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
@@ -62,7 +65,8 @@ public class RteProjectUpdater extends WorkspaceJob {
 	public static final int LOAD_CONFIGS = 0x01;
 	public static final int UPDATE_TOOLCHAIN = 0x02; // forces update of all relevant toolchain settings
 	public static final int CLEANUP_RTE_FILES = 0x04; // delete excluded RTE config files
-
+	public static final int SUPRESS_INFO_MESSAGES = 0x08; // suppresses info messages (useful when called during import)
+	
 	protected IRteProject rteProject;
 	protected IProject project;
 	protected IProgressMonitor monitor = null;
@@ -72,11 +76,13 @@ public class RteProjectUpdater extends WorkspaceJob {
 	protected boolean bForceUpdateToolchain = false;
 	protected boolean bSaveProject = false;
 	protected boolean bDeleteConfigFiles = false;
-	protected RteConsole rteConsole = null;
+	protected boolean bSuppressInfoMessages = false;
+	protected RteConsole fRteConsole = null;
 	
 	protected RteProjectStorage projectStorage = null; 
 	protected IRteToolChainAdapter toolChainAdapter = null;
 	protected IAttributes rteOptionsFromToolchain = null;
+	IManagedBuildInfo buildInfo = null;
 	
 
 	public RteProjectUpdater(IRteProject rteProject, int updateFlags) {
@@ -87,18 +93,42 @@ public class RteProjectUpdater extends WorkspaceJob {
 		bLoadConfigs = (updateFlags & LOAD_CONFIGS) == LOAD_CONFIGS;
 		bForceUpdateToolchain = (updateFlags & UPDATE_TOOLCHAIN) == UPDATE_TOOLCHAIN;
 		bDeleteConfigFiles = (updateFlags & CLEANUP_RTE_FILES) == CLEANUP_RTE_FILES;
-
+		bSuppressInfoMessages= (updateFlags & SUPRESS_INFO_MESSAGES) == SUPRESS_INFO_MESSAGES;
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		setRule(workspace.getRoot()); // ensures synch update
-
-		rteConsole = RteConsole.openConsole(project);
 	}
 
+	
+	 /**
+     * Returns the RteConsole, creates if not yet initialized 
+     * @return RteConsole
+     */
+    protected RteConsole getRteConsole() {
+    	if(fRteConsole == null)
+    		fRteConsole = RteConsole.openConsole(project);
+    	return fRteConsole;
+    }
+
+    /**
+     * Sets the RteConsole 
+     * @param getRteConsole() RteConsole to set
+     */
+    public void setRteConsole(RteConsole rteConsole) {
+    	fRteConsole = rteConsole;
+    }
+    
+	
 	@Override
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		if (project == null || rteProject == null) {
 			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID,
 					Messages.RteProjectUpdater_ErrorProjectIsNull);
+			return status;
+		}
+		buildInfo = ManagedBuildManager.getBuildInfo(project);
+		if(buildInfo == null) {
+			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID,
+					"Error Updating RTE project : CDT build information is not loaded, try to restart Eclipse"); //$NON-NLS-1$
 			return status;
 		}
 
@@ -107,10 +137,12 @@ public class RteProjectUpdater extends WorkspaceJob {
 		Status status = null;
 		EEvaluationResult res = EEvaluationResult.FULFILLED;
 		try {
-			long startTime = System.currentTimeMillis();
-			String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date(startTime)); //$NON-NLS-1$
-			String msg = timestamp + " **** " + Messages.RteProjectUpdater_UpdatingProject + " " + project.getName(); //$NON-NLS-1$ //$NON-NLS-2$
-			rteConsole.outputInfo(msg, project);
+			if(!bSuppressInfoMessages){
+				long startTime = System.currentTimeMillis();
+				String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date(startTime)); //$NON-NLS-1$
+				String msg = timestamp + " **** " + Messages.RteProjectUpdater_UpdatingProject + " " + project.getName(); //$NON-NLS-1$ //$NON-NLS-2$
+				getRteConsole().outputInfo(msg);
+			}
 
 			String packRoot = CpVariableResolver.getCmsisPackRoot();
 			if(packRoot == null || packRoot.isEmpty()){
@@ -121,24 +153,24 @@ public class RteProjectUpdater extends WorkspaceJob {
 			projectStorage = rteProject.getProjectStorage();
 			if (projectStorage != null) {
 				// obtain toolchain adaper its RTE options from active configuration 
-				 toolChainAdapter = projectStorage.getToolChainAdapter();
-				if (toolChainAdapter != null) {
+				toolChainAdapter = projectStorage.getToolChainAdapter();
+				if(toolChainAdapter != null) {
 					IConfiguration activeConfig = ProjectUtils.getDefaultConfiguration(project);
 					rteOptionsFromToolchain = toolChainAdapter.getRteOptions(activeConfig);
 				}
 			}
 			
 			if (bLoadConfigs) {
-				//	rteConsole.outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
+				//	getRteConsole().outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
 				res = loadConfigFile();
 			}
-			// rteConsole.outputInfo(Messages.RteProjectUpdater_UpdatingResources);
+			// getRteConsole().outputInfo(Messages.RteProjectUpdater_UpdatingResources);
 			addResources();
 			removeResources();
 
-			updateRteComponentsH();
+			updateGeneratedHeaders();
 
-			//rteConsole.outputInfo(Messages.RteProjectUpdater_UpdatingBuildSettings);
+			//getRteConsole().outputInfo(Messages.RteProjectUpdater_UpdatingBuildSettings);
 			updateBuildSettings(bForceUpdateToolchain);
 
 			if (bSaveProject) {
@@ -160,20 +192,24 @@ public class RteProjectUpdater extends WorkspaceJob {
 
 		// Output the error message to the RTE console
 		if (res.ordinal() < EEvaluationResult.INSTALLED.ordinal() || status != null) {
-			rteConsole.outputError(Messages.RteProjectUpdater_Fail, project);
+			getRteConsole().outputError(Messages.RteProjectUpdater_Fail);
 			if(status != null) {
-				rteConsole.outputInfo(status.getMessage(), project);
+				getRteConsole().outputInfo(status.getMessage());
 				IStatus[] statusArray = status.getChildren();
 				if (statusArray != null && statusArray.length > 0) {
 					for (IStatus s : statusArray) {
-						rteConsole.outputInfo(s.getMessage(), project);
+						getRteConsole().outputInfo(s.getMessage());
 					}
 				}
 			}
-		} else {
-			rteConsole.outputInfo(Messages.RteProjectUpdater_Success, project);
+		} else if(!bSuppressInfoMessages){			
+			getRteConsole().outputInfo(Messages.RteProjectUpdater_Success);
+			
+		} 
+		if(!bSuppressInfoMessages){
+			getRteConsole().output(CmsisConstants.EMPTY_STRING);
 		}
-		rteConsole.output(CmsisConstants.EMPTY_STRING, project);
+
 		RteProjectDecorator.refresh();
 		if(status == null) {
 			status = new Status(IStatus.OK, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ProjectUpdated);
@@ -233,10 +269,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 			return res;
 		}
 		String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + savedRteConfigName + "':"; //$NON-NLS-1$ //$NON-NLS-2$
-		rteConsole.outputError(msg, project);
+		getRteConsole().outputError(msg);
 		for (IRteDependencyItem item : errors) {
 			String s = item.getName() + " - " + item.getDescription(); //$NON-NLS-1$
-			rteConsole.output(s, project);
+			getRteConsole().output(s);
 			msg += System.lineSeparator() + s;
 		}
 
@@ -451,46 +487,75 @@ public class RteProjectUpdater extends WorkspaceJob {
 		return projectStorage.getConfigFileVersion(projectRelativePath);
 	}
 
-	public void updateRteComponentsH() throws CoreException {
-		// ensure resource exists
-		try {
-			IFile f = ProjectUtils.createFile(project, CmsisConstants.RTE_RTE_Components_h, monitor);
-			IPath p = f.getLocation();
-			p.toFile().setWritable(true);
-			PrintWriter pw = new PrintWriter(p.toOSString());
-			writeRteComponentsHhead(pw);
-			writeRteComponentsHbody(pw);
-			writeRteComponentsHtail(pw);
-			pw.close();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-	}
 
-	protected void writeRteComponentsHbody(PrintWriter pw) {
+	protected void updateGeneratedHeaders() throws CoreException {
 		IRteConfiguration rteConf = rteProject.getRteConfiguration();
 		if (rteConf == null) {
 			return;
 		}
-
-		// write #define CMSIS_device_header
+		updateRteComponentsH();
+		updateRteHeaderFile(CmsisConstants.Pre_Include_Global_h, rteConf.getGlobalPreIncludeStrings());
+		Map<String, String> locals = rteConf.getLocalPreIncludeStrings();
+		for (Entry<String, String> entry : locals.entrySet()) {
+			updateRteHeaderFile(entry.getKey(), Arrays.asList(entry.getValue()));
+		}
+	}
+	
+	protected void updateRteComponentsH() throws CoreException {
+		IRteConfiguration rteConf = rteProject.getRteConfiguration();
+		if (rteConf == null) {
+			return;
+		}
+		List<String> content = new LinkedList<>();
+		//prepend  #define CMSIS_device_header
 		String deviceHeader = rteConf.getDeviceHeader();
 		if (deviceHeader != null && !deviceHeader.isEmpty()) {
 			String s = "#define " + CmsisConstants.CMSIS_device_header + " \"" + deviceHeader + "\""; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			pw.println("/*"); //$NON-NLS-1$
-			pw.println(" * Define the Device Header File:"); //$NON-NLS-1$
-			pw.println("*/"); //$NON-NLS-1$
-			pw.println(s);
-			pw.println();
+			content.add("/*"); //$NON-NLS-1$
+			content.add(" * Define the Device Header File:"); //$NON-NLS-1$
+			content.add("*/"); //$NON-NLS-1$
+			content.add(s);
+			content.add(CmsisConstants.EMPTY_STRING);
 		}
 
 		Collection<String> code = rteConf.getRteComponentsHCode();
+		if(code != null) {
+			content.addAll(code);
+		}
+		updateRteHeaderFile(CmsisConstants.RTE_Components_h, content);
+	}
+	
+	protected void updateRteHeaderFile(String headerName, Collection<String> code) throws CoreException {
+		if(code == null || code.isEmpty())
+			return;
+		// ensure resource exists
+		try {
+			String headerPath = CmsisConstants.RTE + '/' + headerName;
+			String header_h = Utils.nonAlnumToUndersore(headerName).toUpperCase();
+			IFile f = ProjectUtils.createFile(project, headerPath, monitor);
+			IPath p = f.getLocation();
+			p.toFile().setWritable(true);
+			PrintWriter pw = new PrintWriter(p.toOSString());
+			writeRteComponentsHhead(pw, header_h);
+			writeRteComponentsHbody(pw, code);
+			writeRteComponentsHtail(pw, header_h);
+			pw.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}		
+	}
+
+	
+	protected void writeRteComponentsHbody(PrintWriter pw, Collection<String> code) {
+		if ( code == null || code.isEmpty()) {
+			return;
+		}
 		for (String s : code) {
 			pw.println(s);
 		}
 	}
 
-	protected void writeRteComponentsHhead(PrintWriter pw) {
+	protected void writeRteComponentsHhead(PrintWriter pw, String header_h) {
 
 		pw.println("/*"); //$NON-NLS-1$
 		pw.println(" * Auto generated Run-Time-Environment Component Configuration File"); //$NON-NLS-1$
@@ -501,14 +566,14 @@ public class RteProjectUpdater extends WorkspaceJob {
 		pw.println(rteProject.getRteConfigurationName());
 		pw.println("*/"); //$NON-NLS-1$
 
-		pw.println("#ifndef RTE_COMPONENTS_H"); //$NON-NLS-1$
-		pw.println("#define RTE_COMPONENTS_H"); //$NON-NLS-1$
+		pw.println("#ifndef " + header_h); //$NON-NLS-1$
+		pw.println("#define " + header_h); //$NON-NLS-1$
 		pw.println();
 	}
 
-	protected void writeRteComponentsHtail(PrintWriter pw) {
+	protected void writeRteComponentsHtail(PrintWriter pw, String header_h) {
 		pw.println();
-		pw.println("#endif /* RTE_COMPONENTS_H */"); //$NON-NLS-1$
+		pw.println("#endif /* " + header_h + " */"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 	protected void updateBuildSettings(boolean bForceUpdateToolchain) {
@@ -531,7 +596,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 				if (lsGen != null) {
 					linkerScriptFile = getLinkerScriptFile(lsGen);
 					try {
-						IMemorySettings memorySettings = RteConfiguration.createMemorySettings(deviceInfo);
+						IMemorySettings memorySettings = rteConfig.getMemorySettings();
 						String script = lsGen.generate(memorySettings);
 						if (script != null && !script.isEmpty()) {
 							writeLinkerScriptFile(linkerScriptFile, script);
@@ -545,11 +610,6 @@ public class RteProjectUpdater extends WorkspaceJob {
 			}
 		}
 
-		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
-		if (buildInfo == null) {
-			return;
-		}
-		
 		String[] configNames = buildInfo.getConfigurationNames();
 		for (String name : configNames) {
 			IConfiguration config = ProjectUtils.getConfiguration(project, name);

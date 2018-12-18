@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2016-2018 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ * Robert Crossman - usability and performance enhancements
  *******************************************************************************/
 
 package com.arm.cmsis.parser;
@@ -18,11 +19,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Pattern;
 
+import org.eclipse.cdt.ui.text.ICPartitions;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.FindReplaceDocumentAdapter;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
+import org.eclipse.jface.text.ITypedRegion;
+import org.eclipse.jface.text.TextUtilities;
 import org.eclipse.jface.text.rules.IToken;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
@@ -41,7 +48,21 @@ import com.arm.cmsis.utils.Utils;
 public class ConfigWizardParser {
 
 	private static final int LAST_CONFIG_WIZARD_START_LINE = 100;
-
+	
+	private static final String strOptVal   = "[_a-zA-Z0-9][_a-zA-Z0-9]*"; //$NON-NLS-1$
+	private static final String numRegex 	= "(0[xX][0-9a-fA-F]+|\\d+)"; //$NON-NLS-1$
+	private static final String rangeRegex  = numRegex + "-" + numRegex + "(:" + numRegex + ")?"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+	private static final String selectRegex = numRegex + "=";	//$NON-NLS-1$
+	private static final String mergeModRegex = "#(\\+|-|\\*|/)(0[xX]|)\\d+"; //$NON-NLS-1$
+	
+	private static final Pattern digitsPattern    = Pattern.compile("\\d+(\\.\\d+)?"); //$NON-NLS-1$
+	private static final Pattern mergeModPattern  = Pattern.compile(mergeModRegex);
+	private static final Pattern idPattern        = Pattern.compile("[_a-zA-Z0-9][_a-zA-Z0-9]*"); //$NON-NLS-1$
+	private static final Pattern numPattern       = Pattern.compile("\\d+((\\.\\d+)?|(\\.\\d+(\\.\\.\\d+)?))");//$NON-NLS-1$
+	private static final Pattern idModPattern     = Pattern.compile("([_a-zA-Z][_a-zA-Z0-9]*)="); //$NON-NLS-1$
+	private static final Pattern rangePattern     = Pattern.compile(rangeRegex); 	
+	private static final Pattern selectPattern    = Pattern.compile(selectRegex);	
+	
 	private ConfigWizardScanner fScanner;
 
 	private IDocument fDocument;
@@ -338,13 +359,18 @@ public class ConfigWizardParser {
 		if (modifier.startsWith(".")) { //$NON-NLS-1$
 			modifier = "0" + modifier; //$NON-NLS-1$
 		}
-		if (!modifier.matches("\\d+((\\.\\d+)?|(\\.\\d+(\\.\\.\\d+)?))")) { //$NON-NLS-1$
+		
+        if (!numPattern.matcher(modifier).matches()) {
+        	if (idPattern.matcher(modifier).matches()) {
+				item.setStrVal(modifier);
+				return item;
+        	}
 			fParsingErrorMessage = Messages.ConfigWizardParser_WrongModificationFormat + modifier;
 			fParsingErrorMessage += Messages.ConfigWizardParser_CorrectTokenFormat
 					+ "\\d+((\\.\\d+)?|(\\.\\d+(\\.\\.\\d+)?))"; //$NON-NLS-1$
 			syntaxError();
 			return null;
-		}
+        }		
 		try {
 			int dotPos = modifier.indexOf('.');
 			if (dotPos == -1) {
@@ -400,7 +426,11 @@ public class ConfigWizardParser {
 			String name = fScanner.readString();
 			item.setName(name);
 
+			if (item.isStringOption()) {
+				fScanner.setCheckId(true);
+			}
 			getNextToken();
+			fScanner.setCheckId(false);
 			while (cType == ETokenType.TOOLTIP) {
 				parseTooltip(item);
 			}
@@ -429,14 +459,14 @@ public class ConfigWizardParser {
 	protected IConfigWizardItem parseRangeOrSelection(IConfigWizardItem item, String rangeOrSelection) {
 		item.setBase(16);
 		int radix = 16;
-
-		String numRegex = "(0[xX][0-9a-fA-F]+|\\d+)"; //$NON-NLS-1$
-		String rangeRegex = numRegex + "-" + numRegex + "(:" + numRegex + ")?"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-		String selectRegex = numRegex + "="; //$NON-NLS-1$
-		if (!rangeOrSelection.matches(rangeRegex) && !rangeOrSelection.matches(selectRegex)) {
+		
+		if(!rangePattern.matcher(rangeOrSelection).matches() && !selectPattern.matcher(rangeOrSelection).matches()) {
+			if (item.isStringOption() && idModPattern.matcher(rangeOrSelection).matches()) {
+				item = parseSelection(item);
+			}
 			return item;
 		}
-
+		
 		if (!rangeOrSelection.toLowerCase().contains("0x")) { //$NON-NLS-1$
 			radix = 10;
 			item.setBase(10);
@@ -444,8 +474,7 @@ public class ConfigWizardParser {
 		}
 
 		try {
-			if (rangeOrSelection.matches(rangeRegex)) {
-
+			if (rangePattern.matcher(rangeOrSelection).matches() ) {
 				rangeOrSelection = rangeOrSelection.toLowerCase().replace("0x", ""); //$NON-NLS-1$ //$NON-NLS-2$
 
 				int hypPos = rangeOrSelection.indexOf('-');
@@ -486,24 +515,33 @@ public class ConfigWizardParser {
 	// jump to next token afterwards if cToken is a selection token
 	protected IConfigWizardItem parseSelection(IConfigWizardItem parent) {
 		Assert.isTrue(cType == ETokenType.VALUE);
+		if (parent.isStringOption()) {
+			fScanner.setCheckId(true);
+		}
 		parent.setIsSelection(true);
 		while (cType == ETokenType.VALUE) {
 			String value = fScanner.getTokenContent(cToken);
 			int equPos = value.indexOf('=');
 
-			int radix = 10;
-			String number = value.substring(0, equPos).toLowerCase();
-			if (number.startsWith("0x")) { //$NON-NLS-1$
-				radix = 16;
-				number = number.substring(2);
+			if (parent.isStringOption()) {	// handling string options
+				String strOpt = value.substring(0, equPos);
+				String name = fScanner.readString();
+				parent.addStrItem(strOpt, name);
+			} else {	// handling number options
+				int radix = 10;
+				String number = value.substring(0, equPos).toLowerCase();
+				if (number.startsWith("0x")) { //$NON-NLS-1$
+					radix = 16;
+					number = number.substring(2);
+				}
+				long key = Long.parseLong(number, radix);
+				String name = fScanner.readString();
+				parent.addItem(key, name);
 			}
-			long key = Long.parseLong(number, radix);
-			String name = fScanner.readString();
-			parent.addItem(key, name);
-
 			getNextToken();
 		}
-
+		fScanner.setCheckId(false);
+		
 		if (cType == ETokenType.UNKNOWN) {
 			fParsingErrorMessage = NLS.bind(Messages.ConfigWizardParser_WrongSelectionToken,
 					fScanner.getTokenContent(cToken));
@@ -517,8 +555,7 @@ public class ConfigWizardParser {
 	}
 
 	protected IConfigWizardItem parseModification(IConfigWizardItem item, String modification) {
-		String regex = "#(\\+|-|\\*|/)(0[xX]|)\\d+"; //$NON-NLS-1$
-		if (modification.matches(regex)) {
+		if (mergeModPattern.matcher(modification).matches()) {
 			try {
 				char m = modification.charAt(1);
 				item.setModification(m);
@@ -537,7 +574,7 @@ public class ConfigWizardParser {
 				getNextToken();
 			} catch (NumberFormatException e) {
 				fParsingErrorMessage = Messages.ConfigWizardParser_WrongModificationFormat + modification;
-				fParsingErrorMessage += Messages.ConfigWizardParser_CorrectTokenFormat + regex;
+				fParsingErrorMessage += Messages.ConfigWizardParser_CorrectTokenFormat + mergeModRegex;
 				syntaxError();
 				return null;
 			}
@@ -583,7 +620,7 @@ public class ConfigWizardParser {
 			modifier = "0" + modifier; //$NON-NLS-1$
 		}
 
-		if (!modifier.matches("\\d+(\\.\\d+)?")) { //$NON-NLS-1$
+		if (!digitsPattern.matcher(modifier).matches()) { 
 			fParsingErrorMessage = Messages.ConfigWizardParser_WrongModifierFormat + modifier;
 			fParsingErrorMessage += Messages.ConfigWizardParser_CorrectTokenFormat + "\\d+(\\.\\d+)?"; //$NON-NLS-1$
 			syntaxError();
@@ -824,6 +861,10 @@ public class ConfigWizardParser {
 		case OPTION:
 		case OPTION_CHECK:
 		case OPTION_SELECT:
+			if (item.isStringOption()) {
+				parseCurString(item);
+			    return;
+			}
 			Collection<String> numbers = fNumberContainer.tailMap(offset).values();
 			Iterator<String> iter = numbers.iterator();
 			String valueText = ""; //$NON-NLS-1$
@@ -1003,6 +1044,21 @@ public class ConfigWizardParser {
 			updateDocument(item, value);
 			return;
 		case OPTION_SELECT:
+			if (item.isStringOption()) {
+				String selStr = item.getSelStr();
+				if (selStr != null && item.getStrItems().get(selStr) != null && 
+					item.getStrItems().get(selStr).equals(value)) {
+					return;
+				}
+				for (Entry<String, String> entry : item.getStrItems().entrySet()) {
+					if (entry.getValue().equals(value)) {
+						item.setSelStr(entry.getKey());
+						updateStringOpt(item, entry.getKey());
+						return;
+					}
+				}
+				break;
+			}
 			if (item.getItems().get(item.getValue()) != null
 			&& item.getItems().get(item.getValue()).equals(value)) {
 				return;
@@ -1206,5 +1262,90 @@ public class ConfigWizardParser {
 		}
 		container.putAll(newMap);
 	}
-
+	
+	private void updateStringOpt(IConfigWizardItem item, String newVal) {
+		FindReplaceDocumentAdapter documentAdapter = getStringOptDocAdapter(item);
+		if (documentAdapter != null) {
+			try {
+				documentAdapter.replace(newVal, false);
+			} catch (Exception e) {}
+		}
+	}
+	// consider C- and Assembler files both
+	// Consider comment C- and Assembler styles
+	protected void parseCurString(IConfigWizardItem item) {
+		IRegion region = getStringOptRegion(item);
+		if (region != null) {
+		    FindReplaceDocumentAdapter documentAdapter = new FindReplaceDocumentAdapter(fDocument);
+	    	CharSequence spec = documentAdapter.subSequence(region.getOffset(), region.getOffset() + region.getLength());
+	    	item.setSelStr(spec.toString());	// take over the specification found in editor
+		}
+	}
+	
+	private IRegion getStringOptRegion(IConfigWizardItem item) {
+		if (item.getStrVal() == null) {
+			return null;
+		}
+		
+	    FindReplaceDocumentAdapter documentAdapter = new FindReplaceDocumentAdapter(fDocument);
+	    try {
+	    	// look for the modifier
+	        IRegion region = documentAdapter.find(fDocument.getLineOffset(item.getEndLine()+1), item.getStrVal(), true, true, true, false);
+	        while (region != null) {
+	        	if (!isComment(region)) {
+	        		// look for word behind the modifier
+	        		region = documentAdapter.find(region.getOffset() + region.getLength(), strOptVal, true, true, false, true);
+	        	    while (region != null) {
+	        	    	if (!isComment(region)) {
+		        	    	return region;
+	        	    	}
+		        		region = documentAdapter.find(region.getOffset() + region.getLength(), strOptVal, true, true, false, true);
+	        		}
+	        	    return null;
+	        	}
+	        	region = documentAdapter.find(region.getOffset() + region.getLength(), item.getStrVal(), true, true, true, false);
+	        }
+	    } catch (Exception e) {
+	    }
+        return null;
+	}
+	
+	private FindReplaceDocumentAdapter getStringOptDocAdapter(IConfigWizardItem item) {
+		if (item.getStrVal() == null) {
+			return null;
+		}
+		
+	    FindReplaceDocumentAdapter documentAdapter = new FindReplaceDocumentAdapter(fDocument);
+	    try {
+	    	// look for the modifier
+	        IRegion region = documentAdapter.find(fDocument.getLineOffset(item.getEndLine()+1), item.getStrVal(), true, true, true, false);
+	        while (region != null) {
+	        	if (!isComment(region)) {
+	        		// look for word behind the modifier
+	        		region = documentAdapter.find(region.getOffset() + region.getLength(), strOptVal, true, true, false, true);
+	        	    while (region != null) {
+	        	    	if (!isComment(region)) {
+		        	    	return documentAdapter;
+	        	    	}
+		        		region = documentAdapter.find(region.getOffset() + region.getLength(), strOptVal, true, true, false, true);
+	        		}
+	        	    return null;
+	        	}
+	        	region = documentAdapter.find(region.getOffset() + region.getLength(), item.getStrVal(), true, true, true, false);
+	        }
+	    } catch (Exception e) {
+	    }
+        return null;
+	}
+	
+	private boolean isComment(IRegion region) {
+		try {
+    	ITypedRegion tregion= TextUtilities.getPartition(fDocument, ICPartitions.C_PARTITIONING, region.getOffset(), false);
+    	String wtype = tregion.getType();
+    	return wtype.equals(ICPartitions.C_SINGLE_LINE_COMMENT) || 
+    		   wtype.equals(ICPartitions.C_MULTI_LINE_COMMENT);
+		} catch (BadLocationException e) {
+			return true;
+		}
+	}
 }

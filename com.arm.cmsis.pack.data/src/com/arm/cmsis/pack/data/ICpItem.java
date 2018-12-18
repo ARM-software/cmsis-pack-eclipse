@@ -16,10 +16,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.EVersionMatchMode;
 import com.arm.cmsis.pack.generic.IAttributedItem;
 import com.arm.cmsis.pack.item.ICmsisTreeItem;
+import com.arm.cmsis.pack.utils.FullDeviceName;
 
 /**
  * Base for all items in CMSIS packs 
@@ -103,21 +105,6 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 * @return collection of children having specified tag 
 	 */
 	Collection<ICpItem> getChildren(final String tag);
-
-	
-	/**
-	 * Checks if an attribute exists in the internal collection
-	 * @param key attribute key to search for
-	 * @return true if attribute exists
-	 */
-	boolean hasAttribute(final String key);
-
-	/**
-	 * Retrieves an attribute value from internal collection
-	 * @param key attribute key to search for
-	 * @return attribute value or empty string if attribute not found
-	 */
-	String getAttribute(final String key);
 	
 	/**
 	 * Returns value of an attribute present in this element or in attributes of parent items.
@@ -224,11 +211,6 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 */
 	String getVersion();
 	
-	/**
-	 * Returns "Pname" attribute of the element representing device property 
-	 * @return processor name or empty string if "pname" attribute not found
-	 */
-	String getProcessorName();
 
 	/**
 	 * Returns "Punit" attribute as integer 
@@ -242,18 +224,44 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 */
 	int getPunitsCount();
 
+	/**
+	 * Returns "Dname" or "Dvariant" attribute of the element representing device property 
+	 * @return device name or null if neither "Dname" nor "Dvariant" attribute" is found
+	 */
+	default String getDeviceName(){
+		return FullDeviceName.getDeviceName(attributes());
+	}
+
+	/**
+	 * Returns "Pname" attribute of the element representing device property 
+	 * @return processor name or empty string if "pname" attribute not found
+	 */
+	default String getProcessorName(){
+		return FullDeviceName.getProcessorName(attributes());
+	}
+
 	
 	/**
-	 * Returns full device name in form "Name:Pname" 
-	 * @return full device name or null if this element does not represent device
+	 * Returns full device name in form "Dname:Pname" 
+	 * @return full device name or an empty string if this element does not represent device
 	 */
-	String getDeviceName();
+	default String getFullDeviceName() {
+		return FullDeviceName.getFullDeviceName(getDeviceName(), getProcessorName());
+	}
 	
 	/**
 	 * Returns name of component's bundle  
 	 * @return bundle name or empty string if component has no bundle 
 	 */
 	String getBundleName();
+	
+	/**
+	 * Returns version of component's bundle  
+	 * @return bundle version or empty string if component has no bundle 
+	 */
+	default String getBundleVersion() {
+		return getAttribute(CmsisConstants.CBUNDLEVERSION);
+	}
 	
 	/**
 	 * Returns version match mode to be used when resolving the item (component, api or pack)
@@ -311,6 +319,17 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 * @return true if matches
 	 */
 	boolean matchesHost();
-	
-	
+
+	/**
+	 * Casts a supplied object to a ICpItem  
+	 * @param obj object to cast
+	 * @return casted object if possible, null otherwise
+	 */
+	static ICpItem cast(Object obj){
+		if(obj instanceof ICpItem) {
+			return (ICpItem)obj;
+		}
+		return null;
+	}
+
 }

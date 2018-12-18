@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: com.arm.cmsis.pack.project;singleton:=true
-Bundle-Version: 2.3.1.qualifier
+Bundle-Version: 2.4.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.project.CpProjectPlugIn
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.core.runtime,
@@ -18,18 +18,19 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.workbench,
  org.eclipse.ui.ide,
  org.eclipse.ui.console,
+ org.eclipse.compare,
  com.arm.cmsis.pack.common,
  com.arm.cmsis.pack.data,
+ org.eclipse.ui.navigator,
+ org.eclipse.ltk.core.refactoring,
  com.arm.cmsis.pack,
  com.arm.cmsis.pack.ui,
- com.arm.cmsis.pack.build.settings,
- org.eclipse.ltk.core.refactoring,
- org.eclipse.compare,
- org.eclipse.ui.navigator
+ com.arm.cmsis.pack.build.settings
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack.configuration,
  com.arm.cmsis.pack.project,
+ com.arm.cmsis.pack.project.importer,
  com.arm.cmsis.pack.project.template,
  com.arm.cmsis.pack.project.ui,
  com.arm.cmsis.pack.project.utils

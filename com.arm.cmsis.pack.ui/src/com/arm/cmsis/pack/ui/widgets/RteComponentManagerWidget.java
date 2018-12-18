@@ -38,6 +38,15 @@ public class RteComponentManagerWidget extends RteModelWidget {
 	public SashForm getSashForm() {
 		return sashForm;
 	}
+	
+	@Override
+	public void destroy(){
+		rteComponentTreeWidget.destroy();
+		rteValidateWidget.destroy();
+		rteComponentTreeWidget = null;
+		rteValidateWidget = null;
+		super.destroy();
+	}
 
 	@Override
 	public Composite getFocusWidget() {
@@ -72,11 +81,12 @@ public class RteComponentManagerWidget extends RteModelWidget {
 
 	@Override
 	public void refresh() {
+		// does nothing :  component and validation views refresh themselves 
 	}
 
 	@Override
 	public void update() {
-		if (sashForm != null) {
+		if (sashForm != null && !sashForm .isDisposed()) {
 			rteComponentTreeWidget.update();
 			rteValidateWidget.update();
 		}

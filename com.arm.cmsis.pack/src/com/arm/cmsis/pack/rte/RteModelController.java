@@ -67,6 +67,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	protected boolean fbComponentSelectionModified = false;
 	protected boolean fbPackFilterModified = false;
 	protected boolean fbDeviceModified = false;
+	protected boolean fbShowUsedPacksOnly = true;
 	
 	
 	/**
@@ -536,6 +537,18 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	public void setUseAllLatestPacks(boolean bUseLatest) {
 		fRtePackCollection.setUseAllLatestPacks(bUseLatest);
 		emitPackFilterModified();
+	}
+	
+	@Override
+	public void setShowUsedPacksOnly(boolean bShowUsed) {
+		fbShowUsedPacksOnly  = bShowUsed; 
+		emitPackFilterModified();
+	}
+	
+
+	@Override
+	public boolean isShowUsedPacksOnly() {
+		return fbShowUsedPacksOnly;
 	}
 
 	@Override

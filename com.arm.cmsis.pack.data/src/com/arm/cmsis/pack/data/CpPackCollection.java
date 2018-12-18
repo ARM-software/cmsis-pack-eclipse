@@ -18,7 +18,6 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 
@@ -126,7 +125,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 				continue;
 			}
 			for(ICpPack pack : familyPacks) {
-				if (pack.getPackState() == PackState.INSTALLED ||
+				if (pack.getPackState().isInstalledOrLocal() ||
 						pack.isLatest()) {
 					packs.add(pack);
 				}
@@ -186,7 +185,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 			ICpPack pack = f.getPack();
 			if (pack == null) {
 				continue;
-			} else if (pack.getPackState() == PackState.INSTALLED) {
+			} else if (pack.getPackState().isInstalledOrLocal()) {
 				latestPacks.add(pack);
 				continue;
 			}
@@ -195,7 +194,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 					continue;
 				}
 				ICpPack p = (ICpPack) item;
-				if(p.getPackState() == PackState.INSTALLED) {
+				if(p.getPackState().isInstalledOrLocal()) {
 					latestPacks.add(p);
 					break;
 				}
@@ -215,7 +214,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 			ICpPack pack = f.getPack();
 			if (pack == null) {
 				continue;
-			} else if (pack.getPackState() == PackState.INSTALLED) {
+			} else if (pack.getPackState().isInstalledOrLocal()) {
 				latestPacks.add(pack);
 				continue;
 			} else {
@@ -227,7 +226,7 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 					continue;
 				}
 				ICpPack p = (ICpPack) item;
-				if(p.getPackState() == PackState.INSTALLED) {
+				if(p.getPackState().isInstalledOrLocal()) {
 					bestMatch = p;
 					break;
 				}

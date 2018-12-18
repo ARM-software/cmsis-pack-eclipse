@@ -21,6 +21,7 @@ import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.item.ICmsisMapItem;
+import com.arm.cmsis.pack.rte.RteConstants;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependency;
 
 /**
@@ -267,6 +268,14 @@ public interface IRteComponentItem extends ICmsisMapItem<IRteComponentItem> {
 	 * @return component bundle item
 	 */
 	IRteComponentBundle getParentBundle();
+	
+	
+	/**
+	 * Checks if component belongs to a bundle
+	 * @return true if the component belongs to a bundle
+	 */
+	boolean hasBundle();
+	
 	
 	/**
 	 * Searches for component group in the child hierarchy (default bundle takes precedence) 

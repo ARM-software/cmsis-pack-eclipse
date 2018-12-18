@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2015-2018 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -26,8 +26,8 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class CpFileInfo extends CpFile implements ICpFileInfo {
 
-	ICpFile fFile = null;
-	int fVersionDiff = 0;
+	protected ICpFile fFile = null;
+	protected int fVersionDiff = 0;
 
 	public CpFileInfo(ICpItem parent, ICpFile file) {
 		super(parent, file.getTag());
@@ -68,12 +68,7 @@ public class CpFileInfo extends CpFile implements ICpFileInfo {
 
 	@Override
 	public ICpComponentInfo getComponentInfo() {
-		for (ICpItem parent = getParent(); parent != null; parent = parent.getParent()) {
-			if (parent instanceof ICpComponentInfo) {
-				return (ICpComponentInfo) parent;
-			}
-		}
-		return null;
+		return getParentOfType(ICpComponentInfo.class);
 	}
 
 	@Override

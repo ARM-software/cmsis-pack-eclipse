@@ -57,7 +57,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
 	protected IWorkbenchPart selectionPart;
 	protected IStructuredSelection selection;
 
-	protected boolean installedOnly;
+	protected boolean fbInstalledExamplesOnly = true;
 	protected String filterString = null;
 	
 	protected Set<ICpPackFamily> fFilteredDevicePackFamilies = new HashSet<ICpPackFamily>();
@@ -67,7 +67,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
 	 * Default constructor
 	 */
 	public PackInstallerViewFilter() {
-		installedOnly = false;
+		fbInstalledExamplesOnly = true;
 	}
 
 	public void clear() {
@@ -210,8 +210,8 @@ public class PackInstallerViewFilter extends ViewerFilter {
 	 * Set to filter out uninstalled examples
 	 * @param installedOnly
 	 */
-	public void setInstalledOnly(boolean installedOnly) {
-		this.installedOnly = installedOnly;
+	public void setShowExamplesInstalledOnly(boolean installedOnly) {
+		fbInstalledExamplesOnly = installedOnly;
 	}
 
 	@Override
@@ -387,10 +387,11 @@ public class PackInstallerViewFilter extends ViewerFilter {
 
 		if(fDeviceItem == null && fBoardItem == null)
 			return false;
-		
-		if(installedOnly &&
-				example.getPack().getPackState() != PackState.INSTALLED &&
-				example.getPack().getPackState() != PackState.GENERATED) {
+		PackState packState = example.getPack().getPackState();
+		if(fbInstalledExamplesOnly &&
+				packState != PackState.INSTALLED &&
+				packState != PackState.LOCAL     &&
+				packState != PackState.GENERATED) {
 					return false;
 		}
 		

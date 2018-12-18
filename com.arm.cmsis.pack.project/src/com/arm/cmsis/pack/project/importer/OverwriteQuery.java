@@ -10,7 +10,7 @@
 * ARM Ltd and ARM Germany GmbH - application-specific implementation
 *******************************************************************************/
 
-package com.arm.cmsis.pack.installer;
+package com.arm.cmsis.pack.project.importer;
 
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -19,6 +19,8 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.dialogs.IOverwriteQuery;
+
+import com.arm.cmsis.pack.project.Messages;
 
 /**
  * Query dialog to show in the process of copying an example

@@ -11,8 +11,10 @@
 
 package com.arm.cmsis.pack.ui.tree;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.util.Geometry;
 import org.eclipse.jface.viewers.ColumnViewer;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
@@ -21,6 +23,7 @@ import org.eclipse.swt.events.MouseMoveListener;
 import org.eclipse.swt.events.MouseTrackAdapter;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Cursor;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -29,6 +32,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
+import com.arm.cmsis.pack.ui.ColorConstants;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.OpenURL;
 
@@ -105,9 +109,10 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		Point pt = new Point(e.x, e.y);
 		ViewerCell cell = getViewer().getCell(pt);
 
+		int colIndex = cell == null ? 0 : cell.getColumnIndex();
+		Object element = cell == null ? null : cell.getElement();
+		
 		if (cell != null) {
-			int colIndex = cell.getColumnIndex();
-			Object element = cell.getElement();
 			if (getCellControlType(element, colIndex) == CellControlType.BUTTON && isEnabled(element, colIndex)) {
 				Rectangle cellBounds = cell.getBounds();
 				Image img = getImage(element, colIndex);
@@ -124,8 +129,7 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 				}
 			}
 		}
-
-		if (cursorToSet == CURSOR_HAND) {
+		if (cursorToSet == CURSOR_HAND && isEnabled(element, colIndex)) {
 			if (this.control.getCursor() != CURSOR_HAND) {
 				this.control.setCursor(CURSOR_HAND);
 			}
@@ -302,8 +306,9 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		int height = image.getBounds().height;
 		Rectangle checkboxBound = new Rectangle(x, y, width, height);
 		if (checkboxBound.contains(pt)) {
-			boolean isChecked = getCheck(element, colIndex);
-			setCheck(element, colIndex, !isChecked);
+			int state = getTriState(element, colIndex);
+			// set check in case of unchecked or undefined, unset otherwise
+			setCheck(element, colIndex, state <= 0);  
 			return true;
 		}
 		return false;
@@ -378,6 +383,18 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		return columnViewer;
 	}
 
+	/**
+	 * Helper function to return viewer as a TreeViewer
+	 * @return TreeViewer object or null if cannot be casted
+	 */
+	public TreeViewer getTreeViewer() {
+		ColumnViewer viewer = getViewer();
+		if(viewer instanceof TreeViewer) {
+			return (TreeViewer)viewer;
+		}
+		return null;
+	}
+	
 	@Override
 	public CellControlType getCellControlType(Object obj, int columnIndex) {
 		return CellControlType.TEXT;
@@ -418,6 +435,12 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		return -1;
 	}
 
+	@Override
+	public String getCurrentSelectedString(Object element, int columnIndex) {
+		return getString(element, columnIndex);
+	}
+
+	
 	@Override
 	public long getMaxCount(Object obj, int columnIndex) {
 		return 0;
@@ -474,6 +497,46 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		return null;
 	}
 
+
+	@Override
+	public Color getFgColor(Object obj, int columnIndex) {
+		
+		if(getCellControlType(obj, columnIndex) == CellControlType.URL) {
+			return ColorConstants.COLOR_LINK_FOREGROUND;
+		}
+		
+		if(!isValid(obj, columnIndex)) {
+			return ColorConstants.RED;
+		} 
+		
+		if(!isEnabled(obj, columnIndex)) {
+			return ColorConstants.DARK_GRAY;
+		} 
+		return null;
+	}
+
+	
+	
+	@Override
+	public Font getFont(Object obj, int columnIndex) {
+		if(isUseFixedFont(obj, columnIndex)) {
+			Font font = JFaceResources.getTextFont ();
+			return font;
+		}
+		return null;
+	}
+
+	/**
+	 * Checks if to use fixed pitch font for the cell
+	 * @param obj object associated with line
+	 * @param columnIndex column index 
+	 * @return true if to use fixed font, false by default 
+	 */
+	protected boolean isUseFixedFont(Object obj, int columnIndex) {
+		return false; 
+	}
+	
+	
 	@Override
 	public String getTooltipText(Object obj, int columnIndex) {
 		return null;
@@ -481,6 +544,7 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 
 	@Override
 	public void setCheck(Object element, int columnIndex, boolean newVal) {
+		// default does nothing
 	}
 
 	@Override
@@ -541,14 +605,14 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 
 	@Override
 	public void setSuffixButtonPressed(Object obj, int columnIndex, Object newVal) {
-		if (getCellControlType(obj, columnIndex) == CellControlType.INPLACE_CHECK) {
+		if (hasSuffixButton(obj, columnIndex)) {
 			selectedRightAlignedButton = newVal;
 		}
 	}
 
 	@Override
 	public boolean isSuffixButtonPressed(Object obj, int columnIndex) {
-		if (getCellControlType(obj, columnIndex) == CellControlType.INPLACE_CHECK) {
+		if (hasSuffixButton(obj, columnIndex)) {
 			return selectedRightAlignedButton == obj;
 		}
 		return false;
@@ -574,7 +638,7 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 	@Override
 	public Menu getMenu(Object obj, int columnIndex) {
 		String[] strings = getStringArray(obj, columnIndex);
-		String selectedString = getString(obj, columnIndex);
+		String selectedString = getCurrentSelectedString(obj, columnIndex);
 		String defaultString = getDefaultString(obj, columnIndex);
 		boolean bDefault = defaultString !=null && isDefault(obj, columnIndex);
 
@@ -588,21 +652,17 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 
 	@Override
 	public Image getCheckboxImage(Object obj, int columnIndex) {
-		if (getCellControlType(obj, columnIndex) == CellControlType.INPLACE_CHECK ||
-				getCellControlType(obj, columnIndex) == CellControlType.CHECK) {
-			boolean check = getCheck(obj, columnIndex);
+			int state = getTriState(obj, columnIndex);
 			boolean enabled = canEdit(obj, columnIndex);
-			Image image;
-			if (enabled) {
-				image = check ? CpPlugInUI.getImage(CpPlugInUI.ICON_CHECKED)
-						: CpPlugInUI.getImage(CpPlugInUI.ICON_UNCHECKED);
-			} else {
-				image = check ? CpPlugInUI.getImage(CpPlugInUI.ICON_CHECKED_GREY)
-						: CpPlugInUI.getImage(CpPlugInUI.ICON_UNCHECKED_GREY);
+			if (!enabled) {
+				return state != 0 ? CpPlugInUI.getImage(CpPlugInUI.ICON_CHECKED_GREY)
+						          : CpPlugInUI.getImage(CpPlugInUI.ICON_UNCHECKED_GREY);
 			}
-			return image;
-		}
-		return null;
+			if(state == 0) {
+				return CpPlugInUI.getImage(CpPlugInUI.ICON_UNCHECKED);
+			}
+			return state > 0 ? CpPlugInUI.getImage(CpPlugInUI.ICON_CHECKED)
+							 : CpPlugInUI.getImage(CpPlugInUI.ICON_CHECKED_UNDEFINED);
 	}
 
 	/**
@@ -700,5 +760,5 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		}
 		return imageWidth + textWidth;
 	}
-
+	
 }

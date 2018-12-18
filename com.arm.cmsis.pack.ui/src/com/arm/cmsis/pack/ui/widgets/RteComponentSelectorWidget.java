@@ -29,17 +29,16 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpGenerator;
+import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.generic.ITreeObject;
@@ -53,13 +52,12 @@ import com.arm.cmsis.pack.rte.components.IRteComponentGroup;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 import com.arm.cmsis.pack.rte.components.RteMoreClass;
 import com.arm.cmsis.pack.rte.components.RteSelectedDeviceClass;
+import com.arm.cmsis.pack.ui.ColorConstants;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.LaunchGenerator;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
 import com.arm.cmsis.pack.ui.tree.AdvisedEditingSupport;
-import com.arm.cmsis.pack.ui.tree.OverlayImage;
-import com.arm.cmsis.pack.ui.tree.OverlayImage.OverlayPos;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 import com.arm.cmsis.pack.utils.Utils;
 
@@ -78,8 +76,6 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 	static final int COLVERSION = 4;
 	static final int COLDESCR 	= 5;
 
-	private Action expandAllSelected;
-	
 	protected Map<String, LaunchGeneratorAction> laGeneratorActions = new HashMap<>();
 
 	private List<String> selItemKeyPath = null;
@@ -241,7 +237,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 			if(columnIndex == COLSEL && hasSuffixButton(obj, columnIndex)) {
 				return getCheck(obj, columnIndex);
 			}
-			return super.isSuffixButtonEnabled(obj, columnIndex);
+			return false;
 		}
 
 		@Override
@@ -428,12 +424,14 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 					break;
 				case COLVENDOR:
 					break;
-				case COLVERSION:
-					if (item.getActiveVersion() != null && !item.getActiveVersion().isEmpty()
-							&& !item.isUseLatestVersion()) {
+				case COLVERSION: 
+				{
+					String version = item.getActiveVersion(); 
+					if (version != null && !version.isEmpty() && !item.isUseLatestVersion() && !item.hasBundle()) {
 						return CpPlugInUI.getImage(CpPlugInUI.ICON_PIN);
 					}
-					break;
+				}
+				break;
 				case COLDESCR:
 				default:
 					break;
@@ -460,8 +458,14 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 			}
 
 			switch(columnIndex) {
-			case COLSWCOMP:
-				return item.getDescription();
+			case COLSWCOMP: {
+				String tooltip = item.getDescription();
+				ICpItem cpItem = item.getActiveCpItem();
+				if(cpItem != null) {
+					tooltip += '\n' + CpStringsUI.RteDeviceSelectorWidget_lblPack_text + ' ' + cpItem.getPackId();
+				}
+				return tooltip;
+			}
 			case COLVERSION:
 				String ver = item.getActiveVersion();
 				if(ver == null || ver.isEmpty()) {
@@ -576,7 +580,6 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 			}
 			IRteComponentItem item = getComponentItem(obj);
 			if(item != null) {
-				Device device = Display.getCurrent();
 				EEvaluationResult res = getModelController().getEvaluationResult(item);
 				switch(res){
 				case UNDEFINED:
@@ -599,18 +602,18 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 				case MISSING_VERSION:
 				case UNAVAILABLE:
 				case UNAVAILABLE_PACK:
-					return device.getSystemColor(SWT.COLOR_RED);
+					return ColorConstants.RED;
 				case IGNORED:
 					if(!item.isSelected()) {
 						break;
 					}
 				case FULFILLED:
-					return GREEN;
+					return ColorConstants.GREEN;
 
 				case INACTIVE:
 				case INSTALLED:
 				case SELECTABLE:
-					return YELLOW;
+					return ColorConstants.YELLOW;
 				default:
 					break;
 				}
@@ -819,13 +822,6 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 	}
 
 
-	@Override
-	public void refresh() {
-		if (fTreeViewer != null) {
-			fTreeViewer.refresh();
-		}
-	}
-
 	/**
 	 * Refresh completely the tree viewer.
 	 */
@@ -927,41 +923,39 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 	
 	protected void fillContextMenu(IMenuManager manager) {
 		addGeneratorActions(manager);
+		manager.add(expandAllSelected);
 		manager.add(expandAll);
 		manager.add(collapseAll);
-		manager.add(expandAllSelected);
+	}
+	
+	public boolean isExpandAllSelectedSupported() {
+		return true; // default does not support it 
+	}
+
+	
+	@Override
+	protected void expandAllSelected() {
+		if(fTreeViewer == null) {
+			return;
+		}
+		IRteModel model = getModelController();
+		if (model != null) {
+			fTreeViewer.getTree().setRedraw(false);
+			ISelection prevSel = fTreeViewer.getSelection();
+			Collection<IRteComponent> selectedComponents = model.getSelectedComponents();
+			for (IRteComponent comp: selectedComponents) {
+				Object[] path = comp.getEffectiveHierachyPath();
+				TreePath tp = new TreePath(path);
+				TreeSelection ts = new TreeSelection(tp);
+				fTreeViewer.setSelection(ts, false);
+			}
+			fTreeViewer.setSelection(prevSel, true);
+			fTreeViewer.getTree().setRedraw(true);
+		}
 	}
 
 	protected void makeActions() {
 		super.makeActions();
-		expandAllSelected = new Action() {
-			@Override
-			public void run() {
-				if(fTreeViewer == null) {
-					return;
-				}
-				IRteModel model = getModelController();
-				if (model != null) {
-					fTreeViewer.getTree().setRedraw(false);
-					ISelection prevSel = fTreeViewer.getSelection();
-					Collection<IRteComponent> selectedComponents = model.getSelectedComponents();
-					for (IRteComponent comp: selectedComponents) {
-						Object[] path = comp.getEffectiveHierachyPath();
-						TreePath tp = new TreePath(path);
-						TreeSelection ts = new TreeSelection(tp);
-						fTreeViewer.setSelection(ts, false);
-					}
-					fTreeViewer.setSelection(prevSel, true);
-					fTreeViewer.getTree().setRedraw(true);
-				}
-			}
-		};
-		expandAllSelected.setText(CpStringsUI.RteManagerWidget_ExpandAllSelected);
-
-		OverlayImage overlayImage = new OverlayImage(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL).createImage(),
-				CpPlugInUI.getImageDescriptor(CpPlugInUI.CHECKEDOUT_OVR).createImage(), OverlayPos.TOP_RIGHT);
-		expandAllSelected.setImageDescriptor(overlayImage);
-		
 		
 		for(String type : CmsisConstants.LAUNCH_TYPES) {
 			LaunchGeneratorAction lga = new LaunchGeneratorAction(type);

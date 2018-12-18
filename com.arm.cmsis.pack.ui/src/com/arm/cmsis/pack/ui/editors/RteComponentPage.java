@@ -14,8 +14,7 @@ package com.arm.cmsis.pack.ui.editors;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.graphics.Image;
 
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.events.RteEvent;
@@ -24,6 +23,7 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.IHelpContextIds;
 import com.arm.cmsis.pack.ui.widgets.RteComponentManagerWidget;
+import com.arm.cmsis.pack.ui.widgets.RteWidget;
 
 /**
  * Editor page that wraps RteManagerWidget
@@ -31,36 +31,14 @@ import com.arm.cmsis.pack.ui.widgets.RteComponentManagerWidget;
  */
 public class RteComponentPage extends RteModelEditorPage {
 
-	protected RteComponentManagerWidget rteManagerWidget;
 	IAction resolveAction = null;
 
 	public RteComponentPage() {
-		rteManagerWidget = new RteComponentManagerWidget();
 	}
 
-	@Override
-	public void setModelController(IRteModelController model) {
-		super.setModelController(model);
-		rteManagerWidget.setModelController(model);
-		update();
-	}
 
 	@Override
-	public Composite getFocusWidget() {
-		return rteManagerWidget.getFocusWidget();
-	}
-
-	@Override
-	public void createPageContent(Composite parent) {
-		rteManagerWidget.createControl(parent);
-		headerWidget.setFocusWidget(getFocusWidget());
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(getFocusWidget(), IHelpContextIds.COMPONENT_PAGE);
-	}
-
-	@Override
-	protected void setupHeader() {
-		headerWidget.setLabel(CpStringsUI.RteManagerWidget_Components, CpPlugInUI.getImage(CpPlugInUI.ICON_RTE));
-
+	protected void createActions() {
 		resolveAction = new Action(CpStringsUI.RteComponentTreeWidget_Resolve, IAction.AS_PUSH_BUTTON) {
 			@Override
 			public void run() {
@@ -75,9 +53,9 @@ public class RteComponentPage extends RteModelEditorPage {
 		resolveAction.setDisabledImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RESOLVE_CHECK_GREY));
 		headerWidget.addAction(resolveAction, SWT.LEFT, true);
 
-		super.setupHeader();
+		super.createActions();
 	}
-
+	
 	@Override
 	public void handle(RteEvent event) {
 		switch (event.getTopic()) {
@@ -89,18 +67,41 @@ public class RteComponentPage extends RteModelEditorPage {
 		}
 	}
 
+
 	@Override
-	public void update() {
-		if (headerWidget != null && getModelController() != null) {
-			bModified = getModelController().isComponentSelectionModified();
-			headerWidget.setModified(bModified);
+	public void updateActions() {
+		if(getModelController() != null) {
 			EEvaluationResult res = getModelController().getEvaluationResult();
 			resolveAction.setEnabled(res == EEvaluationResult.SELECTABLE);
 		}
-		super.update();
+		super.updateActions();
 	}
 
 	@Override
-	public void refresh() {
+	protected RteWidget<IRteModelController> createContentWidget() {
+		return  new RteComponentManagerWidget();
 	}
+
+	@Override
+	protected String getHelpID() {
+		return IHelpContextIds.COMPONENT_PAGE;
+	}
+
+	@Override
+	protected Image getImage() {
+		return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+	}
+
+	@Override
+	protected String getLabel() {
+		return CpStringsUI.RteManagerWidget_Components;
+	}
+	
+	@Override
+	public boolean isModified() {
+		if(getModelController() != null)
+			return getModelController().isComponentSelectionModified();
+		return false;
+	}
+
 }

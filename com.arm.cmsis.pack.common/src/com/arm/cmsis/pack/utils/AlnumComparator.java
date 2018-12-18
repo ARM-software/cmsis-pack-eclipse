@@ -15,7 +15,7 @@ import java.util.Comparator;
 
 /**
  * Class to compare strings containing decimal digits alpha-numerically. That is
- * in particular useful to compare version strings.
+ * in particular to sort strings containing numbers
  * <p/>
  * The class can be used:
  * <ul>
@@ -25,16 +25,18 @@ import java.util.Comparator;
 
  * <p/>
  * Groups of digits are converted into numbers for comparison, other characters
- * are compared in standard way.
+ * are compared in standard way. In addition string lengths are used to ensure 2.01 > 2.1
  * <p> 
  * In contrast, standard lexicographical string comparison treats digits as characters, for example:
  * <dl>
  * <dt>alpha-numeric comparison:</dt>
  *    	<dd>"10.1" > "2.1"</dd>
- *    	<dd>"2.01" == "2.1"</dd>
+ *    	<dd>"2.01" > "2.1"</dd>
+ *    	<dd>"2.01" == "2.01"</dd>    
  * <dt>standard lexicographical comparison:</dt> 
  *		<dd>"10.1" < "2.1"</dd>
  *		<dd>"2.01" < "2.1"</dd>
+ *    	<dd>"2.01" == "2.01"</dd>    
  * </dl>
  * </p>
  * 
@@ -119,7 +121,7 @@ public class AlnumComparator implements Comparator<String> {
 	 * 	<dd><b><0</b> if str1 less than str2</dd>
 	 */
 	protected int compare(String str1, String str2, boolean cs) {
-		return alnumCompare(str1, str2, isCaseSensitive());
+		return alnumCompare(str1, str2, isCaseSensitive(), true);
 	}
 
 	/**
@@ -127,12 +129,13 @@ public class AlnumComparator implements Comparator<String> {
 	 * @param str1 first string to compare
 	 * @param str2 second string to compare
 	 * @param cs case sensitive flag
+	 * @param cl compare length flag, if true and result is 0 string length comparison is used    
 	 * @return
 	 * 	<dd><b>0</b> if str1 equals str2</dd>
 	 * 	<dd><b>1</b> if str1 greater than str2</dd>
 	 * 	<dd><b>-1</b> if str1 less than str2</dd>
 	 */
-	public static int alnumCompare(final String str1, final String str2, boolean cs) {
+	public static int alnumCompare(final String str1, final String str2, boolean cs, boolean cl) {
 		// allow comparison of null and empty strings 
 		if (str1 == null || str1.isEmpty()) {
 			if (str2 == null || str2.isEmpty()) {
@@ -196,7 +199,12 @@ public class AlnumComparator implements Comparator<String> {
 				i2++;
 			}
 		}
-		return (l1 - i1) - (l2 - i2);
+		int res =(l1 - i1) - (l2 - i2);
+		
+		if(res == 0 && cl) {
+			res = str1.length() - str2.length();
+		}
+		return res;
 	}
 
 	/**
@@ -206,7 +214,7 @@ public class AlnumComparator implements Comparator<String> {
 	 * @return str1 > str2 : 1 ; str1 < str2 : -1; str1 == str2 : 0 
 	 */
 	public static int alnumCompare(final String str1, final String str2) {
-		return alnumCompare(str1, str2, true);
+		return alnumCompare(str1, str2, true, true);
 	}
 
 	/**
@@ -216,23 +224,48 @@ public class AlnumComparator implements Comparator<String> {
 	 * @return  str1 > str2 : 1 ; str1 < str2 : -1; str1 == str2 : 0 
 	 */
 	public static int alnumCompareNoCase(final String str1, final String str2) {
-		return alnumCompare(str1, str2, false);
+		return alnumCompare(str1, str2, false, true);
 	}
 
 	/**
-	 * Check if a String matches a Regex Pattern
-	 * @param pattern - the regex pattern
-	 * @param string - the string to match
+	 * Compares two strings alpha-numerically respecting case ignoring length (2.01 == 2.1)  
+	 * @param str1 - first string to compare
+	 * @param str2 - second string to compare
+	 * @return  str1 > str2 : 1 ; str1 < str2 : -1; str1 == str2 : 0 
+	 */
+	public static int alnumCompareNoLength(final String str1, final String str2) {
+		return alnumCompare(str1, str2, true, false);
+	}
+
+	/**
+	 * Compares two strings alpha-numerically ignoring case and ignoring length (2.01 == 2.1)  
+	 * @param str1 - first string to compare
+	 * @param str2 - second string to compare
+	 * @return  str1 > str2 : 1 ; str1 < str2 : -1; str1 == str2 : 0 
+	 */
+	public static int alnumCompareNoCaseNoLength(final String str1, final String str2) {
+		return alnumCompare(str1, str2, false, false);
+	}
+
+	
+	/**
+	 * Check if a String matches a wildcard pattern
+	 * @param pattern - the wildcard pattern
+	 * @param string -  the string to match
 	 * @return  true if string matches pattern, false otherwise
 	 */
 	public static boolean alnumCompareWildcardMatch(String p, String s) {
-		int m = s.length(), n = p.length();
+		int n = p.length();
         int count = 0;
         for (int i = 0; i < n; i++) {
             if (p.charAt(i) == '*') {
 				count++;
 			}
         }
+        if(count == n)
+        	return true; // pattern only consists of asterisks => true;
+        
+		int m = s.length();
         if (count==0 && m != n) {
 			return false;
 		} else if (n - count > m) {

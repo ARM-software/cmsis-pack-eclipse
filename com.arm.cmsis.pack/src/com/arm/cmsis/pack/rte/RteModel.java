@@ -266,6 +266,9 @@ public class RteModel implements IRteModel {
 	}
 
 	protected ICpPack resolvePack(ICpPackInfo pi) {
+		if(pi == null) {
+			return null;
+		}
 		ICpPack pack = pi.getPack();
 		if(pack != null) {
 			return pack;
@@ -575,7 +578,7 @@ public class RteModel implements IRteModel {
 		if(fDeviceInfo != null) {
 			fComponentFilter.setAttributes(fDeviceInfo.attributes().getAttributesAsMap());
 			// Set proper Dname attribute for condition  evaluation
-			String deviceName = fDeviceInfo.getDeviceName();
+			String deviceName = fDeviceInfo.getFullDeviceName();
 			int i = deviceName.indexOf(':');
 			if (i >= 0) {
 				deviceName = deviceName.substring(0, i);

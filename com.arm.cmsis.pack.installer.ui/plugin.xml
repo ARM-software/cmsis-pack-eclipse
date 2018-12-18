@@ -124,6 +124,22 @@
                   </with>
                </visibleWhen>
             </command>
+            <command
+                  commandId="com.arm.cmsis.pack.installer.commands.manLocalRepoCommand"
+                  icon="icons/edit_repository.png"
+                  label="Manage Local Repositories"
+                  style="push"
+                  tooltip="Manage Local Repositories">
+               <visibleWhen
+                     checkEnabled="false">
+                  <with
+                        variable="activeWorkbenchWindow.activePerspective">
+                     <equals
+                           value="com.arm.cmsis.pack.installer.ui.perspectives.packmanager">
+                     </equals>
+                  </with>
+               </visibleWhen>
+            </command>
          </toolbar>
       </menuContribution>
    </extension>
@@ -152,25 +168,74 @@
             id="com.arm.cmsis.pack.installer.commands.importFolderPacksCommand"
             name="Import Packs from Folder">
       </command>
+      <command
+            categoryId="com.arm.cmsis.pack.installer.commands"
+            id="com.arm.cmsis.pack.installer.commands.manLocalRepoCommand"
+            name="Manage Local Repositories">
+      </command>
    </extension>
    <extension
          point="org.eclipse.ui.handlers">
       <handler
             class="com.arm.cmsis.pack.installer.ui.handlers.UpdatePacksHandler"
             commandId="com.arm.cmsis.pack.installer.commands.updateCommand">
+         <enabledWhen>
+            <test
+                  property="com.arm.cmsis.pack.installer.ui.canUpdate"
+                  value="true">
+            </test>
+         </enabledWhen>
       </handler>
       <handler
             class="com.arm.cmsis.pack.installer.ui.handlers.ImportPacksHandler"
             commandId="com.arm.cmsis.pack.installer.commands.importPackCommand">
+         <enabledWhen>
+            <test
+                  property="com.arm.cmsis.pack.installer.ui.canUpdate"
+                  value="true">
+            </test>
+         </enabledWhen>
       </handler>
       <handler
             class="com.arm.cmsis.pack.installer.ui.handlers.ReloadPacksHandler"
             commandId="com.arm.cmsis.pack.installer.commands.reloadCommand">
+         <enabledWhen>
+            <test
+                  property="com.arm.cmsis.pack.installer.ui.canUpdate"
+                  value="true">
+            </test>
+         </enabledWhen>
       </handler>
       <handler
             class="com.arm.cmsis.pack.installer.ui.handlers.ImportFolderPacksHandler"
             commandId="com.arm.cmsis.pack.installer.commands.importFolderPacksCommand">
+         <enabledWhen>
+            <test
+                  property="com.arm.cmsis.pack.installer.ui.canUpdate"
+                  value="true">
+            </test>
+         </enabledWhen>
       </handler>
+      <handler
+            class="com.arm.cmsis.pack.installer.ui.handlers.ManLocalRepoHandler"
+            commandId="com.arm.cmsis.pack.installer.commands.manLocalRepoCommand">
+         <enabledWhen>
+            <test
+                  property="com.arm.cmsis.pack.installer.ui.canUpdate"
+                  value="true">
+            </test>
+         </enabledWhen>
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="com.arm.cmsis.pack.installer.ui.CpPackInstallerUiPropertyTester"
+            id="com.arm.cmsis.pack.installer.ui.propertyTester"
+            namespace="com.arm.cmsis.pack.installer.ui"
+            properties="canUpdate"
+            type="java.lang.Object">
+      </propertyTester>
    </extension>
 
 </plugin>

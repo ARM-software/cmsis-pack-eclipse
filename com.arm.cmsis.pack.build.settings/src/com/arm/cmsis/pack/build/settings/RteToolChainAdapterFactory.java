@@ -122,6 +122,9 @@ public class RteToolChainAdapterFactory {
 	 */
 	public Collection<RteToolChainAdapterInfo> getAdapterInfos(IToolChain toolChain) {
 		Map<String, RteToolChainAdapterInfo> infos = new TreeMap<String, RteToolChainAdapterInfo>();
+		if(toolChain == null){
+			return infos.values();
+		}
 		// first search only adapters with associations
 		for(RteToolChainAdapterInfo info :  adapterInfos.values()) {
 			int match = info.matchToolChain(toolChain);

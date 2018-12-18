@@ -11,6 +11,9 @@
 
 package com.arm.cmsis.pack.project;
 
+import java.util.Collection;
+import java.util.Map;
+
 import org.eclipse.cdt.core.model.CoreModel;
 import org.eclipse.cdt.core.settings.model.ICProjectDescription;
 import org.eclipse.core.resources.IProject;
@@ -154,10 +157,6 @@ public class RteProject extends PlatformObject implements IRteProject {
 		IProject project = getProject();
 		CoreModel model = CoreModel.getDefault();
 		ICProjectDescription projDes = model.getProjectDescription(project);
-		if (projDes == null) {
-			// not a MBS project
-			return;
-		}
 		if (save) {
 			saveRteStorage(projDes);
 			model.setProjectDescription(project, projDes);
@@ -187,10 +186,23 @@ public class RteProject extends PlatformObject implements IRteProject {
 		if (fileName.equals(CmsisConstants.RTE_RTE_Components_h)) {
 			return true;
 		}
-		if (fRteConfiguration != null) {
-			return fRteConfiguration.getProjectFileInfo(fileName) != null;
+		if (fRteConfiguration == null) {
+			return false;
 		}
-		return false;
+		
+		if (fileName.equals(CmsisConstants.RTE_Pre_Include_Global_h)) {
+			Collection<String> globals = fRteConfiguration.getGlobalPreIncludeStrings();
+			return globals != null && !globals.isEmpty();
+		}
+
+		if (fileName.startsWith(CmsisConstants.RTE_Pre_Include_)) {
+			Map<String, String> locals = fRteConfiguration.getLocalPreIncludeStrings();
+			if(locals == null || locals.isEmpty())
+				return false;
+			return locals.containsKey(fileName.substring(CmsisConstants.RTEDIR.length()));
+		}
+		
+		return fRteConfiguration.getProjectFileInfo(fileName) != null;
 	}
 
 	@Override

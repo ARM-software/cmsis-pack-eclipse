@@ -13,6 +13,7 @@ package com.arm.cmsis.pack.ui.tree;
 
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Menu;
@@ -54,6 +55,17 @@ public interface IColumnAdvisor {
 	boolean getCheck(Object obj, int columnIndex);
 
 	/**
+	 * Returns tree-state check as integer, default implementation calls getCheck() and returns 1 or 0
+	 * @param obj cell object
+	 * @param columnIndex column index of the cell
+	 * @return 1 - checked, 0 - unchecked, -1 - undefined
+	 */
+	default int getTriState(Object obj, int columnIndex) {
+		// default implementation returns only two states : checked or unchecked 
+		return getCheck(obj, columnIndex) ? 1 : 0;
+	}
+	
+	/**
 	 * Changes object checked state
 	 * @param obj cell object
 	 * @param columnIndex column index of the cell
@@ -61,6 +73,7 @@ public interface IColumnAdvisor {
 	 */
 	void setCheck(Object obj, int columnIndex, boolean newVal);
 
+	
 	/**
 	 * Return true if the object is from type BUTTON and is pressed
 	 * @param obj cell object
@@ -208,13 +221,22 @@ public interface IColumnAdvisor {
 	boolean isDefault(Object obj, int columnIndex);
 
 	/**
-	 * Return current select index of the object of type COMBO or SPIN
+	 * Return current selected index of the object of type COMBO, MENU or SPIN
 	 * @param obj cell object
 	 * @param columnIndex column index of the cell
-	 * @return current select index of the object of type COMBO
+	 * @return current selected index of the object of type COMBO, MENU or SPIN
 	 */
 	long getCurrentSelectedIndex(Object obj, int columnIndex);
 
+	/**
+	 * Return current selected string of the object of type COMBO, MENU or SPIN
+	 * @param obj cell object
+	 * @param columnIndex column index of the cell
+	 * @return current selected string
+	 */
+	String getCurrentSelectedString(Object obj, int columnIndex);
+
+	
 	/**
 	 * Sets current selected index for COMBO or SPIN editor types
 	 * @param obj cell object
@@ -248,7 +270,7 @@ public interface IColumnAdvisor {
 	long getSpinStep(Object obj, int columnIndex);
 
 	/**
-	 * Return base for the item's value. now only used for spinner
+	 * Returns base for the item's value. now only used for spinner
 	 * @param obj cell object
 	 * @param columnIndex column index of the cell
 	 * @return radix of the object of type COMBO
@@ -256,7 +278,7 @@ public interface IColumnAdvisor {
 	int getItemBase(Object obj, int columnIndex);
 
 	/**
-	 * Return an array of string
+	 * Return an array of strings for the cell, needed by menu control 
 	 * @param obj cell object
 	 * @param columnIndex column index of the cell
 	 * @return an array of string
@@ -264,7 +286,7 @@ public interface IColumnAdvisor {
 	String[] getStringArray(Object obj, int columnIndex);
 
 	/**
-	 * Return an instance of Menu which describes a popup menu
+	 * Returns an instance of Menu which describes a popup menu
 	 * @param obj cell object
 	 * @param columnIndex column index of the cell
 	 * @return an instance of Menu which describes a popup menu
@@ -272,13 +294,22 @@ public interface IColumnAdvisor {
 	Menu getMenu(Object obj, int columnIndex);
 
 	/**
-	 * Checks if object is enabled
+	 * Checks if object is enabled and that should be reflected in the cell
 	 * @param obj cell object
 	 * @param columnIndex column index of the cell
 	 * @return true if the object is enabled, false otherwise
 	 */
 	boolean isEnabled(Object obj, int columnIndex);
 
+	
+	/**
+	 * Checks if object is valid and that should be reflected in the cell
+	 * @param obj cell object
+	 * @param columnIndex column index of the cell
+	 * @return true if the object is enabled, false otherwise
+	 */
+	default boolean isValid(Object obj, int columnIndex) { return true;}
+	
 	/**
 	 * Return true of the object can be modified
 	 * @param obj cell object
@@ -321,6 +352,24 @@ public interface IColumnAdvisor {
 	 */
 	Color getBgColor(Object obj, int columnIndex);
 
+	
+	/**
+	 * Returns cell foreground color
+	 * @param obj cell object
+	 * @param columnIndex column index of the cell
+	 * @return background color or null to use default color
+	 */
+	Color getFgColor(Object obj, int columnIndex);
+
+	
+	/**
+	 * Returns cell font color
+	 * @param obj cell object
+	 * @param columnIndex column index of the cell
+	 * @return cell font or null to use default one
+	 */
+	Font getFont(Object obj, int columnIndex);
+	
 	/**
 	 * Returns the tool tip text of the object
 	 * @param obj cell object

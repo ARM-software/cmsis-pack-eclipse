@@ -221,11 +221,23 @@ public interface IConfigWizardItem {
 	Map<Long, String> getItems();
 
 	/**
-	 * @param key
+	 * @return select string items
+	 */
+	Map<String, String> getStrItems();
+	
+	/**
+	 * @param string
 	 * @param value
 	 */
 	void addItem(long key, String value);
 
+	/**
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	void addStrItem(String key, String value);
+	
 	/**
 	 * @return children
 	 */
@@ -271,4 +283,34 @@ public interface IConfigWizardItem {
 	 * @return true if this item can be modified
 	 */
 	boolean canModify();
+
+	/**
+	 * Set fStrVal to strVal 
+	 * @param strVal new value for fStrVal
+	 */
+	void setStrVal(String strVal);
+	
+	/**
+	 * return fStrVal
+	 * @return fStrVal
+	 */
+	String getStrVal();
+	
+	/**
+	 * Return true if fStrVal is not null.
+	 * @return
+	 */
+	boolean isStringOption();
+	
+	/**
+	 * Set fSelStr to str
+	 * @param str new value for fSelStr
+	 */
+	void setSelStr(String str);
+	
+	/**
+	 * 
+	 * @return fSelStr
+	 */
+	String getSelStr();
 }

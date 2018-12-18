@@ -38,12 +38,16 @@ public class RteComponentBundle extends RteComponentVariant implements IRteCompo
 		// create bundle vendor and version items
 		String vendor = CmsisConstants.EMPTY_STRING;
 		String version = CmsisConstants.EMPTY_STRING;
+		
 		if(!getName().isEmpty()) { // bundle or component in a bundle
 			vendor = cpComponent.getVendor();
-			if(ci == null || ci.isVersionFixed()) 
-				version = cpComponent.getVersion();
-			else 
+			if(ci == null || ci.isVersionFixed()) {
+				version = cpComponent.getBundleVersion();
+				if(version.isEmpty())
+					version = null;
+			} else { 
 				version = null;
+			}
 		} 
 		
 		IRteComponentItem vendorItem = getChild(vendor);

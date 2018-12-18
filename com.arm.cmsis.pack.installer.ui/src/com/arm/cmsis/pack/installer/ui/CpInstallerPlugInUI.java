@@ -12,13 +12,7 @@
 
 package com.arm.cmsis.pack.installer.ui;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.Timer;
-
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.IPerspectiveListener;
@@ -33,9 +27,7 @@ import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.installer.ui.perspectives.PackManagerPerspective;
-import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
 import com.arm.cmsis.pack.ui.console.RteConsole;
-import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -50,17 +42,12 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 
 	static PackInstallerViewController viewController = null;
 
-	volatile static Timer timer = null;
-	boolean timerStarted = false;
-	private boolean checkForUpdates = true;
-
 	/**
 	 * The constructor
 	 */
 	public CpInstallerPlugInUI() {
 	}
 
-	@SuppressWarnings("cast")
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
@@ -75,7 +62,7 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 		}
 
 		CpPlugIn.addRteListener(viewController);
-		RteConsole.openPackManagerConsole();
+		RteConsole.openGlobalConsole();
 
 		IWorkbench wb = PlatformUI.getWorkbench();
 		if(wb != null) {
@@ -89,9 +76,6 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
-		if (timer != null) {
-			timer.cancel();
-		}
 		CpPlugIn.removeRteListener(viewController);
 		viewController.clear();
 
@@ -117,69 +101,16 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
 		return plugin;
 	}
 
-	/**
-	 * start the automatic tasks such as checking online-status and check-for-updates
-	 * @param page
-	 * @param perspective
-	 */
-	void startAutomaticTasks(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		if (PackManagerPerspective.ID.equals(page.getPerspective().getId())) {
-			page.setEditorAreaVisible(false);
-			String now = Utils.getCurrentDate();
-			if (checkForUpdates && CpPreferenceInitializer.getAutoUpdateFlag() && !now.equals(CpPreferenceInitializer.getLastUpdateTime())) {
-				checkForUpdates = false; // check only once
-				startCheckForUpdates(); // this will update the time
-			}
-		} else {
-			if(timer != null) {
-				timer.cancel();
-				timer = null;
-			}
-			timerStarted = false;
-		}
-	}
-
-	public static void startCheckForUpdates() {
-		if (CpPlugIn.getPackManager() != null && CpPlugIn.getPackManager().getPackInstaller() != null) {
-			if (PlatformUI.getWorkbench() != null &&
-					PlatformUI.getWorkbench().getProgressService() != null) {
-				Display.getDefault().asyncExec(() -> {
-					try {
-						PlatformUI.getWorkbench().getProgressService().run(true, true, new IRunnableWithProgress() {
-							@Override
-							public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-								CpPlugIn.getPackManager().getPackInstaller().updatePacks(monitor);
-							}
-						});
-					} catch (InvocationTargetException e) {
-						e.printStackTrace();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				});
-			} else {
-				new Thread(() -> {
-					CpPlugIn.getPackManager().getPackInstaller().updatePacks(new NullProgressMonitor());
-				}).start();
-			}
-		}
-	}
-
 	@Override
 	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		startAutomaticTasks(page, perspective);
+		if (PackManagerPerspective.ID.equals(page.getPerspective().getId())) {
+			page.setEditorAreaVisible(false);
+		}
 	}
 
 	@Override
 	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
-		if ("viewShow".equals(changeId)) { //$NON-NLS-1$
-			startAutomaticTasks(page, perspective);
-		} else {	// viewHide
-			if(timer != null) {
-				timer.cancel();
-				timer = null;
-			}
-		}
+		// does nothing
 	}
 
 	@Override

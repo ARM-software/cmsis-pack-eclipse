@@ -15,8 +15,8 @@ package com.arm.cmsis.pack.repository;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -87,16 +87,16 @@ public class CpRepositoryList {
 
 	public void putList(List<ICpRepository> repoList) {
 		fList = repoList;
-		IEclipsePreferences instancePreferences = InstanceScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
 		for (int i = 0; i < repoList.size(); i++) {
 			ICpRepository repo = repoList.get(i);
 			String key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
-			instancePreferences.put(key, repo.toString());
+			preferences.put(key, repo.toString());
 		}
 		int i = repoList.size();
 		String key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
-		while (!instancePreferences.get(key, CmsisConstants.EMPTY_STRING).isEmpty()) {
-			instancePreferences.remove(key);
+		while (!preferences.get(key, CmsisConstants.EMPTY_STRING).isEmpty()) {
+			preferences.remove(key);
 			i++;
 			key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
 		}

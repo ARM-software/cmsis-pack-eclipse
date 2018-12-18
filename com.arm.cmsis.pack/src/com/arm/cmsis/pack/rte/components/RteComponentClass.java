@@ -54,14 +54,22 @@ public class RteComponentClass extends RteComponentItem implements IRteComponent
 		}
 		// ensure childItem
 		IRteComponentItem bundleItem = getChild(bundleName); 
-		if(bundleItem == null ) {
-			if(ci != null && hasChildren()) {
+		if(bundleItem == null && hasChildren() && ci != null) {
+			// try to search existing bundles
+			bundleItem = findBundle(ci);
+			if(bundleItem != null) {
+				bundleName = bundleItem.getName();
+			} else { 				
 				// there are some bundles, but not what is needed 
 				ci.setEvaluationResult(EEvaluationResult.MISSING_BUNDLE);
 			}
-			bundleItem = new RteComponentBundle(this, bundleName);
-			addChild(bundleItem);
 		}
+		if(bundleItem == null ) {
+			bundleItem = new RteComponentBundle(this, bundleName);
+		    addChild(bundleItem);
+		}
+
+		
 		bundleItem.addComponent(cpComponent, flags);
 		
 		if(ci != null) {
@@ -114,15 +122,52 @@ public class RteComponentClass extends RteComponentItem implements IRteComponent
 			ICpComponent c = rteComponent.getActiveCpComponent();
 			if(c == null)
 				continue;
-			IRteDependency dep = new RteDependency(c, RteConstants.COMPONENT_IGNORE_ALL);
-			EEvaluationResult res = activeBundle.findComponents(dep);
-			if(res == EEvaluationResult.SELECTABLE) {
-				IRteComponent toSelect = dep.getBestMatch();
-				if(toSelect != null) {
-					int nsel = rteComponent.getSelectedCount();
-					toSelect.setSelected(nsel);
-				}
+			IRteComponent toSelect = findMatchingComponent(c, activeBundle);
+
+			if(toSelect != null) {
+				int nsel = rteComponent.getSelectedCount();
+				toSelect.setSelected(nsel);
 			}
 		}
 	}
+	
+	/**
+	 * Tries to find matching component for the bundle 
+	 * @param c ICpCompomnent or ICpComponentInstance
+	 * @return matching IRteComponent if found or null   
+	 */
+	private IRteComponent findMatchingComponent(ICpComponent c, IRteComponentItem bundle) {
+		IRteDependency dep = new RteDependency(c, RteConstants.COMPONENT_IGNORE_ALL);
+		EEvaluationResult res = bundle.findComponents(dep);
+		if(res == EEvaluationResult.SELECTABLE) {
+			return dep.getBestMatch();
+		}
+		return null;
+	}
+
+
+	/**
+	 * Tries to find matching bundle
+	 * @param cpComponent 
+	 * @return
+	 */
+	private IRteComponentItem findBundle(ICpComponent cpComponent) {
+		if(cpComponent == null || !hasChildren())
+			return null;
+		IRteComponentItem activeBundle = getActiveChild();
+		IRteComponent rteComponent = findMatchingComponent(cpComponent, activeBundle);
+		if(rteComponent != null) 
+			return activeBundle;
+		
+		for(IRteComponentItem bundle : children()) {
+			if(bundle == activeBundle)
+				continue;
+			rteComponent = findMatchingComponent(cpComponent, activeBundle);
+			if(rteComponent != null) 
+				return bundle;
+		}
+		
+		return null;
+	}
+	
 }

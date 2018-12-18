@@ -11,26 +11,17 @@
 
 package com.arm.cmsis.pack.installer.ui;
 
-import java.util.Optional;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IPerspectiveDescriptor;
 import org.eclipse.ui.ISelectionListener;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 
 import com.arm.cmsis.pack.CpPlugIn;
-import com.arm.cmsis.pack.ICpEnvironmentProvider;
-import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -175,46 +166,11 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 
 	}
 
-	public void copyExample(ICpExample cpExample) {
-		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
-		if(envProvider == null) {
+	public void copyExample(ICpExample example) {
+		ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+		if(packInstaller == null)
 			return;
-		}
-		IAdaptable copyResult = envProvider.copyExample(cpExample);
-		if(copyResult == null) {
-			return;
-		}
-		@SuppressWarnings("cast")
-		IProject project = (IProject) copyResult.getAdapter(IProject.class);
-		if (project == null) {
-			return;
-		}
-
-		Optional<String> perspectiveId = envProvider.getCopyExamplePerspectiveSwitchId();
-		if (!perspectiveId.isPresent())
-		    return;
-		        
-		IWorkbench wb = PlatformUI.getWorkbench();
-		if (wb != null) {
-			IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
-			if (window != null) {
-				IPerspectiveDescriptor persDescription = wb.getPerspectiveRegistry().findPerspectiveWithId(perspectiveId.get());
-				IWorkbenchPage page = window.getActivePage();
-				if (page != null && persDescription != null) {
-					page.setPerspective(persDescription);
-					try {
-						String rteConf = project.getName()	+ '.' + CmsisConstants.RTECONFIG;
-						IResource r = project.findMember(rteConf);
-						if(r != null && r.exists() && r.getType() == IResource.FILE) {
-							IDE.openEditor(page, project.getFile(rteConf));
-						}
-					} catch (PartInitException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-		}
+		packInstaller.copyExample(example);
 	}
-
 
 }

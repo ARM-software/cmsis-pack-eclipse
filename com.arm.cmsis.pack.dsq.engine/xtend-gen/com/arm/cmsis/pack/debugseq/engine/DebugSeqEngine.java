@@ -10,6 +10,7 @@
  */
 package com.arm.cmsis.pack.debugseq.engine;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpDebugVars;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -80,6 +81,7 @@ import com.arm.cmsis.pack.dsq.IDsqContext;
 import com.arm.cmsis.pack.dsq.IDsqEngine;
 import com.arm.cmsis.pack.dsq.IDsqLogger;
 import com.arm.cmsis.pack.dsq.IDsqSequence;
+import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.parser.PdscParser;
 import com.arm.cmsis.pack.utils.Utils;
@@ -94,6 +96,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -315,17 +318,23 @@ public class DebugSeqEngine implements IDsqEngine {
       if ((dv == null)) {
         _xifexpression_1 = "";
       } else {
-        _xifexpression_1 = dv.getText();
+        IAttributes _attributes = dv.attributes();
+        String _xmlString = _attributes.toXmlString();
+        _xifexpression_1 = (" " + _xmlString);
       }
-      final String initialText = _xifexpression_1;
-      final StringBuilder sb = new StringBuilder((initialText + "\n"));
+      final String attributes = _xifexpression_1;
+      String _xifexpression_2 = null;
+      if ((dv == null)) {
+        _xifexpression_2 = "";
+      } else {
+        _xifexpression_2 = dv.getText();
+      }
+      final String initialBody = _xifexpression_2;
+      final StringBuilder sb = new StringBuilder(((("<debugvars" + attributes) + ">") + "\n"));
       StringConcatenation _builder = new StringConcatenation();
-      {
-        if ((dv == null)) {
-          _builder.append("<debugvars>");
-          _builder.newLine();
-        }
-      }
+      _builder.append("\t\t    ");
+      _builder.append(initialBody, "\t\t    ");
+      _builder.newLineIfNotEmpty();
       _builder.append("__var ");
       _builder.append(IDsqContext.AP, "");
       _builder.append(" = 0;");
@@ -350,34 +359,23 @@ public class DebugSeqEngine implements IDsqEngine {
       _builder.append(IDsqContext.ERRORCONTROL, "");
       _builder.append(" = 0;");
       _builder.newLineIfNotEmpty();
-      {
-        if ((dv == null)) {
-          _builder.append("</debugvars>");
-          _builder.newLine();
-        }
-      }
       sb.append(_builder);
       if ((dv != null)) {
-        final String text = dv.getText();
-        if (((dv.getDgbConfFileName() != null) && (!dv.getDgbConfFileName().isEmpty()))) {
-          String _dgbConfFileName = dv.getDgbConfFileName();
-          Path _get = Paths.get(_dgbConfFileName);
-          URI _uri = _get.toUri();
-          URL _uRL = _uri.toURL();
-          String _readFile = this.readFile(_uRL);
-          sb.append(_readFile);
+        final String dgbConfFileName = this.deviceInfo.getDgbConfFileName();
+        if (((dgbConfFileName != null) && (!dgbConfFileName.isEmpty()))) {
+          final Path path = Paths.get(dgbConfFileName);
+          boolean _exists = Files.exists(path);
+          if (_exists) {
+            URI _uri = path.toUri();
+            URL _uRL = _uri.toURL();
+            final String text = this.readFile(_uRL);
+            sb.append(text);
+          }
         }
-        String _string = sb.toString();
-        dv.setText(_string);
-        final PdscParser xmlParser = new PdscParser();
-        String _writeToXmlString = xmlParser.writeToXmlString(dv);
-        String _postProcess = this.postProcess(_writeToXmlString);
-        this.debugVars = _postProcess;
-        dv.setText(text);
-      } else {
-        String _string_1 = sb.toString();
-        this.debugVars = _string_1;
       }
+      sb.append("</debugvars>");
+      String _string = sb.toString();
+      this.debugVars = _string;
     } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
@@ -454,32 +452,45 @@ public class DebugSeqEngine implements IDsqEngine {
     return ((DebugSeqModel) _get);
   }
   
+  private String getSequencesAsString(final Map<String, ICpSequence> sequences) {
+    if (((sequences == null) || sequences.isEmpty())) {
+      return CmsisConstants.EMPTY_STRING;
+    }
+    final PdscParser xmlParser = new PdscParser();
+    Collection<ICpSequence> _values = sequences.values();
+    final Function1<ICpSequence, String> _function = (ICpSequence it) -> {
+      return xmlParser.writeToXmlString(it);
+    };
+    Iterable<String> _map = IterableExtensions.<ICpSequence, String>map(_values, _function);
+    String _join = IterableExtensions.join(_map, "\n");
+    return this.postProcess(_join);
+  }
+  
   private Resource getResource() {
     try {
       if ((this.resource != null)) {
         return this.resource;
       }
       this.initDebugVariables();
-      final PdscParser xmlParser = new PdscParser();
+      Map<String, ICpSequence> _xifexpression = null;
       ICpDebugConfiguration _debugConfiguration = this.deviceInfo.getDebugConfiguration();
-      Map<String, ICpSequence> _sequences = _debugConfiguration.getSequences();
-      Collection<ICpSequence> _values = _sequences.values();
-      final Function1<ICpSequence, String> _function = (ICpSequence it) -> {
-        return xmlParser.writeToXmlString(it);
-      };
-      Iterable<String> _map = IterableExtensions.<ICpSequence, String>map(_values, _function);
-      String _join = IterableExtensions.join(_map, "\n");
-      final String sequences = this.postProcess(_join);
+      boolean _tripleEquals = (_debugConfiguration == null);
+      if (_tripleEquals) {
+        _xifexpression = null;
+      } else {
+        ICpDebugConfiguration _debugConfiguration_1 = this.deviceInfo.getDebugConfiguration();
+        _xifexpression = _debugConfiguration_1.getSequences();
+      }
+      final Map<String, ICpSequence> sequences = _xifexpression;
       StringConcatenation _builder = new StringConcatenation();
       _builder.append(this.debugVars, "");
       _builder.newLineIfNotEmpty();
       _builder.append("<sequences>");
       _builder.newLine();
-      _builder.append(sequences, "");
+      String _sequencesAsString = this.getSequencesAsString(sequences);
+      _builder.append(_sequencesAsString, "");
       _builder.newLineIfNotEmpty();
-      ICpDebugConfiguration _debugConfiguration_1 = this.deviceInfo.getDebugConfiguration();
-      Map<String, ICpSequence> _sequences_1 = _debugConfiguration_1.getSequences();
-      String _addDefaultSeqs = this.addDefaultSeqs(_sequences_1);
+      String _addDefaultSeqs = this.addDefaultSeqs(sequences);
       _builder.append(_addDefaultSeqs, "");
       _builder.newLineIfNotEmpty();
       _builder.append("</sequences>");
@@ -498,7 +509,7 @@ public class DebugSeqEngine implements IDsqEngine {
       boolean _not = (!_isEmpty);
       if (_not) {
         this.dsqModel = null;
-        final Function1<Issue, String> _function_1 = (Issue it) -> {
+        final Function1<Issue, String> _function = (Issue it) -> {
           String _message = it.getMessage();
           String _plus = (_message + ":\n");
           Integer _offset = it.getOffset();
@@ -509,14 +520,14 @@ public class DebugSeqEngine implements IDsqEngine {
           String _substring = modelString.substring((_offset).intValue(), _plus_2);
           return (_plus + _substring);
         };
-        List<String> _map_1 = ListExtensions.<Issue, String>map(issues, _function_1);
-        final String errors = IterableExtensions.join(_map_1, "\n\n");
+        List<String> _map = ListExtensions.<Issue, String>map(issues, _function);
+        final String errors = IterableExtensions.join(_map, "\n\n");
         ICpPack _pack = this.deviceInfo.getPack();
         String _fileName = _pack.getFileName();
         String _plus = ("Error while validating the debug sequences in pack file:\n" + _fileName);
         String _plus_1 = (_plus + "\n\nDevice: ");
-        String _deviceName = this.deviceInfo.getDeviceName();
-        String _plus_2 = (_plus_1 + _deviceName);
+        String _fullDeviceName = this.deviceInfo.getFullDeviceName();
+        String _plus_2 = (_plus_1 + _fullDeviceName);
         String _plus_3 = (_plus_2 + "\n\n");
         String _plus_4 = (_plus_3 + errors);
         throw new DsqException(_plus_4);
@@ -575,9 +586,7 @@ public class DebugSeqEngine implements IDsqEngine {
       String seqs = "";
       Collection<String> _defaultSqs = this.getDefaultSqs();
       for (final String defaultSeqName : _defaultSqs) {
-        boolean _containsKey = sequences.containsKey(defaultSeqName);
-        boolean _not = (!_containsKey);
-        if (_not) {
+        if (((sequences == null) || (!sequences.containsKey(defaultSeqName)))) {
           String _seqs = seqs;
           URL _uRL = new URL((("platform:/plugin/com.arm.cmsis.pack.dsq.engine/default_sequences/" + defaultSeqName) + ".dsq"));
           String _readFile = this.readFile(_uRL);

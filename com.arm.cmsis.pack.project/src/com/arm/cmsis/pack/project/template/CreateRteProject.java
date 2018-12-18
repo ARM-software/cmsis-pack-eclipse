@@ -11,7 +11,6 @@
 
 package com.arm.cmsis.pack.project.template;
 
-import java.io.File;
 
 import org.eclipse.cdt.core.templateengine.TemplateCore;
 import org.eclipse.cdt.core.templateengine.process.ProcessArgument;
@@ -19,33 +18,18 @@ import org.eclipse.cdt.core.templateengine.process.ProcessFailureException;
 import org.eclipse.cdt.core.templateengine.process.ProcessRunner;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 
-import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
+import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterInfo;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.configuration.IRteConfiguration;
-import com.arm.cmsis.pack.configuration.RteConfiguration;
-import com.arm.cmsis.pack.data.ICpItem;
-import com.arm.cmsis.pack.info.CpConfigurationInfo;
-import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
-import com.arm.cmsis.pack.parser.CpConfigParser;
-import com.arm.cmsis.pack.project.CpProjectPlugIn;
 import com.arm.cmsis.pack.project.IRteProject;
 import com.arm.cmsis.pack.project.Messages;
-import com.arm.cmsis.pack.project.RteProjectManager;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
 
 /**
@@ -61,6 +45,7 @@ public class CreateRteProject extends ProcessRunner {
 		String adapterId 	= args[3].getSimpleValue();
 		String lastStep		= args[4].getSimpleValue();
 
+		//Create project in workspace
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		if(project == null) {
 			String msg = Messages.CreateRteProject_ErrorCreatingRteProject;
@@ -68,83 +53,46 @@ public class CreateRteProject extends ProcessRunner {
 			msg += projectName;
 			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg));
 		}
-
-		RteToolChainAdapterInfo adapterInfo = createToolChainAdapter(adapterId);
+		//Get toolchain adapter info to create Rte project
+		RteToolChainAdapterInfo adapterInfo = ProjectUtils.createToolChainAdapter(adapterId);		
 		if(adapterInfo == null){
 			String msg = Messages.CreateRteProject_ErrorCreatingRteProject;
 			msg += 	Messages.CreateRteProject_ToolchainAdapterNotFound;
 			msg += adapterId;
 			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg));
 		}
-		String rteConfigName = projectName + CmsisConstants.DOT_RTECONFIG;
-		IRteConfiguration rteConf = createRteConfiguration(compiler, output);
-		try {
-			IFile iFile = ProjectUtils.createFile(project, rteConfigName, monitor);
-			iFile.refreshLocal(IResource.DEPTH_ONE, null);
-			project.refreshLocal(IResource.DEPTH_INFINITE, null);
-
-			CpConfigParser confParser = new CpConfigParser();
-			IPath location = iFile.getLocation();
-			if(location!= null) {
-				File file =  location.toFile();
-				confParser.writeToXmlFile(rteConf.getConfigurationInfo(), file.getAbsolutePath());
-			}
-			// open Rte configuration file if this is the last step
-			if ("1".equals(lastStep)) { //$NON-NLS-1$
-				IWorkbench wb = PlatformUI.getWorkbench();
-				if(wb != null) {
-					IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
-					if(window != null) {
-						IWorkbenchPage page = window.getActivePage();
-						if(page != null) {
-							try {
-								IDE.openEditor(page, iFile);
-							} catch (PartInitException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						}
-					}
-				}
-			}
-		} catch (CoreException e) {
-			String msg = Messages.CreateRteProject_ErrorCreatingConfigFile;
-			msg += 	e.getMessage();
-			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg), e);
+		//Get device info to create Rte configuration	
+		ICpDeviceInfo deviceInfo = RteProjectTemplate.getSelectedDeviceInfo();
+		//Create Rte configuration
+		IRteConfiguration rteConf = ProjectUtils.createRteConfiguration(compiler, output, deviceInfo);
+		//Set Rte project's name
+		String rteConfigName = projectName + CmsisConstants.DOT_RTECONFIG;	
+		
+		//Create Rte file
+		IFile rteFile = ProjectUtils.createRteFile(project, rteConfigName, rteConf, monitor);
+		if(rteFile == null){
+			String msg = Messages.CreateRteProject_ErrorCreatingRteProject;
+			msg += 	Messages.CreateRteProject_ErrorCreatingConfigFile;
+			msg += rteConfigName;
+			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg));
+		}	
+		// Open Rte configuration file if this is the last step
+		if ("1".equals(lastStep) && rteFile != null) { //$NON-NLS-1$
+			ProjectUtils.openEditorAsync(rteFile);
 		}
-
-		IRteProject rteProject = createRteProject(project, adapterInfo); // never fails
+		//Create Rte project
+		IRteProject rteProject = ProjectUtils.createRteProject(project, adapterInfo); // never fails	
+		//Set Rte configuration
 		rteProject.setRteConfiguration(rteConfigName, rteConf);
+		//Initializes new project
 		if ("1".equals(lastStep)) { //$NON-NLS-1$
-			// in some customised process, we should prevent the indexer from indexing at this point
+			// in some customized process, we should prevent the indexer from indexing at this point
 			// because it may still has some work to do (e.g. copy resources)
 			rteProject.init();
 		}
+		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+		if (envProvider != null) {
+			envProvider.contibuteToNewProject(projectName);
+		}
 	}
-
-	protected IRteProject createRteProject(IProject project, RteToolChainAdapterInfo adapterInfo) {
-		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
-		IRteProject rteProject = rteProjectManager.createRteProject(project);
-		rteProject.setToolChainAdapterInfo(adapterInfo);
-		return rteProject;
-
-	}
-
-	protected RteToolChainAdapterInfo createToolChainAdapter(String adapterId) {
-		RteToolChainAdapterFactory adapterFactory = RteToolChainAdapterFactory.getInstance();
-		return adapterFactory.getAdapterInfo(adapterId);
-	}
-
-	protected IRteConfiguration createRteConfiguration(String compiler, String output) {
-
-		ICpDeviceInfo deviceInfo = RteProjectTemplate.getSelectedDeviceInfo();
-		ICpItem toolchainInfo = RteProjectTemplate.createToolChainInfo(compiler, output);
-		ICpConfigurationInfo cpInfo = new CpConfigurationInfo(deviceInfo, toolchainInfo, true);
-
-		IRteConfiguration rteConf = new RteConfiguration();
-		rteConf.setConfigurationInfo(cpInfo);
-
-		return rteConf;
-	}
-
 }

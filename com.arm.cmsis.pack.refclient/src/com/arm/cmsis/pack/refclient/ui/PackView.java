@@ -73,19 +73,11 @@ public class PackView extends ViewPart implements IRteEventListener {
 	private Action expandAction;
 	private Action collapseAction;
 	Action doubleClickAction;
-
-	ICpItem getCpItem(Object obj) {
-		if (obj instanceof ICpItem) {
-			return (ICpItem)obj;
-		}
-		return null;
-	}
-
 	
 	class PackViewContentProvider extends TreeObjectContentProvider {
 
 		public Object getParent(Object child) {
-			ICpItem item = getCpItem(child); 
+			ICpItem item = ICpItem.cast(child); 
 			if(item != null) {
 				return item.getParent();
 			}
@@ -120,7 +112,7 @@ public class PackView extends ViewPart implements IRteEventListener {
 	
 		@Override
 		public String getColumnText(Object obj, int index){
-			ICpItem item = getCpItem(obj); 
+			ICpItem item = ICpItem.cast(obj); 
 			if(item != null) {
 				switch(index) {
 				case 0:
@@ -145,7 +137,7 @@ public class PackView extends ViewPart implements IRteEventListener {
 
 		@Override
 		public Image getImage(Object obj){
-			ICpItem item = getCpItem(obj);
+			ICpItem item = ICpItem.cast(obj);
 			if(item == null) {
 				return null;
 			}

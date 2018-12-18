@@ -36,7 +36,14 @@ public interface ITreeObject {
 	 * @return true if this items has been destroyed and should be removed from parent's children
 	 */
 	boolean purge();
-	
+
+	/**
+	 * Checks if this item is marked for removal and therefore must be purged
+	 * @return true if item is marked for removal
+	 */
+	default boolean isRemoved() {
+		return false; // default is not marked as removed
+	}
 	
 	
 	/**
@@ -56,11 +63,42 @@ public interface ITreeObject {
 	 * @return child count  
 	 */
 	int getChildCount();
-	
+
 	/**
 	 * Returns array of child items as generic Objects
 	 * @return array of child items or empty array if item has no children 
 	 */
 	Object[] getChildArray();
+	
+	/**
+	 * Casts this object to the given type if possible
+	 * @param type lass type to cast to
+	 * @return casted object if possible, null otherwise 
+	 */
+	default <C> C castTo(Class<C> type) {
+		return castTo(this, type);
+	}
+
+	/**
+	 * Helper function to cast a supplied object to a given type
+	 * @return casted object if possible, null otherwise
+	 */
+	static <C> C castTo(Object obj, Class<C> type) {
+		if(type.isInstance(obj))
+			return type.cast(obj); 
+		return null;
+	}
+	
+	/**
+	 * Casts a supplied object to a ITreeObject  
+	 * @param obj object to cast
+	 * @return casted object if possible, null otherwise
+	 */
+	static ITreeObject cast(Object obj){
+		if(obj instanceof ITreeObject) {
+			return (ITreeObject)obj;
+		}
+		return null;
+	}
 	
 }

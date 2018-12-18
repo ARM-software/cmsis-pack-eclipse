@@ -12,21 +12,27 @@
 package com.arm.cmsis.pack.build.settings;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.eclipse.cdt.managedbuilder.core.BuildException;
+import org.eclipse.cdt.managedbuilder.core.IBuildObject;
 import org.eclipse.cdt.managedbuilder.core.IConfiguration;
 import org.eclipse.cdt.managedbuilder.core.IHoldsOptions;
 import org.eclipse.cdt.managedbuilder.core.IOption;
+import org.eclipse.cdt.managedbuilder.core.IResourceInfo;
 import org.eclipse.cdt.managedbuilder.core.ITool;
 import org.eclipse.cdt.managedbuilder.core.IToolChain;
 import org.eclipse.cdt.managedbuilder.core.ManagedBuildManager;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.PlatformObject;
 
 import com.arm.cmsis.pack.build.IBuildSettings;
+import com.arm.cmsis.pack.build.IBuildSettings.Level;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.utils.Utils;
 
@@ -37,11 +43,21 @@ import com.arm.cmsis.pack.utils.Utils;
 public class RteToolChainAdapter extends PlatformObject implements IRteToolChainAdapter {
 
 	protected boolean bInitialUpdate = false;
-
+	protected ITool currentTool = null; // current tool for which options are being set  
+	
 	@Override
 	public ILinkerScriptGenerator getLinkerScriptGenerator() {
 		// generic adapter has no linker script generator
 		return null;
+	}
+
+	/**
+	 * Adjusts build setting options for given configuration if needed
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
+	 * @param buildSettings IBuildSettings containing source RTE information
+	 */
+	protected void adjustBuildSettings(IConfiguration configuration, IBuildSettings buildSettings) {
+		//	default does nothing 
 	}
 
 
@@ -51,6 +67,7 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 		if(configuration == null || buildSettings == null) {
 			return;
 		}
+		adjustBuildSettings(configuration, buildSettings);
 		
 		if(bInitialUpdate) {
 			updateBuildSteps(configuration, buildSettings, IBuildSettings.PRE_BUILD_STEPS);
@@ -64,32 +81,94 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 		// iterate over toolchain options
 		updateOptions(configuration, toolchain, buildSettings);
 
-		// iterate over tools
-		ITool[] tools = toolchain.getTools();
-		for(ITool t : tools) {
-			if(t == null || !t.isEnabled()) {
-				continue;
-			}
-			updateOptions(configuration, t, buildSettings);
-		}
+		// iterate over tools in configuration
+		updateToolOptions(configuration, toolchain.getTools(), buildSettings);
+		// update direct children of the configuration or all if individual settings are flat
+		updateIndividualSettings(configuration, buildSettings);
 	}
-
+	
 	@Override
 	public void setInitialToolChainOptions(IConfiguration configuration, IBuildSettings buildSettings) {
+				
 		// default updates all options
 		bInitialUpdate = true;
 		setToolChainOptions(configuration, buildSettings);
 		bInitialUpdate = false;
 	}
 
+	/**
+	 * Updates tool options for given configuration
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
+	 * @param tools array of ITool objects
+	 * @param buildSettings IBuildSettings containing source RTE information
+	 */
+	protected void updateToolOptions(IBuildObject configuration, ITool[] tools, IBuildSettings buildSettings) {
+		if(tools == null || tools.length == 0)
+			return;
+		// iterate over tools
+		for(ITool t : tools) {
+			if(t == null || !t.isEnabled()) {
+				continue;
+			}
+			currentTool = t;
+			updateOptions(configuration, t, buildSettings);
+		}
+		currentTool = null;
+	}
 
 	/**
-	 * Updates tollchain/tool options for given configuration
-	 * @param configuration option's parent IConfiguration
+	 * Sets individual options to folders and files as specified by IBuildSettings 
+	 * @param configuration destination IConfiguration to set options to
+	 * @param buildObject option's parent IBuildObject : IConfiguration or IResourceInfo
+	 * @param buildSettings IBuildSettings containing source RTE information
+	 */
+	protected void updateIndividualSettings(IConfiguration configuration, IBuildSettings buildSettings) {
+		
+		Map<String, IBuildSettings> individualSettings = buildSettings.getChildren();
+		if(individualSettings == null || individualSettings.isEmpty()) {
+			return;
+		}
+		for( Entry<String, IBuildSettings> e : individualSettings.entrySet()) {
+			IBuildSettings resourceBuildSettings = e.getValue();
+			if(resourceBuildSettings == null)
+				continue;
+			IResourceInfo ri = 	getResourceInfo(e.getKey(), configuration, resourceBuildSettings);
+			if(ri != null) {
+				updateToolOptions(ri, ri.getTools(), resourceBuildSettings);
+			}
+			updateIndividualSettings(configuration, resourceBuildSettings); // in case of hierarchical settings
+		}
+	}
+
+	/**
+	 * Retrieves resource information from configuration 
+	 * @param resourcePath project-relative path to resource (trailing means folder)
+	 * @param configuration project's IConfiguration  
+	 * @param buildSettings IBuildSettings containing source RTE information
+	 * @return IResourceInfo or null if not found and cannot be created
+	 */
+	protected IResourceInfo getResourceInfo(String resourcePath, IConfiguration configuration, IBuildSettings buildSettings) {
+		if(buildSettings.getLevel() == Level.VIRTUAL_GROUP)  // not a resource
+			return null;
+		IPath path = new Path(resourcePath);
+		IResourceInfo ri = null; 
+		// file or folder?
+		if(buildSettings.getLevel() == Level.FOLDER) {  
+			ri = configuration.createFolderInfo(path);
+		} else if(buildSettings.getLevel() == Level.FILE){
+			ri = configuration.createFileInfo(path);
+		}
+		return ri;
+	}
+	
+	
+	/**
+	 * Updates toolchain/tool options for given configuration
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
 	 * @param tool IHoldsOptions representing ITool or IToolChain
 	 * @param buildSettings IBuildSettings containing source RTE information
 	 */
-	protected void updateOptions(IConfiguration configuration, IHoldsOptions tool, IBuildSettings buildSettings) {
+	protected void updateOptions(IBuildObject configuration, IHoldsOptions tool, IBuildSettings buildSettings) {
 		IOption[] options = tool.getOptions();
 		for(IOption o : options) {
 			try {
@@ -106,51 +185,127 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	/**
 	 * Updates an option that contains preprocessor defines, libraries, include paths or library paths .<br>
 	 * Removes all options after <code>_RTE_</code> and adds new defines.
-	 * @param configuration option's parent IConfiguration
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
 	 * @param tool option's parent IHoldsOptions (ITool or IToolChain )
 	 * @param option IOption to update
 	 * @param buildSettings IBuildSettings containing source RTE information
 	 * @throws BuildException
 	 */
-	protected void updateOption(IConfiguration configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
+	protected void updateOption(IBuildObject configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
+		// always look if we can set option value directly from attributes
+		if(bInitialUpdate && updateOptionFromAttribute(configuration, tool, option, buildSettings))
+			return; // value is set, no further processing
+		
 		int oType = getOptionType(option);
 		if(!bInitialUpdate && isInitialOption(oType)) {
 			return; // initial update only
 		}
 
-		if(oType > IBuildSettings.RTE_OPTION ) {
+		if(canSetOption(oType, configuration, tool, option, buildSettings)) {
 			updateRteOption(oType, configuration, tool, option, buildSettings);
 		}
 	}
 
 	/**
+	 * Updates option to the value of an attribute corresponding its ID, base ID or super ID 
+	 * this approach is useful for importers without affecting toolchain adapter itself  
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
+	 * @param tool option's parent IHoldsOptions (ITool or IToolChain )
+	 * @param option IOption to update
+	 * @param buildSettings IBuildSettings containing attributes 
+	 * @return true if value is set, false otherwise
+	 * @throws BuildException
+	 */
+	protected boolean updateOptionFromAttribute(IBuildObject configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
+		int type = option.getBasicValueType();
+		if(type == IOption.STRING_LIST)
+			return false; // not possible to set a string list form an attribute
+		
+		String attributeKey = getAttributeKeyForOption(configuration, tool, option, buildSettings);
+		if(attributeKey == null)
+			return false;
+		
+		String value = buildSettings.getAttribute(attributeKey);
+		setOptionValue(configuration, tool, option, value);		
+		return true;
+	}
+
+	/**
+	 * Returns a an attribute key associated with an option, 
+	 * default returns first option ID, base ID or super ID that is found in the build settings attributes   
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
+	 * @param tool option's parent IHoldsOptions (ITool or IToolChain )
+	 * @param option IOption to update
+	 * @param buildSettings IBuildSettings containing attributes
+	 * @return attribute key associated with option or null if none is associated
+	 */
+	protected String getAttributeKeyForOption(IBuildObject configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) {
+		String attributeKey = null;
+		for(IOption o = option; o != null; o = o.getSuperClass()) {
+			String id = o.getId();
+			if(buildSettings.hasAttribute(id)) {
+				attributeKey = id;
+				break;
+			}
+			id = o.getBaseId();
+			if(buildSettings.hasAttribute(id)) {
+				attributeKey = id;
+				break;
+			}
+		}
+		return attributeKey;
+	}
+	
+	
+	/**
 	 * Updates RTE option value
 	 * @param oType option's type : see getRteOptionType()
-	 * @param configuration option's parent IConfiguration
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
 	 * @param tool option's parent IHoldsOptions
 	 * @param option IOption to update
 	 * @param buildSettings IBuildSettings containing source RTE information
 	 * @throws BuildException
 	 */
-	protected void updateRteOption(int oType, IConfiguration configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
+	protected void updateRteOption(int oType, IBuildObject configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
 		int type = option.getBasicValueType();
 
 		if(type == IOption.STRING_LIST) {
 			setStringListOptionValue(oType, configuration, tool, option, buildSettings);
 			return;
 		}
-
 		String value = getRteOptionValue(oType, buildSettings, option);
-		if(value != null) {
-			if(type == IOption.BOOLEAN) {
-				boolean bVal = value.equals("1") || value.equalsIgnoreCase("true"); //$NON-NLS-1$ //$NON-NLS-2$
-				ManagedBuildManager.setOption(configuration, tool, option, bVal);
-			} else {
-				ManagedBuildManager.setOption(configuration, tool, option, value);
-			}
-		}
+		setOptionValue(configuration, tool, option, value);
 	}
 
+	/**
+	 * Sets option value (if its value type is not if its type not a IOption.STRING_LIST 
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
+	 * @param tool option's parent IHoldsOptions (ITool or IToolChain )
+	 * @param option IOption to update
+	 * @param value option value as a String
+	 * @throws BuildException 
+	 */
+	protected void setOptionValue(IBuildObject configuration, IHoldsOptions tool, IOption option, String value) throws BuildException {
+		if(value == null)
+			return; // nothing to set
+		int type = option.getBasicValueType();
+		if (type == IOption.STRING_LIST) {
+			return; // not supported by this method
+		}
+		if(type == IOption.BOOLEAN) {
+			boolean bVal = value.equals("1") || value.equalsIgnoreCase("true"); //$NON-NLS-1$ //$NON-NLS-2$
+			if(configuration instanceof IConfiguration)
+				ManagedBuildManager.setOption((IConfiguration)configuration, tool, option, bVal);
+			else if (configuration instanceof IResourceInfo)
+				ManagedBuildManager.setOption((IResourceInfo)configuration, tool, option, bVal);
+		} else {
+			if(configuration instanceof IConfiguration)
+				ManagedBuildManager.setOption((IConfiguration)configuration, tool, option, value);
+			else if(configuration instanceof IResourceInfo)
+				ManagedBuildManager.setOption((IResourceInfo)configuration, tool, option, value);
+		}
+	}
+	
 
 	/**
 	 * Returns RTE values for
@@ -166,12 +321,12 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	/**
 	 * Updates string list option values
 	 * @param oType option's extended type: see getOptionType()
-	 * @param configuration option's parent IConfiguration
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
 	 * @param tool option's parent IHoldsOptions
 	 * @param option IOption to update
 	 * @throws BuildException
 	 */
-	protected void setStringListOptionValue(int oType, IConfiguration configuration, IHoldsOptions tool, IOption option,
+	protected void setStringListOptionValue(int oType, IBuildObject configuration, IHoldsOptions tool, IOption option,
 			IBuildSettings buildSettings) throws BuildException {
 
 		if (option.getBasicValueType() != IOption.STRING_LIST) {
@@ -184,9 +339,31 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 		}
 		value = cleanStringList(value, oType);
 		Collection<String> newValue = getStringListValue(buildSettings, oType);
+		boolean changed = false;
 		if (newValue != null) {
-			value.addAll(newValue);
+			for (String s :  newValue) {
+				if(value.contains(s)) {
+					continue; // do not insert duplicates
+				}
+				value.add(s);
+				changed = true;
+			}
+		} 
+		Collection<String> valuesToRemove = getStringListValue(buildSettings, -oType);
+		if(valuesToRemove != null) {
+			for (Iterator<String> iterator = value.iterator(); iterator.hasNext();) {
+				String s = iterator.next();
+				if(valuesToRemove.contains(s)) {
+					iterator.remove();
+					changed = true;
+				}
+			}
 		}
+
+		if(!changed){
+			return; // nothing to add/remove
+		}
+
 		// copy to array and add quotes if needed
 		String[] arrayValue = new String[value.size()];
 		int i = 0;
@@ -199,9 +376,36 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 			i++;
 		}
 
-		ManagedBuildManager.setOption(configuration, tool, option, arrayValue);
+		if(configuration instanceof IConfiguration)
+			ManagedBuildManager.setOption((IConfiguration)configuration, tool, option, arrayValue);
+		else if(configuration instanceof IResourceInfo)
+			ManagedBuildManager.setOption((IResourceInfo)configuration, tool, option, arrayValue);
 	}
 
+	/**
+	 * Checks if an option value can be updated for this build object, tool, etc. 
+	 * @param oType option's extended type: see getOptionType()
+	 * @param configuration option's parent IBuildObject : IConfiguration or IResourceInfo
+	 * @param tool option's parent IHoldsOptions
+	 * @param option IOption to update
+	 * @throws BuildException
+	 */
+	protected boolean canSetOption(int oType, IBuildObject configuration, IHoldsOptions tool, IOption option,	IBuildSettings buildSettings) throws BuildException {
+		switch(oType) {
+		case IBuildSettings.RTE_DEFINES:
+		case IBuildSettings.RTE_INCLUDE_PATH:
+		case IBuildSettings.RTE_ASMMISC:
+		case IBuildSettings.RTE_CMISC:
+		case IBuildSettings.RTE_CPPMISC:
+			// by default these options can only be set on project (configuration) level
+			return (configuration instanceof IConfiguration);
+		default:
+			break;
+		}
+		return oType > IBuildSettings.RTE_OPTION;
+	}
+
+	
 	/**
 	 * Checks if specified option type is for initial setting only
 	 * @param oType option type
@@ -246,34 +450,20 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	 * @throws BuildException
 	 */
 	protected List<String> getCurrentStringListValue(IOption option) throws BuildException {
-		String[] array = null;
-		int type = option.getValueType();
-		switch (type) {
-		case IOption.PREPROCESSOR_SYMBOLS:
-			array = option.getDefinedSymbols();
-			break;
-		case IOption.INCLUDE_PATH:
-			array = option.getIncludePaths();
-			break;
-		case IOption.LIBRARY_PATHS:
-			array = option.getLibraryPaths();
-			break;
-		case IOption.LIBRARIES:
-			array = option.getLibraries();
-			break;
-		case IOption.OBJECTS:
-			array = option.getUserObjects();
-			break;
-		case IOption.STRING_LIST:
-			array = option.getStringListValue();
-			break;
-		default:
-			break;
-		}
-		if(array == null) {
+	       
+		int basicType = option.getBasicValueType();
+		if(basicType != IOption.STRING_LIST)
 			return null;
+		
+		Object value = option.getValue();
+		if(value instanceof ArrayList<?>) {
+			@SuppressWarnings("unchecked")
+			ArrayList<String> v = (ArrayList<String>)value;
+			v.trimToSize();
+			return v;
 		}
-		return new ArrayList<String>(Arrays.asList(array));
+		
+		return null;
 	}
 
 	/**
@@ -308,6 +498,7 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 		case IBuildSettings.RTE_LIBRARIES:
 		case IBuildSettings.RTE_OBJECTS:
 		case IBuildSettings.RTE_LINKER_SCRIPT:
+		case IBuildSettings.RTE_PRE_INCLUDES:			
 			value = removeRtePathEntries(value);
 			break;
 		default:
@@ -342,10 +533,16 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 		for (Iterator<String> iterator = paths.iterator(); iterator.hasNext();) {
 			String s = iterator.next();
 			if(s.startsWith(CmsisConstants.PROJECT_RTE_PATH, 1) ||
-					s.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR, 1) ||
-					s.startsWith(CmsisConstants.CMSIS_RTE_VAR, 1)	) {
+			   s.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR, 1) ||
+			   s.startsWith(CmsisConstants.CMSIS_RTE_VAR, 1)	) {
 				iterator.remove();
 			}
+			if(s.startsWith(CmsisConstants.PROJECT_RTE_PATH) ||
+			   s.startsWith(CmsisConstants.CMSIS_PACK_ROOT_VAR) ||
+			   s.startsWith(CmsisConstants.CMSIS_RTE_VAR)) {
+				 iterator.remove();
+			}
+
 		}
 		return paths;
 	}
@@ -473,11 +670,13 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	protected String getDeviceAttribute(int oType, IBuildSettings buildSettings) {
 		switch(oType) {
 		case IBuildSettings.CPU_OPTION:
-			return buildSettings.getDeviceAttribute("Dcore"); //$NON-NLS-1$
+			return buildSettings.getDeviceAttribute(CmsisConstants.DCORE);
 		case IBuildSettings.FPU_OPTION:
-			return buildSettings.getDeviceAttribute("Dfpu"); //$NON-NLS-1$
+			return buildSettings.getDeviceAttribute(CmsisConstants.DFPU);
+		case IBuildSettings.DSP_OPTION:
+			return buildSettings.getDeviceAttribute(CmsisConstants.DDSP);
 		case IBuildSettings.ENDIAN_OPTION:
-			return buildSettings.getDeviceAttribute("Dendian"); //$NON-NLS-1$
+			return buildSettings.getDeviceAttribute(CmsisConstants.DENDIAN);
 		default:
 			break;
 		}
@@ -495,7 +694,7 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 
 	/**
 	 * Updates  pre- or post-build command for given configuration  
-	 * @param configuration destination IConfiguration to set steps  to
+	 * @param configuration destination IConfiguration to set steps to
 	 * @param buildSettings source IBuildSettings
 	 * @param oType option type: PRE_BUILD_STEPS or POST_BUILD_STEPS
 	 */
@@ -565,17 +764,27 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	 * @return String containing assembled command of build steps 
 	 */
 	protected String getPrePostCommand(IBuildSettings buildSettings, int oType) {
+		String cmd = CmsisConstants.EMPTY_STRING;
+		// RTE steps
 		Collection<String> steps = buildSettings.getStringListValue(oType);
-		if(steps == null || steps.isEmpty())
-			return CmsisConstants.EMPTY_STRING;
-		String cmd = CmsisConstants.CMSIS_RTE_BEGIN_VAR;
-		for(String s : steps) {
-			if(cmd.length() > CmsisConstants.CMSIS_RTE_BEGIN_VAR.length())
-				cmd += ';';
-			cmd += s; 
+		if(steps != null && !steps.isEmpty()) {
+			cmd = CmsisConstants.CMSIS_RTE_BEGIN_VAR;
+			for(String s : steps) {
+				if(cmd.length() > CmsisConstants.CMSIS_RTE_BEGIN_VAR.length())
+					cmd += ';';
+				cmd += s; 
+			}
+			cmd += CmsisConstants.CMSIS_RTE_END_VAR;
 		}
-		cmd += CmsisConstants.CMSIS_RTE_END_VAR;
+		// user settings, e.g. imported
+		steps = buildSettings.getStringListValue(oType + IBuildSettings.BUILD_USER);
+		if(steps != null && !steps.isEmpty()) {
+			for(String s : steps) {
+				if(!cmd.isEmpty())
+					cmd += ';';
+				cmd += s;
+			}
+		}
 		return cmd;
 	}
-
 }

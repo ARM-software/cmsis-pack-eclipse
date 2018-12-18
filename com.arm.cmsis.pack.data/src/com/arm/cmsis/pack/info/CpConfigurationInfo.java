@@ -88,6 +88,8 @@ public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationI
 			return new CpPackFilterInfo(parent, tag);
 		case CmsisConstants.FILE_TAG:
 			return new CpFileInfo(parent, tag);
+		case CmsisConstants.DEBUGVARS_TAG:
+			return new CpDebugVarsInfo(parent, tag);
 		default:
 			break;
 		}

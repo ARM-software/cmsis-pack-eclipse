@@ -178,6 +178,8 @@ public class RteToolChainAdapterInfo {
 	 * </dl> 	 
 	 * */
 	public int matchToolChain(IToolChain toolChain){
+		if(toolChain == null)
+			return 0;
 		if(fAssociations.isEmpty())
 			return 99;
 

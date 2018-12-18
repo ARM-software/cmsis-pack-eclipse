@@ -36,6 +36,7 @@ public class ConfigWizardItem implements IConfigWizardItem {
 	private long fMinValue;
 	private long fMaxValue;
 	private long fValue;
+	private String fStrVal;
 	private String fString;
 	private int fStringLength;
 	private int fBase;
@@ -45,7 +46,9 @@ public class ConfigWizardItem implements IConfigWizardItem {
 	private boolean fInconsistent;
 	private boolean fInvertValue;
 	private Map<Long, String> fItems;
+	private Map<String, String> fStrItems;
 	private LinkedList<IConfigWizardItem> fChildren;
+	private String fSelStr;
 
 	/**
 	 *
@@ -65,6 +68,7 @@ public class ConfigWizardItem implements IConfigWizardItem {
 		fModifier = 0;
 		fSpinStep = 0;
 		fItems = new TreeMap<>();
+		fStrItems = new TreeMap<>();
 		fChildren = new LinkedList<>();
 	}
 
@@ -287,8 +291,18 @@ public class ConfigWizardItem implements IConfigWizardItem {
 	}
 
 	@Override
+	public Map<String, String> getStrItems() {
+		return fStrItems;
+	}
+	
+	@Override
 	public void addItem(long key, String value) {
 		fItems.put(key, value);
+	}
+
+	@Override
+	public void addStrItem(String key, String value) {
+		fStrItems.put(key, value);
 	}
 
 	@Override
@@ -333,4 +347,30 @@ public class ConfigWizardItem implements IConfigWizardItem {
 		return fName;
 	}
 
+	@Override
+	public 	void setStrVal(String strVal) {
+		fStrVal = strVal;
+	}
+
+	@Override
+	public String getStrVal() {
+		return fStrVal;
+	}
+	
+	@Override
+	public boolean isStringOption() {
+		return fStrVal != null;
+	}
+
+	@Override
+	public void setSelStr(String str) {
+		fSelStr = str;
+	}
+
+	@Override
+	public String getSelStr() {
+		return fSelStr;
+	}
+	
+	
 }

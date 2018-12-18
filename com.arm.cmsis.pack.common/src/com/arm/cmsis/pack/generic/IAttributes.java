@@ -12,6 +12,10 @@
 package com.arm.cmsis.pack.generic;
 
 import java.util.Map;
+import java.util.Map.Entry;
+
+import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * Interface describing an item that has String attributes map. 
@@ -23,6 +27,11 @@ public interface IAttributes {
 	 * @return true if element has non-empty attributes map
 	 */
 	boolean hasAttributes();
+
+	/**
+	 *  Clears the internal collection
+	 */
+	void clear();
 
 	/**
 	 * Returns all attributes of this element as a Map<String,String>  
@@ -127,6 +136,58 @@ public interface IAttributes {
 	 */
 	void setAttribute(String key, int value);
 
+	/**
+	 * Adds attribute key-value pair to this element, overwriting existing one  
+	 * @param key attribute key
+	 * @param value long attribute value
+	 */
+	default void setAttributeHex(String key, long value) {
+		setAttribute(key, longToHexString(value));
+	}
+
+	/**
+	 * Updates existing attribute key-value pair or adds one if attribute does not exist  
+	 * @param key attribute key
+	 * @param value attribute value
+	 * @return true if value has changes or attribute added
+	 */
+	default boolean updateAttribute(String key, String value) {
+		if(hasAttribute(key)&& getAttribute(key).equals(value)) {
+			return false;
+		}
+		setAttribute(key, value );
+		return true;
+	}
+	
+	/**
+	 * Updates existing attributes with supplied ones, adds attributes if do not exist  
+	 * @param attributes IAttributes with new attribute values 
+	 * @return true if a single value has changes or an attribute added
+	 */
+	default boolean updateAttributes(IAttributes attributes) {
+		if(attributes == null)
+			return false;
+		return updateAttributes(attributes.getAttributesAsMap());
+	}
+
+	/**
+	 * Updates existing attributes with supplied ones, adds attributes if do not exist  
+	 * @param attributes Map<String, String> with new key-value pairs 
+	 * @return true if a single value has changes or an attribute added
+	 */
+	default boolean updateAttributes(Map<String, String> attributes) {
+		if(attributes == null || attributes.isEmpty())
+			return false;
+		boolean bChanged = false;
+		for( Entry<String, String> e : attributes.entrySet()) {
+			if(updateAttribute(e.getKey(),e.getValue())) {
+				bChanged = true;
+			}
+		}
+		return bChanged;
+	}
+	
+	
 	/**
 	 * Removes attribute from the map 
 	 * @param key attribute key
@@ -239,6 +300,41 @@ public interface IAttributes {
 	 */
 	String getDoc();
 
+
+	/**
+	 * Returns string containing all attributes in the form "key0"="value0" "key1"=value1 ...
+	 * @return string containing keys and values of all attributes separated by spaces
+	 */
+	default String toXmlString() {
+		return getAttributesAsString(" "); //$NON-NLS-1$
+	}
+
+	/**
+	 * Returns string containing all attributes in the form "key0"="value0", "key1"=value1,...
+	 * @param delimiter delimiter to use (usually ", " or " ")
+	 * @return string containing keys and values of all attributes
+	 */
+	default String getAttributesAsString(String delimiter) {
+		String s = CmsisConstants.EMPTY_STRING;
+		// we need to synchronize the entire object here as we cannot use synchronized method modifier in interfaces
+		synchronized (this) { 
+			if(hasAttributes()) {
+				Map<String, String> attr = getAttributesAsMap();
+				for(Entry<String, String> e : attr.entrySet()){
+					if(!s.isEmpty()) {
+						s += delimiter; 
+					}
+					s += e.getKey();
+					s += "=\""; //$NON-NLS-1$
+					s += e.getValue();
+					s += "\""; //$NON-NLS-1$
+				}
+			}
+		}
+		return s;
+	}
+
+	
 	/**
 	 * Returns long integer representation of a supplied string value  
 	 * @param value string to convert
@@ -246,14 +342,19 @@ public interface IAttributes {
 	 * @return value as long or nDefault  
 	 */
 	static long stringToLong(String value, long nDefault) {
-		if(value != null && !value.isEmpty()) {
-			try {
-				return Long.decode(value);
-			} catch (NumberFormatException e) {
-				// do nothing, return default
-			}
-		}
+		Long result = Utils.stringToLong(value);
+		if(result != null)
+			return result;
 		return nDefault;
+	}
+	
+	/**
+	 * Returns string representation of supplied long value as hexadecimal string prefixed with "0x"   
+	 * @param value long to convert
+	 * @return value as hexadecimal string   
+	 */
+	static String longToHexString(long value) {
+		 return "0x" + Long.toHexString(value).toUpperCase();  //$NON-NLS-1$
 	}
 	
 }

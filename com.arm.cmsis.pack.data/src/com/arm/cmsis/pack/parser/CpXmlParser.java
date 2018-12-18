@@ -1,13 +1,13 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
-* All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
-* which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
-* Contributors:
-* ARM Ltd and ARM Germany GmbH - Initial API and implementation
-*******************************************************************************/
+ * Copyright (c) 2015 ARM Ltd. and others
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ *******************************************************************************/
 
 package com.arm.cmsis.pack.parser;
 
@@ -57,7 +57,7 @@ import com.arm.cmsis.pack.data.ICpRootItem;
 /**
  * Base class to parse CMSIS pack-related files
  */
-public abstract class CpXmlParser implements ICpXmlParser {
+public class CpXmlParser implements ICpXmlParser {
 
 
 	protected ICpItem rootItem   = null;  // represents top-level item being constructed
@@ -69,7 +69,7 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	protected Set<String> ignoreWriteTags = null; // tags to ignore when writing to xml file
 
 	// errors for current file
-	protected List<String> errorStrings = new LinkedList<String>();
+	protected List<String> errorStrings = new LinkedList<>();
 	protected int nErrors = 0;
 	protected int nWarnings = 0;
 
@@ -430,6 +430,7 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	 * @param item item just created
 	 */
 	protected void processItem(ICpItem item) {
+		// default does nothing
 	}
 
 
@@ -488,7 +489,7 @@ public abstract class CpXmlParser implements ICpXmlParser {
 		if(value.equals("true")) { //$NON-NLS-1$
 			return "1"; //$NON-NLS-1$
 		} else if(value.equals("false")) //$NON-NLS-1$
-		 {
+		{
 			return "0"; //$NON-NLS-1$
 		}
 		if(value.startsWith("\\\\")) { //$NON-NLS-1$
@@ -546,13 +547,13 @@ public abstract class CpXmlParser implements ICpXmlParser {
 			TransformerFactory tf = TransformerFactory.newInstance();
 			tf.setAttribute("indent-number", new Integer(2)); //$NON-NLS-1$
 			Transformer transformer = tf.newTransformer();
-	        transformer.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
-	        DOMSource source = new DOMSource(domDoc);
-	        StringWriter buffer = new StringWriter();
-	        StreamResult dest = new StreamResult(buffer);
-	        transformer.transform(source, dest);
-	        buffer.close();
-	        xml = buffer.toString();
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes"); //$NON-NLS-1$
+			DOMSource source = new DOMSource(domDoc);
+			StringWriter buffer = new StringWriter();
+			StreamResult dest = new StreamResult(buffer);
+			transformer.transform(source, dest);
+			buffer.close();
+			xml = buffer.toString();
 
 		} catch ( TransformerFactoryConfigurationError | TransformerException | IOException e) {
 			String error = "Error creating XML"; //$NON-NLS-1$
@@ -571,11 +572,12 @@ public abstract class CpXmlParser implements ICpXmlParser {
 	 * @return creates DOM
 	 */
 	protected Document createDomDocument(ICpItem root){
-		if(root == null)
+		if(root == null) {
 			return null;
+		}
 		root = root.getEffectiveItem(); // skips artificial root node if needed
 		Document domDoc = docBuilder.newDocument();
-        createElement(domDoc, null, root);
+		createElement(domDoc, null, root);
 		return domDoc;
 	}
 
@@ -591,15 +593,16 @@ public abstract class CpXmlParser implements ICpXmlParser {
 
 		if(isItemIgnored(item)) {
 			return null;
-	    }
+		}
 
 		String tag = item.getTag();
-		if(tag == null || tag.isEmpty())
+		if(tag == null || tag.isEmpty()) {
 			return null;
+		}
 		Element node = doc.createElement(tag);
 
 		if(parentNode != null) {
-//			node = doc.createElement(item.getTag());
+			//			node = doc.createElement(item.getTag());
 			parentNode.appendChild(node);
 		} else {
 			doc.appendChild(node);

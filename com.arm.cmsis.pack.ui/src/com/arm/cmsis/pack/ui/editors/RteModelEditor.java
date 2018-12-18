@@ -143,6 +143,7 @@ public class RteModelEditor extends RteEditor<IRteModelController> {
 						fModelController.getComponents().findChild(rteComponent.getKeyPath(), false));
 			}
 		} catch (CoreException e) {
+			e.printStackTrace();
 		}
 	}
 

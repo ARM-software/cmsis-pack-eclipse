@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2015-2018 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.project.template;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.cdt.managedbuilder.buildproperties.IBuildPropertyValue;
@@ -28,14 +29,17 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.PlatformUI;
 
+import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
+import com.arm.cmsis.pack.build.settings.RteToolChainAdapterInfo;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.generic.Attributes;
 import com.arm.cmsis.pack.project.IHelpContextIds;
 import com.arm.cmsis.pack.project.Messages;
+import com.arm.cmsis.pack.project.utils.CDTUtils;
 import com.arm.cmsis.pack.ui.IStatusMessageListener;
 
 /**
- *
+ * Page to calculate and select required toolchain adapter 
  */
 public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implements IStatusMessageListener {
 
@@ -69,21 +73,64 @@ public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implemen
 	public RteTemplateCmsisProjectPage(String pageName, String title, ImageDescriptor imageDescriptor, boolean hideCreateMain) {
 		super(pageName, title, imageDescriptor);
 		this.hideCreateMain = hideCreateMain;
+		initData();
 	}
 
+	private void initData() {
+		IToolChain tc = RteProjectTemplate.getSelectedToolChain();
+		if(tc == null)
+			return;
+		IConfiguration cfg = tc.getParent();
+		if (cfg != null) {
+			IProjectType pt = cfg.getProjectType();
+			if (pt != null) {
+				IBuildPropertyValue artefact = pt.getBuildArtefactType();
+				if (artefact != null) {
+					String aId = artefact.getId();
+					if (CDTUtils.BUILD_ARTEFACT_TYPE_LIB.equals(aId)) {
+						Toutput = CmsisConstants.TOUTPUT_LIB;
+					} else if (CDTUtils.BUILD_ARTEFACT_TYPE_EXE.equals(aId)) {
+						Toutput = CmsisConstants.TOUTPUT_EXE;
+					}
+				}
+			}
+		}
+		
+		RteToolChainAdapterFactory factory = RteToolChainAdapterFactory.getInstance();
+		Collection<RteToolChainAdapterInfo> adapters = factory.getAdapterInfos(tc);
+		if(adapters.size() != 1 )
+			return; // needs user interaction
+
+		RteToolChainAdapterInfo info = adapters.iterator().next();
+		Tcompiler = info.getFamily();
+		adapterId = info.getId();
+	}
+
+	
 	@Override
 	public Map<String, String> getPageData() {
 
-		Tcompiler = adapterSelector.getTcompiler();
 		Attributes a = new Attributes();
 		a.setAttribute(CmsisConstants.TCOMPILER, Tcompiler);
 		a.setAttribute(CmsisConstants.TOUTPUT, Toutput);
-		a.setAttribute("Tadapter", adapterSelector.getAdapterId()); //$NON-NLS-1$
+		a.setAttribute("Tadapter", adapterId); //$NON-NLS-1$
 
-		if (initialized) {
-			boolean createMain = chkMain == null ? false : chkMain.getSelection();
-			a.setAttribute("Tmain", createMain); //$NON-NLS-1$
+		String ext = getArtifactExtension();
+		a.setAttribute("Textension", ext); //$NON-NLS-1$
+
+		boolean createMain = false;
+		if (initialized && chkMain != null) {
+			createMain = chkMain.getSelection();
 		}
+		a.setAttribute("Tmain", createMain); //$NON-NLS-1$
+
+		a.setAttribute("Tmain", createMain); //$NON-NLS-1$
+		// FIXME: move this to another place
+		a.setAttribute("Tlast", !(getWizard() instanceof IImportWizard)); //$NON-NLS-1$
+		return a.getAttributesAsMap();
+	}
+
+	protected String getArtifactExtension() {
 		String ext = CmsisConstants.EMPTY_STRING;
 		if (Toutput.equals(CmsisConstants.TOUTPUT_EXE)) {
 			if (CmsisConstants.ARMCC.equals(Tcompiler)) {
@@ -98,13 +145,9 @@ public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implemen
 				ext = "a"; //$NON-NLS-1$
 			}
 		}
-		a.setAttribute("Textension", ext); //$NON-NLS-1$
-
-		// FIXME: move this to another place
-		a.setAttribute("Tlast", !(getWizard() instanceof IImportWizard)); //$NON-NLS-1$
-		return a.getAttributesAsMap();
+		return ext;
 	}
-
+	
 	@Override
 	public void createControl(Composite parent) {
 
@@ -157,13 +200,9 @@ public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implemen
 		if (!initialized) {
 			return;
 		}
-
 		IToolChain tc = RteProjectTemplate.getSelectedToolChain();
-		String projectType = CmsisConstants.EMPTY_STRING;
-		Tcompiler = CmsisConstants.EMPTY_STRING;
-		Toutput = CmsisConstants.EMPTY_STRING;
 		adapterSelector.setToolChain(tc);
-
+		String projectType = CmsisConstants.EMPTY_STRING;
 		if (tc != null) {
 			IConfiguration cfg = tc.getParent();
 			if (cfg != null) {
@@ -171,13 +210,7 @@ public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implemen
 				if (pt != null) {
 					IBuildPropertyValue artefact = pt.getBuildArtefactType();
 					if (artefact != null) {
-						String aId = artefact.getId();
 						projectType = artefact.getName();
-						if ("org.eclipse.cdt.build.core.buildArtefactType.staticLib".equals(aId)) { //$NON-NLS-1$
-							Toutput = CmsisConstants.TOUTPUT_LIB;
-						} else if ("org.eclipse.cdt.build.core.buildArtefactType.exe".equals(aId)) { //$NON-NLS-1$
-							Toutput = CmsisConstants.TOUTPUT_EXE;
-						}
 					}
 				}
 			}
@@ -185,7 +218,7 @@ public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implemen
 			setErrorMessage(Messages.RteTemplateCmsisProjectPage_NoTollchainAvailable);
 		}
 		lblProjectType.setText(projectType);
-		lblOutput.setText(Toutput);
+		lblOutput.setText(getArtifactExtension());
 	}
 
 	@Override
@@ -193,6 +226,7 @@ public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implemen
 		updateStatus(message);
 	}
 
+	
 	public void updateStatus(String message) {
 		setErrorMessage(message);
 		if (adapterSelector != null) {
@@ -203,5 +237,13 @@ public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implemen
 		boolean complete = Tcompiler != null && !Tcompiler.isEmpty() && adapterId != null && !adapterId.isEmpty();
 		setPageComplete(complete); // TODO : implement
 	}
+
+	@Override
+	public boolean isPageComplete() {
+		boolean complete = Tcompiler != null && !Tcompiler.isEmpty() && adapterId != null && !adapterId.isEmpty();
+		return complete;
+	}
+	
+	
 
 }

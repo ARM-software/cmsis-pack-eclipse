@@ -66,6 +66,7 @@ public class ScatterFileGenerator implements ILinkerScriptGenerator {
 		sb.append("   *.o (RESET, +First)").append(System.lineSeparator()); //$NON-NLS-1$
 		sb.append("   *(InRoot$$Sections)").append(System.lineSeparator()); //$NON-NLS-1$
 		sb.append("   .ANY (+RO)").append(System.lineSeparator()); //$NON-NLS-1$
+        sb.append("   .ANY (+XO)").append(System.lineSeparator()); //$NON-NLS-1$
 		sb.append("  }").append(System.lineSeparator()); //$NON-NLS-1$
 		
 		generateDefaultRams(memorySetttings); 
@@ -112,7 +113,7 @@ public class ScatterFileGenerator implements ILinkerScriptGenerator {
 	protected void generateAddressLine(String prefix, String id, String suffix, ICpMemory m, boolean bRam){
 		String start = m.getAttribute(CmsisConstants.START);
 		String size =  m.getAttribute(CmsisConstants.SIZE);
-		String uninit = (bRam && m.attributes().getAttributeAsBoolean(CmsisConstants.INIT, false)) ? _UNINIT_ : SPACE;
+		String uninit = (bRam && m.isNoInit()) ? _UNINIT_ : SPACE;
 		sb.append(prefix);
 		
 		sb.append(id);

@@ -21,6 +21,27 @@ public class Messages extends NLS {
 	public static String BoardsView_AvailableInPack;
 	public static String BoardsView_Boards;
 	public static String BoardsView_DeprecatedBoard;
+	public static String PackInstallerView_Bt1Pack;
+	public static String PackInstallerView_BtCopy;
+	public static String PackInstallerView_BtCopyRepository;
+	public static String PackInstallerView_BtCopyTag;
+	public static String PackInstallerView_BtDelete;
+	public static String PackInstallerView_BtDeleteAll;
+	public static String PackInstallerView_BtDeprecated;
+	public static String PackInstallerView_BtImport;
+	public static String PackInstallerView_BtInstall;
+	public static String PackInstallerView_BtInstallPlus;
+	public static String PackInstallerView_BtOffline;
+	public static String PackInstallerView_BtPacks;
+	public static String PackInstallerView_BtRemove;
+	public static String PackInstallerView_BtRepository;
+	public static String PackInstallerView_BtResolve;
+	public static String PackInstallerView_BtUndefined;
+	public static String PackInstallerView_BtUnpack;
+	public static String PackInstallerView_BtUnpackPlus;
+	public static String PackInstallerView_BtUpdate;
+	public static String PackInstallerView_BtUpdatePlus;
+	public static String PackInstallerView_BtUpToDate;
 	public static String PackInstallerView_CheckForUpdatesLink;
 	public static String PackInstallerView_Help;
 	public static String BoardsView_RemoveSelection;
@@ -43,6 +64,7 @@ public class Messages extends NLS {
 	public static String ExamplesView_Board;
 	public static String ExamplesView_CopyExampleInstallPack;
 	public static String ExamplesView_Device;
+	public static String ExamplesView_Format;
 	public static String ExamplesView_OnlyShowInstalledPack;
 	public static String ExamplesView_Pack;
 	public static String ExamplesView_SearchExample;
@@ -65,10 +87,11 @@ public class Messages extends NLS {
 	public static String PackPropertyView_UnpackTooltip;
 	public static String PacksExamplesViewFilter_NoBoards;
 	public static String PacksExamplesViewFilter_NoDevices;
-	public static String PacksView_1Pack;
+	public static String PacksView_ActionManageLocalRepo;
 	public static String PacksView_CannotLoadPdscFiles;
 	public static String PacksView_CheckForUpdate;
 	public static String PacksView_CheckForUpdateOnWeb;
+	public static String PacksView_ReleaseNotes;
 	public static String PacksView_Remove;
 	public static String PacksView_RemovePlusDelete;
 	public static String PacksView_RemoveSelectedPack;
@@ -81,17 +104,21 @@ public class Messages extends NLS {
 	public static String PacksView_InstallSinglePack;
 	public static String PacksView_InstallSinglePackTooltip;
 	public static String PacksView_Location;
-	public static String PacksView_Packs;
 	public static String PacksView_PreviousPackVersions;
 	public static String PacksView_ReplacedBy;
+	public static String PacksView_Repository;
 	public static String PacksView_RequiredPacks;
 	public static String PacksView_ResolveRequiredPacks;
 	public static String PacksView_SearchPack;
 	public static String PacksView_Selected;
 	public static String PacksView_ShowPacksOutline;
+	public static String PacksView_Tag;
 	public static String PacksView_UnpackSinglePack;
+	public static String PacksView_Url;
 	public static String PacksView_Version;
 	public static String ReloadPacksHandler_RefreshPacks;
+	public static String ManLocalRepo_Title;
+	public static String ManLocalRepo_AddPack;
 
 	static {
 		// initialize resource bundle

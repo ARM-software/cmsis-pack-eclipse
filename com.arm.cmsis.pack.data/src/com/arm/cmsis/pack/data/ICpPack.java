@@ -34,12 +34,17 @@ public interface ICpPack extends ICpRootItem {
 	 *
 	 */
 	enum PackState {
+		LOCAL,
 		INSTALLED,
 		DOWNLOADED,
 		AVAILABLE,
 		GENERATED,
 		UNKNOWN,
-		ERROR
+		ERROR;
+		
+		public boolean isInstalledOrLocal() {
+			return this == INSTALLED || this == LOCAL;  
+		}
 	}
 
 
@@ -114,4 +119,11 @@ public interface ICpPack extends ICpRootItem {
 	 * @return collection of required packs of this pack
 	 */
 	Collection<? extends ICpItem> getRequiredPacks();
+	
+	/**
+	 * Return the download url of the selected release if specified,
+	 * otherwise return EMPTY_STRING
+	 * @return
+	 */
+	String getReleaseUrl(String version);
 }

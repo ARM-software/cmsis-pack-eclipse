@@ -29,7 +29,7 @@ public class RtePathComparator implements Comparator<String> {
 	@Override
 	public int compare(String arg0, String arg1) {
 		if(arg0 == null || arg1 == null){
-			return AlnumComparator.alnumCompare(arg0, arg1); // should actually never happen
+			return 0; // should actually never happen
 		}
 		
 		if(arg0.startsWith(CmsisConstants.RTE)) {
@@ -40,6 +40,6 @@ public class RtePathComparator implements Comparator<String> {
 			return 1;
 
 		// for non-local paths use descending order (puts newer version above older)
-		return AlnumComparator.alnumCompare(arg1, arg0); //
+		return AlnumComparator.alnumCompare(arg1, arg0);
 	}
 }

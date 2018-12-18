@@ -21,7 +21,6 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.item.CmsisMapItem;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 import com.arm.cmsis.pack.utils.VersionComparator;
@@ -33,6 +32,11 @@ public class RteExampleItem extends CmsisMapItem<IRteExampleItem> implements IRt
 
 	protected Map<String, ICpExample> fExamples = null;
 	protected boolean fRoot;
+	protected Boolean fSupported = null;
+	protected Boolean fImport = null;
+	protected String fEnvironment = null;
+	protected String fLoadPath = null;
+	protected ICpPack fPack = null; // example's pack
 
 	/**
 	 * Default constructor, used for the root node
@@ -40,6 +44,7 @@ public class RteExampleItem extends CmsisMapItem<IRteExampleItem> implements IRt
 	public RteExampleItem() {
 		fName = "All Examples"; //$NON-NLS-1$
 		fRoot = true;
+		fSupported = true;
 	}
 
 	/**
@@ -153,7 +158,7 @@ public class RteExampleItem extends CmsisMapItem<IRteExampleItem> implements IRt
 		if(fExamples != null && !fExamples.isEmpty()) {
 			// Return the latest INSTALLED pack's example
 			for (ICpExample example : fExamples.values()) {
-				if (example.getPack().getPackState() == PackState.INSTALLED) {
+				if (example.getPack().getPackState().isInstalledOrLocal()) {
 					return example;
 				}
 			}
@@ -188,11 +193,57 @@ public class RteExampleItem extends CmsisMapItem<IRteExampleItem> implements IRt
 				continue;
 			}
 			ICpExample example = (ICpExample)item;
-			if(envProvider == null || !envProvider.isSupported(example))
+			if(envProvider == null || !envProvider.isExampleSupported(example))
 				continue;
 			
 			addExample(example);
 		}
+	}
+
+	@Override
+	public ICpPack getPack() {
+		if(fPack == null) {
+			ICpExample example = getExample();
+			if(example != null)
+				fPack = example.getPack();
+		}
+		return fPack;
+	}
+
+	@Override
+	public boolean isSupported() {
+		if(fSupported == null) {
+			ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+			fSupported = envProvider.isExampleSupported(getExample());
+		}
+		return fSupported;
+	}
+
+	@Override
+	public String getEnvironment() {
+		if(fEnvironment == null && isSupported()) {
+			ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+			fEnvironment = envProvider.getEnvironment(getExample());
+		}
+		return fEnvironment;
+	}
+
+	@Override
+	public String getLoadPath() {
+		if(fLoadPath == null && isSupported()) {
+			ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+			fLoadPath = envProvider.getAbsoluteLoadPath(getExample());
+		}
+		return fLoadPath;	
+	}
+
+	@Override
+	public boolean isToImport() {
+		if(fImport == null  && isSupported()) {
+			String loadPath = getLoadPath();
+			fImport = loadPath != null && !loadPath.endsWith(CmsisConstants.DOT_PROJECT);
+		}
+		return fImport;
 	}
 
 }

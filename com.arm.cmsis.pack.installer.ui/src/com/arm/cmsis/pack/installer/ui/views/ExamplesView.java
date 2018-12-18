@@ -11,7 +11,8 @@
 
 package com.arm.cmsis.pack.installer.ui.views;
 
-import org.eclipse.core.resources.ResourcesPlugin;
+import java.util.Collection;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
@@ -24,6 +25,7 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
@@ -38,8 +40,9 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpItem;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
+import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.events.RteEvent;
+import com.arm.cmsis.pack.installer.ui.ButtonId;
 import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.repository.RtePackJobResult;
@@ -50,7 +53,6 @@ import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
 import com.arm.cmsis.pack.ui.tree.IColumnAdvisor;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 import com.arm.cmsis.pack.utils.DeviceVendor;
-import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * Default implementation of the examples view in pack manager
@@ -60,7 +62,7 @@ public class ExamplesView extends PackInstallerView {
 	public static final String ID = "com.arm.cmsis.pack.installer.ui.views.ExamplesView"; //$NON-NLS-1$
 
 	Action fShowInstOnlyAction;
-	ICpExample fInstalledExample = null;
+	ICpExample fExampleToInstall = null;
 
 	IRteExampleItem getRteExampleItem(Object obj) {
 		if (obj instanceof IRteExampleItem) {
@@ -85,51 +87,89 @@ public class ExamplesView extends PackInstallerView {
 
 		@Override
 		public boolean isEnabled(Object obj, int columnIndex) {
-			if (getCellControlType(obj, columnIndex) == CellControlType.BUTTON) {
-				ICpPackInstaller packInstaller = getPackInstaller();
-				if(packInstaller == null) {
-					return false;
-				}
-				IRteExampleItem example = getRteExampleItem(obj);
-				if (example != null) {
-					ICpExample e = example.getExample();
-					if (e == null || packInstaller.isProcessing(e.getPackId())) {
+			if(fExampleToInstall != null) {
+				return false; // do not allow several examples at once 
+			}
+			switch(columnIndex) {
+			case COLNAME:
+				return true;
+			case COLBUTTON:
+				if (getCellControlType(obj, columnIndex) == CellControlType.BUTTON) {
+					ICpPackInstaller packInstaller = getPackInstaller();
+					if(packInstaller == null) {
 						return false;
 					}
-					return true;
+					IRteExampleItem example = getRteExampleItem(obj);
+					if (example != null) {
+						ICpExample e = example.getExample();
+						if (e == null || packInstaller.isProcessing(e.getPackId())) {
+							return false;
+						}
+						return true;
+					}
 				}
 			}
-			return false;
+			return true;
 		}
 
 		@Override
 		public Image getImage(Object obj, int columnIndex) {
-			if (getCellControlType(obj,	columnIndex) == CellControlType.BUTTON) {
-				switch (getString(obj, columnIndex)) {
-				case CmsisConstants.BUTTON_COPY:
-					IRteExampleItem item = getRteExampleItem(obj);
-					if (item != null && item.getExample().isDeprecated()) {
-						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_WARNING);
-					}
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
-				case CmsisConstants.BUTTON_INSTALL:
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALL);
-				default :
-					break;
+			IRteExampleItem item = null;
+			switch(columnIndex) {
+			case COLNAME:
+				item = getRteExampleItem(obj);
+				if (item != null) {
+					if (item.getEnvironment().equals(CmsisConstants.UV))
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_UV5);
+					else if (item.isSupported() && !item.isToImport())
+						return Window.getDefaultImage();
 				}
+				break;
+			default:
+				if (getCellControlType(obj,	columnIndex) == CellControlType.BUTTON) {
+					switch (getButtonId(obj, columnIndex)) {
+					case BUTTON_COPY:
+					case BUTTON_IMPORT:
+						item = getRteExampleItem(obj);
+						if (item != null && item.getExample().isDeprecated()) {
+							return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_WARNING);
+						}
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+					case BUTTON_INSTALL:
+						return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALL);
+					default :
+						break;
+					}
+				}
+				break;
 			}
 			return null;
 		}
 
 		@Override
 		public String getString(Object obj, int index) {
-			if (getCellControlType(obj, index) == CellControlType.BUTTON) {
-				IRteExampleItem item = getRteExampleItem(obj);
-				if (item != null) {
-					if (item.getExample().getPack().getPackState() == PackState.INSTALLED) {
-						return CmsisConstants.BUTTON_COPY;
+			switch (index) {
+			case COLNAME:
+				IRteExampleItem ei = getRteExampleItem(obj);
+				if(ei == null) {
+					return null;
+				}
+				ICpExample e = ei.getExample();
+				if(e != null) {
+					return e.getId();
+				}
+			case COLBUTTON:
+				if (getCellControlType(obj, index) == CellControlType.BUTTON) {
+					IRteExampleItem item = getRteExampleItem(obj);
+					if (item != null) {
+						if (item.getExample().getPack().getPackState().isInstalledOrLocal()) {
+							if (item.isToImport()) {
+								return getButtonString(ButtonId.BUTTON_IMPORT);
+							}
+							return getButtonString(ButtonId.BUTTON_COPY);
+						}
+						return getButtonString(ButtonId.BUTTON_INSTALL);
 					}
-					return CmsisConstants.BUTTON_INSTALL;
 				}
 			}
 			return CmsisConstants.EMPTY_STRING;
@@ -137,18 +177,23 @@ public class ExamplesView extends PackInstallerView {
 
 		@Override
 		public String getTooltipText(Object obj, int columnIndex) {
-			if (getCellControlType(obj,
-					columnIndex) == CellControlType.BUTTON) {
-				IRteExampleItem item = getRteExampleItem(obj);
-				if (item != null) {
-					if (item.getExample().getPack()
-							.getPackState() != PackState.INSTALLED) {
-						StringBuilder str = new StringBuilder(
-								Messages.ExamplesView_CopyExampleInstallPack)
-								.append(item.getExample().getPackId());
-						return str.toString();
+			switch (columnIndex) {
+			case COLNAME:
+				ICpExample e = ((IRteExampleItem) obj).getExample();
+				return constructExampleTooltipText(e, obj);
+			case COLBUTTON:
+				if (getCellControlType(obj,
+						columnIndex) == CellControlType.BUTTON) {
+					IRteExampleItem item = getRteExampleItem(obj);
+					if (item != null) {
+						if (item.getPack() != null && item.getPack().getPackState().isInstalledOrLocal() == false) {
+							StringBuilder str = new StringBuilder(
+									Messages.ExamplesView_CopyExampleInstallPack)
+									.append(item.getExample().getPackId());
+							return str.toString() + "\n" + Messages.ExamplesView_Format + ": " + item.getEnvironment(); //$NON-NLS-1$ //$NON-NLS-2$
+						}
+						return constructExampleTooltipText(item.getExample(), obj);
 					}
-					return constructExampleTooltipText(item.getExample());
 				}
 			}
 			return null;
@@ -173,20 +218,16 @@ public class ExamplesView extends PackInstallerView {
 
 			IRteExampleItem example = getRteExampleItem(element);
 			if (example != null) {
-				switch (getString(element, colIndex)) {
-				case CmsisConstants.BUTTON_COPY :
+				switch (getButtonId(element, colIndex)) {
+				case BUTTON_COPY :
+				case BUTTON_IMPORT:
 					ICpExample cpExample = example.getExample();
 					copyExample(cpExample);
-					Utils.clearReadOnly(ResourcesPlugin
-							.getWorkspace().getRoot().getLocation()
-							.append(Utils.extractBaseFileName(
-									cpExample.getFolder()))
-							.toFile(), CmsisConstants.EMPTY_STRING);
 					break;
-				case CmsisConstants.BUTTON_INSTALL :
+				case BUTTON_INSTALL :
 					ICpPackInstaller packInstaller = getPackInstaller();
-					if(packInstaller != null) {
-						fInstalledExample = example.getExample();
+					if(packInstaller != null && fExampleToInstall == null) {
+						fExampleToInstall = example.getExample();
 						packInstaller.installPack(example.getExample().getPackId());
 					}
 				default :
@@ -197,17 +238,51 @@ public class ExamplesView extends PackInstallerView {
 			setButtonPressed(null, COLBUTTON, null);
 			this.control.redraw();
 		}
+		
+		protected ButtonId getButtonId(Object obj, int index) {
+			if (getCellControlType(obj, index) == CellControlType.BUTTON) {
+				IRteExampleItem item = getRteExampleItem(obj);
+				if (item != null) {
+					if (item.getExample().getPack().getPackState().isInstalledOrLocal()) {
+						if (item.isToImport())
+							return ButtonId.BUTTON_IMPORT;
+						return ButtonId.BUTTON_COPY;
+					}
+					return ButtonId.BUTTON_INSTALL;
+				}
+			}
+			return ButtonId.BUTTON_UNDEFINED;
+		}
 
 	} /// end of ColumnAdviser
 
 	void copyExample(ICpExample cpExample) {
-		if(fViewController == null) {
+		if(cpExample == null || fViewController == null) {
 			return;
 		}
 		fViewController.copyExample(cpExample);
 	}
 
-	String constructExampleTooltipText(ICpExample example) {
+	@Override
+	protected void handleRteEvent(RteEvent event) {
+		super.handleRteEvent(event);
+		if (RteEvent.PACK_INSTALL_JOB_FINISHED.equals(event.getTopic())) {
+			RtePackJobResult result = (RtePackJobResult) event.getData();
+			if (fExampleToInstall != null && result.getPackId().equals(fExampleToInstall.getPackId())) {
+				if(result.isSuccess()) {
+					final ICpExample example = getExample(fExampleToInstall.getId(), result.getPack());
+					if(example != null)  {
+						// execute not immediately: still running progress dialog will kill import wizard immediately!
+						Display.getDefault().asyncExec(() -> {copyExample(example);	});
+					}
+				}
+			}
+			fExampleToInstall = null;
+		}
+	}
+	
+	
+	String constructExampleTooltipText(ICpExample example, Object obj) {
 		String tooltip = CmsisConstants.EMPTY_STRING;
 
 		String boardId = example.getBoardId();
@@ -242,7 +317,11 @@ public class ExamplesView extends PackInstallerView {
 		}
 		String line3 = NLS.bind(Messages.ExamplesView_Pack,	example.getPackId());
 		String line4 = example.getDescription();
-		return tooltip + line3 + line4;
+		String line5 = CmsisConstants.EMPTY_STRING;
+		IRteExampleItem item = getRteExampleItem(obj);
+		if (item != null)
+			line5 = "\n" + Messages.ExamplesView_Format + ": " + item.getEnvironment(); //$NON-NLS-1$ //$NON-NLS-2$
+		return tooltip + line3 + line4 + line5;
 	}
 
 	class ExampleTreeColumnComparator extends PackInstallerTreeColumnComparator {
@@ -278,34 +357,13 @@ public class ExamplesView extends PackInstallerView {
 		TreeViewerColumn column0 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		column0.getColumn().setText(CmsisConstants.EXAMPLE_TITLE);
 		column0.getColumn().setWidth(300);
-		column0.setLabelProvider(new ColumnLabelProvider() {
-
-			@Override
-			public String getText(Object element) {
-				IRteExampleItem ei = getRteExampleItem(element);
-				if(ei == null) {
-					return null;
-				}
-				ICpExample e = ei.getExample();
-				if(e != null) {
-					return e.getId();
-				}
-				return null;
-			}
-
-			@Override
-			public String getToolTipText(Object element) {
-				ICpExample e = ((IRteExampleItem) element).getExample();
-
-				return constructExampleTooltipText(e);
-			}
-		});
-
+		ExamplesViewColumnAdvisor columnAdvisor = new ExamplesViewColumnAdvisor(fViewer);
+		column0.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 0));
+		
 		// ------ Second Column
 		TreeViewerColumn column1 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		column1.getColumn().setText(CmsisConstants.ACTION_TITLE);
 		column1.getColumn().setWidth(90);
-		ExamplesViewColumnAdvisor columnAdvisor = new ExamplesViewColumnAdvisor(fViewer);
 		column1.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, COLBUTTON));
 
 		// ------ Third Column
@@ -364,7 +422,8 @@ public class ExamplesView extends PackInstallerView {
 				IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
-				fViewController.getFilter().setInstalledOnly(fShowInstOnlyAction.isChecked());
+				boolean bChecked = fShowInstOnlyAction.isChecked(); 
+				fViewController.getFilter().setShowExamplesInstalledOnly(bChecked);
 				fViewer.setFilters(fViewFilters);
 				fViewer.setSelection(null);
 				if (fShowInstOnlyAction.isChecked()) {
@@ -376,9 +435,10 @@ public class ExamplesView extends PackInstallerView {
 				}
 			}
 		};
-		fShowInstOnlyAction	.setToolTipText(Messages.ExamplesView_OnlyShowInstalledPack);
-		fShowInstOnlyAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_UNCHECKED));
+		fShowInstOnlyAction.setToolTipText(Messages.ExamplesView_OnlyShowInstalledPack);
+		fShowInstOnlyAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_CHECKED));
 		fShowInstOnlyAction.setEnabled(true);
+		fShowInstOnlyAction.setChecked(true);
 
 		super.makeActions();
 	}
@@ -400,18 +460,20 @@ public class ExamplesView extends PackInstallerView {
 		super.fillLocalToolBar(manager);
 	}
 
-	@Override
-	protected void handleRteEvent(RteEvent event) {
-		super.handleRteEvent(event);
-		if (RteEvent.PACK_INSTALL_JOB_FINISHED.equals(event.getTopic())) {
-			RtePackJobResult result = (RtePackJobResult) event.getData();
-			if (result.isSuccess() && fInstalledExample != null && result.getPackId().equals(fInstalledExample.getPackId())) {
-				Display.getDefault().asyncExec(() -> {
-					copyExample(fInstalledExample);
-					fInstalledExample = null;
-				});
+	protected ICpExample getExample(String id, ICpPack pack) {
+		if(pack == null)
+			return null;
+		Collection<? extends ICpItem> examples = pack.getGrandChildren(CmsisConstants.EXAMPLES_TAG);
+		if(examples == null || examples.isEmpty())
+			return null;
+		for(ICpItem item : examples) {
+			if(!(item instanceof ICpExample)) {
+				continue;
 			}
+			if(item.getId().equals(id))
+				return (ICpExample)item;
 		}
+		return null;
 	}
-
+	
 }

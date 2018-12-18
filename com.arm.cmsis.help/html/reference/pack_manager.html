@@ -14,8 +14,8 @@
 
 <p>The <b>Pack Manager</b> perspective <img alt="PM icon" src="../images/pack_manager_ico.png" class="uvicon"> offers the following functionality:</p>
 <ul>
-<li>Install or update Software Packs that are available on the Internet.</li>
-<li>List devices and boards which are supported by Software Packs.</li>
+<li>Install or update software packs that are available on the Internet.</li>
+<li>List devices and boards which are supported by software packs.</li>
 <li>List example projects that can be copied into the Eclipse workspace.</li>
 </ul>
 
@@ -23,8 +23,7 @@
 <ul>
 <li><b>Window &rarr; Open Perspective &rarr; Other &rarr; CMSIS Pack Manager</b> opens the perspective <img alt="PM icon" src="../images/pack_manager_ico.png" class="uvicon">
 </li>
-<li><b>Window &rarr; Preferences &rarr; CMSIS Packs</b> to setup the web sites for downloading CMSIS Packs. This view also alows you to set the root folder
-for storing CMSIS Packs. The root folder can point to an existing MDK installation, for example <i>C:\Keil_v5\ARM\Pack</i>.
+<li><b>Window &rarr; Preferences &rarr; CMSIS Packs</b> to setup the root folder for storing packs:
    <ul>
       <li>For Linux, the default root folder is set to <i>$HOME/.arm/CMSIS-Packs</i>.</li>
       <li>For Windows, the default root folder is set to <i>%APPDATA%\ARM\CMSIS-Packs.</i></li>
@@ -34,37 +33,46 @@ for storing CMSIS Packs. The root folder can point to an existing MDK installati
 
 <p>To search for relevant packs or examples, select an item in the <b>Devices</b> or <b>Boards</b> view. 
 
-<p>The following toolbar buttons manage Software Packs:</p>
+<p>The following toolbar buttons manage software packs:</p>
 
 <dl class="kl">
-  <dd class="kd">
+    <dd class="kd">
+        <img src="../images/refresh_packs.png" class="uvicon">
+           After installing a pack manually, you might need to refresh the pack information. Use this button to refresh
+           the view by just re-reading the current disk contents.  
+    </dd>
+    <dd class="kd">
           <img src="../images/web_update.png" class="uvicon">
-          Check for Pack updates on the web. To accomplish this, 
+          Check for pack updates on the web. To accomplish this, 
           Pack Manager connects to <a href="http://www.keil.com/pack" target="_blank">www.keil.com/pack</a> and checks
-          the index file. You can add/remove index files using <b>Window &rarr; Preferences &rarr; CMSIS Packs</b>.
+          the index file.
   </dd>
   <dd class="kd">
-      <img src="../images/import_pack.png" class="uvicon">
-         Install Software Packs manually.
-  <dd class="kd">
-      <img src="../images/refresh_packs.png" class="uvicon">
-         After installing a Pack manually, you might need to refresh the Pack information. Use this button to refresh
-         the view by just re-reading the current disk contents.</p>  
-  </dd>
+    <img src="../images/import_pack.png" class="uvicon">
+       Install software packs manually.
+</dd>
+<dd class="kd">
+    <img src="../images/import_from_folder.png" class="uvicon">
+       Launch the file browser to select a folder that can contain one or more extracted software packs. These packs will be copied to the pack folder.
+</dd>
+<dd class="kd">
+    <img src="../images/manage_local_repo.png" class="uvicon">
+      Launch the file browser to select a folder that contains an extracted software pack. Refer to <a href="pack_manager_manage_local_repo.html">Using Local Repositories</a> for more information.
+</dd>
 </dl>
 
 
 <p>The CMSIS Pack Manager offers the following views:</p>
 <ul>
-<li><a href="pack_manager_packs.html">Packs</a>: show available Software Packs that can be installed, updated, or removed.
+<li><a href="pack_manager_packs.html">Packs</a>: show available software packs that can be installed, updated, or removed.
 </li>
 <li><a href="pack_manager_examples.html">Examples</a>: show example projects that can be copied into the workspace.
 </li>
-<li><a href="pack_manager_devices.html">Devices</a>: list devices that are supported in available Software Packs.
+<li><a href="pack_manager_devices.html">Devices</a>: list devices that are supported in available software packs.
 </li>
-<li><a href="pack_manager_boards.html">Boards</a>: list boards that are supported in available Software Packs.
+<li><a href="pack_manager_boards.html">Boards</a>: list boards that are supported in available software packs.
 </li>
-<li><a href="pack_manager_properties.html">Pack Properties</a>: show the content of a selected Software Pack.
+<li><a href="pack_manager_properties.html">Pack Properties</a>: show the content of a selected software pack.
 </li>
 </ul>
 

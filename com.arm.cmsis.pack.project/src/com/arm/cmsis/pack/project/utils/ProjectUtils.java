@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2015-2018 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,8 +17,13 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.TreeMap;
 
 import org.eclipse.cdt.core.model.CModelException;
 import org.eclipse.cdt.core.model.CoreModel;
@@ -27,11 +32,14 @@ import org.eclipse.cdt.core.settings.model.ICSourceEntry;
 import org.eclipse.cdt.core.settings.model.util.CDataUtil;
 import org.eclipse.cdt.managedbuilder.core.IConfiguration;
 import org.eclipse.cdt.managedbuilder.core.IManagedBuildInfo;
+import org.eclipse.cdt.managedbuilder.core.IToolChain;
 import org.eclipse.cdt.managedbuilder.core.ManagedBuildManager;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -40,19 +48,42 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IPerspectiveDescriptor;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 
+import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpEnvironmentProvider;
+import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
+import com.arm.cmsis.pack.build.settings.RteToolChainAdapterInfo;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.configuration.IRteConfiguration;
+import com.arm.cmsis.pack.configuration.RteConfiguration;
+import com.arm.cmsis.pack.data.CpItem;
+import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.info.CpConfigurationInfo;
+import com.arm.cmsis.pack.info.ICpConfigurationInfo;
+import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
+import com.arm.cmsis.pack.parser.CpConfigParser;
 import com.arm.cmsis.pack.project.CpProjectPlugIn;
 import com.arm.cmsis.pack.project.IRteProject;
 import com.arm.cmsis.pack.project.Messages;
 import com.arm.cmsis.pack.project.RteProjectManager;
 import com.arm.cmsis.pack.project.RteProjectNature;
+import com.arm.cmsis.pack.utils.AlnumComparator;
+
 
 /**
  * Helper class with useful static methods
  */
 public class ProjectUtils {
+	
 	/**
 	 * Returns ICpProject for given IProject if such exists
 	 * @param project IProject
@@ -83,6 +114,8 @@ public class ProjectUtils {
 	 * @return instance of IProject
 	 */
 	public static IProject getProject(String projectName) {
+		if(projectName == null || projectName.isEmpty())
+			return null;
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		return project;
 	}
@@ -344,10 +377,6 @@ public class ProjectUtils {
 		}
 		try{
 			IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
-			if (buildInfo == null) {
-				// not a MBS project
-				return null;
-			}
 			IConfiguration[] configs = buildInfo.getManagedProject().getConfigurations();
 			for(IConfiguration c : configs) {
 				if(c.getName().equals(name)) {
@@ -513,10 +542,6 @@ public class ProjectUtils {
 	 */
 	static public void setExcludeFromBuild(IProject project, String path, boolean bExclude) throws CoreException {
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
-		if (buildInfo == null) {
-			// not a MBS project
-			return;
-		}
 		IConfiguration activeConfig = buildInfo.getDefaultConfiguration();
 		ICSourceEntry[] sourceEntries = activeConfig.getSourceEntries();
 		sourceEntries = CDataUtil.setExcluded(new Path(path), false, bExclude, sourceEntries);
@@ -531,11 +556,11 @@ public class ProjectUtils {
 	 */
 	static public boolean isExcludedFromBuild(IProject project, String path) {
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
-		if (buildInfo == null) {
-			// not a MBS project
+		if(buildInfo == null)
 			return false;
-		}
 		IConfiguration activeConfig = buildInfo.getDefaultConfiguration();
+		if(activeConfig == null)
+			return false;
 		ICSourceEntry[] sourceEntries = activeConfig.getSourceEntries();
 		return CDataUtil.isExcluded(new Path(path), sourceEntries);
 	}
@@ -555,6 +580,326 @@ public class ProjectUtils {
 		p = p.makeRelativeTo(base);
 		return p.toString();
 	}
+	
 
+	/**Creates Rte project without using defined methods in template.xml
+	 * @param project project which will be contain Rte project
+	 * @param projectName project's name
+	 * @param deviceInfo device's info
+	 * @param compiler compiler's name
+	 * @param output output's type e.g .exe
+	 * @param adapterId adapter's ID
+	 * @return Rte project
+	 */
+	public static IRteProject createRteProject(IProject project, String projectName, ICpDeviceInfo deviceInfo, String compiler, String output, String adapterId){
+		IRteProject rteProject = null;		
+		//Get toolchain adapter info to create Rte project
+        RteToolChainAdapterInfo adapterInfo = createToolChainAdapter(adapterId);
+        //Set Rte project's name to set Rte configuration to the Rte file
+        String rteConfigName = projectName + CmsisConstants.DOT_RTECONFIG; 
+        //Create Rte project
+        rteProject = createRteProject(project, adapterInfo);        
+        //Create Rte configuration
+        IRteConfiguration rteConf = createRteConfiguration(compiler, output, deviceInfo);         
+        //Set Rte configuration
+        rteProject.setRteConfiguration(rteConfigName, rteConf);
+        
+        return rteProject;
+    }
+	
+	
+	/**
+	 * Creates Rte file
+	 * @param project project which will contain Rte file
+	 * @param rteConfigName Rte file's name
+	 * @param rteConf configuration to be written into the Rte file
+	 * @param monitor object to monitor the progress of Rte file creation
+	 * @return Rte file
+	 */
+	public static IFile createRteFile(IProject project, String rteConfigName, IRteConfiguration rteConf, IProgressMonitor monitor){		
+		IFile  iFile = null;	
+		try {
+            //Create RTE file
+            iFile = ProjectUtils.createFile(project, rteConfigName, monitor);
+            iFile.refreshLocal(IResource.DEPTH_ONE, null);
+            project.refreshLocal(IResource.DEPTH_INFINITE, null);
+
+            //Create a parser object to save RTE's configuration in XML format
+            CpConfigParser confParser = new CpConfigParser();
+            IPath location = iFile.getLocation();
+            if(location!= null) {
+                File file =  location.toFile();
+                //Generates XML text out of RTE's configuration and saves it to an XML file
+                confParser.writeToXmlFile(rteConf.getConfigurationInfo(), file.getAbsolutePath());
+            }                        
+        } catch (CoreException e) {
+            e.printStackTrace();
+           
+        }		
+		return iFile;
+	}
+	
+	/**
+	 * Opens rteconfig file for supplied project in RTE editor 
+	 * @param project IProject
+	 * @return true if file exists and can be opened
+	 */
+	public static boolean  openRteConfigFile(IProject project) {
+		if(project == null)
+			return false;
+		String rteConf = project.getName()	+ '.' + CmsisConstants.RTECONFIG;
+		return openProjectRelativeFile(project, rteConf);
+	}
+
+	/**
+	 * Opens a file relative to the supplied project 
+	 * @param project parent IProject
+	 * @param fileName filename relative to parent project
+	 * @return true if file exists and queried to open    
+	 */
+	public static boolean openProjectRelativeFile(IProject project, String fileName) {
+		if(project == null || fileName == null)
+			return false;
+		if(!PlatformUI.isWorkbenchRunning()) {
+			return false; // nothing to do in headless mode
+		}		
+		IResource r = project.findMember(fileName);
+		if(r != null && r.exists() && r.getType() == IResource.FILE) {
+			ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+			Optional<String> perspectiveId = null;
+			if(envProvider != null) {
+				perspectiveId = envProvider.getCopyExamplePerspectiveSwitchId();
+			}
+			openEditorAsync(project.getFile(fileName), perspectiveId);
+			return true;
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Opens file in an editor asynchronously 
+	 * @param iFile file to be opened in dedicated editor
+	 */
+	public static void openEditorAsync(IFile iFile){
+		openEditorAsync(iFile, null);
+	}
+	
+	/**
+	 * Opens file in an editor asynchronously 
+	 * @param iFile file to be opened in dedicated editor
+	 */
+	public static void openEditorAsync(IFile iFile, Optional<String> perspectiveId){
+		if(!PlatformUI.isWorkbenchRunning()) {
+			return; // nothing to do in headless mode
+		}		
+
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbench wb = PlatformUI.getWorkbench();
+				if(wb == null) 
+					return;
+				IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+				if(window == null)
+					return;
+
+				IWorkbenchPage page = window.getActivePage();
+				if(page == null) 
+					return;
+				switchToPerspective(wb, page, perspectiveId);
+				try {
+					IDE.openEditor(page, iFile);
+				} catch (PartInitException e) {						
+					e.printStackTrace();
+				}
+				
+			}
+		});
+	}
+
+
+	/**
+	 * Switches to specified perspective 
+	 * @param wb IWorkbench
+	 * @param page IWorkbenchPage
+	 * @param perspectiveId perspective Id to switch to
+	 */
+	public static void switchToPerspective(IWorkbench wb, IWorkbenchPage page, Optional<String> perspectiveId) {
+		if(perspectiveId == null || !perspectiveId.isPresent())
+			return;
+		
+		if (wb == null)
+			return;
+
+		if(page == null) 
+			return;
+
+		IPerspectiveDescriptor persDescription = wb.getPerspectiveRegistry().findPerspectiveWithId(perspectiveId.get());
+		if(persDescription == null)
+			return;
+		page.setPerspective(persDescription);
+	}
+
+		
+	/**
+	 * Creates toolchain adapter
+     * @param adapterId required adapterId to create a toolchain adapter
+     * @return toolchain adapter info for given adapterId
+     */
+    public static RteToolChainAdapterInfo createToolChainAdapter(String adapterId) {
+        //Create an adapterFactory object to get toolchain adapter info for given adapterId
+        RteToolChainAdapterFactory adapterFactory = RteToolChainAdapterFactory.getInstance();
+        return adapterFactory.getAdapterInfo(adapterId);
+    }
+	
+    
+    /**
+     * Creates Rte's configuration
+     * @param compiler compiler family
+     * @param output output type: " exe" or "lib"
+     * @param deviceInfo device's info used in the configuration
+     * @return Rte's configuration
+     */
+    public static IRteConfiguration createRteConfiguration(String compiler, String output, ICpDeviceInfo deviceInfo) { 
+    	//Create toolchain info for given compiler and output type
+        ICpItem toolchainInfo = createToolChainInfo(compiler, output);        
+        //Create configuration info for given device's info and toolchain's info
+        ICpConfigurationInfo cpInfo = new CpConfigurationInfo(deviceInfo, toolchainInfo, true);
+        //Create IRteConfiguration object to set configuration info
+        IRteConfiguration rteConf = new RteConfiguration();
+        //Sets ICpConfigurationInfo object, initializes model and collects settings
+        rteConf.setConfigurationInfo(cpInfo);
+        return rteConf;
+    }        
+    
+    /**
+     * Creates Rte project
+     * @param project project which will contain a Rte project
+     * @param adapterInfo Rte's toolchain adapter info
+     * @return Rte project
+     */
+    public static IRteProject createRteProject(IProject project, RteToolChainAdapterInfo adapterInfo) {
+        //Create a RteProjectManager to manage RTE project and its association with IProject
+        RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
+        //Create a RTE project to be associated with the IProject
+        IRteProject rteProject = rteProjectManager.createRteProject(project);
+        //Sets RteToolChainAdapterInfo to be used by RTE project
+        rteProject.setToolChainAdapterInfo(adapterInfo);
+        return rteProject;
+    }
+	
+    /**
+     * Creates toolchain info for given compiler and output type
+	 * @param Tcompiler compiler family
+	 * @param Toutput output type : " exe" or "lib"
+	 * @return toolchain info as ICpItem
+	 */
+	public static ICpItem createToolChainInfo(String Tcompiler, String Toutput) {
+		ICpItem toolchainInfo = new CpItem(null, CmsisConstants.TOOLCHAIN_TAG);
+		toolchainInfo.attributes().setAttribute(CmsisConstants.TCOMPILER, Tcompiler);
+		toolchainInfo.attributes().setAttribute(CmsisConstants.TOUTPUT, Toutput);
+		return toolchainInfo;
+	}
+	
+
+    /**
+     * Gets toolchains corresponding to given ID prefix (usually reflects family) 
+     * @param prefix toolchain ID prefix 
+     * @return collection of IToolChain object satisfying thr prefix    
+     */
+    public static Collection<IToolChain> getToolChainsByIdPrefix(String prefix){
+    	List<IToolChain> toolchains = new LinkedList<>();
+        IToolChain[] toolchainList = ManagedBuildManager.getRealToolChains();        
+        for (IToolChain t : toolchainList) {
+    		if(t == null || !t.isSupported())
+    			continue;
+        	// check if toolchain's id or one of its super classes start with the prefix
+        	for(IToolChain tc = t; tc != null; tc = tc.getSuperClass()) {
+        		String id = tc.getId();
+        		if(id.startsWith(prefix)){
+        			toolchains.add(t);
+        		}
+        	}
+        }
+        return  toolchains;
+    }
+    
+      
+    /**
+     * Get toolchain by its name 
+     * @param toolchainName localized toolchain name 
+     * @return IToolChain if found, null otherwise 
+     */
+    public static IToolChain getToolChainByName(String toolchainName){    		
+        IToolChain[] toolchainList = ManagedBuildManager.getRealToolChains(); 
+        for (IToolChain t : toolchainList) {
+            if(t.getName().equals(toolchainName)){  
+            	return t; 
+            }
+        }
+        return null;
+    }
+    
+    /**
+     * Get toolchain by name
+     * @param toolchainName
+     * @return IToolChain
+     */
+    public static IToolChain getToolChainById(String toolchainId){    		
+        IToolChain[] toolchainList = ManagedBuildManager.getRealToolChains(); 
+        for (IToolChain t : toolchainList) {
+            if(t.getId().equals(toolchainId)){  
+            	return t; 
+            }
+        }
+        return null;
+    }
+    
+    
+    /**
+     * Gets toolchains starting with given ID
+     * @param id toolchain ID 
+     * @return  Map of toolchanins (ID to name)
+     */
+    public static Map<String, String> getToolChains(String id){
+    	Map<String, String> mToolchains = new TreeMap<>(new AlnumComparator());
+        IToolChain[] toolchainList = ManagedBuildManager.getRealToolChains();
+        for (IToolChain t : toolchainList) {
+            if(t.getId().startsWith(id)){
+                mToolchains.put(t.getId(), t.getName());
+            }
+        }
+        return  mToolchains;
+    }
+    
+    
+    public static String getWorkspacePath(){
+        String wsPath = CmsisConstants.EMPTY_STRING;
+
+        //Get object which represents the workspace
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+
+        //Get location of workspace (java.io.File)
+        File workspaceDirectory = workspace.getRoot().getLocation().toFile();
+
+        wsPath = workspaceDirectory.toString();
+
+        return wsPath;
+    }
+
+    
+    /**
+     * Loads project description 
+     * @param path projects path as IPath
+     * @return IProjectDescription
+     */
+    public static IProjectDescription getProjectDescription(IPath path) {
+		try {
+			return ResourcesPlugin.getWorkspace().loadProjectDescription(path);
+		} catch (CoreException e) {
+			return null;
+		}
+	}
 	
 }

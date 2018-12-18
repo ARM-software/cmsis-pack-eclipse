@@ -42,6 +42,14 @@ public class Attributes implements IAttributes {
 
 
 	@Override
+	synchronized public void clear() {
+		if(fAttributes != null) {
+			fAttributes.clear();
+		}
+	}
+
+
+	@Override
 	synchronized public boolean hasAttribute(String key) {
 		return fAttributes != null && fAttributes.containsKey(key);
 	}
@@ -352,33 +360,14 @@ public class Attributes implements IAttributes {
 
 	@Override
 	public String toString() {
-		return getAttributesAsString();
+		return getAttributesAsString(", "); //$NON-NLS-1$
 	}
 
+	
 	/**
-	 * Returns string containing all attributes in the form "key0"="value0", "key1"=value1,...
-	 * @return string containing keys and values of all attributes
-	 */
-	synchronized public String getAttributesAsString() {
-		String s = CmsisConstants.EMPTY_STRING;
-		if(hasAttributes()) {
-			for(Entry<String, String> e : fAttributes.entrySet()){
-				if(!s.isEmpty())
-				 {
-					s += ", "; //$NON-NLS-1$
-				}
-				s += e.getKey();
-				s += "=\""; //$NON-NLS-1$
-				s += e.getValue();
-				s += "\""; //$NON-NLS-1$
-			}
-		}
-		return s;
-	}
-
-	/**
-	 * Splits given string into key-value pairs
-	 * @return string containing keys and values in the form <code>key1="value1", key2="vaule2", ...</code>
+	 * Splits given string into key-value pairs using "," as delimiter
+     * @param attributesString string to split, e.g in format  <code>key1="value1", key2="vaule2", ...</code> 
+	 * @return  Map of key-value String pairs  
 	 */
 	static public Map<String, String> splitString(String attributesString) {
 		if (attributesString == null || attributesString.isEmpty()) {
@@ -404,5 +393,4 @@ public class Attributes implements IAttributes {
 
 		return attributes;
 	}
-
 }

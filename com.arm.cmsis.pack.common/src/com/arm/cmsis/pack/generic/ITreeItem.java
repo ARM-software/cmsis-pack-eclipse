@@ -12,6 +12,8 @@
 package com.arm.cmsis.pack.generic;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 
 /**
@@ -53,7 +55,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 */
 	@SuppressWarnings("unchecked")
 	default T getThisItem() {
-		return (T)this; // we know that this item type is T : T extends ICmsisTreeItem<T>
+		return (T)this; // we know that this item type is T : T extends ITreeItem<T>
 	}
 
 	
@@ -90,23 +92,36 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
      * @param type class type to search
      * @return parent of given type or null if not found
      */
-    @SuppressWarnings("unchecked")
 	default <C> C getParentOfType(Class<C> type) {
     	if(type == null)
     		return null;
     	for(T parent = getParent(); parent != null; parent = parent.getParent()) {
     		if(type.isInstance(parent))
-    			return (C)parent;
+    			return type.cast(parent);
     	}
     	return null;
     }
 	
+	/**
+	 * Returns collection of children of specified type
+	 * @param type type class type to search
+	 * @return collection of sub-items matching given type, empty if none is found
+	 */
+	default <C> Collection<C> getChildrenOfType(Class<C> type) {
+		if(!hasChildren())
+			return new LinkedList<C>();
+		return getChildren().stream()
+			.filter(c -> type.isInstance(c))
+			.map(c -> type.cast(c))
+			.collect(Collectors.toList());
+	}
 
 	/**
 	 * Returns list of of child items
 	 * @return list of child items or null if item has no child elements 
 	 */
 	Collection<? extends T> getChildren(); 
+	
 	
 	/**
 	 * Returns list of of effective child items.
@@ -175,13 +190,11 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 */
 	String getFirstChildText(final String key);
 
-
 	/**
 	 * Searches child collection for the first item corresponding to the given class type
      * @param type class type to search
 	 * @return child item if found, null otherwise
 	 */
-	 @SuppressWarnings("unchecked")
 	 default <C> C getFirstChildOfType(Class<C> type) {
 		 if(type == null)
 			 return null;
@@ -190,7 +203,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 			 return null;
 		 for(T child : children ) {
 			 if(type.isInstance(child))
-				 return (C)child;
+				 return type.cast(child);
 		 }
 		 return null;
 	 }

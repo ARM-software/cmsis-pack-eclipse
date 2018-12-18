@@ -16,9 +16,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.cdt.managedbuilder.core.BuildException;
+import org.eclipse.cdt.managedbuilder.core.IBuildObject;
 import org.eclipse.cdt.managedbuilder.core.IConfiguration;
 import org.eclipse.cdt.managedbuilder.core.IHoldsOptions;
 import org.eclipse.cdt.managedbuilder.core.IOption;
+import org.eclipse.cdt.managedbuilder.core.IResourceInfo;
 import org.eclipse.cdt.managedbuilder.core.ManagedBuildManager;
 
 import com.arm.cmsis.pack.build.IBuildSettings;
@@ -78,7 +80,7 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 
 	
 	@Override
-	protected void updateRteOption(int oType, IConfiguration configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
+	protected void updateRteOption(int oType, IBuildObject configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
 
 		switch(oType) {	
 		case  IBuildSettings.LMISC_OPTION:
@@ -90,7 +92,7 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 		super.updateRteOption(oType, configuration, tool, option, buildSettings);
 	}
 
-	protected void updateLinkerMiscOption(IConfiguration configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
+	protected void updateLinkerMiscOption(IBuildObject configuration, IHoldsOptions tool, IOption option, IBuildSettings buildSettings) throws BuildException {
 		
 		String  value = option.getStringValue();
 		
@@ -112,8 +114,10 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
 		if(floatAbi != null && !floatAbi.isEmpty()) {
 			value += SPACE + MFABI + EQUAL + floatAbi;
 		}
-		
-		ManagedBuildManager.setOption(configuration, tool, option, value);
+		if(configuration instanceof IConfiguration)
+			ManagedBuildManager.setOption((IConfiguration)configuration, tool, option, value);
+		else if(configuration instanceof IResourceInfo)
+			ManagedBuildManager.setOption((IResourceInfo)configuration, tool, option, value);
 	}
 
 	@Override

@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.info;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -69,4 +70,10 @@ public interface ICpDeviceInfo extends ICpItemInfo, IEvaluationResult {
 	 * @return brief memory description
 	 */
 	String getMemorySummary();
+	
+	/**
+	 * Returns absolute path of a dbgconf file copied to project 
+	 * @return absolute dbgconf filename or empty string if no file is available
+	 */
+	default String getDgbConfFileName() { return CmsisConstants.EMPTY_STRING;}
 }

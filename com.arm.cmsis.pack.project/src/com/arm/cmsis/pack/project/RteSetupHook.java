@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeListener;
 import org.eclipse.core.runtime.jobs.IJobManager;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.ui.PlatformUI;
 
 /**
  * The purpose of the class is to hook in project load process and get notified when .cproject is loaded.<br> 
@@ -44,8 +45,10 @@ public class RteSetupHook extends CConfigurationDataProvider{
 	 * Default constructor gets called at earlier stages of CCorePlugin initialization 
 	 */
 	public RteSetupHook() {
-
-		// check if IIndexManager CCorePlugin is already initialized (very unlikely)
+		if(!PlatformUI.isWorkbenchRunning()) {
+			return; // do not register hooks in headless mode
+		}
+		// check if IIndexManager CCorePlugin is already initialized
 		IIndexManager indexManager = CCorePlugin.getIndexManager();
 		if(indexManager != null) {
 			initRteSetupParticipant(); 

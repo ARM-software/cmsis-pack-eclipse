@@ -43,7 +43,6 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
@@ -57,6 +56,7 @@ import com.arm.cmsis.pack.ui.IStatusMessageListener;
 import com.arm.cmsis.pack.ui.OpenURL;
 import com.arm.cmsis.pack.ui.StatusMessageListerenList;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
+import com.arm.cmsis.pack.utils.FullDeviceName;
 import com.arm.cmsis.pack.utils.WildCards;
 
 
@@ -451,7 +451,7 @@ public class RteDeviceSelectorWidget extends Composite {
 			mem = fDeviceInfo.getMemorySummary();
 			// this happens in the import process, when the device is not installed
 			if (deviceName.isEmpty()) {
-				deviceName = fDeviceInfo.getDeviceName();
+				deviceName = fDeviceInfo.getFullDeviceName();
 			}
 			if (vendorName.isEmpty()) {
 				vendorName = fDeviceInfo.getVendor();
@@ -664,7 +664,7 @@ public class RteDeviceSelectorWidget extends Composite {
 			if(item != null ){
 				selectItem(item);
 			} else {
-				String message = NLS.bind(CpStringsUI.RteDeviceSelectorWidget_DeviceNotFound, CpItem.getDeviceName(deviceInfo.attributes()));
+				String message = NLS.bind(CpStringsUI.RteDeviceSelectorWidget_DeviceNotFound, FullDeviceName.getFullDeviceName(deviceInfo.attributes()));
 				updateStatus(message);
 			}
 			updateControls();

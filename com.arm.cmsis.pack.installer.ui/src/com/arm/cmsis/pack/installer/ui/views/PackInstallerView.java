@@ -11,6 +11,10 @@
 
 package com.arm.cmsis.pack.installer.ui.views;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuManager;
@@ -20,9 +24,9 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.IContentProvider;
+import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
@@ -56,10 +60,12 @@ import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
+import com.arm.cmsis.pack.installer.ui.ButtonId;
 import com.arm.cmsis.pack.installer.ui.CpInstallerPlugInUI;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.installer.ui.PackInstallerViewController;
@@ -70,9 +76,10 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
  * Base class for all the views in pack manager perspective
  */
 public abstract class PackInstallerView extends ViewPart implements IRteEventListener, ISelectionListener {
-
+	protected static final int COLNAME = 0;
 	protected static final int COLBUTTON = 1;
 	protected static final int COLURL = 1;
+	protected static final int COLDESC = 2;
 
 	protected PackInstallerViewController fViewController;
 
@@ -95,21 +102,40 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 	Action fCollapseItemAction = null;
 	Action fDoubleClickAction = null;
 	Action fShowPackProperties = null;
-
-
-	static ICpItem getCpItem(Object obj) {
-		if (obj instanceof ICpItem) {
-			return (ICpItem)obj;
-		}
-		return null;
-	}
+	Action fCopyRepository = null;
+	Action fCopyTag = null;
 
 
 	public PackInstallerView() {
 		fViewController = CpInstallerPlugInUI.getViewController();
 	}
 
-
+	protected String getButtonString(ButtonId buttonId) {
+		switch(buttonId) {
+		case BUTTON_UPTODATE: 		return Messages.PackInstallerView_BtUpToDate;
+		case BUTTON_OFFLINE: 		return Messages.PackInstallerView_BtOffline;
+		case BUTTON_DEPRECATED: 	return Messages.PackInstallerView_BtDeprecated;
+		case BUTTON_INSTALL: 		return Messages.PackInstallerView_BtInstall;
+		case BUTTON_INSTALL_PLUS: 	return Messages.PackInstallerView_BtInstallPlus;
+		case BUTTON_RESOLVE:		return Messages.PackInstallerView_BtResolve;
+		case BUTTON_UPDATE:			return Messages.PackInstallerView_BtUpdate;
+		case BUTTON_UPDATE_PLUS:	return Messages.PackInstallerView_BtUpdatePlus;
+		case BUTTON_UNPACK:			return Messages.PackInstallerView_BtUnpack;
+		case BUTTON_UNPACK_PLUS:	return Messages.PackInstallerView_BtUnpackPlus;
+		case BUTTON_REMOVE:			return Messages.PackInstallerView_BtRemove;
+		case BUTTON_DELETE:			return Messages.PackInstallerView_BtDelete;
+		case BUTTON_DELETE_ALL:		return Messages.PackInstallerView_BtDeleteAll;
+		case BUTTON_COPY:			return Messages.PackInstallerView_BtCopy;
+		case BUTTON_REPOSITORY:		return Messages.PackInstallerView_BtRepository;
+		case BUTTON_COPY_REPOSITORY:return Messages.PackInstallerView_BtCopyRepository;
+		case BUTTON_COPY_TAG:		return Messages.PackInstallerView_BtCopyTag;
+		case BUTTON_1PACK:			return Messages.PackInstallerView_Bt1Pack;
+		case BUTTON_PACKS:			return Messages.PackInstallerView_BtPacks;
+		case BUTTON_IMPORT:			return Messages.PackInstallerView_BtImport;
+		default: 					return Messages.PackInstallerView_BtUndefined;
+		}
+	}
+	
 	@Override
 	public void dispose() {
 		//viewController.selectionChanged(this, null);
@@ -244,7 +270,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 			@Override
 			protected boolean isLeafMatch(final Viewer viewer, final Object element) {
 				TreeViewer treeViewer = (TreeViewer) viewer;
-				ColumnLabelProvider labelProvider = (ColumnLabelProvider) treeViewer.getLabelProvider(0);
+				ILabelProvider labelProvider =  (ILabelProvider) treeViewer.getLabelProvider(0);
 				String labelText = labelProvider.getText(element);
 				if(wordMatches(labelText)) {
 					return true;
@@ -405,14 +431,72 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 			public void run() {
 				ISelection selection = fViewer.getSelection();
 				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				if (fViewer.getExpandedState(obj)) {
-					fViewer.collapseToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
-				} else if (fViewer.isExpandable(obj)) {
-					fViewer.expandToLevel(obj, 1);
+				if (obj != null) {
+					if (fViewer.getExpandedState(obj)) {
+						fViewer.collapseToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
+					} else if (fViewer.isExpandable(obj)) {
+						fViewer.expandToLevel(obj, 1);
+					}
 				}
 			}
 		};
 
+		fCopyRepository = new Action() {
+
+			@Override
+			public void run() {
+				Toolkit toolkit =  Toolkit.getDefaultToolkit();
+				Clipboard cb = toolkit.getSystemClipboard();
+				ISelection selection = fViewer.getSelection();
+				Object obj = ((IStructuredSelection)selection).getFirstElement();
+				if(obj instanceof ICpPack) {
+					ICpPack pack = (CpPack)obj;
+					if (pack.getReleases() != null) {
+						for (ICpItem release : pack.getReleases()) {
+							if (release.getVersion().equals(pack.getVersion())) {
+								StringSelection sel = new StringSelection(release.getAttribute(CmsisConstants.URL));
+								cb.setContents(sel, null);
+								break;
+							}
+						}
+					}
+					
+				}
+				super.run();
+			}
+			
+		};
+		fCopyRepository.setText(Messages.PackInstallerView_BtCopyRepository);
+		fCopyRepository.setToolTipText(Messages.PackInstallerView_BtCopyRepository);
+		
+		fCopyTag = new Action() {
+
+			@Override
+			public void run() {
+				Toolkit toolkit =  Toolkit.getDefaultToolkit();
+				Clipboard cb = toolkit.getSystemClipboard();
+				ISelection selection = fViewer.getSelection();
+				Object obj = ((IStructuredSelection)selection).getFirstElement();
+				if(obj instanceof ICpPack) {
+					ICpPack pack = (CpPack)obj;
+					if (pack.getReleases() != null) {
+						for (ICpItem release : pack.getReleases()) {
+							if (release.getVersion().equals(pack.getVersion())) {
+								StringSelection sel = new StringSelection(release.getAttribute(CmsisConstants.TAG));
+								cb.setContents(sel, null);
+								break;
+							}
+						}
+					}
+					
+				}
+				super.run();
+			}
+			
+		};
+		fCopyTag.setText(Messages.PackInstallerView_BtCopyTag);
+		fCopyTag.setToolTipText(Messages.PackInstallerView_BtCopyTag);
+		
 		fViewer.addDoubleClickListener(event -> fDoubleClickAction.run());
 	}
 
@@ -485,15 +569,45 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 				}
 			}
 		}
-		ICpPack pack = PackInstallerViewController.getPackFromSelection(fViewer.getSelection());
-		if(pack != null && (isFilterSource() || isFilterClient())) {
-			manager.add(new Separator());
-			manager.add(fShowPackProperties);
-		}
 
 		if(isFilterSource()) {
 			manager.add(new Separator());
 			manager.add(fRemoveSelection);
+		}
+
+		ICpPack pack = PackInstallerViewController.getPackFromSelection(fViewer.getSelection());
+		if(pack == null) {
+			return;
+		}
+		if(isFilterSource() || isFilterClient()) {
+			manager.add(new Separator());
+			manager.add(fShowPackProperties);
+		}
+		if (pack.getReleases() == null)
+			return;
+		ICmsisItem item = getSelectedItem();
+		if (item instanceof ICpItem) {
+			String selectedVersion = ((ICpItem) item).getAttribute(CmsisConstants.VERSION);
+			for (ICpItem release : pack.getReleases()) {
+				String releaseVersion = release.getVersion();
+				if (releaseVersion.equals(selectedVersion)) {
+					String repo = release.getAttribute(CmsisConstants.URL);
+					String tag = release.getAttribute(CmsisConstants.TAG);
+					boolean sep = false;
+					if (repo != CmsisConstants.EMPTY_STRING) {
+						manager.add(new Separator());
+						manager.add(fCopyRepository);
+						sep = true;
+					}
+					if (tag != CmsisConstants.EMPTY_STRING) {
+						if (!sep) {
+							manager.add(new Separator());
+						}
+						manager.add(fCopyTag);
+					}
+					break;
+				}
+			}
 		}
 	}
 
@@ -511,9 +625,38 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 			updateOnlineState(); // already in UI thread
 			return;
 		}
+		
 		Display.getDefault().asyncExec(() -> handleRteEvent(event));
 	}
 
+	protected void enableActions(boolean en) {
+		if (fHelpAction != null)
+			fHelpAction.setEnabled(en);
+		if (fRemoveSelection != null)
+			fRemoveSelection.setEnabled(en);
+		if (fExpandAction != null)
+			fExpandAction.setEnabled(en);
+		if (fExpandItemAction != null)
+			fExpandItemAction.setEnabled(en);
+		if (fCollapseAction != null)
+			fCollapseAction.setEnabled(en);
+		if (fCollapseItemAction != null)
+			fCollapseItemAction.setEnabled(en);
+		if (fDoubleClickAction != null)
+			fDoubleClickAction.setEnabled(en);
+		if (fShowPackProperties != null)
+			fShowPackProperties.setEnabled(en);
+		if (fCopyRepository != null)
+			fCopyRepository.setEnabled(en);
+		if (fCopyTag != null)
+			fCopyTag.setEnabled(en);
+		
+		IActionBars bars = getViewSite().getActionBars();
+		bars.updateActionBars();
+		
+		fViewer.refresh();
+	}
+	
 	protected void updateOnlineState() {
 		if(getViewSite() == null || getViewSite().getActionBars() == null) {
 			return;
@@ -538,6 +681,13 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 		case RteEvent.PACK_REMOVE_JOB_FINISHED:
 		case RteEvent.PACK_DELETE_JOB_FINISHED:
 			fViewer.refresh();
+			break;
+
+		case RteEvent.PACK_UPDATE_JOB_STARTED:
+			enableActions(false);
+			break;
+		case RteEvent.PACK_UPDATE_JOB_FINISHED:
+			enableActions(true);
 			break;
 		default:
 			return;
@@ -564,7 +714,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 		} else if (pm.getPacks() == null || !pm.getPacks().hasChildren()) {
 			fLink.setText(NLS.bind(Messages.PackInstallerView_CheckForUpdatesLink, rootDir));
 			fLinkListener = (event) -> {
-				CpInstallerPlugInUI.startCheckForUpdates();
+				CpPlugInUI.startCheckForUpdates();
 			};
 			fLink.addListener(SWT.Selection, fLinkListener);
 			topControl = fLink;

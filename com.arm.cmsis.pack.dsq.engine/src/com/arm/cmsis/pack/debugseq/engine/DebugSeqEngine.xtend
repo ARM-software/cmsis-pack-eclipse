@@ -102,6 +102,8 @@ import com.google.inject.Provider
 import org.eclipse.xtext.validation.IResourceValidator
 import com.arm.cmsis.pack.debugseq.generator.IDsqScriptGenerator
 import com.arm.cmsis.pack.debugseq.generator.DsqScriptGeneratorFactory
+import com.arm.cmsis.pack.common.CmsisConstants
+import java.nio.file.Files
 
 class DebugSeqEngine implements IDsqEngine {
 	
@@ -212,34 +214,30 @@ class DebugSeqEngine implements IDsqEngine {
 	
 	def private void initDebugVariables() throws DsqException {
 		val dv = if(deviceInfo.debugConfiguration === null) null else deviceInfo.debugConfiguration.debugVars
-		val initialText = if (dv === null) '' else dv.text
-		val sb = new StringBuilder(initialText + '\n')
+		val attributes =  if (dv === null) '' else ' ' + dv.attributes.toXmlString
+		val initialBody = if (dv === null) '' else dv.text
+		val sb = new StringBuilder( '<debugvars' + attributes + '>' + '\n')
 		sb.append('''
-			«IF dv === null»
-			<debugvars>
-			«ENDIF»
+		    «initialBody»
 			__var «IDsqContext::AP» = 0;
 			__var «IDsqContext::DP» = 0;
 			__var «IDsqContext::PROTOCOL» = 0;
 			__var «IDsqContext::CONNECTION» = 0;
 			__var «IDsqContext::TRACEOUT» = 0;
 			__var «IDsqContext::ERRORCONTROL» = 0;
-			«IF dv === null»
-			</debugvars>
-			«ENDIF»
 		''')
 		if (dv !== null) {
-			val text = dv.text
-			if (dv.dgbConfFileName !== null && !dv.dgbConfFileName.empty) {
-				sb.append(readFile(Paths.get(dv.dgbConfFileName).toUri().toURL()))
+			val dgbConfFileName = deviceInfo.dgbConfFileName; 
+			if (dgbConfFileName !== null && !dgbConfFileName.empty) {
+				val path = Paths.get(dgbConfFileName);
+				if (Files.exists(path)) {
+					val text = readFile(path.toUri().toURL())
+					sb.append(text)
+				}
 			}
-			dv.text = sb.toString
-			val xmlParser = new PdscParser
-			debugVars = xmlParser.writeToXmlString(dv).postProcess
-			dv.text = text
-		} else {
-			debugVars = sb.toString
-		}
+		}		
+		sb.append('</debugvars>')
+		debugVars = sb.toString
 	}
 	
 	def private void checkPredefinedVariables(IDsqContext dsqContext) {
@@ -298,19 +296,25 @@ class DebugSeqEngine implements IDsqEngine {
 		return getResource().getContents().get(0) as DebugSeqModel;
 	}
 	
+	def private getSequencesAsString(Map<String, ICpSequence> sequences) {
+		if(sequences === null || sequences.isEmpty)
+			return CmsisConstants.EMPTY_STRING;	
+		val xmlParser = new PdscParser
+		return sequences.values.map[xmlParser.writeToXmlString(it)].join('\n').postProcess
+	}
+	
 	def private Resource getResource() {
 		if (resource !== null) {
 			return resource
 		}
 		
 		initDebugVariables
-		val xmlParser = new PdscParser
-		val sequences = deviceInfo.debugConfiguration.sequences.values.map[xmlParser.writeToXmlString(it)].join('\n').postProcess
+		val sequences = if(deviceInfo.debugConfiguration === null) null else deviceInfo.debugConfiguration.sequences
 		val modelString = '''
 			«debugVars»
 			<sequences>
-			«sequences»
-			«addDefaultSeqs(deviceInfo.debugConfiguration.sequences)»
+			«getSequencesAsString(sequences)»
+			«addDefaultSeqs(sequences)»
 			</sequences>
 		'''
 		
@@ -333,7 +337,7 @@ class DebugSeqEngine implements IDsqEngine {
     		throw new DsqException("Error while validating the debug sequences in pack file:\n"
     			+ deviceInfo.pack.fileName
     			+ "\n\nDevice: "
-    			+ deviceInfo.deviceName
+    			+ deviceInfo.fullDeviceName
     			+ "\n\n"
     			+ errors
     		)
@@ -365,7 +369,7 @@ class DebugSeqEngine implements IDsqEngine {
 	def private addDefaultSeqs(Map<String, ICpSequence> sequences) {
 		var seqs = ""
 		for (defaultSeqName : defaultSqs) {
-			if (!sequences.containsKey(defaultSeqName)) {
+			if (sequences === null || !sequences.containsKey(defaultSeqName)) {
 				seqs += readFile(new URL("platform:/plugin/com.arm.cmsis.pack.dsq.engine/default_sequences/" + defaultSeqName + ".dsq"))
 			}
 		}

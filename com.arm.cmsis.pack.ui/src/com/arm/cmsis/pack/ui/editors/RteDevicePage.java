@@ -12,12 +12,10 @@
 package com.arm.cmsis.pack.ui.editors;
 
 import org.eclipse.jface.window.Window;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PlatformUI;
 
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.rte.IRteModelController;
@@ -25,8 +23,10 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.IHelpContextIds;
 import com.arm.cmsis.pack.ui.widgets.RteDeviceInfoWidget;
+import com.arm.cmsis.pack.ui.widgets.RteDeviceInfoWidgetWrapper;
+import com.arm.cmsis.pack.ui.widgets.RteWidget;
 import com.arm.cmsis.pack.ui.wizards.RteDeviceSelectorWizard;
-import com.arm.cmsis.pack.ui.wizards.RteWizardDialog;
+import com.arm.cmsis.pack.ui.wizards.OkWizardDialog;
 
 /**
  * Editor page that wraps RteManagerWidget
@@ -34,47 +34,52 @@ import com.arm.cmsis.pack.ui.wizards.RteWizardDialog;
  */
 public class RteDevicePage extends RteModelEditorPage {
 
-	private RteDeviceInfoWidget deviceWidget = null;
-	
 	public RteDevicePage() {
 	}
 
-	
+
 	@Override
-	public void setModelController(IRteModelController model) {
-		super.setModelController(model);
-		deviceWidget.setModelController(model);
-		update();
+	protected RteWidget<IRteModelController> createContentWidget() {
+		return new RteDeviceInfoWidgetWrapper();
 	}
 
 
 	@Override
-	public Composite getFocusWidget() {
-		return deviceWidget;
+	protected String getHelpID() {
+		return  IHelpContextIds.DEVICE_PAGE;
+	}
+
+
+	@Override
+	protected Image getImage() {
+		return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+	}
+
+
+	@Override
+	protected String getLabel() {
+		return CpStringsUI.RteDevicePage_Device;
+	}
+
+	@Override
+	public boolean isModified() {
+		if(getModelController() != null)
+			return getModelController().isDeviceModified();
+		return false;
 	}
 
 
 	@Override
 	public void createPageContent(Composite parent) {
-		deviceWidget = new RteDeviceInfoWidget(parent);
-		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true);
-		deviceWidget.setLayoutData(gd);
-
+		RteDeviceInfoWidgetWrapper wrapper = (RteDeviceInfoWidgetWrapper) getContentWidget();
+		wrapper.createControl(parent);
+		RteDeviceInfoWidget deviceWidget = wrapper.getDeviceInfoWidget();
 		deviceWidget.setSelectionAdapter( new SelectionAdapter(){
 	    	 @Override
 	         public void widgetSelected(SelectionEvent e) {
 	    		 changeDevice();
 	    	}
 	    });
-		
-    	headerWidget.setFocusWidget(getFocusWidget());
-    	PlatformUI.getWorkbench().getHelpSystem().setHelp(getFocusWidget(), IHelpContextIds.DEVICE_PAGE);
-	}
-
-	@Override
-	protected void setupHeader() {
-    	headerWidget.setLabel(CpStringsUI.RteDevicePage_Device, CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE));
-    	super.setupHeader();
 	}
 
 	protected void changeDevice() {
@@ -82,7 +87,7 @@ public class RteDevicePage extends RteModelEditorPage {
 		if(model != null){
 			RteDeviceSelectorWizard wizard = 
 					new RteDeviceSelectorWizard(CpStringsUI.RteDeviceSelectorPage_SelectDevice, model.getDevices(), model.getDeviceInfo());
-			RteWizardDialog dlg = new RteWizardDialog(deviceWidget.getShell(), wizard);
+			OkWizardDialog dlg = new OkWizardDialog(getFocusWidget().getShell(), wizard);
 			dlg.setPageSize(600, 400); // limit initial size 
 
 			if(dlg.open() == Window.OK) {
@@ -90,25 +95,6 @@ public class RteDevicePage extends RteModelEditorPage {
 				//deviceWidget.setDeviceInfo(deviceInfo);
 				model.setDeviceInfo(deviceInfo);	
 			}
-		}
-	}
-
-
-	@Override
-	public void update() {
-		if (headerWidget != null && getModelController() != null) {
-			bModified = getModelController().isDeviceModified();
-			headerWidget.setModified(bModified);
-		}
-		refresh();
-		super.update();
-	}
-
-	@Override
-	public void refresh() {
-		IRteModelController modelController = getModelController();
-		if(deviceWidget!= null && modelController != null) {
-			deviceWidget.setDeviceInfo(modelController.getDeviceInfo());
 		}
 	}
 }

@@ -9,6 +9,7 @@
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
  *******************************************************************************/
 
+
 package com.arm.cmsis.pack.common;
 
 /**
@@ -21,6 +22,7 @@ public class CmsisConstants {
 	 */
 	static public final String EMPTY_STRING = "";		//$NON-NLS-1$
 
+	static public final String COLON		= ":";		//$NON-NLS-1$
 	static public final String DOUBLE_COLON	= "::";		//$NON-NLS-1$
 
 	static public final String ARM			= "ARM";	//$NON-NLS-1$
@@ -28,12 +30,17 @@ public class CmsisConstants {
 	static public final String CMSIS		= "CMSIS";	//$NON-NLS-1$
 	static public final String PACK			= "pack";	//$NON-NLS-1$
 
+	static public final String PACK_ID 		= "packId";		//$NON-NLS-1$
+	
 	// commonly used values for component classes and groups
 	static public final String RTOS			= "RTOS";	//$NON-NLS-1$
 	static public final String Core			= "Core";	//$NON-NLS-1$
 	static public final String Device		= "Device";	//$NON-NLS-1$
 	static public final String Startup		= "Startup";//$NON-NLS-1$
-
+	static public final String Device_Startup= Device + '_' + Startup;
+	static public final String CMSIS_Core	= CMSIS + '_' + Core;
+	static public final String CMSIS_RTOS	= CMSIS + '_' + RTOS;
+	
 	// commonly used tags and attributes
 	static public final String CONDITION 	= "condition";		//$NON-NLS-1$
 	static public final String VENDOR		= "vendor";			//$NON-NLS-1$
@@ -57,6 +64,8 @@ public class CmsisConstants {
 	static public final String T_ATTRIBUTE_PREFIX = "T";		//$NON-NLS-1$
 
 	static public final String CBUNDLE 		= "Cbundle";		//$NON-NLS-1$
+	static public final String CBUNDLEVERSION = "Cbundleversion";		//$NON-NLS-1$
+
 	static public final String CGROUP 		= "Cgroup";			//$NON-NLS-1$
 	static public final String CCLASS 		= "Cclass";			//$NON-NLS-1$
 	static public final String CSUB 		= "Csub";			//$NON-NLS-1$
@@ -83,7 +92,27 @@ public class CmsisConstants {
 	static public final String DENDIAN		= "Dendian";		//$NON-NLS-1$
 	static public final String DCLOCK		= "Dclock";			//$NON-NLS-1$
 
+	static public final String CATEGORY 	= "category";		//$NON-NLS-1$
+	static public final String ATTR 		= "attr";			//$NON-NLS-1$
+	static public final String PATH 		= "path";			//$NON-NLS-1$
+	
 	static public final String HEADER		= "header";			//$NON-NLS-1$
+	static public final String INCLUDE		= "include";		//$NON-NLS-1$
+	static public final String SOURCE		= "source";			//$NON-NLS-1$
+	static public final String SOURCE_ASM	= "sourceAsm";		//$NON-NLS-1$
+	static public final String SOURCE_C		= "sourceC";		//$NON-NLS-1$
+	static public final String SOURCE_CPP	= "sourceCpp";		//$NON-NLS-1$
+	static public final String LIBRARY		= "library";		//$NON-NLS-1$
+	static public final String OBJECT		= "object";			//$NON-NLS-1$
+	static public final String SRC			= "src";			//$NON-NLS-1$
+	static public final String SVD 			= "svd";			//$NON-NLS-1$
+	static public final String SDF 			= "sdf";			//$NON-NLS-1$
+	static public final String IMAGE 		= "image";			//$NON-NLS-1$
+	static public final String UTILITY 		= "utility";		//$NON-NLS-1$
+	static public final String LINKER_SCRIPT = "linkerScript";	//$NON-NLS-1$	
+	static public final String PRE_INCLUDE_GLOBAL= "preIncludeGlobal"; //$NON-NLS-1$
+	static public final String PRE_INCLUDE_LOCAL = "preIncludeLocal"; //$NON-NLS-1$
+
 	static public final String DEFINE		= "define";			//$NON-NLS-1$
 	static public final String PDEFINE		= "Pdefine";		//$NON-NLS-1$
 	static public final String SELECT		= "select";			//$NON-NLS-1$
@@ -118,11 +147,6 @@ public class CmsisConstants {
 	static public final String CLASS		= "class";			//$NON-NLS-1$
 	static public final String METHOD		= "method";			//$NON-NLS-1$
 
-	static public final String CATEGORY 	= "category";		//$NON-NLS-1$
-	static public final String ATTR 		= "attr";			//$NON-NLS-1$
-	static public final String SRC 			= "src";			//$NON-NLS-1$
-	static public final String SVD 			= "svd";			//$NON-NLS-1$
-	static public final String SDF 			= "sdf";			//$NON-NLS-1$
 
 	static public final String VERSION_MODE	= "versionMatchMode";//$NON-NLS-1$
 
@@ -156,7 +180,7 @@ public class CmsisConstants {
 	static public final String DSP			= "DSP";				//$NON-NLS-1$
 	static public final String NO_DSP		= "NO_DSP";			//$NON-NLS-1$
 
-	static public final String SECURE		= "secure";				//$NON-NLS-1$
+	static public final String SECURE		= "Secure";				//$NON-NLS-1$
 	static public final String NON_SECURE	= "Non-secure";			//$NON-NLS-1$
 
 
@@ -188,11 +212,15 @@ public class CmsisConstants {
 	static public final String PROCESSOR_TAG 	= "processor";	//$NON-NLS-1$
 	static public final String TAXONOMY_TAG		= "taxonomy";	//$NON-NLS-1$
 	static public final String EXAMPLE_TAG		= "example";	//$NON-NLS-1$
-	static public final String EXAMPLES_TAG		= "examples";	//$NON-NLS-1$
-	static public final String REQUIREMENTS_TAG	= "requirements";	//$NON-NLS-1$
+	static public final String EXAMPLES_TAG		= "examples";	 //$NON-NLS-1$
+	static public final String REQUIREMENTS_TAG	= "requirements"; //$NON-NLS-1$	
 
 
 	static public final String RTE_COMPONENTS_H = "RTE_Components_h"; //$NON-NLS-1$
+	static public final String PRE_INCLUDE_GLOBAL_H = "Pre_Include_Global_h"; //$NON-NLS-1$
+	static public final String PRE_INCLUDE_LOCAL_COMPONENT_H = "Pre_Include_Local_Component_h"; //$NON-NLS-1$
+
+	
 	static public final String RTE				= "RTE"; 		//$NON-NLS-1$
 	static public final String RTEDIR			= "RTE/"; 		//$NON-NLS-1$
 	static public final String _RTE_			= "_RTE_"; 		//$NON-NLS-1$
@@ -203,6 +231,8 @@ public class CmsisConstants {
 	static public final String DEVICE_SPECIFIC	= "Device Specific";	//$NON-NLS-1$
 	static public final String GENERIC			= "Generic";	//$NON-NLS-1$
 	static public final String PREVIOUS 		= "Previous";	//$NON-NLS-1$
+	static public final String Reset_Handler 	= "Reset_Handler";	//$NON-NLS-1$
+	static public final String Vectors 			= "Vectors";	//$NON-NLS-1$
 
 	static public final String DOT_SZONE		= ".szone";		//$NON-NLS-1$
 	static public final String DOT_PZONE		= ".pzone";		//$NON-NLS-1$
@@ -278,6 +308,7 @@ public class CmsisConstants {
 	static public final String CLOCK			= "clock";		//$NON-NLS-1$
 	static public final String TYPE				= "type";		//$NON-NLS-1$
 	static public final String ALIAS			= "alias";		//$NON-NLS-1$
+	static public final String AS				= "as";			//$NON-NLS-1$
 
 	static public final String RAMSTART			= "RAMstart";	//$NON-NLS-1$
 	static public final String RAMSIZE			= "RAMsize";	//$NON-NLS-1$
@@ -341,23 +372,7 @@ public class CmsisConstants {
 
 	static public final long DEFAULT_DEBUG_CLOCK = 10000000L;
 	static public final long DEFAULT_DATAPATCH_MASK = 0xFFFFFFFFFFFFFFFFL;
-
-	// view buttons
-	static public final String BUTTON_UPTODATE		= "Up to date"; //$NON-NLS-1$
-	static public final String BUTTON_OFFLINE		= "Offline"; //$NON-NLS-1$
-	static public final String BUTTON_DEPRECATED	= "Deprecated"; //$NON-NLS-1$
-	static public final String BUTTON_INSTALL		= "Install"; //$NON-NLS-1$
-	static public final String BUTTON_INSTALL_PLUS	= "Install+"; //$NON-NLS-1$
-	static public final String BUTTON_RESOLVE		= "Resolve"; //$NON-NLS-1$
-	static public final String BUTTON_UPDATE		= "Update"; //$NON-NLS-1$
-	static public final String BUTTON_UPDATE_PLUS	= "Update+"; //$NON-NLS-1$
-	static public final String BUTTON_UNPACK		= "Unpack"; //$NON-NLS-1$
-	static public final String BUTTON_UNPACK_PLUS	= "Unpack+"; //$NON-NLS-1$
-	static public final String BUTTON_REMOVE		= "Remove"; //$NON-NLS-1$
-	static public final String BUTTON_DELETE		= "Delete"; //$NON-NLS-1$
-	static public final String BUTTON_DELETE_ALL	= "Delete All"; //$NON-NLS-1$
-	static public final String BUTTON_COPY			= "Copy"; //$NON-NLS-1$
-
+	
 	// file extensions
 	static public final String EXT_PDSC 		= ".pdsc"; //$NON-NLS-1$
 	static public final String EXT_GPDSC 		= ".gpdsc"; //$NON-NLS-1$
@@ -381,8 +396,21 @@ public class CmsisConstants {
 	static public final String REPO_KEIL_PINDEX_FILE = "index.pidx"; //$NON-NLS-1$
 	static public final String REPO_KEIL_INDEX_URL = REPO_KEIL_PACK_SERVER + REPO_KEIL_PINDEX_FILE;
 
-	static public final String ZERO	= "0"; //$NON-NLS-1$
+	public static final String LOCAL_REPOSITORY_PIDX = "local_repository.pidx"; //$NON-NLS-1$
+	public static final String LOCAL_FILE_URL = "file://localhost/"; //$NON-NLS-1$
+	public static final String TAG = "tag"; //$NON-NLS-1$
+	public static final String REPOSITORY = "repository"; //$NON-NLS-1$
+	public static final String TIMESTAMP = "timestamp"; //$NON-NLS-1$
+	public static final String INDEX = "index"; //$NON-NLS-1$
+	public static final String SCHEMAVERSION = "schemaVersion"; //$NON-NLS-1$
+	public static final String SCHEMAINSTANCE = "http://www.w3.org/2001/XMLSchema-instance"; //$NON-NLS-1$
+	public static final String SCHEMALOCATION = "xs:noNamespaceSchemaLocation"; //$NON-NLS-1$
+	public static final String DATETIMEFORMAT = "yyyy-MM-dd'T'HH:mm:ss"; //$NON-NLS-1$
+	public static final String PDSC = "pdsc"; //$NON-NLS-1$
+	public static final String PINDEX = "pindex"; //$NON-NLS-1$
 
+	static public final String ZERO	= "0"; //$NON-NLS-1$
+	static public final String ONE	= "1"; //$NON-NLS-1$
 	// paths and variables
 
 	static public final String CMSIS_PACK_ROOT = "cmsis_pack_root";   			//$NON-NLS-1$
@@ -394,6 +422,7 @@ public class CmsisConstants {
 	static public final String DOT_DOWNLOAD = ".Download"; 						//$NON-NLS-1$
 	static public final String DOT_WEB = ".Web";		 						//$NON-NLS-1$
 	static public final String DOT_LOCAL = ".Local";	 						//$NON-NLS-1$
+	static public final String DOT_PROJECT = ".project"; 						//$NON-NLS-1$
 
 	static public final String KEIL =  "Keil";									//$NON-NLS-1$
 
@@ -405,11 +434,19 @@ public class CmsisConstants {
 	static public final String RESOURCES_TAG = "resources";						//$NON-NLS-1$
 	static public final String PERIPHERAL_TAG = "peripheral";					//$NON-NLS-1$
 	static public final String PERIPHERALS_TAG = "peripherals";					//$NON-NLS-1$
+	public static final String INTERRUPT_TAG = "interrupt";						//$NON-NLS-1$
+
 
 	public static final String ZONES_TAG 	 = "zones";							//$NON-NLS-1$
 	public static final String PZONE_TAG 	 = "pzone";							//$NON-NLS-1$
 	public static final String XZONE_TAG 	 = "xzone";							//$NON-NLS-1$
 	public static final String ASSIGN_TAG 	 = "assign";						//$NON-NLS-1$
+
+	public static final String LIST		 	 = "list";						//$NON-NLS-1$
+	public static final String TREE		 	 = "tree";						//$NON-NLS-1$
+
+	public static final String REMOVED		 = "removed";					//$NON-NLS-1$
+	public static final String VALID		 = "valid";						//$NON-NLS-1$
 
 
 	// variable that is used as markers, all are are expanded to empty string
@@ -421,27 +458,45 @@ public class CmsisConstants {
 	static public final String PACK_IDX = "pack.idx"; //$NON-NLS-1$
 
 	static public final String PROJECT_LOCAL_PATH 	= "${workspace_loc:/${ProjName}}/"; //$NON-NLS-1$
+	static public final String PROJECT_NAME			= "${ProjName}/"; //$NON-NLS-1$
 	static public final String PROJECT_ABS_PATH		= "${ProjDirPath}/"; //$NON-NLS-1$
 	static public final String PROJECT_RTE_PATH    	= PROJECT_LOCAL_PATH + RTE;
+	static public final String OUTPUT_FILE_BASE		= "${BuildArtifactFileBaseName}"; //$NON-NLS-1$
+	static public final String OUTPUT_FILE  		= "${BuildArtifactFileName}"; //$NON-NLS-1$
+	static public final String OUTPUT_PATH  		= "${ProjDirPath}/${ConfigName}/"; //$NON-NLS-1$
+	static public final String OUTPUT_ABS_FILE  	= OUTPUT_PATH + OUTPUT_FILE;
+	
 
-	static public final String RTE_RTE_Components_h = RTEDIR + "RTE_Components.h";  //$NON-NLS-1$
-	static public final String CMSIS_device_header = "CMSIS_device_header";  //$NON-NLS-1$
+	static public final String RTE_Components_h = "RTE_Components.h";  //$NON-NLS-1$
+	static public final String RTE_RTE_Components_h = RTEDIR + RTE_Components_h;
+	static public final String Pre_Include_Global_h = "Pre_Include_Global.h";  //$NON-NLS-1$
+	static public final String RTE_Pre_Include_Global_h = RTEDIR + Pre_Include_Global_h;
+	static public final String PROJECT_RTE_Pre_Include_Global_h = PROJECT_RTE_PATH + '/' + Pre_Include_Global_h;
+	static public final String Pre_Include_ 		= "Pre_Include_";  //$NON-NLS-1$
+	static public final String RTE_Pre_Include_ 	= RTEDIR + Pre_Include_;
+	static public final String PROJECT_RTE_Pre_Include_ = PROJECT_RTE_PATH + '/' + Pre_Include_;
+	static public final String CMSIS_device_header = "CMSIS_device_header";  		//$NON-NLS-1$
+    public static final String IMPORT_REPORT_TXT = "ImportReport.txt"; 				//$NON-NLS-1$
+	
 
+	static public final String UV = "uv";  											//$NON-NLS-1$
 
 	// standard key sequences (http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_generators_pg.html)
 	static public final String[] STANDARD_KEY_SEQENCES =
-			new String[]{	
+			new String[]{
 					"$D",   // Directory name corresponding to project's device, equals to #D_@D if @D is not empty, to #D otherwise   //$NON-NLS-1$
 					"#D", 	// Device device item without processor name   //$NON-NLS-1$
 					"@D",   // Processor name if not empty  //$NON-NLS-1$
 					"$P", 	// PATH to current project //$NON-NLS-1$
-					"#P", 	// PATH and name of the current project  //$NON-NLS-1$
+					"#P", 	// PATH and filename name of the current project  //$NON-NLS-1$
+					"@P", 	// name of the current project  //$NON-NLS-1$
 					"$S",	// PATH to PACK folder containing the Device description used by the current project  //$NON-NLS-1$
-					"$K"	// PATH to environment-specific "kernel" directory  //$NON-NLS-1$
+					"$K",	// PATH to environment-specific "kernel" directory  //$NON-NLS-1$
+					"$L",   // PATH to output directory //$NON-NLS-1$
+					"#L",   // Absolute linker output file //$NON-NLS-1$
+					"@L",   // Linker output file base name without extension //$NON-NLS-1$
+					"%L"    // Linker output file name with extension //$NON-NLS-1$
 	};
 
 	static public final String[] LAUNCH_TYPES = new String[]{ECLIPSE, EXE, WEB};
-
-
-
 }

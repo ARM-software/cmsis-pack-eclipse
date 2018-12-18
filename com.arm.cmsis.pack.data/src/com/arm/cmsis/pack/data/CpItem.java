@@ -68,16 +68,10 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	}
 
 	@Override
-	public String getAttribute(String key) {
-		 // Proxy method to get attribute from attributes 
-		return attributes().getAttribute(key, CmsisConstants.EMPTY_STRING);
+	public void invalidate() {
+		fId = null;
+		super.invalidate();
 	}
-
-	@Override	
-	public boolean hasAttribute(String key) {
-		return attributes().hasAttribute(key);
-	}
-
 	
 	@Override
 	public synchronized String getId() {
@@ -438,6 +432,8 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			vendor = getAttribute(CmsisConstants.DVENDOR);
 		} else if(hasAttribute(CmsisConstants.VENDOR)) {
 			return getAttribute(CmsisConstants.VENDOR);
+		} else if(hasAttribute(CmsisConstants.VENDOR)) {
+			return getAttribute(CmsisConstants.CVENDOR);
 		}	
 		if(vendor != null && !vendor.isEmpty()) {
 			return vendor;
@@ -463,6 +459,8 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 	@Override
 	public String getDescription() {
+		if(hasAttribute(CmsisConstants.INFO))
+			return getAttribute(CmsisConstants.INFO);
 		ICpItem descr = getFirstChild(CmsisConstants.DESCRIPTION);
 		if(descr != null) {
 			return descr.getText();
@@ -530,11 +528,6 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
 
 	@Override
-	public String getProcessorName() {
-		return getProcessorName(attributes());
-	}
-
-	@Override
 	public int getPunitIndex() {
 		return getPunitIndex(attributes());
 	}
@@ -544,15 +537,6 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		return getPunitsCount(attributes());
 	}
 	
-	/**
-	 * Returns "Pname" attribute of the element representing device property 
-	 * @param attributes attributes to extract processor name  
-	 * @return processor name or empty string if "pname" attribute not found
-	 */
-	static public String getProcessorName(IAttributes attributes) {
-		return attributes.getAttribute(CmsisConstants.PNAME, CmsisConstants.EMPTY_STRING);
-	}
-
 	/**
 	 * Returns "Punit" attribute as integer
 	 * @param attributes attributes to extract Punit
@@ -570,33 +554,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	static public int getPunitsCount(IAttributes attributes) {
 		return attributes.getAttributeAsInt(CmsisConstants.PUNITS, 1);
 	}
-
 	
-	@Override
-	public String getDeviceName() {
-		return getDeviceName(attributes());
-	}
-	/**
-	 * Returns full device name in form "Name:Pname" 
-	 * @param attributes attributes to construct full device name  
-	 * @return full device name or null if the attributes parameter does not represent device
-	 */
-	static public String getDeviceName(IAttributes attributes) {
-		String deviceName = null;
-		if(attributes.hasAttribute(CmsisConstants.DVARIANT)) {
-			deviceName = attributes.getAttribute(CmsisConstants.DVARIANT);
-		} else if(attributes.hasAttribute(CmsisConstants.DNAME)) {
-			deviceName = attributes.getAttribute(CmsisConstants.DNAME);
-		}
-		
-		if(deviceName != null) {
-			String processorName = getProcessorName(attributes);
-			if(!processorName.isEmpty()) {
-				deviceName += ":" + processorName;  //$NON-NLS-1$
-			}
-		}
-		return deviceName;
-	}
 	
 	@Override
 	public String getBundleName() {
@@ -652,4 +610,8 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		return host == null || host.isEmpty() || host.equals(CmsisConstants.ALL) || host.equals(Utils.getHostType());
 	}
 
+	@Override
+	public boolean isRemoved() {
+		return getAttributeAsBoolean(CmsisConstants.REMOVED, false);
+	}
 }

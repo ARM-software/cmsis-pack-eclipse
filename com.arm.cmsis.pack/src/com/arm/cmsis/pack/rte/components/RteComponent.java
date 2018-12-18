@@ -100,6 +100,8 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 	
 	@Override
 	public void addComponent(ICpComponent cpComponent, int flags) {
+		if(cpComponent == null)
+			return;
 		if(cpComponent.isApi()) {
 			return;
 		}
@@ -185,6 +187,7 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 			variantItem = new RteComponentVariant(this, variant);
 			addChild(variantItem);
 		}
+		variant = variantItem.getName(); // ensure actual variant string to select active variant  
 		
 		// try to get supplied vendor
 		String vendor = ci.getVendor();
@@ -202,6 +205,7 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 			vendorItem = new RteComponentVendor(variantItem, vendor);
 			variantItem.addChild(vendorItem);
 		}
+		 
 		
 		String version = null;
 		if(versionFixed) {
@@ -291,9 +295,6 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 
 	@Override
 	public String getActiveVersion() {
-		if(hasBundle()) {
-			return CmsisConstants.EMPTY_STRING;
-		}
 		return super.getActiveVersion();
 	}
 
@@ -305,15 +306,6 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
 		super.setActiveVersion(version);
 	}
 
-	@Override
-	public boolean hasBundle() {
-		IRteComponentBundle bundle = getParentBundle();
-		if(bundle != null && !bundle.getName().isEmpty()) {
-			return true;
-		}
-		return false;
-	}
-	
 	
 	@Override
 	public Collection<IRteComponent> getSelectedComponents(	Collection<IRteComponent> components) {

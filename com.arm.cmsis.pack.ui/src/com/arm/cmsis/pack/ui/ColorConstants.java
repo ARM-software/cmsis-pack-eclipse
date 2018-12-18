@@ -9,7 +9,7 @@
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
 
-package com.arm.cmsis.pack.ui.tree;
+package com.arm.cmsis.pack.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
@@ -29,6 +29,17 @@ public class ColorConstants {
 	public final static Color COLOR_SUFFICS_BUTTON_TOP = new Color(Display.getCurrent(), new RGB(210, 210, 210));
 	public final static Color COLOR_SUFFICS_BUTTON_BOTTOM= new Color(Display.getCurrent(), new RGB(160, 160, 160));
 	
+	
+	public final static Color COLOR_LINK_FOREGROUND = Display.getCurrent().getSystemColor(SWT.COLOR_LINK_FOREGROUND);
+	public final static Color COLOR_WIDGET_BORDER = Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BORDER);
+	
+	static public final Color GREEN     = new Color(Display.getCurrent(), CpPlugInUI.GREEN);
+	static public final Color YELLOW    = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
+	static public final Color RED       = Display.getCurrent().getSystemColor(SWT.COLOR_RED);
+	static public final Color GRAY      = Display.getCurrent().getSystemColor(SWT.COLOR_GRAY);
+    public final static Color BLACK     = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
+    public final static Color DARK_GRAY = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GRAY);
+
 	
 	public final static int ARC_WIDTH_HEIGHT = 8;
 }

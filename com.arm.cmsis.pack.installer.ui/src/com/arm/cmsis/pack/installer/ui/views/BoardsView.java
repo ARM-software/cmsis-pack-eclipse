@@ -26,10 +26,10 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 
 import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.item.CmsisMapItem;
@@ -75,23 +75,22 @@ public class BoardsView extends PackInstallerView {
 		public Object[] getChildren(Object parentElement) {
 			IRteBoardItem rteBoardDeviceItem = getBoardDeviceTreeItem(parentElement);
 			if (rteBoardDeviceItem != null) {
-				if (ALL_BOARDS.equals(rteBoardDeviceItem.getName())) { // All boards
+				if (rteBoardDeviceItem.isRoot()) { // All boards
 					return rteBoardDeviceItem.getChildArray();
 				}
 				// Normal board
 				Collection<IRteDeviceItem> children = new LinkedList<>();
 				IRteDeviceItem mountedDevices = rteBoardDeviceItem.getMountedDevices();
-				if (mountedDevices != null) {
+				if (mountedDevices != null && mountedDevices.hasChildren()) {
 					children.add(mountedDevices);
+					deviceToBoardMap.put(mountedDevices, rteBoardDeviceItem);
 				}
-				deviceToBoardMap.put(mountedDevices, rteBoardDeviceItem);
 
 				IRteDeviceItem compatibleDevices = rteBoardDeviceItem.getCompatibleDevices();
-				if (compatibleDevices != null) {
+				if (compatibleDevices != null && compatibleDevices.hasChildren()) {
 					children.add(compatibleDevices);
+					deviceToBoardMap.put(compatibleDevices, rteBoardDeviceItem);
 				}
-				deviceToBoardMap.put(compatibleDevices, rteBoardDeviceItem);
-
 				return children.toArray();
 			} else if (parentElement instanceof IRteDeviceItem) {
 				return deviceViewContentProvider.getChildren(parentElement);
@@ -117,10 +116,17 @@ public class BoardsView extends PackInstallerView {
 
 		@Override
 		public boolean hasChildren(Object element) {
+			IRteBoardItem rteBoardDeviceItem = getBoardDeviceTreeItem(element);
+			if (rteBoardDeviceItem != null) {
+				if(rteBoardDeviceItem.isRoot()) {
+					return rteBoardDeviceItem.hasChildren();
+				}
+				return true; // at least mouted devices
+			}
 			if (element instanceof IRteDeviceItem) {
 				return deviceViewContentProvider.hasChildren(element);
 			}
-			return getChildren(element).length > 0;
+			return true;
 		}
 
 	}
@@ -174,7 +180,7 @@ public class BoardsView extends PackInstallerView {
 			if (board == null) {
 				return false;
 			}
-			return board.getPack().getPackState() == PackState.INSTALLED;
+			return board.getPack().getPackState().isInstalledOrLocal();
 		}
 
 		@Override
@@ -197,6 +203,18 @@ public class BoardsView extends PackInstallerView {
 
 		public BoardsViewColumnAdvisor(ColumnViewer columnViewer) {
 			super(columnViewer);
+		}
+
+		@Override
+		public boolean isEnabled(Object obj, int columnIndex) {
+			ICpPackInstaller packInstaller = getPackInstaller();
+			if(packInstaller == null) {
+				return false;
+			}
+			if(packInstaller.isUpdatingPacks()) {
+				return false;
+			}
+			return super.isEnabled(obj, columnIndex);
 		}
 
 		@Override
@@ -334,6 +352,7 @@ public class BoardsView extends PackInstallerView {
 
 	@Override
 	public void createTreeColumns() {
+		fTree.setInitialText(Messages.BoardsView_SearchBoard);
 
 		TreeViewerColumn column0 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		column0.getColumn().setText(CmsisConstants.BOARD_TITLE);

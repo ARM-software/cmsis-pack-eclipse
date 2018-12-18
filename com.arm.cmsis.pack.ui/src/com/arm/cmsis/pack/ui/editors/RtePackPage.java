@@ -16,8 +16,7 @@ import java.util.Collection;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.graphics.Image;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackInstaller;
@@ -28,6 +27,7 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.IHelpContextIds;
 import com.arm.cmsis.pack.ui.widgets.RtePackSelectorWidget;
+import com.arm.cmsis.pack.ui.widgets.RteWidget;
 
 /**
  * Editor page that wraps RteManagerWidget
@@ -35,38 +35,44 @@ import com.arm.cmsis.pack.ui.widgets.RtePackSelectorWidget;
  */
 public class RtePackPage extends RteModelEditorPage {
 
-	protected RtePackSelectorWidget rtePackSelectorTree = null;
+	
 	IAction useLatestAction = null;
 	IAction resolveMissingPacksAction = null;
+	IAction usedPacksAction = null;
 
 	public RtePackPage() {
-		rtePackSelectorTree = new RtePackSelectorWidget();
+	}
+
+	@Override
+	protected RteWidget<IRteModelController> createContentWidget() {
+		return new RtePackSelectorWidget();
+	}
+
+	@Override
+	protected String getHelpID() {
+		return IHelpContextIds.PACKS_PAGE;
+	}
+
+	@Override
+	protected Image getImage() {
+		return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_FILTER);
+	}
+
+	@Override
+	protected String getLabel() {
+		return CpStringsUI.RteConfigurationEditor_PacksTab;
 	}
 
 
 	@Override
-	public void setModelController(IRteModelController model) {
-		super.setModelController(model);
-		rtePackSelectorTree.setModelController(model);
-		update();
+	public boolean isModified() {
+		if(getModelController() != null)
+			return getModelController().isPackFilterModified();
+		return false;
 	}
 
 	@Override
-	public Composite getFocusWidget() {
-		return rtePackSelectorTree.getFocusWidget();
-	}
-
-	@Override
-	public void createPageContent(Composite parent) {
-		rtePackSelectorTree.createControl(parent);
-		headerWidget.setFocusWidget(getFocusWidget());
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(getFocusWidget(), IHelpContextIds.PACKS_PAGE);
-	}
-
-	@Override
-	protected void setupHeader() {
-		headerWidget.setLabel(CpStringsUI.RteConfigurationEditor_PacksTab, CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_FILTER));
-
+	protected void createActions() {		
 		useLatestAction = new Action(CpStringsUI.UseAllLatestPacks, IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
@@ -106,7 +112,17 @@ public class RtePackPage extends RteModelEditorPage {
 		resolveMissingPacksAction.setDisabledImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_GREY));
 		headerWidget.addAction(resolveMissingPacksAction, SWT.LEFT, true);
 
-		super.setupHeader();
+		//Used packs
+		usedPacksAction = new Action(CpStringsUI.ShowOnlyUsedPacks, IAction.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				setUsedPacks(isChecked());
+			}
+		};
+		usedPacksAction.setToolTipText(CpStringsUI.RtePackPage_ShowOnlyUsedPacksTooltip);	
+		headerWidget.addAction(usedPacksAction, SWT.LEFT, true);
+		
+		super.createActions();
 	}
 
 	void setUseAllLatest(boolean bUse) {
@@ -115,6 +131,14 @@ public class RtePackPage extends RteModelEditorPage {
 		}
 	}
 
+	//Used packs
+	void setUsedPacks(boolean bUse) {
+		if(fModelController != null){
+			fModelController.setShowUsedPacksOnly(bUse);			
+		}
+	}
+
+	
 	void updateUseAllLatest() {
 		boolean bUse = true;
 		if(fModelController != null){
@@ -128,11 +152,30 @@ public class RtePackPage extends RteModelEditorPage {
 		}
 	}
 
+	//Used packs
+	void updateUsedPacks() {
+		boolean bUse = true;
+		if(fModelController != null){
+			bUse = fModelController.isShowUsedPacksOnly();
+		}
+		usedPacksAction.setChecked(bUse);
+		if(bUse) {
+			usedPacksAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_CHECKED));
+		} else {
+			usedPacksAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_UNCHECKED));
+		}
+	}
+	//
+	
+	
 	@Override
 	public void handle(RteEvent event) {
 		switch(event.getTopic()) {
 		case RteEvent.FILTER_MODIFIED:
 			update();
+			return;
+		case RteEvent.COMPONENT_SELECTION_MODIFIED:
+			refresh();
 			return;
 		default:
 			super.handle(event);
@@ -140,21 +183,13 @@ public class RtePackPage extends RteModelEditorPage {
 	}
 
 	@Override
-	public void update() {
-		if (getModelController() != null && rtePackSelectorTree != null) {
-			bModified = getModelController().isPackFilterModified();
-			headerWidget.setModified(bModified);
+	public void updateActions() {
+		if(getModelController() != null) {
 			Collection<String> missingPacks = RteModelUtils.getMissingPacks(getModelController());
 			resolveMissingPacksAction.setEnabled(!missingPacks.isEmpty());
 		}
-		refresh();
-		super.update();
-	}
-
-	@Override
-	public void refresh() {
 		updateUseAllLatest();
-		rtePackSelectorTree.refresh();
+		updateUsedPacks();
+		super.updateActions();
 	}
-
 }

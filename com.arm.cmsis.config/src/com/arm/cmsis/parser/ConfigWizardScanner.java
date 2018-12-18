@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2016-2018 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -7,6 +7,7 @@
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+ * Robert Crossman - usability and performance enhancements
  *******************************************************************************/
 
 package com.arm.cmsis.parser;
@@ -38,6 +39,8 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 	public final static String CONFIG_STRING = "__config_string"; //$NON-NLS-1$
 	public final static String CONFIG_DEFAULT = "__config_default"; //$NON-NLS-1$
 
+	private static final Pattern idModPattern = Pattern.compile("([_a-zA-Z][_a-zA-Z0-9]*)="); //$NON-NLS-1$
+	
 	enum ETokenType {
 		COMMENT,
 		BLOCK_COMMENT,
@@ -62,6 +65,9 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 		UNKNOWN,
 	};
 
+	private boolean checkId = false;
+	private boolean isAsm = false;
+	
 	// this value maintains the previous token's line number
 	private int prevLine;
 
@@ -80,6 +86,7 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 	};
 
 	public ConfigWizardScanner(boolean isAsmFile) {
+		isAsm = isAsmFile;
 		Collection<IRule> rules = new LinkedList<>();
 
 		// Comment rules
@@ -242,6 +249,10 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 			char type = Character.toLowerCase(tokenContent.charAt(0));
 			if (Character.isDigit(type)) {	// For Selection Token: <0=>
 				type = tokenContent.charAt(tokenContent.length()-1);
+			} else if (checkId) {
+				if (idModPattern.matcher(tokenContent).matches()) {	// for selection token <identifier=>
+					type = '=';
+				}
 			}
 			switch (type) {
 			case 'h':
@@ -393,4 +404,12 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 		return false;
 	}
 
+	public void setCheckId(boolean b) {
+		// TODO Auto-generated method stub
+		checkId = b;
+	}
+	
+	public boolean isAsmFile() {
+		return isAsm;
+	}
 }

@@ -49,7 +49,8 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 	static public final String GNUARMECLIPSE_CMISC_OPTION			= GNUARMECLIPSE_OPTION		+ ".base.compiler.other"; //$NON-NLS-1$
 	static public final String GNUARMECLIPSE_AMISC_OPTION			= GNUARMECLIPSE_OPTION		+ ".assembler.other"; //$NON-NLS-1$
 	static public final String GNUARMECLIPSE_LMISC_OPTION			= GNUARMECLIPSE_OPTION		+ ".base.linker.other"; //$NON-NLS-1$
-
+	static public final String GNUARMECLIPSE_C_PRE_INLUDES          = GNUARMECLIPSE_OPTION      + ".c.compiler.include.files"; //$NON-NLS-1$
+	static public final String GNUARMECLIPSE_CPP_PRE_INLUDES        = GNUARMECLIPSE_OPTION      + ".cpp.compiler.include.files"; //$NON-NLS-1$
 	
 	@Override
 	protected int getRteOptionType(String id) {
@@ -73,7 +74,9 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 			return IBuildSettings.AMISC_OPTION;
 		case GNUARMECLIPSE_LMISC_OPTION:
 			return IBuildSettings.LMISC_OPTION;
-
+		case GNUARMECLIPSE_C_PRE_INLUDES:
+		case GNUARMECLIPSE_CPP_PRE_INLUDES:
+			return IBuildSettings.RTE_PRE_INCLUDES;
 		default:
 			break;
 		}

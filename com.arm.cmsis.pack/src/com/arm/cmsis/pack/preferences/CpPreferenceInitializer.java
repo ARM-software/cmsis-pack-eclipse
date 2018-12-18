@@ -22,12 +22,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.IPreferencesService;
-import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.osgi.service.prefs.BackingStoreException;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
@@ -47,7 +47,7 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 
 	private static final String UPDATE_CFG = "update.cfg"; //$NON-NLS-1$
 	private static String lastUpdateTime = CmsisConstants.EMPTY_STRING;
-	private static String autoUpdateFlag = CmsisConstants.EMPTY_STRING;
+	private static Boolean autoUpdateFlag = null;
 
 	/**
 	 *  Default constructor
@@ -78,6 +78,8 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 			ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
 			if(envProvider != null) {
 				packRootProvider = envProvider.getCmsisRootProvider();
+			}else { 
+				packRootProvider = new ICpPackRootProvider(){/* default provider*/};
 			}
 		}
 		return packRootProvider;
@@ -96,13 +98,17 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 	}
 
 	public static String getPackRoot() {
-		IPreferencesService prefs = Platform.getPreferencesService();
 		String defaultRoot = getDefaultPackRoot();
 		if(!defaultRoot.isEmpty() && !isCmsisRootEditable()) {
 			setPackRoot(defaultRoot);  // synchronize preferences with external provider
 			return defaultRoot;
 		}
-		String packRoot = prefs.getString(CpPlugIn.PLUGIN_ID, CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, defaultRoot, null);
+		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		String packRoot = preferences.get(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CmsisConstants.EMPTY_STRING);
+		if(packRoot.isEmpty()) { // not set yet
+			packRoot = defaultRoot;
+			setPackRoot(packRoot);  
+		} 
 		return packRoot;
 	}
 
@@ -110,16 +116,25 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 		if(newPackRoot == null) {
 			newPackRoot = CmsisConstants.EMPTY_STRING;
 		}
-		IEclipsePreferences instancePreferences = InstanceScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		String oldPackRoot = instancePreferences.get(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CmsisConstants.EMPTY_STRING);
-		if(!newPackRoot.equals(oldPackRoot)) {
-			instancePreferences.put(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, newPackRoot);
+		// normalize and convert to OS format
+		IPath p = new org.eclipse.core.runtime.Path(Utils.removeTrailingSlash(newPackRoot));
+		String osPackRoot = p.toOSString();
+		
+		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		String oldPackRoot = preferences.get(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CmsisConstants.EMPTY_STRING);
+		if(!osPackRoot.equals(oldPackRoot)) {
+			preferences.put(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, osPackRoot);
+			try {
+				preferences.flush();
+			} catch (BackingStoreException e) {
+				e.printStackTrace();
+			}
 		}
 	}
 
 	public static List<String> getCpRepositories() {
 		List<String> repos = new LinkedList<String>();
-		IEclipsePreferences prefs = InstanceScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		IEclipsePreferences prefs = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
 		int i = 0;
 		String key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
 		String repo = prefs.get(key, CmsisConstants.EMPTY_STRING);
@@ -158,15 +173,15 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 	}
 
 	public static boolean getAutoUpdateFlag() {
-		if (!autoUpdateFlag.isEmpty()) { // not undefined
-			return Boolean.parseBoolean(autoUpdateFlag);
+		if (autoUpdateFlag == null) { // not defined yet
+			readUpdateFile();
+			
 		}
-		readUpdateFile();
-		return Boolean.parseBoolean(autoUpdateFlag);
+		return autoUpdateFlag;
 	}
 
 	public static void setAutoUpdateFlag(boolean flag) {
-		autoUpdateFlag = Boolean.toString(flag);
+		autoUpdateFlag = flag;
 		writeUpdateFile();
 	}
 
@@ -181,11 +196,11 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 				if (line.startsWith("Date=")) { //$NON-NLS-1$
 					lastUpdateTime = line.substring(5);
 				} else if (line.startsWith("Auto=")) { //$NON-NLS-1$
-					autoUpdateFlag = line.substring(5);
+					autoUpdateFlag = Boolean.parseBoolean(line.substring(5));
 				}
 			});
 		} catch (NoSuchFileException e) {
-			autoUpdateFlag = Boolean.toString(true);
+			autoUpdateFlag = true;
 			updateLastUpdateTime(true);
 		} catch (IOException e) {
 			// do nothing
@@ -193,7 +208,7 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 	}
 
 	private static void writeUpdateFile() {
-		List<String> lines = Arrays.asList("Date=" + lastUpdateTime, "Auto=" + autoUpdateFlag); //$NON-NLS-1$ //$NON-NLS-2$
+		List<String> lines = Arrays.asList("Date=" + lastUpdateTime, "Auto=" + autoUpdateFlag.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 		Path file = Paths.get(CpPlugIn.getPackManager().getCmsisPackWebDir(), UPDATE_CFG);
 		try {
 			Files.write(file, lines, Charset.forName("UTF-8")); //$NON-NLS-1$
@@ -203,29 +218,29 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 	}
 
 	public static int getProxyMode() {
-		IEclipsePreferences instancePreferences = InstanceScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		return instancePreferences.getInt(CpPlugIn.PROXY_MODE, 0);
+		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		return preferences.getInt(CpPlugIn.PROXY_MODE, 0);
 	}
 
 	public static String getProxyAddress() {
-		IEclipsePreferences instancePreferences = InstanceScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		return instancePreferences.get(CpPlugIn.PROXY_ADDRESS, CmsisConstants.EMPTY_STRING);
+		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		return preferences.get(CpPlugIn.PROXY_ADDRESS, CmsisConstants.EMPTY_STRING);
 	}
 
 	public static int getProxyPort() {
-		IEclipsePreferences instancePreferences = InstanceScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		String portString = instancePreferences.get(CpPlugIn.PROXY_PORT, CmsisConstants.EMPTY_STRING);
+		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		String portString = preferences.get(CpPlugIn.PROXY_PORT, CmsisConstants.EMPTY_STRING);
 		return Integer.parseInt(portString);
 	}
 
 	public static String getProxyUsername() {
-		IEclipsePreferences instancePreferences = InstanceScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		return instancePreferences.get(CpPlugIn.PROXY_USER, CmsisConstants.EMPTY_STRING);
+		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		return preferences.get(CpPlugIn.PROXY_USER, CmsisConstants.EMPTY_STRING);
 	}
 
 	public static String getProxyPassword() {
-		IEclipsePreferences instancePreferences = InstanceScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		String password = instancePreferences.get(CpPlugIn.PROXY_PASSWORD, CmsisConstants.EMPTY_STRING);
+		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		String password = preferences.get(CpPlugIn.PROXY_PASSWORD, CmsisConstants.EMPTY_STRING);
 		Encryptor encryptor = Encryptor.getEncryptor(Encryptor.DEFAULT_KEY);
 		return encryptor.decrypt(password);
 	}

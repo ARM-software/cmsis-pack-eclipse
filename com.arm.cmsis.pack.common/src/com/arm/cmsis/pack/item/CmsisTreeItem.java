@@ -60,6 +60,17 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 		fChildren = null;
 	}
 
+	@Override
+	public void invalidate() {
+		super.invalidate();
+		fName = null;
+		Collection<? extends T> children = getChildren();
+		if(children == null || children.isEmpty())
+			return;
+		for(T item : children) {
+			item.invalidate();
+		}		
+	}
 
 	@Override
 	public void destroy() {
@@ -70,6 +81,9 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 	@Override
 	public boolean purge() {
+		if(isRemoved())
+			return true;
+		
 		Collection<? extends T> children = getChildren();
 		if(children == null) {
 			return false;
@@ -81,10 +95,6 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 				iterator.remove();
 				cachedChildArray = null;
 			}
-		}
-		if(children.isEmpty()) {
-			destroy();
-			return true;
 		}
 		return false;
 	}

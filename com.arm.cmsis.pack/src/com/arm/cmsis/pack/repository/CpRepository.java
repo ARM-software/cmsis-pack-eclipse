@@ -12,54 +12,50 @@
 package com.arm.cmsis.pack.repository;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.generic.Attributes;
-import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.generic.AttributedItem;
 
 /**
  * Default implementation of {@link ICpRepository}
  */
-public class CpRepository implements ICpRepository {
+public class CpRepository extends AttributedItem implements ICpRepository {
 
-	protected IAttributes fAttributes;
 
 	public CpRepository(String repoAttr) {
-		fAttributes = new Attributes();
-		fAttributes.setAttributes(repoAttr);
+		attributes().setAttributes(repoAttr);
 	}
 
 	public CpRepository(String type, String name, String url) {
-		fAttributes = new Attributes();
-		fAttributes.setAttribute(CmsisConstants.REPO_TYPE, type);
-		fAttributes.setAttribute(CmsisConstants.REPO_NAME, name);
-		fAttributes.setAttribute(CmsisConstants.REPO_URL, url);
+		attributes().setAttribute(CmsisConstants.REPO_TYPE, type);
+		attributes().setAttribute(CmsisConstants.REPO_NAME, name);
+		attributes().setAttribute(CmsisConstants.REPO_URL, url);
 	}
 
 	@Override
 	public String getType() {
-		return fAttributes.getAttribute(CmsisConstants.REPO_TYPE, CmsisConstants.EMPTY_STRING);
+		return attributes().getAttribute(CmsisConstants.REPO_TYPE, CmsisConstants.EMPTY_STRING);
 	}
 
 	@Override
 	public String getName() {
-		return fAttributes.getAttribute(CmsisConstants.REPO_NAME, CmsisConstants.EMPTY_STRING);
+		return attributes().getAttribute(CmsisConstants.REPO_NAME, CmsisConstants.EMPTY_STRING);
 	}
 
 	@Override
 	public String getUrl() {
-		return fAttributes.getAttribute(CmsisConstants.REPO_URL, CmsisConstants.EMPTY_STRING);
+		return attributes().getAttribute(CmsisConstants.REPO_URL, CmsisConstants.EMPTY_STRING);
 	}
 
 	@Override
 	public int getAttrCount() {
-		if (fAttributes.hasAttributes()) {
-			return fAttributes.getAttributesAsMap().size();
+		if (attributes().hasAttributes()) {
+			return attributes().getAttributesAsMap().size();
 		}
 		return 0;
 	}
 
 	@Override
 	public String toString() {
-		return fAttributes.toString();
+		return attributes().toString();
 	}
 
 }

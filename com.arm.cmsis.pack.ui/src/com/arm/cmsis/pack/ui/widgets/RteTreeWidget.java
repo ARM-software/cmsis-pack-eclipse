@@ -20,14 +20,17 @@ import org.eclipse.swt.widgets.Menu;
 import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
+import com.arm.cmsis.pack.ui.tree.OverlayImage;
+import com.arm.cmsis.pack.ui.tree.OverlayImage.OverlayPos;
 
 public abstract class RteTreeWidget<TController extends IRteController> extends RteWidget<TController> {
 
 	protected TreeViewer fTreeViewer = null;	 
-	protected IRteColumnAdvisor<TController> fColumnAdvisor;
+	protected IRteColumnAdvisor<TController> fColumnAdvisor = null;
 
-	protected Action expandAll;
-	protected Action collapseAll;
+	protected Action expandAll = null;
+	protected Action expandAllSelected = null;
+	protected Action collapseAll = null;
 
 	/**
 	 * Return the tree viewer embedded in this widget
@@ -37,12 +40,22 @@ public abstract class RteTreeWidget<TController extends IRteController> extends 
 		return fTreeViewer;
 	}
 	
+	@Override
+	public void destroy(){
+		super.destroy();
+		fTreeViewer = null;
+		fColumnAdvisor = null;
+		expandAll = null;
+		expandAllSelected = null;
+		collapseAll = null;
+	}
+
 
 	/**
 	 * Sets an RTE model controller to be used by the widget 
 	 * @param modelController IRteController controller to use
 	 */
-	protected void setModelController(TController modelController) {
+	public void setModelController(TController modelController) {
 		super.setModelController(modelController);
 		if(fColumnAdvisor != null)
 			fColumnAdvisor.setModelController(modelController);
@@ -87,6 +100,9 @@ public abstract class RteTreeWidget<TController extends IRteController> extends 
 	}
 	
 	protected void fillContextMenu(IMenuManager manager) {
+		if(isExpandAllSelectedSupported() && expandAllSelected != null){
+			manager.add(expandAllSelected);
+		}
 		manager.add(expandAll);
 		manager.add(collapseAll);
 	}
@@ -116,5 +132,28 @@ public abstract class RteTreeWidget<TController extends IRteController> extends 
 		};
 		collapseAll.setText(CpStringsUI.CollapseAll);
 		collapseAll.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
+
+		if(!isExpandAllSelectedSupported())
+			return;
+		expandAllSelected = new Action() {
+			@Override
+			public void run() {
+				expandAllSelected();
+			}
+		};
+		expandAllSelected.setText(CpStringsUI.ExpandAllSelected);
+
+		OverlayImage overlayImage = new OverlayImage(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL).createImage(),
+				CpPlugInUI.getImageDescriptor(CpPlugInUI.CHECKEDOUT_OVR).createImage(), OverlayPos.TOP_RIGHT);
+		expandAllSelected.setImageDescriptor(overlayImage);
+		
+	}
+
+	public boolean isExpandAllSelectedSupported() {
+		return false; // default does not support it 
+	}
+
+	protected void expandAllSelected() {
+	 //default does nothing
 	}
 }

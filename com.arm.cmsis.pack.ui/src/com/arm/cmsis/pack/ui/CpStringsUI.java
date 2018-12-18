@@ -7,6 +7,9 @@ public class CpStringsUI extends NLS {
 	public static String PreferencesPackRootLabel;
 	public static String UseAllLatestPacks;
 	public static String UseAllLatestPacksTooltip;
+	
+	public static String ShowOnlyUsedPacks;
+	
 	public static String CollapseAll;
 	public static String CollapseSelected;
 	public static String CollapseAllNodes;
@@ -18,8 +21,22 @@ public class CpStringsUI extends NLS {
 	public static String CpConsolePreferencePage_OutputColor;
 	public static String CpConsolePreferencePage_PrintInCdtConsole;
 	public static String CpConsolePreferencePage_WarnColor;
+	public static String CpManLocalRepoPage_Add;
+	public static String CpManLocalRepoPage_AddPackFromLocalRepo;
+	public static String CpManLocalRepoPage_ErrorInPdsc;
+	public static String CpManLocalRepoPage_Pack;
+	public static String CpManLocalRepoPage_PdscFiles;
+	public static String CpManLocalRepoPage_Remove;
+	public static String CpManLocalRepoPage_Repository;	
+	public static String CpPreferencePage_Add;
+	public static String CpPreferencePage_AddPackFromLocalRepo;
+	public static String CpPreferencePage_Pack;
+	public static String CpPreferencePage_PdscFiles;
+	public static String CpPreferencePage_Remove;
+	public static String CpPreferencePage_Repository;
 	public static String CpPreferencePage_CheckForUpdatesEveryday;
 	public static String CpPreferencePage_HttpProxy;
+	public static String CpPreferencePage_ManageLocalRepositories;
 	public static String CpPreferencePage_NoProxy;
 	public static String CpPreferencePage_ProxyAddress;
 	public static String CpPreferencePage_ProxyPassword;
@@ -53,11 +70,6 @@ public class CpStringsUI extends NLS {
 	public static String LaunchGenerator_ClassNotFound;
 	public static String LaunchGenerator_MethodNotFound;
 	public static String LaunchGenerator_UrlMustHaveSwitch;
-	public static String NewRepoDialog_EditPackRepoTitle;
-	public static String NewRepoDialog_NameLabel;
-	public static String NewRepoDialog_NewPackRepoTitle;
-	public static String NewRepoDialog_TypeLabel;
-	public static String NewRepoDialog_UrlLabel;
 	public static String OperationNotSupported;
 	public static String RteComponentSelectorWidget_ErrorExecutingGeneratorMessage;
 	public static String RteComponentSelectorWidget_ErrorExecutingGeneratorTitle;
@@ -91,7 +103,7 @@ public class CpStringsUI extends NLS {
 	public static String RteComponentTreeWidget_UseLatestVersion;
 	public static String RteManagerWidget_ApplyAndSave;
 	public static String RteManagerWidget_Components;
-	public static String RteManagerWidget_ExpandAllSelected;
+	public static String ExpandAllSelected;
 	public static String PackView_Attributes;
 	public static String PackView_Tag;
 	public static String PackView_Text;
@@ -102,7 +114,7 @@ public class CpStringsUI extends NLS {
 	public static String RteConfigurationEditor_InvalidInput;
 	public static String RteConfigurationEditor_XmlTab;
 	public static String RteConsole_BaseName;
-	public static String RteConsole_PackManagerConsoleName;
+	public static String RteConsole_GlobalName;
 	public static String RteDeviceSelectorWidget_lblUrl;
 	public static String RteDeviceSelectorWidget_lblMemory;
 	public static String RteDeviceSelectorWidget_lblPack_text;
@@ -120,6 +132,7 @@ public class CpStringsUI extends NLS {
 	public static String RteDeviceInfoWidget_lblSubFamily_text;
 	public static String RteDeviceInfoWidget_lblBoards_text;
 	public static String RteEditorPageHeader_ShowHelp;
+	public static String RtePackPage_ShowOnlyUsedPacksTooltip;
 	public static String PathMustExist;
 	public static String PathMustBeAbsolute;
 	public static String PathMustBeDirectory;

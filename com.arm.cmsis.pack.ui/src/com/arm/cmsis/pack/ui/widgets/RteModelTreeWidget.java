@@ -10,8 +10,19 @@
 *******************************************************************************/
 package com.arm.cmsis.pack.ui.widgets;
 
+import org.eclipse.swt.widgets.Tree;
+
 import com.arm.cmsis.pack.rte.IRteModelController;
 
 public abstract class RteModelTreeWidget extends RteTreeWidget<IRteModelController> {
 
+	@Override
+	public void refresh() {
+		if(fTreeViewer != null) {
+			Tree tree = fTreeViewer.getTree();
+			if(tree != null && !tree.isDisposed()) {
+				fTreeViewer.refresh();
+			}
+		}
+	}
 }

@@ -19,17 +19,16 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.CpPackIdComparator;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.item.CmsisMapItem;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 import com.arm.cmsis.pack.utils.DeviceVendor;
+import com.arm.cmsis.pack.utils.FullDeviceName;
 
 /**
  * Default implementation of IRteDeviceItem
@@ -85,7 +84,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 			// Return the latest INSTALLED pack's device
 			ICpDeviceItem firstDevice = null;
 			for (ICpDeviceItem device : fDevices.values()) {
-				if (device.getPack().getPackState() == PackState.INSTALLED) {
+				if (device.getPack().getPackState().isInstalledOrLocal()) {
 					return device;
 				}
 				if (firstDevice == null)
@@ -336,7 +335,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 
 	@Override
 	public IRteDeviceItem findItem(final IAttributes attributes) {
-		String deviceName = CpItem.getDeviceName(attributes);
+		String deviceName = FullDeviceName.getFullDeviceName(attributes);
 		if(deviceName == null || deviceName.isEmpty()) {
 			return null;
 		}

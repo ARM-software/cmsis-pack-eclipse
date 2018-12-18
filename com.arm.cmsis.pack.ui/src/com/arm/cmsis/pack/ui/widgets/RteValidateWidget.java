@@ -259,13 +259,6 @@ public class RteValidateWidget extends RteModelTreeWidget {
 	}
 	
 	@Override
-	public void refresh() {
-		if(fTreeViewer != null) {
-			fTreeViewer.refresh();
-		}
-	}
-
-	@Override
 	public void update() {
 		refresh();
 		if(fTreeViewer != null) {

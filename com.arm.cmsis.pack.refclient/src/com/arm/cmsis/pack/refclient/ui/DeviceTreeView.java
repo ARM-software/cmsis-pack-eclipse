@@ -74,13 +74,6 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 		return null;
 	}
 
-	ICpItem getCpItem(Object obj) {
-		if (obj instanceof ICpItem) {
-			return (ICpItem)obj;
-		}
-		return null;
-	}
-
 	class DeviceViewContentProvider extends TreeObjectContentProvider {
 
 		public Object getParent(Object child) {
@@ -101,7 +94,7 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 					}
 				}
 			}  
-			ICpItem item = getCpItem(parent);
+			ICpItem item = ICpItem.cast(parent);
 			if(item != null && item.providesEffectiveContent()){
 				ICpItem effective = item.getEffectiveContent();
 				if(effective != null)
@@ -123,7 +116,7 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 				}
 				return false;
 			} 
-			ICpItem item = getCpItem(parent);
+			ICpItem item = ICpItem.cast(parent);
 			if(item != null && item.providesEffectiveContent()){
 				ICpItem effective = item.getEffectiveContent();
 				if(effective != null)
@@ -158,7 +151,7 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 				}
 				return CmsisConstants.EMPTY_STRING;
 			}
-			ICpItem prop = getCpItem(obj);
+			ICpItem prop = ICpItem.cast(obj);
 			if(prop != null) {
 				switch(index) {
 				case 0:
@@ -192,7 +185,7 @@ public class DeviceTreeView extends ViewPart implements IRteEventListener{
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE); 
 			}
-			ICpItem item = getCpItem(obj);
+			ICpItem item = ICpItem.cast(obj);
 			if(item != null) {
 				switch(item.getTag()) {
 				case CmsisConstants.ALGORITHM_TAG:

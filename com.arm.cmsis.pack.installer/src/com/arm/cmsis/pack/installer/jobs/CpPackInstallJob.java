@@ -24,7 +24,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 
 import com.arm.cmsis.pack.ICpPackInstaller;
-import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.installer.CpPackInstaller;
 import com.arm.cmsis.pack.installer.Messages;
 import com.arm.cmsis.pack.utils.Utils;
@@ -46,9 +45,9 @@ public class CpPackInstallJob extends CpPackUnpackJob {
 	 * @param packId pack's ID
 	 * @param url pack's download URL
 	 */
-	public CpPackInstallJob(String name, ICpPackInstaller packInstaller, String packId, String url, boolean installRequiredPacks) {
+	public CpPackInstallJob(String name, ICpPackInstaller packInstaller, String packId, String url, boolean installRequiredPacks, String extension) {
 		super(name, packInstaller, packId, installRequiredPacks);
-		fPackDestFile = packId + CmsisConstants.EXT_PACK;
+		fPackDestFile = packId + extension;
 		fPackUrl = Utils.addTrailingSlash(url) + fPackDestFile;
 	}
 

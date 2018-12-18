@@ -57,6 +57,37 @@ public interface IRteExampleItem extends ICmsisMapItem<IRteExampleItem> {
 	 * @return a collection of cmsis examples
 	 */
 	Collection<ICpExample> getExamples();
+	
 
+	/**
+	 * Returns example's pack  
+	 * @return example's pack
+	 */
+	ICpPack getPack();
+
+	
+	/**
+	 * Checks if example is supported
+	 * @return true if supported
+	 */
+	boolean isSupported();
+	
+	/**
+	 * Checks if example must be imported, not just copied
+	 * @return true if import
+	 */
+	boolean isToImport();
+
+	/**
+	 * Returns environment name 
+	 * @return environment name, null if not supported
+	 */
+	String getEnvironment();
+	
+	/**
+	 * Returns load path  
+	 * @return load path, null if not supported
+	 */
+	String getLoadPath();
 
 }

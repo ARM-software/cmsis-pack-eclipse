@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2018 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -22,9 +22,6 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 
-import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.CpItem;
-import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.project.Messages;
 
@@ -44,16 +41,14 @@ public class RteProjectTemplate implements IPagesAfterTemplateSelectionProvider 
 
 		fPages = new ArrayList<IWizardDataPage>();
 
-		getSelectedToolChain();
-
 		RteTemplateDeviceSelectorPage devicePage = new RteTemplateDeviceSelectorPage();
 
 		RteTemplateCmsisProjectPage toolChainAdapterPage = new RteTemplateCmsisProjectPage(
 				Messages.RteProjectTemplate_CMSIS_RTE_Project, Messages.RteProjectTemplate_CMSIS_RTE_Project, null,
 				true); // always hide select main as it no longer corresponds to RTOS2 API
 
-		fPages.add(toolChainAdapterPage);
 		fPages.add(devicePage);
+		fPages.add(toolChainAdapterPage);
 		return getCreatedPages(wizard);
 	}
 
@@ -93,23 +88,6 @@ public class RteProjectTemplate implements IPagesAfterTemplateSelectionProvider 
 			}
 		}
 		return null;
-	}
-
-	/**
-	 * Creates toolchain info for given compiler and output type
-	 *
-	 * @param Tcompiler
-	 *            compiler family
-	 * @param Toutput
-	 *            output type : " exe" or "lib"
-	 * @return toolchain info as ICpItem
-	 */
-	public static ICpItem createToolChainInfo(String Tcompiler, String Toutput) {
-		ICpItem toolchainInfo = new CpItem(null, CmsisConstants.TOOLCHAIN_TAG);
-		toolchainInfo.attributes().setAttribute(CmsisConstants.TCOMPILER, Tcompiler);
-		toolchainInfo.attributes().setAttribute(CmsisConstants.TOUTPUT, Toutput);
-		return toolchainInfo;
-
-	}
+	}	
 
 }

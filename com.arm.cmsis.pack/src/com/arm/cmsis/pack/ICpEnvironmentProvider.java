@@ -41,8 +41,6 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
 	 * @return environment name
 	 */
 	String getName();
-
-
 	/**
 	 * Method called from CpPlugIn.start() to initialize the provider and let the provider to register itself for RTE events if needed.<br>
 	 * The method can also explicitly set environment-specific ICpPackManager or/and ICpPackInstaller to CpPlugIn
@@ -57,9 +55,16 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
 
 	/**
 	 * Returns environment-specific provider of  CMSIS Pack root directory
-	 * @return ICpPackRootProvider or null to use the default one
+	 * @return ICpPackRootProvider or null (default) to use the default one
 	 */
-	ICpPackRootProvider getCmsisRootProvider();
+	default ICpPackRootProvider getCmsisRootProvider() {return null ;}
+
+
+	/**
+	 * Returns array of all environment names supported by this provider 
+	 * @return array of supported names ordered by priority (highest to lowest), default returns this provider name 
+	 */
+	default String[] getSupportedNames() { return new String[]{getName()};} 
 
 
 	/**
@@ -77,13 +82,46 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
 	 */
 	boolean isSupported(ICpItem item);
 
+	
+	/**
+	 * Checks if given example is supported by this provider and can be instantiated.    
+	 * @param example ICpExample to check
+	 * @return true if supported
+	 */
+	boolean isExampleSupported(ICpExample example);
+	
+	
 	/**
 	 * Copies the example and/or creates an environment-specific project out of it
 	 * @param example ICpExample to copy
 	 * @return the adaptable object that is created from the example, for instance IProject
+	 * @see #getImporter(ICpExample)
 	 */
 	IAdaptable copyExample(ICpExample example);
 
+	
+	/**
+	 * Returns importer to import the supplied example
+	 * @param example ICpExample to import
+	 * @return ICpExampleImporter capable to import the example, null if none exists
+	 */
+	default ICpExampleImporter getImporter(ICpExample example) { return getDefaultImporter();}
+	
+	
+	/**
+	 * Returns default importer to import Eclipse-based examples (those that end on .project in the load path)
+	 * @return ICpExampleImporter capable to import the example, null no default importer is supported
+	 */
+	default ICpExampleImporter getDefaultImporter() { return null;}
+	
+	/**
+	 * Sets default importer to import Eclipse-based examples (those that end on .project in the load path).
+	 * The purpose of this method is to avoid dependency on com.arm.cmmsis.pack.project plug-in.    
+	 * @param ICpExampleImporter capable to serve as a default, null if no default importer is needed
+	 */
+	default void setDefaultImporter(ICpExampleImporter exampleImporter) {;}
+	
+	
     /**
      * Returns an optional id of a perspective to switch to after copying an
      * example.
@@ -92,9 +130,38 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
      * @since 2.3.2
      */
     default Optional<String> getCopyExamplePerspectiveSwitchId() {
-        return Optional.of("org.eclipse.cdt.ui.CPerspective");
+        return Optional.of("org.eclipse.cdt.ui.CPerspective"); //$NON-NLS-1$
     }
 
+	/**
+	 * Get the absolute load (source) path of supplied example, used when copying examples
+	 * @param  example ICpExample to get path from 
+	 * @return load path of this example, or <code>null</code> if example is not supported
+	 */
+	default String getAbsoluteLoadPath(ICpExample example) {
+		if(example == null)
+			return null;
+		return example.getAbsoluteLoadPath(getName());
+	}
+	
+	/**
+	 * Get the primary supported environment of supplied example, used when copying examples
+	 * @param  example ICpExample to get environmant from 
+	 * @return primary environment of this example, or <code>null</code> if example is not supported
+	 */
+	default String getEnvironment(ICpExample example) {
+		if(example == null)
+			return null;
+		return getName();
+	}
+	
+	/**
+	 * Contributes to newly created CMSIS RTE project. It could be an additional project nature, additional files, etc.
+	 * @param projectName name of the created project, can be used to obtain IProject or IRteProject 
+	 * @note The method is called when the IRteProject is already created   
+	 */
+	default void contibuteToNewProject(String projectName) {;}
+	
 	/**
 	 * Adjusts build settings every time RTE changes
 	 * @param buildSettings IBuildSettings to adjust
@@ -117,5 +184,4 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
 	 * @return expanded string
 	 */
 	String expandString(String input, ICpConfigurationInfo configInfo, boolean bAsolute);
-
 }

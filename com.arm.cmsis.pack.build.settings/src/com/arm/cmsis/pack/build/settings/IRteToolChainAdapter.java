@@ -25,7 +25,7 @@ import com.arm.cmsis.pack.generic.IAttributes;
 public interface IRteToolChainAdapter extends IAdaptable {
 
 	/**
-	 * Sets toolchain build options for given IConfiguration according to supplied IRteBuildSettings
+	 * Sets toolchain build options for given IConfiguration according to supplied IBuildSettings
 	 * @param configuration destination IConfiguration to set options to
 	 * @param buildSettings source IBuildSettings
 	 */
@@ -33,7 +33,7 @@ public interface IRteToolChainAdapter extends IAdaptable {
 
 
 	/**
-	 * Sets initial toolchain build options for given IConfiguration according to supplied IRteBuildSettings.<br>
+	 * Sets initial toolchain build options for given IConfiguration according to supplied IBuildSettings.<br>
 	 * This function is called when device settings are changed (e.g. when new project is created)
 	 * @param configuration destination IConfiguration to set options to
 	 * @param buildSettings source IBuildSettings

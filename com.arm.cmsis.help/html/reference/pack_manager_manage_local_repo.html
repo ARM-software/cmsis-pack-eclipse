@@ -1,0 +1,37 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset="utf-8"/>
+      <link rel="Stylesheet" type="text/css" href="../help.css" />
+      <script language="javascript" src="../help.js"></script>
+
+      <title>Using Local Repositories</title>
+   </head>
+   <body>
+<h2>
+      Using Local Repositories
+</h2>
+
+<p>All versions of installed packs are stored below the pack root folder
+(refer to <a href="pack_manager.html">CMSIS Pack Manager</a>). While developing a software pack, it is useful to have
+direct access to its content without the need to re-build and re-install the pack after modifications. For this
+purpose, you can add the folder of a pack's local copy by selecting
+<img src="../images/manage_local_repo.png" class="uvicon"> <b>Manage Local Repositories...</b> and pressing
+<b>Add...</b>. Select the PDSC file in the folder and press <b>OK</b>:</p>
+
+<img src="./images/manage_local_repos.png" alt="Manage Local Repositories">
+
+<p>Using the <b>Remove</b> button, you can remove local repositories from the list.</p>
+
+<p>The plugin does not make a difference between local repositories and installed packs. If a version of a pack is
+provided as an installed pack and a local repository, only the content from the local repository is used.</p>
+<p>Changes to the PDSC file of a local repository are not notified to running Eclipse instances. To reload the PDSC
+file, use the <img src="../images/refresh_packs.png" class="uvicon"> <b>Reload Packs</b> button.</p>
+<p><b>See also:</b></p>
+<ul>
+   <li><a href="pack_manager.html">CMSIS Pack Manager</a></li>
+</ul>
+
+
+</body>
+</html>

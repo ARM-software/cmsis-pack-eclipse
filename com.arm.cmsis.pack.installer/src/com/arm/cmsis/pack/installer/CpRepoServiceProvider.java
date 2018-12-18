@@ -31,6 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.osgi.util.NLS;
@@ -39,7 +40,7 @@ import org.xml.sax.SAXException;
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpRepoServiceProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.installer.utils.RepositoryRefreshingUtils;
+import com.arm.cmsis.pack.parser.CpPidxParser;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
 import com.arm.cmsis.pack.utils.Utils;
 
@@ -53,91 +54,52 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 
 	public CpRepoServiceProvider() {
 	}
-
+	
+	
 	@Override
-	public int readIndexFile(String indexUrl, List<String[]> pdscList)
-			throws ParserConfigurationException, SAXException, IOException {
-		URL url = new URL(indexUrl);
-		URLConnection connection = getConnection(url);
-		return RepositoryRefreshingUtils.readIndex(connection.getInputStream(), pdscList);
+	public int readIndexFile(String indexUrl, List<String[]> pdscList) throws ParserConfigurationException, SAXException, IOException {
+		return readIndexFile(indexUrl, pdscList, new NullProgressMonitor());
 	}
+
+	
+	@Override
+	public int readIndexFile(String indexUrl, List<String[]> pdscList, IProgressMonitor monitor) throws ParserConfigurationException, SAXException, IOException {
+
+		IPath webFolder = new Path(CpPlugIn.getPackManager().getCmsisPackWebDir());
+		String destFileName = webFolder.append(CmsisConstants.REPO_KEIL_PINDEX_FILE).toOSString();  
+		File pidxFile = downloadFile(indexUrl, destFileName, monitor);
+		if(pidxFile == null || monitor.isCanceled()) {
+			return 0;
+		}
+		return CpPidxParser.parsePidx(pidxFile.toString(), pdscList);	// parse file
+
+	}
+
 
 	@Override
 	public File getPdscFile(String pdscUrl, String pdscName, String destFileName, IProgressMonitor monitor) throws IOException {
-		File destFile = null;
-
-		URL sourceUrl = new URL(pdscUrl + pdscName);
-
-		File destFileTmp = File.createTempFile("temp-pdsc", ".tmp"); //$NON-NLS-1$ //$NON-NLS-2$
-
-		URLConnection connection = null;
-		while (true) {
-			connection = getConnection(sourceUrl);
-			if (connection == null) {
-				break;
-			}
-			connection.setConnectTimeout(TIME_OUT);
-			connection.setReadTimeout(TIME_OUT);
-
-			if (connection instanceof HttpURLConnection) {
-				HttpURLConnection httpURLConnection = (HttpURLConnection) connection; 
-				int responseCode = httpURLConnection.getResponseCode();
-				if (responseCode == HttpURLConnection.HTTP_OK) {
-					break;
-				}else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-					httpURLConnection.disconnect();
-					throw new FileNotFoundException(); // we do not supply a message here, it is processed by caller
-				} else if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP
-						|| responseCode == HttpURLConnection.HTTP_MOVED_PERM
-						|| responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
-					String newUrl = connection.getHeaderField(CmsisConstants.REPO_LOCATION);
-					sourceUrl = new URL(newUrl);
-					continue;
-				}
-			}
-			break;
-		}
-
-		if (connection != null) {
-			try{
-				InputStream input = connection.getInputStream();
-				OutputStream output = new FileOutputStream(destFileTmp);
-				boolean finished = true;
-				byte[] buf = new byte[4096]; // 4096 is a common NTFS block size
-				int bytesRead;
-				while ((bytesRead = input.read(buf)) > 0) {
-					output.write(buf, 0, bytesRead);
-					// Check if the cancel button is pressed
-					if (monitor.isCanceled()) {
-						finished = false;
-						break;
-					}
-				}
-				output.close();
-				if (input != null) {
-					input.close();
-				}
-				if (finished) {
-					destFile = new File(destFileName);
-					Utils.copy(destFileTmp, destFile);
-					destFile.setReadOnly();
-				}
-				if (destFileTmp.exists()) {
-					destFileTmp.delete();
-				} 
-			} finally {
-				if (connection instanceof HttpURLConnection) {
-					((HttpURLConnection) connection).disconnect();
-				}
-			}
-		}
+		String sourceUrl = Utils.addTrailingSlash(pdscUrl) + pdscName;
+		File destFile = downloadFile(sourceUrl, destFileName, monitor);
+		if(destFile != null)
+			destFile.setReadOnly();
 		return destFile;
 	}
 
 	@Override
 	public File getPackFile(String packUrl, String destFileName, IProgressMonitor monitor) throws IOException {
+		
+		IPath downloadDir = new Path(CpPlugIn.getPackManager().getCmsisPackDownloadDir());
+		if (!downloadDir.toFile().exists()) {
+			downloadDir.toFile().mkdir();
+		}
+		String downloadFile = downloadDir.append(destFileName).toOSString();
+		
+		return downloadFile(packUrl, downloadFile,  monitor);
+	}	
+	
+	
+	protected File downloadFile(String packUrl, String destFileName, IProgressMonitor monitor) throws IOException {
 		SubMonitor progress = SubMonitor.convert(monitor, 100);
-
 		/***************** Establish connection *****************/
 		URLConnection connection = null;
 		progress.subTask(Messages.CpPackInstallJob_ConnectingTo + packUrl);
@@ -152,7 +114,8 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 			connection.setReadTimeout(TIME_OUT);
 			if (connection instanceof HttpURLConnection) {
 				HttpURLConnection httpURLConnection = (HttpURLConnection) connection; 
-				int responseCode = httpURLConnection.getResponseCode();				if (responseCode == HttpURLConnection.HTTP_OK) {
+				int responseCode = httpURLConnection.getResponseCode();				
+				if (responseCode == HttpURLConnection.HTTP_OK) {
 					break;
 				}else if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
 					httpURLConnection.disconnect();
@@ -181,12 +144,8 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 		progress = SubMonitor.convert(progress.newChild(90), totalWork);
 		progress.subTask(NLS.bind(Messages.CpPackInstallJob_DownloadingFrom, destFileName, packUrl));
 
-		IPath downloadDir = new Path(CpPlugIn.getPackManager().getCmsisPackDownloadDir());
-		if (!downloadDir.toFile().exists()) {
-			downloadDir.toFile().mkdir();
-		}
-		File downloadFile = downloadDir.append(destFileName).toFile();
-		File downloadFileTmp = File.createTempFile("temp-pack", ".tmp"); //$NON-NLS-1$ //$NON-NLS-2$
+		File downloadFile = new File(destFileName);
+		File downloadFileTmp = File.createTempFile(Utils.extractFileName(destFileName), ".tmp"); //$NON-NLS-1$ 
 
 		InputStream input = null;
 		OutputStream output = null;
@@ -221,8 +180,8 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 			}
 		}
 	}
-
-	private URLConnection getConnection(URL url) throws IOException {
+	
+	protected URLConnection getConnection(URL url) throws IOException {
 		URLConnection connection = null;
 		int proxyMode = CpPreferenceInitializer.getProxyMode();
 		if (proxyMode == 0) { // No Proxy

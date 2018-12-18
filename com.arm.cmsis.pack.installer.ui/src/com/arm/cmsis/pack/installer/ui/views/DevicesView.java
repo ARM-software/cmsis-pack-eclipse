@@ -21,7 +21,6 @@ import org.eclipse.swt.graphics.Image;
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.enums.EDeviceHierarchyLevel;
 import com.arm.cmsis.pack.info.CpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
@@ -149,7 +148,7 @@ public class DevicesView extends PackInstallerView {
 			} else {
 				deviceItem = rteDeviceItem;
 			}
-			return deviceItem.getDevice().getPack().getPackState() == PackState.INSTALLED;
+			return deviceItem.getDevice().getPack().getPackState().isInstalledOrLocal();
 		}
 
 		@Override
@@ -233,7 +232,6 @@ public class DevicesView extends PackInstallerView {
 		public String getTooltipText(Object obj, int columnIndex) {
 			return getUrl(obj, columnIndex);
 		}
-
 	}
 
 	
@@ -253,7 +251,8 @@ public class DevicesView extends PackInstallerView {
 
 	@Override
 	public void createTreeColumns() {
-
+		fTree.setInitialText(Messages.DevicesView_SearchDevice);
+		
 		TreeViewerColumn column0 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		column0.getColumn().setText(CmsisConstants.DEVICE_TITLE);
 		column0.getColumn().setWidth(200);

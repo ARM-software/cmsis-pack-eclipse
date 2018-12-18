@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2016-2018 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,13 +26,27 @@ import org.xml.sax.SAXException;
 public interface ICpRepoServiceProvider {
 
 	/**
-	 * Read the index file and put the pdsc file's info to the pdsc list
+	 * Read the index file and put the pdsc file's info to the pdsc list, deprecated, never called, does nothing
 	 * @param indexUrl URL of the pack index file
 	 * @param pdscList a list of pdsc file
 	 * @return size of the pdsc files that needs to be updated
 	 */
-	int readIndexFile(String indexUrl, List<String[]> pdscList) throws ParserConfigurationException, SAXException, IOException;
+	@Deprecated
+	int readIndexFile(String indexUrl, List<String[]> pdscList) throws ParserConfigurationException, SAXException, IOException; 
 
+	/**
+	 * Read the index file and put the pdsc file's info to the pdsc list, deprecated, never called, does nothing
+	 * @param indexUrl URL of the pack index file
+	 * @param pdscList a list of pdsc file
+	 * @param monitor progress monitor
+	 * @return number of pdsc files in index.pidx
+	 */
+	default int readIndexFile(String indexUrl, List<String[]> pdscList, IProgressMonitor monitor) throws ParserConfigurationException, SAXException, IOException {
+		return readIndexFile(indexUrl, pdscList);
+	}
+	 
+
+	
 	/**
 	 * Download the pdsc file
 	 * @param pdscUrl URL of the pdsc file

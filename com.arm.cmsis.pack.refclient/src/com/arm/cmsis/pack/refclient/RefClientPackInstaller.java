@@ -11,12 +11,6 @@
 
 package com.arm.cmsis.pack.refclient;
 
-import java.io.File;
-
-import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.dialogs.MessageDialog;
-
-import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.installer.CpPackInstaller;
 
 /**
@@ -24,18 +18,6 @@ import com.arm.cmsis.pack.installer.CpPackInstaller;
  */
 public class RefClientPackInstaller extends CpPackInstaller {
 
-
-	@Override
-	protected boolean confirmCopyExample(ICpExample example, File destFile, IProject project) {
-		
-		if(!RefClientEnvironmentProvider.isGnuarmeclipseToolchainInstalled()) {
-			String message = "Required GNU ARM C/C++ Cross Toolchain is not installed.\nCopy the example anyway?";
-			boolean res = MessageDialog.openQuestion(null, "Required Toolchain not Installed", message);
-			if(!res)
-				return false;
-		}
-		
-		return super.confirmCopyExample(example, destFile, project);
-	}
+// actually changes nothing to compare to super class  
 	
 }

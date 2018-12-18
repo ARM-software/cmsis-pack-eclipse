@@ -17,15 +17,18 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.jface.viewers.ViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.swt.widgets.Widget;
+
+import com.arm.cmsis.pack.ui.ColorConstants;
+import com.arm.cmsis.pack.ui.tree.IColumnAdvisor.CellControlType;
 
 /**
  * This is a generic class to support owner-draw cell label displayed in a
@@ -38,8 +41,8 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 	protected final IColumnAdvisor columnAdvisor; 	// column advisor necessary processing cell attributes e.g. image, check state
 	protected final int columnIndex; 					// column index of this cell
 
-	public AdvisedCellLabelProvider(IColumnAdvisor columnAdviser, int colIndex) {
-		this.columnAdvisor = columnAdviser;
+	public AdvisedCellLabelProvider(IColumnAdvisor columnAdvisor, int colIndex) {
+		this.columnAdvisor = columnAdvisor;
 		this.columnIndex = colIndex;
 	}
 
@@ -60,11 +63,6 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 		case URL:
 			super.paint(event, element); 	// draw only URL text
 			drawUrl(event, element); 		// underline text
-			break;
-		case CHECK:
-		case INPLACE_CHECK:
-			super.paint(event, element);
-			drawCheckbox(event, element);
 			break;
 		case BUTTON:
 			super.paint(event, element);
@@ -93,9 +91,9 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 	}
 
 	protected void drawBackground(Event event, Object element) {
-		Rectangle cellBounds = getCellControlBounds(event);
 		Color clr = columnAdvisor.getBgColor(element, columnIndex);
 		if (clr != null) {
+			Rectangle cellBounds = getCellControlBounds(event);
 			event.gc.setAlpha(ALPHA);
 			event.gc.setBackground(clr);
 			event.gc.fillRectangle(cellBounds);
@@ -132,27 +130,16 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 		ptArr[4] = ptArr[0] - offs;
 		ptArr[5] = ptArr[3];
 
-		event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+		event.gc.setBackground(ColorConstants.DARK_GRAY);
 		event.gc.fillPolygon(ptArr);
 	}
 
 	/**
-	 * Draw a check box
+	 * Draw a suffix button
 	 *
 	 * @param event
 	 * @param element tree item in the column zero
 	 */
-	protected void drawCheckbox(Event event, Object element) {
-		Rectangle cellBounds = getCellControlBounds(event);
-		Image image = columnAdvisor.getCheckboxImage(element, columnIndex);
-		if (image != null) {
-			Rectangle imageBounds;
-			imageBounds = image.getBounds();
-			event.gc.drawImage(image, imageBounds.x, imageBounds.y, imageBounds.width, imageBounds.height,
-							   cellBounds.x + 1, cellBounds.y, imageBounds.width, imageBounds.height);
-		}
-	}
-
 	protected void drawSuffixButton(Event event, Object element, Rectangle buttonBounds) {
 		event.gc.setAntialias(SWT.ON);
 
@@ -187,8 +174,6 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 			if (buttonBounds.width == 0) {
 				return cellBounds;
 			}
-			//drawSuffixButton(event, element, buttonBounds);
-
 			cellBounds.width -= buttonBounds.width;
 		}
 		return cellBounds;
@@ -229,9 +214,9 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 		int dstY = (cellBounds.y + cellBounds.height / 2) - extent.y / 2 + cellBounds.height % 2;
 
 		if (columnAdvisor.isEnabled(element, columnIndex)) {
-			event.gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_BLACK));
+			event.gc.setForeground(ColorConstants.BLACK);
 		} else {
-			event.gc.setForeground(Display.getCurrent().getSystemColor(SWT.COLOR_WIDGET_BORDER));
+			event.gc.setForeground(ColorConstants.COLOR_WIDGET_BORDER);
 		}
 		event.gc.drawString(text, dstX, dstY, true);
 	}
@@ -289,7 +274,7 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 			event.gc.setForeground(ColorConstants.COLOR_BORDER);
 			event.gc.drawRectangle(x, y, width, height);
 
-			event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+			event.gc.setBackground(ColorConstants.DARK_GRAY);
 			int[] ptArr = new int[6];
 			ptArr[0] = x + width / 3 - 1;
 			ptArr[1] = y + 2 * height / 3;
@@ -314,7 +299,7 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 			event.gc.setForeground(ColorConstants.COLOR_BORDER);
 			event.gc.drawRectangle(x, y, width, height);
 
-			event.gc.setBackground(getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+			event.gc.setBackground(ColorConstants.DARK_GRAY);
 			int[] ptArr = new int[6];
 			ptArr[0] = x + width / 3;
 			ptArr[1] = y + height / 3 + 1;
@@ -367,18 +352,6 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 		return cellBounds;
 	}
 
-	/**
-	 * @return the Display object
-	 */
-	public static Display getDisplay() {
-		Display display = Display.getCurrent();
-		// may be null if outside the UI thread
-		if (display == null) {
-			display = Display.getDefault();
-		}
-		return display;
-	}
-
 
 	@Override
 	public Image getToolTipImage(Object object) {
@@ -396,12 +369,24 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 			cell.setBackground(null);
 		}
 
-		boolean enabled = columnAdvisor.isEnabled(element, index);
-
-		switch (columnAdvisor.getCellControlType(element, index)) {
+		CellControlType cellControlType = columnAdvisor.getCellControlType(element, index);
+		switch (cellControlType) {
 		case TEXT:
 			cell.setImage(columnAdvisor.getImage(element, index));
+			break;
+		case INPLACE_CHECK:
+		case CHECK:			
+			cell.setImage(columnAdvisor.getCheckboxImage(element, index));
+			break;
+		default:
+			break;
+		}
+		
+		switch (cellControlType) {
+		case TEXT:
+		case CHECK:			
 		case SPIN:
+		case INPLACE_CHECK:
 		case INPLACE_SPIN:
 		case MENU:
 		case COMBO:
@@ -411,16 +396,23 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 				s += ' ';
 			}
 			cell.setText(s);
-			if(!enabled) {
-				cell.setForeground(getDisplay().getSystemColor(SWT.COLOR_DARK_GRAY));
+			cell.setForeground(columnAdvisor.getFgColor(element, index));
+			Font font = columnAdvisor.getFont(element, index);
+			if(font != null) {
+				Font oldFont = cell.getFont();
+				if(oldFont == null || !oldFont.equals(font))
+					cell.setFont(font);
 			} else {
-				cell.setForeground(null);
+				Font oldFont = cell.getFont();
+				if(oldFont != null)
+					cell.setFont(null);
 			}
+			
 			break;
 		case URL:
 			cell.setImage(columnAdvisor.getImage(element, index));
 			cell.setText(columnAdvisor.getString(element, index));
-			cell.setForeground(getDisplay().getSystemColor(SWT.COLOR_LINK_FOREGROUND));
+			cell.setForeground(columnAdvisor.getFgColor(element, index));
 			break;
 		case BUTTON:
 			cell.setImage(columnAdvisor.getImage(element, index));

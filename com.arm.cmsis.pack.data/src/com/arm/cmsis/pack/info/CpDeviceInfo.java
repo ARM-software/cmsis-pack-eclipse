@@ -17,6 +17,7 @@ import java.util.Map;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
+import com.arm.cmsis.pack.data.ICpDebugVars;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpMemory;
@@ -31,9 +32,9 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 
 	protected ICpDeviceItem fDevice = null;
 	protected ICpPackInfo   fPackInfo = null;
-	protected String 		fPname = null;
+	protected String 		fPname =  CmsisConstants.EMPTY_STRING;
 	protected EEvaluationResult fResolveResult = EEvaluationResult.UNDEFINED;
-
+	
 	/**
 	 * Constructs CpDeviceInfo from supplied ICpDeviceItem
 	 * @param parent parent ICpItem
@@ -53,6 +54,15 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 		super(parent, CmsisConstants.DEVICE_TAG);
 	}
 
+	
+	
+	
+	@Override
+	protected ICpItem createChildItem(String tag) {
+		return CpConfigurationInfo.createChildItem(this, tag);
+	}
+
+	
 	/**
 	 * Constructs CpDeviceInfo from parent and tag
 	 * @param parent parent ICpItem
@@ -95,7 +105,7 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 		setDevice(device);
 		if(device != null) {
 			fName = fullDeviceName;
-			fPname = null;
+			fPname =  CmsisConstants.EMPTY_STRING;
 			int i = fName.indexOf(':');
 			if (i >= 0) {
 				fPname = fName.substring(i + 1);
@@ -112,11 +122,6 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 		return attributes().getAttribute(CmsisConstants.PNAME, fPname);
 	}
 
-	@Override
-	public String getDeviceName() {
-		return getName();
-	}
-
 
 	@Override
 	public void updateInfo() {
@@ -125,17 +130,9 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 			fPackInfo = new CpPackInfo(this, pack);
 			fPackInfo.attributes().setAttribute(CmsisConstants.INFO, pack.getDescription());
 			replaceChild(fPackInfo);
-			
+			String processorName = getProcessorName();
 			if(!attributes().hasAttributes()) {
 				attributes().setAttributes(fDevice.getEffectiveAttributes(null));
-				String processorName = getProcessorName();
-				if(processorName != null) {
-					attributes().setAttribute(CmsisConstants.PNAME, processorName);
-					ICpItem proc = fDevice.getProcessor(processorName);
-					if(proc != null) {
-						attributes().mergeAttributes(proc.attributes());
-					}
-				}
 				String url = fDevice.getUrl();
 				if(url != null && !url.isEmpty()) {
 					attributes().setAttribute(CmsisConstants.URL, url);
@@ -144,6 +141,14 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 				if(info != null && !info.isEmpty()) {
 					attributes().setAttribute(CmsisConstants.INFO, info);
 				}
+			} 
+			// always update processor attributes
+			if(!processorName.isEmpty()) {
+				attributes().setAttribute(CmsisConstants.PNAME, processorName);
+			}
+			ICpItem proc = fDevice.getProcessor(processorName);
+			if(proc != null) {
+				attributes().mergeAttributes(proc.attributes());
 			}
 		} else {
 			if(fPackInfo != null) {
@@ -165,14 +170,14 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 	@Override
 	public String getName() {
 		if(fName == null || fName.isEmpty()) {
-			fName = getDeviceName(attributes());
+			fName = getFullDeviceName();
 		}
 		return fName;
 	}
 
 	@Override
 	protected String constructName() {
-		return getDeviceName(attributes());
+		return getFullDeviceName();
 	}
 	
 	@Override
@@ -312,4 +317,22 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 		}
 		return effectiveProps.getBooks();
 	}
+	
+
+	@Override
+	public String getDgbConfFileName() {
+		ICpDebugConfiguration dconf = getDebugConfiguration();
+		if(dconf == null)
+			return CmsisConstants.EMPTY_STRING;
+		ICpDebugVars dv = dconf.getDebugVars();
+		if(dv == null)
+			return CmsisConstants.EMPTY_STRING;
+		String dgbConfgFileName = dv.getName();
+		if(dgbConfgFileName == null || dgbConfgFileName.isEmpty())
+			return CmsisConstants.EMPTY_STRING;
+		
+		String relPath = CmsisConstants.RTE + '/' + Utils.extractFileName(dgbConfgFileName);
+		return getAbsolutePath(relPath);
+	} 
+	
 }

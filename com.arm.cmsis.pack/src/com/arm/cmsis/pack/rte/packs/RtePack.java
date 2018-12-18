@@ -42,15 +42,21 @@ public class RtePack extends RtePackItem implements IRtePack {
 	}
 	
 	
+	
 	@Override
 	public boolean purge() {
-		if(!isUsed() && !isInstalled()) {
+		if(isRemoved()) {
 			clear();
 			return true;
 		}
 		return false;
 	}
 	
+	@Override
+	public boolean isRemoved() {
+		return !isUsed() && !isInstalled();
+	}
+
 	
 	@Override
 	public void addCpItem(ICpItem item) {
@@ -175,4 +181,5 @@ public class RtePack extends RtePackItem implements IRtePack {
 	public IAttributes getAttributes() {
 		return fAttributes;
 	}
+
 }

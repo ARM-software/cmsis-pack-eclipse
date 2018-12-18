@@ -137,10 +137,9 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 		// first check require and deny expressions
 		Collection<? extends ICpItem> children = condition.getChildren();
 		for(ICpItem child :  children) {
-			if(!(child instanceof ICpExpression)) {
+			ICpExpression expr = child.castTo(ICpExpression.class);
+			if(expr == null)
 				continue;
-			}
-			ICpExpression expr = (ICpExpression)child;
 			EEvaluationResult res =  getCachedResult(expr);
 			if(res == EEvaluationResult.IGNORED || res == EEvaluationResult.UNDEFINED || res == EEvaluationResult.FULFILLED) {
 				continue;

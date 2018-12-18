@@ -11,9 +11,11 @@
 
 package com.arm.cmsis.pack.build;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpMemory;
 
 /**
@@ -21,8 +23,8 @@ import com.arm.cmsis.pack.data.ICpMemory;
  */
 public class MemorySettings implements IMemorySettings {
 
-	protected Map<String, ICpMemory> fRegions;
-	protected String fStartupId = ""; //$NON-NLS-1$
+	protected Map<String, ICpMemory> fRegions = null;;
+	protected String fStartupId = CmsisConstants.EMPTY_STRING;
 
 	public MemorySettings() {
 	}
@@ -40,8 +42,11 @@ public class MemorySettings implements IMemorySettings {
 	@Override
 	public void setRegions(Map<String, ICpMemory> regions) {
 		fRegions = regions;
-		fStartupId = ""; //$NON-NLS-1$
-		if(fRegions == null || fRegions.isEmpty()) 
+		if(fRegions == null) {
+			fRegions = new HashMap<>();
+		}
+		fStartupId = CmsisConstants.EMPTY_STRING;
+		if(fRegions.isEmpty()) 
 			return;
 		for(Entry<String, ICpMemory> e : fRegions.entrySet()){
 			String id = e.getKey(); 

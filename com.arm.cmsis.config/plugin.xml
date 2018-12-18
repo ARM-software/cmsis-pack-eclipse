@@ -7,7 +7,7 @@
       <editor
             class="com.arm.cmsis.config.editors.ConfigEditor"
             contributorClass="com.arm.cmsis.config.editors.ConfigEditorContributor"
-            extensions="c, C, cpp, s, S, h, hpp, ini"
+            extensions="c, C, cpp, s, S, h, hpp, ini, dbgconf"
             icon="icons/details.gif"
             id="com.arm.cmsis.config.editors.configEditor"
             name="CMSIS Configuration Wizard">

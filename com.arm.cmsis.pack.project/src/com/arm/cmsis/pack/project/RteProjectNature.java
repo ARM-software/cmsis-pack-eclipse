@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2018 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -11,10 +11,16 @@
 
 package com.arm.cmsis.pack.project;
 
+import org.eclipse.cdt.core.CProjectNature;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+
+import com.arm.cmsis.pack.common.CmsisConstants;
+
 
 /**
- *
+ * Class to manage Rte nature
  */
 public class RteProjectNature extends CmsisProjectNature {
 
@@ -27,10 +33,28 @@ public class RteProjectNature extends CmsisProjectNature {
 	/**
 	 * Checks if supplied project has RteNature 
 	 * @param project IProject to test 
-	 * @return true if RteNature is installed for this project
+	 * @return true if RteNature is installed for this project	 
 	 */
 	public static boolean hasRteNature(IProject project){
 		return hasNature(project, RTE_NATURE_ID);
 	}
+	
+    /**Adds RTE nature
+     * @param project IProject which will contain RTE nature
+     * @param monitor monitors progress
+     * @throws CoreException a checked exception representing a failure
+     */
+    public static String addRteNature(IProject project, IProgressMonitor monitor) throws CoreException {
+    	String msg =  CmsisConstants.EMPTY_STRING;
+        String natureId = RTE_NATURE_ID;
+        //Add RTE nature to the project
+        try {
+			CProjectNature.addNature(project, natureId, monitor);			
+		} catch (CoreException e) {			
+			msg = Messages.RteProjectNature_AddRteNature + ": " + e.getMessage(); //$NON-NLS-1$
+		}        
+        return msg;
+    }
+	
 
 }

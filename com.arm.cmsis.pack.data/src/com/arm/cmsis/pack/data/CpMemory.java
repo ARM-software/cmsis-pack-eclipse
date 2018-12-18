@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2017 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -11,10 +11,11 @@
 
 package com.arm.cmsis.pack.data;
 
+import com.arm.cmsis.pack.build.IMemoryAccess;
 import com.arm.cmsis.pack.common.CmsisConstants;
 
 /**
- * 
+ *  Implementation of ICpMemory interface  
  */
 public class CpMemory extends CpDeviceProperty implements ICpMemory {
 
@@ -41,12 +42,12 @@ public class CpMemory extends CpDeviceProperty implements ICpMemory {
 	}
 
 	@Override
-	public String getAccess() {
+	public String getAccessString() {
 		String access = getAttribute(CmsisConstants.ACCESS);
 		if(access.isEmpty()) {
 			ICpMemory parentRegion = getParentMemory();
 			if(parentRegion != null) {
-				access =  parentRegion.getAccess();
+				access =  parentRegion.getAccessString();
 			} else {
 				// construct access from ID 
 				access += READ_ACCESS;
@@ -59,9 +60,8 @@ public class CpMemory extends CpDeviceProperty implements ICpMemory {
 				}
 				access += EXECUTE_ACCESS;
 			}
-			attributes().setAttribute(CmsisConstants.ACCESS, access); // cache attribute 
+			attributes().setAttribute(CmsisConstants.ACCESS, IMemoryAccess.normalize(access)); // cache attribute 
 		}
 		return access;
 	}
-	
 }

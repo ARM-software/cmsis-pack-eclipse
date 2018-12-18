@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 
 import com.arm.cmsis.pack.ICpPackInstaller.ConsoleType;
@@ -37,10 +38,11 @@ import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.data.ICpPackFamily;
-import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.events.RteEvent;
+import com.arm.cmsis.pack.events.RteEventListener;
 import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.parser.CpPidxParser;
 import com.arm.cmsis.pack.parser.ICpXmlParser;
 import com.arm.cmsis.pack.parser.PdscParser;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
@@ -60,7 +62,7 @@ import com.arm.cmsis.pack.utils.VersionComparator;
 /**
  * Default simple CMSIS-Pack manager
  */
-public class CpPackManager implements ICpPackManager, IRteEventListener {
+public class CpPackManager extends RteEventListener implements ICpPackManager {
 
 	protected ICpPackCollection allPacks = null; // global pack collection
 	protected ICpPackCollection allInstalledPacks = null; // all installed pack collection
@@ -80,6 +82,7 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 	protected boolean bPacksLoaded = false;
 	protected boolean bReloading = false; // reload is in progress
 	protected boolean bReloadPending = false; // reload is requested, but pack installer is still busy
+	protected boolean bCheckForUpdates = false;; 
 
 	protected IRteEventProxy fRteEventProxy = null;
 	protected ICpPackInstaller fPackInstaller = null;
@@ -193,23 +196,6 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 		return idxFile;
 	}
 
-
-	@Override
-	public IRteEventProxy getRteEventProxy() {
-		return fRteEventProxy;
-	}
-
-	@Override
-	public void setRteEventProxy(IRteEventProxy rteEventProxy) {
-		fRteEventProxy = rteEventProxy;
-		fRteEventProxy.addListener(this);
-	}
-
-	protected void emitRteEvent(String topic) {
-		if(fRteEventProxy != null) {
-			fRteEventProxy.notifyListeners(new RteEvent(topic));
-		}
-	}
 
 	@Override
 	public void setPackInstaller(ICpPackInstaller packInstaller) {
@@ -445,7 +431,11 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 		Collection<String> downloadedFileNames = Utils.findPdscFiles(downloadFile, null, 0);
 		loadPacks(downloadedFileNames);
 
-		packState = PackState.INSTALLED;
+		packState = PackState.LOCAL;
+		Collection<String> localRepoistoryFileNames = CpPidxParser.getLocalRepositoryFileNames(getCmsisPackLocalDir());
+		loadPacks(localRepoistoryFileNames);
+		
+		packState = PackState.INSTALLED;		
 		Collection<String> installedFileNames = Utils.findPdscFiles(root, null, 3);
 		loadPacks(installedFileNames);
 
@@ -512,7 +502,7 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 		if (pack != null && CmsisConstants.PACKAGE_TAG.equals(pack.getTag())) {
 			pack.setPackState(packState);
 			allPacks.addChild(pack);
-			if (packState == PackState.INSTALLED) {
+			if (packState.isInstalledOrLocal()) {
 				allInstalledPacks.addChild(pack);
 			}
 			if (pack.isDevicelessPack()) {
@@ -527,7 +517,7 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 			pack = new CpPack(allErrorPacks);
 			pack.setFileName(file);
 			pack.setText(Utils.extractFileName(file));
-			pack.setTag(Utils.extractFileName(file));
+			pack.setTag(file);
 			pack.setPackState(PackState.ERROR);
 			allErrorPacks.addChild(pack);
 			String errorString;
@@ -569,12 +559,10 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 	@Override
 	public void setCmsisPackRootDirectory(String packRootDirectory) {
 		String normalizedPackRoot = null;
-		String osPackRoot = CmsisConstants.EMPTY_STRING;
 		if(packRootDirectory != null) {
 			// normalize and convert to Unix format
 			IPath p = new Path(Utils.removeTrailingSlash(packRootDirectory));
 			normalizedPackRoot = p.toString();
-			osPackRoot = p.toOSString();
 		}
 
 		if (cmsisPackRootDirectory == null) {
@@ -599,10 +587,33 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 			File f = new File(cmsisPackRootDirectory);
 			cmsisPackRootURI = f.toURI();
 		}
-		CpPreferenceInitializer.setPackRoot(osPackRoot);
-
+		boolean bSchedulePackUpdate = initPackRoot();
 		reload();
 		startPackIdxWatcher(); // resume watching
+		if(bSchedulePackUpdate) { 
+			setCheckForUpdates(bSchedulePackUpdate);
+		}
+	}
+
+	/**
+	 * Initialize pack root
+	 * @returns true if update is scheuled
+	 */
+	protected boolean initPackRoot() {
+		ICpPackRootProvider packRootProvider = CpPreferenceInitializer.getCmsisRootProvider(); 
+		if(packRootProvider == null)
+			return  false;
+		IPath rootPath = new Path(getCmsisPackRootDirectory());
+		IPath pidx = rootPath.append(CmsisConstants.DOT_WEB).append(CmsisConstants.REPO_KEIL_PINDEX_FILE);
+		if(pidx.toFile().exists())
+			return false; // nothing to do			
+		try {
+			packRootProvider.initPackRoot(getCmsisPackRootDirectory(), new NullProgressMonitor()); // progress monitor is reserved for future
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
 	}
 
 	@Override
@@ -872,4 +883,24 @@ public class CpPackManager implements ICpPackManager, IRteEventListener {
 		}
 		return true;
 	}
+	
+	public boolean isLocalRepository(ICpPack pack) {
+		return pack.getDir(true).indexOf(getCmsisPackRootDirectory()) < 0;
+	}
+
+	@Override
+	public boolean isCheckForUpdates() {
+		// TODO Auto-generated method stub
+		return bCheckForUpdates;
+	}
+
+	@Override
+	public void setCheckForUpdates(boolean bCheck) {
+		if(bCheckForUpdates == bCheck)
+			return;
+		bCheckForUpdates = bCheck;
+		if(bCheckForUpdates)
+			emitRteEvent(RteEvent.PACKS_UPDATE_PENDING);
+	}
+	
 }

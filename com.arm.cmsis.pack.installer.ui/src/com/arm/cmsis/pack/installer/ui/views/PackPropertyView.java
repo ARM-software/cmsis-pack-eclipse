@@ -21,7 +21,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerSorter;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Tree;
 
@@ -70,7 +70,7 @@ public class PackPropertyView extends PackInstallerView {
 
 		@Override
 		public Object[] getChildren(Object parentElement) {
-			ICpItem item = getCpItem(parentElement);
+			ICpItem item = ICpItem.cast(parentElement);
 			if (item == null) {
 				return ITreeObject.EMPTY_OBJECT_ARRAY;
 			}
@@ -294,12 +294,12 @@ public class PackPropertyView extends PackInstallerView {
 	class PackPropertyViewLabelProvider extends ColumnLabelProvider {
 		@Override
 		public Image getImage(Object obj) {
-			ICpItem item = getCpItem(obj);
+			ICpItem item = ICpItem.cast(obj);
 			if (item == null) {
 				return null;
 			}
 			ICpPack pack = item.getPack();
-			boolean installed = pack != null ? pack.getPackState() == PackState.INSTALLED : false;
+			boolean installed = pack != null ? pack.getPackState().isInstalledOrLocal() : false;
 			// root node
 			if (pack != null && item == pack) {
 				if (installed) {
@@ -361,7 +361,7 @@ public class PackPropertyView extends PackInstallerView {
 			case CmsisConstants.EXAMPLES_TAG:
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_EXAMPLE);
 			case CmsisConstants.PACKAGES_TAG:
-				if (pack != null && pack.getPackState() == PackState.INSTALLED
+				if (pack != null && pack.getPackState().isInstalledOrLocal()
 				&& !CpPlugIn.getPackManager().isRequiredPacksInstalled(pack)) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES_RED);
 				}
@@ -383,7 +383,7 @@ public class PackPropertyView extends PackInstallerView {
 
 		@Override
 		public String getText(Object element) {
-			ICpItem item = getCpItem(element);
+			ICpItem item = ICpItem.cast(element);
 			if (item == null) {
 				return CmsisConstants.EMPTY_STRING;
 			}
@@ -409,7 +409,7 @@ public class PackPropertyView extends PackInstallerView {
 
 	}
 
-	class NameSorter extends ViewerSorter {
+	class NameSorter extends ViewerComparator {
 
 		@Override
 		public int compare(Viewer viewer, Object e1, Object e2) {
@@ -418,7 +418,7 @@ public class PackPropertyView extends PackInstallerView {
 			}
 			ICpItem i1 = (ICpItem) e1;
 			ICpItem i2 = (ICpItem) e2;
-			return new AlnumComparator(false).compare(i1.getId(), i2.getId());
+			return AlnumComparator.alnumCompare(i1.getId(), i2.getId());
 		}
 	}
 
@@ -442,7 +442,7 @@ public class PackPropertyView extends PackInstallerView {
 
 		fViewer.setContentProvider(new PackPropertyViewContentProvider());
 		fViewer.setLabelProvider(new PackPropertyViewLabelProvider());
-		fViewer.setSorter(new NameSorter());
+		fViewer.setComparator(new NameSorter());
 		Tree tree = fViewer.getTree();
 		tree.setHeaderVisible(false);
 		tree.setLinesVisible(false);
@@ -559,9 +559,8 @@ public class PackPropertyView extends PackInstallerView {
 		if (example != null) {
 			pack = example.getPack();
 			packState = pack.getPackState();
-			if (packState == PackState.INSTALLED) {
+			if (packState.isInstalledOrLocal()) {
 				manager.add(fCopyAction);
-				fCopyAction.setEnabled(true);
 				return;
 			}
 		} else {
@@ -603,4 +602,17 @@ public class PackPropertyView extends PackInstallerView {
 			super.handleRteEvent(event);
 		}
 	}
+
+	@Override
+	protected void enableActions(boolean en) {
+		if (fInstallPackAction != null)
+			fInstallPackAction.setEnabled(en);;
+		if (fInstallRequiredPacksAction != null) 
+			fInstallRequiredPacksAction.setEnabled(en);;
+		if (fCopyAction != null) 
+			fCopyAction.setEnabled(en);;
+			
+		super.enableActions(en);
+	}
+	
 }

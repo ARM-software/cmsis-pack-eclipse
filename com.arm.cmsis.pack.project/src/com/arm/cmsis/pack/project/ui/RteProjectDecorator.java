@@ -7,6 +7,7 @@
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
+ *     ARM Germany GmbH: adjustment to CMSIS RTE project
  *******************************************************************************/
 package com.arm.cmsis.pack.project.ui;
 
@@ -25,6 +26,7 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.configuration.IRteConfiguration;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
+import com.arm.cmsis.pack.info.ICpItemInfo;
 import com.arm.cmsis.pack.project.CpProjectPlugIn;
 import com.arm.cmsis.pack.project.IRteProject;
 import com.arm.cmsis.pack.project.RteProjectManager;
@@ -80,19 +82,24 @@ public class RteProjectDecorator implements ILightweightLabelDecorator {
 
 		if (type == IResource.FILE) {
 			ICpFileInfo fi = rteProject.getProjectFileInfo(path.toString());
-			if (fi != null) {
-				ICpComponentInfo ci = fi.getComponentInfo();
-				String suffix = " [" + ci.getName() + "]"; //$NON-NLS-1$//$NON-NLS-2$
+			if (fi == null)
+				return;
+
+			ICpItemInfo parentInfo = fi.getParentInfo();
+			if(parentInfo != null) {
+				String suffix = " [" + parentInfo.getName() + "]"; //$NON-NLS-1$//$NON-NLS-2$
 				decoration.addSuffix(suffix);
-				if (ci.getComponent() == null) {
-					addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
-				} else {
-					int versionDiff = fi.getVersionDiff();
-					if (versionDiff > 2 || versionDiff < 0) {
-						addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
+				if (parentInfo instanceof ICpComponentInfo) {
+					ICpComponentInfo ci = (ICpComponentInfo)parentInfo;
+					if(ci.getComponent() == null) {
+						addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
+						return;
 					}
 				}
-				return;
+			}
+			int versionDiff = fi.getVersionDiff();
+			if (versionDiff > 2 || versionDiff < 0) {
+				addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
 			}
 		}
 	}

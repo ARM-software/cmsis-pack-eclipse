@@ -22,7 +22,6 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.item.CmsisMapItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.rte.devices.RteDeviceItem;
@@ -35,8 +34,8 @@ import com.arm.cmsis.pack.utils.VersionComparator;
 public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoardItem {
 
 	protected Map<String, ICpBoard> fBoards = null;	// packId -> board
-	protected IRteDeviceItem fMountedDevices;	// deviceName -> deviceItem
-	protected IRteDeviceItem fCompatibleDevices;	// deviceName -> deviceItem
+	protected IRteDeviceItem fMountedDevices = null;	// deviceName -> deviceItem
+	protected IRteDeviceItem fCompatibleDevices = null;	// deviceName -> deviceItem
 	protected Set<String> fAllDeviceNames = null;
 	protected boolean fRoot;
 
@@ -49,6 +48,16 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
 		super(parent);
 		fName= name;
 		fRoot = false;
+	}
+
+	
+	
+	@Override
+	public void invalidate() {
+		fMountedDevices = null;
+		fCompatibleDevices = null;
+		fAllDeviceNames = null;
+		super.invalidate();
 	}
 
 	@Override
@@ -86,61 +95,20 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
 
 		if (fRoot) {
 			addBoardItem(item, item.getId());
-		} else {
-			ICpPack pack = item.getPack();
-			String packId = pack.getId();
-			if(fBoards == null) {
-				fBoards = new TreeMap<String, ICpBoard>(new VersionComparator());
-			}
-
-			ICpBoard board = fBoards.get(packId);
-			if (board == null ||
-					// new item's pack is installed/downloaded and the one in the tree is not
-					(item.getPack().getPackState().ordinal() < board.getPack().getPackState().ordinal())) {
-				fBoards.put(packId, item);
-			}
-
-			Collection<ICpItem> devices = item.getMountedDevices();
-			for (ICpItem device : devices) {
-				String vendorName = device.getVendor();
-				String deviceName = getDeviceName(device);
-				IRteDeviceItem allDevices = CpPlugIn.getPackManager().getDevices();
-				if (allDevices == null) {
-					continue;
-				}
-				IRteDeviceItem rteDeviceItem = allDevices.findItem(deviceName, vendorName, false);
-				if (rteDeviceItem == null) {
-					continue;
-				}
-				if (fMountedDevices == null) {
-					fMountedDevices = new RteDeviceItem(CmsisConstants.MOUNTED_DEVICES, -1, null);	// -1 means pseudo root
-				}
-				if (fMountedDevices.getChild(rteDeviceItem.getName()) == null) {
-					fMountedDevices.addChild(rteDeviceItem);
-				}
-			}
-
-			devices = item.getCompatibleDevices();
-			for (ICpItem device : devices) {
-				String vendorName = device.getVendor();
-				String deviceName = getDeviceName(device);
-				IRteDeviceItem allDevices = CpPlugIn.getPackManager().getDevices();
-				if (allDevices == null) {
-					continue;
-				}
-				IRteDeviceItem rteDeviceItem = allDevices.findItem(deviceName, vendorName, false);
-				if (rteDeviceItem == null) {
-					continue;
-				}
-				if (fCompatibleDevices == null) {
-					fCompatibleDevices = new RteDeviceItem(CmsisConstants.COMPATIBLE_DEVICES, -1, null);	// -1 means pseudo root
-				}
-				if (fCompatibleDevices.getChild(rteDeviceItem.getName()) == null) {
-					fCompatibleDevices.addChild(rteDeviceItem);
-				}
-			}
-
 			return;
+		} 
+		ICpPack pack = item.getPack();
+		String packId = pack.getId();
+		if(fBoards == null) {
+			fBoards = new TreeMap<String, ICpBoard>(new VersionComparator());
+		}
+
+		ICpBoard board = fBoards.get(packId);
+		if (board == null || 
+				// new item's pack is installed/downloaded and the one in the tree is not
+				(item.getPack().getPackState().ordinal() < board.getPack().getPackState().ordinal())) {
+			fBoards.put(packId, item);
+			invalidate();
 		}
 	}
 
@@ -194,8 +162,9 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
 			if (fBoards.size() == 0) {
 				getParent().removeChild(this);
 				setParent(null);
+				return;
 			}
-			return;
+			invalidate();
 		}
 	}
 
@@ -221,7 +190,7 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
 		if(fBoards != null && !fBoards.isEmpty()) {
 			// Return the latest INSTALLED pack's board
 			for (ICpBoard board : fBoards.values()) {
-				if (board.getPack().getPackState() == PackState.INSTALLED) {
+				if (board.getPack().getPackState().isInstalledOrLocal()) {
 					return board;
 				}
 			}
@@ -241,12 +210,54 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
 
 	@Override
 	public IRteDeviceItem getMountedDevices() {
+		if(fMountedDevices == null) {
+			fMountedDevices = collectDevices(CmsisConstants.MOUNTED_DEVICES);
+		}
 		return fMountedDevices;
 	}
 
 	@Override
 	public IRteDeviceItem getCompatibleDevices() {
+		if(fCompatibleDevices == null) {
+			fCompatibleDevices = collectDevices(CmsisConstants.COMPATIBLE_DEVICES);
+		}
 		return fCompatibleDevices;
+	}
+
+	protected IRteDeviceItem collectDevices(String devicesType) {
+		IRteDeviceItem rootDeviceItem = new RteDeviceItem(devicesType, -1, null);	// -1 means pseudo root
+		ICpBoard board = getBoard();
+		if (board == null){
+			return rootDeviceItem;
+		}
+
+		Collection<ICpItem> devices;
+		if(devicesType.equals(CmsisConstants.MOUNTED_DEVICES)) {
+			devices = board.getMountedDevices();
+		} else {
+			devices = board.getCompatibleDevices();
+		}
+		if(devices == null || devices.isEmpty()) {
+			return rootDeviceItem;
+		}
+
+		IRteDeviceItem allDevices = CpPlugIn.getPackManager().getDevices();
+		if (allDevices == null) {
+			return rootDeviceItem;
+		}
+		
+		for (ICpItem device : devices) {
+			String vendorName = device.getVendor();
+			String deviceName = getDeviceName(device);
+			IRteDeviceItem rteDeviceItem = allDevices.findItem(deviceName, vendorName, false);
+			if (rteDeviceItem == null) {
+				continue;
+			}
+			if (rootDeviceItem.getChild(rteDeviceItem.getName()) == null) {
+				rootDeviceItem.addChild(rteDeviceItem);
+			}
+		}	
+		return rootDeviceItem;
 	}
 
 	protected String getDeviceName(ICpItem device) {

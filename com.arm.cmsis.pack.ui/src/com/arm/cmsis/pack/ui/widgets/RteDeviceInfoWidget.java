@@ -40,7 +40,6 @@ import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpItem;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.generic.ITreeObject;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.rte.IRteModelController;
@@ -84,19 +83,8 @@ public class RteDeviceInfoWidget extends Composite {
 	protected IRteColumnAdvisor<IRteModelController> fBookColumnAdvisor = null;
 	protected IRteColumnAdvisor<IRteModelController> fBoardColumnAdvisor = null;
 
-
-	ICpItem getCpItem(Object obj) {
-		if (obj instanceof ICpItem) {
-			return (ICpItem)obj;
-		}
-		return null;
-	}
-
 	ICpBoard getCpBoard(Object obj) {
-		if (obj instanceof ICpBoard) {
-			return (ICpBoard)obj;
-		}
-		return null;
+		return ITreeObject.castTo(obj, ICpBoard.class);
 	}
 
 	
@@ -126,7 +114,7 @@ public class RteDeviceInfoWidget extends Composite {
 		public Object[] getChildren(Object parentElement) {
 			ICpBoard b = getCpBoard(parentElement);
 			if(b != null) {
-				if(b.getPack().getPackState() == PackState.INSTALLED) {
+				if(b.getPack().getPackState().isInstalledOrLocal()) {
 					Collection<ICpItem> books = b.getBooks();
 					if(books != null && !books.isEmpty()) {
 						return books.toArray();
@@ -148,7 +136,7 @@ public class RteDeviceInfoWidget extends Composite {
 	public class RteBoardLabelProvider extends LabelProvider{
 		@Override
 		public Image getImage(Object element) {
-			ICpItem item = getCpItem(element);
+			ICpItem item = ICpItem.cast(element);
 			if(item != null) {
 				if(item.getTag().equals(CmsisConstants.BOOK_TAG)) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOOK);
@@ -160,7 +148,7 @@ public class RteDeviceInfoWidget extends Composite {
 
 		@Override
 		public String getText(Object element) {
-			ICpItem item = getCpItem(element);
+			ICpItem item = ICpItem.cast(element);
 			if(item != null) {
 				if(item.getTag().equals(CmsisConstants.BOOK_TAG))
 					return item.getAttribute(CmsisConstants.TITLE);
@@ -184,7 +172,7 @@ public class RteDeviceInfoWidget extends Composite {
 
 		@Override
 		public CellControlType getCellControlType(Object obj, int columnIndex) {
-			ICpItem item = getCpItem(obj);
+			ICpItem item = ICpItem.cast(obj);
 			if(item == null)
 				return CellControlType.NONE;
 			if(columnIndex == 0){
@@ -197,7 +185,7 @@ public class RteDeviceInfoWidget extends Composite {
 
 		@Override
 		public String getString(Object obj, int columnIndex) {
-			ICpItem item = getCpItem(obj);		
+			ICpItem item = ICpItem.cast(obj);		
 			if(columnIndex == 0 && item != null) {
 				if(item.getTag().equals(CmsisConstants.BOOK_TAG))
 					return item.getAttribute(CmsisConstants.TITLE);
@@ -208,7 +196,7 @@ public class RteDeviceInfoWidget extends Composite {
 		
 		@Override
 		public Image getImage(Object obj, int columnIndex) {
-			ICpItem item = getCpItem(obj);
+			ICpItem item = ICpItem.cast(obj);
 			if(columnIndex == 0 && item != null)
 				if(item.getTag().equals(CmsisConstants.BOOK_TAG)) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOOK);
@@ -226,7 +214,7 @@ public class RteDeviceInfoWidget extends Composite {
 
 		@Override
 		public String getUrl(Object obj, int columnIndex) {
-			ICpItem item = getCpItem(obj);
+			ICpItem item = ICpItem.cast(obj);
 			if(columnIndex == 0 && item != null)
 				return item.getUrl();
 			return null;
@@ -389,6 +377,8 @@ public class RteDeviceInfoWidget extends Composite {
 	}
 	
 	protected void updateControls() {
+		if(isDisposed())
+			return;
 		String description = CmsisConstants.EMPTY_STRING;
 		String vendorName = CmsisConstants.EMPTY_STRING;
 		String deviceName = CmsisConstants.EMPTY_STRING;
@@ -404,7 +394,7 @@ public class RteDeviceInfoWidget extends Composite {
 		url = CmsisConstants.EMPTY_STRING;
 		
 		if(fDeviceInfo != null) {
-			deviceName = fDeviceInfo.getDeviceName();
+			deviceName = fDeviceInfo.getFullDeviceName();
 			
 			cpu = "ARM " + fDeviceInfo.getAttribute(CmsisConstants.DCORE); //$NON-NLS-1$
 			fpu = getFpuString(fDeviceInfo.getAttribute(CmsisConstants.DFPU));

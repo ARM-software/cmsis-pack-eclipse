@@ -26,6 +26,7 @@ public class RteEvent {
 	public static final String COMPONENT_SHOW 	= "com.arm.cmsis.pack.rte.component.show"; //$NON-NLS-1$
 	public static final String PACK_FAMILY_SHOW		= "com.arm.cmsis.pack.rte.pack.show"; //$NON-NLS-1$
 
+	public static final String PACKS_UPDATE_PENDING = "com.arm.cmsis.pack.update.pending"; //$NON-NLS-1$
 	public static final String PACKS_RELOADED 	= "com.arm.cmsis.pack.reloaded"; //$NON-NLS-1$ - all packs reloaded
 	public static final String PACKS_UPDATED  	= "com.arm.cmsis.pack.updated"; //$NON-NLS-1$  - some packs changed (added, removed)
 	public static final String PACK_JOB 		= "com.arm.cmsis.pack.job"; //$NON-NLS-1$ - prefix for job finished
@@ -34,7 +35,10 @@ public class RteEvent {
 	public static final String PACK_IMPORT_FOLDER_JOB_FINISHED	= PACK_JOB + ".imported"; //$NON-NLS-1$
 	public static final String PACK_REMOVE_JOB_FINISHED 		= PACK_JOB + ".removed"; //$NON-NLS-1$
 	public static final String PACK_DELETE_JOB_FINISHED 		= PACK_JOB + ".deleted"; //$NON-NLS-1$
-
+	
+	public static final String PACK_UPDATE_JOB_STARTED		    = PACK_JOB + ".update.started"; //$NON-NLS-1$
+	public static final String PACK_UPDATE_JOB_FINISHED 		= PACK_JOB + ".update.finished"; //$NON-NLS-1$
+	
 	public static final String PRINT		= "com.arm.cmsis.pack.print"; //$NON-NLS-1$
 	public static final String PRINT_OUTPUT	= PRINT + ".output"; //$NON-NLS-1$
 	public static final String PRINT_INFO	= PRINT + ".info"; //$NON-NLS-1$
@@ -48,6 +52,10 @@ public class RteEvent {
 	public static final String PROJECT_ADDED  	= "com.arm.cmsis.pack.rte.project.added"; //$NON-NLS-1$
 	public static final String PROJECT_REMOVED  = "com.arm.cmsis.pack.rte.project.removed"; //$NON-NLS-1$
 	public static final String PROJECT_UPDATED  = "com.arm.cmsis.pack.rte.project.updated"; //$NON-NLS-1$
+
+
+	public static final String IMPORT_PROJECT  = "com.arm.cmsis.pack.rte.project.import_project"; //$NON-NLS-1$
+	public static final String IMPORT_EXAMPLE  = "com.arm.cmsis.pack.rte.project.import_example"; //$NON-NLS-1$
 
 	public static final String PRE_IMPORT   = "com.arm.cmsis.pack.rte.project.pre_import"; //$NON-NLS-1$
 	public static final String POST_IMPORT  = "com.arm.cmsis.pack.rte.project.post_import"; //$NON-NLS-1$

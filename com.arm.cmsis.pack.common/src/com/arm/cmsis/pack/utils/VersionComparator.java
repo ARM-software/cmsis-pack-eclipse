@@ -150,6 +150,8 @@ public class VersionComparator extends AlnumComparator{
 	 * @return version without meta data 
 	 */
 	static public String removeMetadata(String ver) {
+		if(ver == null)
+			return ver;
 		int pos = ver.indexOf('+');
 		if(pos >= 0)
 			return ver.substring(0,  pos);
@@ -230,7 +232,7 @@ public class VersionComparator extends AlnumComparator{
 			for(int i = 0 ; i < length; i++) {
 				String thisSegment = this.getSegment(i);
 				String thatSegment = that.getSegment(i);
-				int res = alnumCompare(thisSegment, thatSegment, cs);
+				int res = alnumCompare(thisSegment, thatSegment, cs, false);
 				if(res != 0)
 					return res > 0 ? result : -result;
 				if(result > 1)

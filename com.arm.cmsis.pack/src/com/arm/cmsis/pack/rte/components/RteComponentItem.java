@@ -58,11 +58,12 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 	
 	@Override
 	public boolean purge() {
+		super.purge(); //removes children
 		if(!hasChildren()) {
 			destroy(); // children were already purged
 			return true;
 		}
-		return super.purge();
+		return false;
 	}
 	
 
@@ -332,6 +333,15 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 	}
 	
 
+	@Override
+	public boolean hasBundle() {
+		IRteComponentBundle bundle = getParentBundle();
+		if(bundle != null && !bundle.getName().isEmpty()) {
+			return true;
+		}
+		return false;
+	}
+	
 	@Override
 	public Map<String, ? extends IRteComponentItem> getEffectiveChildMap() {
 		if(isExclusive()) {

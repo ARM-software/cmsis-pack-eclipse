@@ -10,6 +10,7 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpDeviceProperty;
 import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
@@ -20,11 +21,15 @@ import com.arm.cmsis.pack.utils.Utils;
  */
 public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironmentProvider {
 
+	protected IRteEventProxy fRteEventProxy = null;
+	protected ICpExampleImporter fExampleImporter = null; 
+	
 	@Override
 	public String getName() {
 		return CmsisConstants.EMPTY_STRING;
 	}
 
+	
 	@Override
 	public void init() {
 		// default does nothing
@@ -36,26 +41,40 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 	}
 	
 	@Override
-	public ICpPackRootProvider getCmsisRootProvider() {
-		return null; // default has no root provider
-	}
-
-	@Override
 	public void handle(RteEvent event) {
 		// default ignores RTE events
 	}
 
+	@Override
+	public void setRteEventProxy(IRteEventProxy rteEventProxy) {
+		fRteEventProxy = rteEventProxy;
+		if(fRteEventProxy != null) {
+			fRteEventProxy.addListener(this);
+		}
+	}
 	
 	@Override
-	public boolean isEnvironmentSupported(String name, EnvironmentContext context) {
-		if(name == null)
+	public IRteEventProxy getRteEventProxy() {
+		return fRteEventProxy;
+	}
+	
+	@Override
+	public boolean isEnvironmentSupported(String envName, EnvironmentContext context) {
+		if(envName == null)
 			return false;
 		
-		// default checks only for this environment independently from context
-		String thisName = getName();
-		if(thisName == null || thisName.isEmpty())
+		// default checks only if supplied name is listed in the supported array independently from context
+		String[] names = getSupportedNames();
+		if(names == null || names.length == 0)
 			return false;
-		return thisName.equals(name);   
+		
+		for(String name : names) {
+			if(name == null)
+				continue;
+			if(name.equals(envName))
+				return true;
+		}
+		return false;
 	}
 
 	@Override
@@ -76,11 +95,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		return true;
 	}
 
-	/**
-	 * Checks if given example is supported by this provider and can be instantiated.    
-	 * @param example ICpExample to check
-	 * @return true if supported
-	 */
+	@Override
 	public boolean isExampleSupported(ICpExample example) {
 		// default checks if the example has an environment section that is supported
 		if(example == null)
@@ -93,22 +108,79 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		for (ICpItem item : envs) {
 			if(!item.getTag().equals(CmsisConstants.ENVIRONMENT_TAG))
 				continue;
-			if(isSupported(item))
+			if(isLoadPathSupported(example, item))
 				return true;
 		}
 		return false;
 	}
 	
 	
-	@Override
-	public IAdaptable copyExample(ICpExample example) {
-		// default calls ICpPackInstaller to copy the example
-		ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
-		if(packInstaller == null)
-			return null;
-		return packInstaller.copyExample(example);
+	/**
+	 * Checks if example's load path is supported  
+	 * @param example ICpExample to check 
+	 * @param environment ICpItem describing particular environment 
+	 * @return true if supported
+	 */
+	protected boolean isLoadPathSupported(ICpExample example, ICpItem environment) {
+		if(example == null || environment == null)
+			return false;
+		// base implementation only checks environment
+		String envName = environment.getName();
+		return isEnvironmentSupported(envName, EnvironmentContext.EXAMPLE);
 	}
 
+
+	@Override
+	public IAdaptable copyExample(ICpExample example) {
+		// default checks if the example is supported and sends import event to the project manager
+		if(example == null)
+			return null;
+		if(!isExampleSupported(example))
+			return null;
+		
+		ICpExampleImporter importer = getImporter(example);
+		if(importer == null) 
+			return null;
+		
+		return importer.importExample(example);
+	}
+	
+	@Override
+	public String getAbsoluteLoadPath(ICpExample example) {
+		if(example == null)
+			return null;
+		String[] names = getSupportedNames();
+		if(names == null || names.length == 0)
+			return null;
+
+		// evaluate in the order of priority
+		for(String name : names) {
+			String loadPath = example.getAbsoluteLoadPath(name);
+			if(loadPath != null)
+				return loadPath;
+		}
+		return null;
+	}
+	
+
+	@Override
+	public String getEnvironment(ICpExample example) {
+		if(example == null)
+			return null;
+		String[] names = getSupportedNames();
+		if(names == null || names.length == 0)
+			return null;
+
+		// evaluate in the order of priority
+		for(String name : names) {
+			String loadPath = example.getAbsoluteLoadPath(name);
+			if(loadPath != null)
+				return name;
+		}
+		return null;	
+	}
+
+	
 	@Override
 	public void adjustBuildSettings(IBuildSettings buildSettings, ICpConfigurationInfo configInfo) {
 		if(buildSettings == null || configInfo == null)
@@ -181,14 +253,30 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		StringBuilder output = new StringBuilder(len);
 		for(int i = 0 ; i < len; i++) {
 			char ch = input.charAt(i);
-			if(i < lastIndex && ( ch == '$' || ch == '#' || ch == '@')) {
+			if(i < lastIndex && ( ch == '$' || ch == '#' || ch == '@' || ch == '%')) {
 				String key = input.substring(i, i + 2);
 				String s = bAsolute ? expandToAbsolute(key, configInfo) : expandToVariable(key, configInfo);
+				if(s == null || s.equals(key)) {
+					if (key.equals("$K")){ //$NON-NLS-1$
+						// skip commonly used $K\ARM\BIN\ to empty string
+						s = input.substring(i+2).toUpperCase().replace('\\', '/');
+						String prefix = CmsisConstants.EMPTY_STRING;
+						if(s.startsWith("/")) { //$NON-NLS-1$
+							prefix = "/"; //$NON-NLS-1$
+						}
+						prefix += "ARM/BIN/"; //$NON-NLS-1$
+						if(s.startsWith(prefix)) {
+							i++; // skip key char
+							i += prefix.length(); // skip prefix 
+						}
+						continue;
+					}
+				}
 				if(s != null) {
 					output.append(s);
 					i++; // skip key char
 					continue;
-				}
+				} 
 			} 
 			output.append(ch);
 		}
@@ -205,9 +293,20 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		case "$P": //$NON-NLS-1$
 			return CmsisConstants.PROJECT_ABS_PATH;
 		case "#P": //$NON-NLS-1$
-			return CmsisConstants.PROJECT_ABS_PATH + ".project"; //$NON-NLS-1$
+			return CmsisConstants.PROJECT_ABS_PATH + CmsisConstants.DOT_PROJECT;
+		case "@P": //$NON-NLS-1$
+		case "%P": //$NON-NLS-1$
+			return CmsisConstants.PROJECT_NAME;
 		case "$S":  //$NON-NLS-1$
 			return CmsisConstants.CMSIS_DFP_VAR_PRJ;
+		case "%L": //$NON-NLS-1$
+			return CmsisConstants.OUTPUT_FILE;
+		case "@L": //$NON-NLS-1$
+			return CmsisConstants.OUTPUT_FILE_BASE;
+		case "$L": //$NON-NLS-1$
+			return CmsisConstants.OUTPUT_PATH;
+		case "#L": //$NON-NLS-1$
+			return CmsisConstants.OUTPUT_ABS_FILE;
 		}
 		return key; // do not expand, can be another variable
 	}
@@ -220,7 +319,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		
 		if(ch1 == 'D') {
 			ICpDeviceInfo di = configInfo.getDeviceInfo();
-			String fullDeviceName = di.getDeviceName();
+			String fullDeviceName = di.getFullDeviceName();
 			if(ch0 == '$')
 				return Utils.wildCardsToX(fullDeviceName);
 			
@@ -239,9 +338,11 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		}
 
 		if(ch1 == 'P') {
+			if(ch0 == '@' || ch0 == '%')
+				return Utils.extractBaseFileName(configInfo.getFileName()); // config base name always corresponds to project name
 			String pathName = configInfo.getDir(true);
 			if(ch0 == '#')
-				pathName += ".project"; //$NON-NLS-1$
+				pathName += CmsisConstants.DOT_PROJECT;
 			return pathName;
 		}
 		
@@ -250,4 +351,17 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 		}
 		return key;
 	}
+
+
+	@Override
+	public ICpExampleImporter getDefaultImporter() {
+		return fExampleImporter;
+	}
+
+
+	@Override
+	public void setDefaultImporter(ICpExampleImporter exampleImporter) {
+		fExampleImporter = exampleImporter;
+	}
+	
 }

@@ -20,11 +20,9 @@ import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Tree;
 
 import com.arm.cmsis.pack.CpStrings;
@@ -33,9 +31,11 @@ import com.arm.cmsis.pack.enums.EVersionMatchMode;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.rte.IRteModelController;
 import com.arm.cmsis.pack.rte.packs.IRtePack;
+import com.arm.cmsis.pack.rte.packs.IRtePackCollection;
 import com.arm.cmsis.pack.rte.packs.IRtePackFamily;
 import com.arm.cmsis.pack.rte.packs.IRtePackItem;
 import com.arm.cmsis.pack.rte.packs.RtePack;
+import com.arm.cmsis.pack.ui.ColorConstants;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.tree.AdvisedCellLabelProvider;
@@ -117,8 +117,13 @@ public class RtePackSelectorWidget extends RteModelTreeWidget {
 	public class RtePackProvider extends TreeObjectContentProvider {
 		@Override
 		public Object[] getElements(Object inputElement) {
-			if(inputElement == getModelController()) {
-				return getModelController().getRtePackCollection().getChildArray();
+			IRteModelController controller = getModelController();
+			if(inputElement == controller) {
+				IRtePackCollection packs = controller.getRtePackCollection();
+				if(controller.isShowUsedPacksOnly()) {
+					return packs.getUsedRtePackFamilies().toArray();
+				}
+				return packs.getChildArray();
 			}
 			return super.getElements(inputElement);
 		}
@@ -348,13 +353,12 @@ public class RtePackSelectorWidget extends RteModelTreeWidget {
 			}
 			IRtePackItem item = getRtePackItem(obj);
 			if(item != null && item.isUsed()) {
-				Device device = Display.getCurrent();
 				if(!item.isInstalled()) {
-					return device.getSystemColor(SWT.COLOR_RED);
+					return ColorConstants.RED;
 				} else if (!item.isSelected()) {
-					return YELLOW;
+					return ColorConstants.YELLOW;
 				}
-				return GREEN;
+				return ColorConstants.GREEN;
 			}
 			return null;
 		}
@@ -469,14 +473,11 @@ public class RtePackSelectorWidget extends RteModelTreeWidget {
 		case RteEvent.PACK_FAMILY_SHOW:
 			showPackFamilyItem((IRtePackFamily) event.getData());
 			return;
+		case RteEvent.FILTER_MODIFIED:
+			asyncUpdate();
 		default:
 			super.handle(event);
 		}
-	}
-
-	@Override
-	public void refresh() {
-		fTreeViewer.refresh();
 	}
 
 	@Override

@@ -34,11 +34,14 @@ public class RteSetupParticipant extends IndexerSetupParticipant implements ICPr
 	 *  Default constructor that registers this as IndexerSetupParticipant and ICProjectDescriptionListener
 	 */
 	public RteSetupParticipant() {
-		IIndexManager indexManager = CCorePlugin.getIndexManager();
 		ICProjectDescriptionManager descManager = CCorePlugin.getDefault().getProjectDescriptionManager();
-		if(indexManager != null && descManager != null){
-			indexManager.addIndexerSetupParticipant(this);
+		if(descManager != null){
 			descManager.addCProjectDescriptionListener(this, CProjectDescriptionEvent.ALL);
+		}		
+
+		IIndexManager indexManager = CCorePlugin.getIndexManager();
+		if(indexManager != null){
+			indexManager.addIndexerSetupParticipant(this);
 		}		
 	}
 	
@@ -68,6 +71,8 @@ public class RteSetupParticipant extends IndexerSetupParticipant implements ICPr
 			return false;
 
 		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
+		if(rteProjectManager.isPostponeRefresh())
+			return true;
 		IRteProject rteProject = rteProjectManager.getRteProject(project);
 		if(rteProject == null || !rteProject.isUpdateCompleted()) {
 			return true; // postpone indexer until RTE data is loaded and updated

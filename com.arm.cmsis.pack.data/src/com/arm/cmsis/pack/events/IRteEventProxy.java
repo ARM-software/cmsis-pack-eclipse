@@ -24,10 +24,8 @@ import com.arm.cmsis.pack.generic.IGenericListenerList;
  */
 public interface IRteEventProxy extends IGenericListenerList<IRteEventListener, RteEvent>, IRteEventListener {
 
-	/**
-	 * Creates RteEnevnt and notifies listeners
-	 * @param topic event topic
-	 * @param data  event data
-	 */
-	void emitRteEvent(final String topic, Object data);	
+	@Override
+	default void handle(RteEvent event) { // proxy method 
+		notifyListeners(event); 
+	}
 }

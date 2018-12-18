@@ -33,17 +33,23 @@ import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.ICommandService;
 
 import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.configuration.IRteConfiguration;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
+import com.arm.cmsis.pack.project.importer.CpEclipseExampleImporter;
+import com.arm.cmsis.pack.project.importer.IRteProjectImporter;
+import com.arm.cmsis.pack.project.utils.ProjectUtils;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 
 /**
@@ -55,7 +61,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	private Map<String, IRteProject> rteProjects = Collections.synchronizedMap(new HashMap<>());
 
 	private boolean executionListenerRegistered = false;
-	boolean postponeRefresh = false;
+	private boolean postponeRefresh = false;
 	/**
 	 *  Default constructor
 	 */
@@ -63,6 +69,10 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 		IWorkspace workspace = ResourcesPlugin.getWorkspace();
 		workspace.addResourceChangeListener(this, IResourceChangeEvent.POST_CHANGE);
 		CpPlugIn.addRteListener(this);
+		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+		if(envProvider != null && envProvider.getDefaultImporter() == null) {
+			envProvider.setDefaultImporter(new CpEclipseExampleImporter());
+		}
 	}
 
 
@@ -100,6 +110,14 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	}
 
 	/**
+	 * Checks if refresh of RTE projects is postponed
+	 * @return true if postponed
+	 */
+	public boolean isPostponeRefresh() {
+		return postponeRefresh;
+	}
+	
+	/**
 	 *  Initializes RteSetupParticipant does nothing if already initialized
 	 */
 	public void initRteSetupParticipant() {
@@ -113,6 +131,9 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	 * @param project IProject associated with an RTE project
 	 */
 	public void updateIndex(IProject project) {
+		if(!PlatformUI.isWorkbenchRunning()) {
+			return;
+		}
 		if(rteSetupParticipant != null) {
 			rteSetupParticipant.updateIndex(project);
 		}
@@ -121,7 +142,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 
 	/**
 	 * Returns IRteProject associated for given name
-	 * @param project IProject object associated with IRteProject
+	 * @param fProject IProject object associated with IRteProject
 	 * @return IRteProject
 	 */
 	synchronized public IRteProject getRteProject(String name) {
@@ -146,7 +167,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	}
 
 	/**
-	 * Creates or returns existing IRteProject associated with given IRteProject
+	 * Creates or returns existing IRteProject associated with given IProject
 	 * @param project IProject object to be associated with IRteProject
 	 * @return existing IRteProject if exists or new one
 	 */
@@ -216,19 +237,52 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 			break;
 		case RteEvent.POST_IMPORT:
 			postponeRefresh = false;
-			IProject project = (IProject) event.getData();
-			if (project != null) {
-				IRteProject rteProject = getRteProject(project);
-				if (rteProject != null) {
-					rteProject.refresh();
-				}
-			}
+			completeImport(event);
 		default:
 			return;
 		}
 	}
 
 
+	/**
+	 * Completes project import
+	 * @param event RteEvent
+	 */
+	protected void completeImport(RteEvent event) {
+		postponeRefresh = false;
+		Object data = event.getData();
+		if (data == null)
+			return;
+		if(data instanceof IProject) {
+			IProject project = (IProject) data;
+			if (project != null) {
+				IRteProject rteProject = getRteProject(project);
+				if (rteProject != null) {
+					rteProject.refresh();
+				}
+			}
+			ProjectUtils.openRteConfigFile(project);
+			return;
+		} 
+		if(data instanceof IRteProjectImporter) {
+			IRteProjectImporter importer = (IRteProjectImporter)data;
+			Collection<String> projects = importer.getCreatedProjectNames();
+			if(projects == null || projects.isEmpty())
+				return;
+			
+			for(String projectName : projects){
+				IProject project = ProjectUtils.getProject(projectName);
+				// first try to open project import report if any
+				if(ProjectUtils.openProjectRelativeFile(project, CmsisConstants.IMPORT_REPORT_TXT)) {
+					continue;
+				} 
+				ProjectUtils.openRteConfigFile(project);
+			}
+		}
+	}
+
+	
+	
 	protected void refreshProjects() {
 		synchronized(rteProjects) {
 			for(IRteProject rteProject : rteProjects.values()) {
@@ -365,7 +419,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 		}
 	}
 
-	synchronized public void updateProject(IRteProject rteProject, int updateFlags) {
+	public void updateProject(IRteProject rteProject, int updateFlags) {
 		if(rteProject == null) {
 			return;
 		}
@@ -377,6 +431,15 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 		rteProject.setUpdateCompleted(false);
 		RteProjectUpdater updater = new RteProjectUpdater(rteProject, updateFlags);
 		updater.schedule();
+		if(PlatformUI.isWorkbenchRunning()) {
+			return;
+		}
+		// wait for job to complete
+		try {
+			updater.join();
+		} catch (OperationCanceledException | InterruptedException e) {
+			e.printStackTrace();
+		} 
 	}
 
 	/**

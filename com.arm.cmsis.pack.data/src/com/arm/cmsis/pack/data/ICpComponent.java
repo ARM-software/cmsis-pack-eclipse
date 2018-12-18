@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.data;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
+
 /**
  * Interface describing a CMSIS component  
  */
@@ -76,4 +78,38 @@ public interface ICpComponent extends ICpItem {
 	 * @return code to copy to RteComponents.h file as string 
 	 */
 	String getRteComponentsHCode();
+	
+	/**
+	 * Constructs component name out of ICpItem tag and attributes  
+	 * @param componentItem  ICpItem representing a component or its info
+	 * @return component name
+	 */
+	static String constructComponentName(ICpItem componentItem) {
+		String name = CmsisConstants.EMPTY_STRING;
+		if(componentItem == null)
+			return name;
+		if(!componentItem.getTag().equals(CmsisConstants.API_TAG)) {
+			name = componentItem.getVendor();
+		}
+		if(componentItem.hasAttribute(CmsisConstants.CBUNDLE)) {
+			name += "."; //$NON-NLS-1$
+			name += componentItem.getAttribute(CmsisConstants.CBUNDLE);
+		}
+		name += CmsisConstants.DOUBLE_COLON;
+		
+		name += componentItem.getAttribute(CmsisConstants.CCLASS);
+		name += "."; //$NON-NLS-1$
+		
+		name += componentItem.getAttribute(CmsisConstants.CGROUP);
+		if(componentItem.hasAttribute(CmsisConstants.CSUB)) {
+			name += "."; //$NON-NLS-1$
+			name += componentItem.getAttribute(CmsisConstants.CSUB);
+		}
+		if(componentItem.hasAttribute(CmsisConstants.CVARIANT)) {
+			name += "."; //$NON-NLS-1$
+			name += componentItem.getAttribute(CmsisConstants.CVARIANT);
+		}
+		return name;
+	}
+
 }

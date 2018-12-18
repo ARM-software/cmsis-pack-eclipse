@@ -57,7 +57,9 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 
 	protected TController fModelController = null;
 	protected ICpXmlParser fParser = null;
-	protected IFile iFile = null;
+	protected IFile fFile = null;
+	
+	protected boolean fbSaving = false;
 
 	abstract protected ICpXmlParser createParser();
 	abstract protected TController createController();
@@ -79,7 +81,7 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 	@Override
 	protected void setInput(IEditorInput input) {
 		super.setInput(input);
-		iFile = ResourceUtil.getFile(input);
+		fFile = ResourceUtil.getFile(input);
 		String title= input.getName();
 		setPartName(title);
 		loadData();
@@ -94,11 +96,12 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 	}
 
 	protected void loadData() {
-		fModelController = createController();
-		if(fModelController != null)
+		if(fModelController == null) {
+			fModelController = createController();
 			fModelController.addListener(this);
+		}
 
-		File file = iFile.getLocation().toFile();
+		File file = fFile.getLocation().toFile();
 		
 		ICpXmlParser parser = getParser();
 		if(parser == null)
@@ -115,20 +118,57 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 		return CmsisConstants.EMPTY_STRING;
 	}
 
+	protected synchronized boolean isSaving() {
+		return fbSaving;
+	}
+	
+	protected synchronized void setSaving(boolean bSaving) {
+		fbSaving = bSaving;
+	}
+	
 	@Override
 	public void doSave(IProgressMonitor monitor) {
+		if(isSaving())
+			return;
+		setSaving(true);
 		fModelController.commit();
-
-		String xml = getXmlString();
 		try {
-			iFile.setContents(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())),
-					true, true, monitor);
-			iFile.refreshLocal(IResource.DEPTH_ZERO, monitor);
+			saveXml(monitor);
+			fModelController.emitRteEvent(RteEvent.CONFIGURATION_COMMITED, fModelController);
+			firePropertyChange(IEditorPart.PROP_DIRTY);
 		} catch (CoreException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally{ 
+			setSaving(false);
 		}
-		firePropertyChange(IEditorPart.PROP_DIRTY);
 	}
 
+	
+	/**
+	 * Saves editor XML content to file
+	 * @param monitor IProgressMonitor
+	 * @throws CoreException 
+	 */
+	protected void saveXml(IProgressMonitor monitor) throws CoreException{
+		String xml = getXmlString();
+		saveXmlToFile(xml, fFile, monitor);
+	}
+
+	/**
+	 * Saves XML string to file
+	 * @param xml XML string to save
+	 * @param file destination IFile
+	 * @param monitor IProgressMonitor
+	 * @throws CoreException 
+	 */
+	protected void saveXmlToFile(String xml, IFile file, IProgressMonitor monitor) throws CoreException{
+		file.setContents(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())),
+				true, true, monitor);
+		file.refreshLocal(IResource.DEPTH_ZERO, monitor);
+	}
+	
+	
 	@Override
 	public void doSaveAs() {
 		doSave( new NullProgressMonitor());
@@ -176,7 +216,7 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 		switch (event.getTopic()) {
 		case RteEvent.CONFIGURATION_MODIFIED:
 		case RteEvent.COMPONENT_SELECTION_MODIFIED:
-		case RteEvent.FILTER_MODIFIED:
+		case RteEvent.FILTER_MODIFIED:			
 			Display.getDefault().asyncExec(() -> {
 				firePropertyChange(IEditorPart.PROP_DIRTY);
 			});			
@@ -204,15 +244,16 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 	public void resourceChanged(final IResourceChangeEvent event) {
 		if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
 			Display.getDefault().asyncExec(() -> {
-				IProject project = iFile.getProject();
+				IProject project = fFile.getProject();
 				IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
 				for (int i = 0; i < pages.length; i++) {
 					if (project.equals(event.getResource())) {
-						IEditorPart editorPart = ResourceUtil.findEditor(pages[i], iFile);
+						IEditorPart editorPart = ResourceUtil.findEditor(pages[i], fFile);
 						pages[i].closeEditor(editorPart, true);
 					}
 				}
 			});
+			return;
 		}
 		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
 			IResourceDelta resourseDelta = event.getDelta();
@@ -228,22 +269,30 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 					int kind = delta.getKind();
 					int flags = delta.getFlags();
 
-					if (type == IResource.FILE && kind == IResourceDelta.REMOVED && resource.equals(iFile)) {
-						if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
-							// renamed
-							IPath newPath = delta.getMovedToPath();
-							IFile r = (IFile) ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
-							final FileEditorInput fileEditorInput = new FileEditorInput(r);
+					if (type == IResource.FILE  && resource.equals(fFile)) {
+						if ( kind == IResourceDelta.REMOVED) {
+							if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
+								// renamed
+								IPath newPath = delta.getMovedToPath();
+								IFile r = (IFile) ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
+								final FileEditorInput fileEditorInput = new FileEditorInput(r);
+								Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
+								return false;
+							} else if (flags == 0) { // project deleted
+								Display.getDefault().asyncExec(() -> {
+									RteEditor.this.getEditorSite().getPage()
+									.closeEditor(RteEditor.this, true);
+								});
+								return false;
+							}
+							return false;
+						} else if ( kind == IResourceDelta.CHANGED && (flags & IResourceDelta.CONTENT) == IResourceDelta.CONTENT ) {
+							if(isSaving())
+								return false;
+							final FileEditorInput fileEditorInput = new FileEditorInput(fFile);
 							Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
 							return false;
-						} else if (flags == 0) { // project deleted
-							Display.getDefault().asyncExec(() -> {
-								RteEditor.this.getEditorSite().getPage()
-								.closeEditor(RteEditor.this, true);
-							});
-							return false;
 						}
-						return false;
 					}
 					return true;
 				}

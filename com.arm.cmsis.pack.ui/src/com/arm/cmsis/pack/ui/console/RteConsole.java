@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.ui.console;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
 import org.eclipse.ui.console.MessageConsole;
@@ -48,12 +50,14 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 
 	public static final String CONSOLE_TYPE = "com.arm.cmsis.pack.rte.console";	 //$NON-NLS-1$
 	public static final String BASE_NAME = CpStringsUI.RteConsole_BaseName;
-	public static final String PACK_MANAGER_CONSOLE_NAME = CpStringsUI.RteConsole_PackManagerConsoleName;
+	public static final String GLOBAL_NAME = CpStringsUI.RteConsole_GlobalName;
 	public static final int OUTPUT = 0;
 	public static final int INFO = 1;
 	public static final int WARNING = 2;
 	public static final int ERROR = 3;
 	public static final int STREAM_COUNT = 4;
+	public boolean redirectToCDT = false;
+	protected IProject fProject = null;
 
 	private Map<Integer, MessageConsoleStream> fStreams = new HashMap<Integer, MessageConsoleStream>();
 
@@ -64,6 +68,16 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 		initStreams();
 	}
 
+	public RteConsole(String name, IProject project) {
+		super(name, null);
+		fProject = project;
+		redirectToCDT = project != null ? true : false;
+	}
+	
+	public boolean isRedirectToCDT() {
+		return redirectToCDT && fProject != null;
+	}
+	
 
 	private void initStreams() {
 		asyncExec(() -> {
@@ -178,39 +192,52 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 	 * @param streamType stream type: OUTPUT, INFO, ERROR
 	 * @param msg message to output
 	 */
-	public void output(int streamType, String msg, IProject project) {
-		if (project != null && CpPlugInUI.getDefault().getPreferenceStore()
-				.getBoolean(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT)) {
-			writeToCDTConsole(streamType, msg + '\n', project);
+	public void output(int streamType, String msg) {
+		if(!PlatformUI.isWorkbenchRunning()) {
+			PrintStream stream;
+			if(streamType == ERROR || streamType == WARNING)
+				stream = System.err;
+			else
+				stream = System.out;
+			stream.println(msg);
+			return;
+		}
+		
+		if (isRedirectToCDT()) {
+			writeToCDTConsole(streamType, msg + '\n', fProject);
 		} else {
 			MessageConsoleStream stream = getStream(streamType);
 			stream.println(msg);
 		}
 	}
 
-	public void output(final String message, IProject project) {
-		output(OUTPUT, message, project);
+	public void output(final String message) {
+		output(OUTPUT, message);
+	}
+
+	public void outputInfo(final String message) {
+		output(INFO, message);
 	}
 
 	public void outputInfo(final String message, IProject project) {
-		output(INFO, message, project);
+		output(INFO, message);
 	}
 
-	public void outputWarning(final String message, IProject project) {
-		output(WARNING, message, project);
+	public void outputWarning(final String message) {
+		output(WARNING, message);
 	}
 
-	public void outputError(final String message, IProject project) {
-		output(ERROR, message, project);
+	public void outputError(final String message) {
+		output(ERROR, message);
 	}
 
-	private void writeToCDTConsole(int streamType, String msg, IProject project) {
+	public static void writeToCDTConsole(int streamType, String msg, IProject project) {
 		IBuildConsoleManager manager = CUIPlugin.getDefault().getConsoleManager();
 		if (manager == null) {
 			return;
 		}
 
-		org.eclipse.cdt.core.resources.IConsole console = manager.getProjectConsole(project);
+		org.eclipse.cdt.core.resources.IConsole console = manager.getConsole(project);
 		if (console == null) {
 			return;
 		}
@@ -218,15 +245,14 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 		ConsoleOutputStream infoStream = null;
 		try {
 			switch (streamType) {
-			case OUTPUT:
-				infoStream = console.getOutputStream();
-				break;
 			case INFO:
 				infoStream = console.getInfoStream();
 				break;
 			case ERROR:
 				infoStream = console.getErrorStream();
 				break;
+			case WARNING:				
+			case OUTPUT:
 			default:
 				infoStream = console.getOutputStream();
 				break;
@@ -251,74 +277,37 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 	 * @return RteConsole
 	 */
 	public static RteConsole openConsole(IProject project) {
-		String name = null;
-		if(project != null) {
-			name = project.getName();
-		}
-		return openConsole(name);
+		return openConsole(GLOBAL_NAME, project);
 	}
 
 
 	/**
 	 * Opens RteConsole for given project name
-	 * @param projectName name of the project to open console for
+	 * @param consoleName name of console to open console for
 	 * @return RteConsole
 	 */
-	synchronized public static RteConsole openConsole(String projectName) 	{
-		// add it if necessary
-		String consoleName = BASE_NAME;
-		if(projectName != null && !projectName.isEmpty() && !projectName.equals(BASE_NAME))
-		{
-			consoleName += " [" + projectName + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+	synchronized protected static RteConsole openConsole(String consoleName, IProject project) 	{
+		if(!PlatformUI.isWorkbenchRunning()) {
+			return new RteConsole(BASE_NAME, project); // will output to stdout
 		}
-
+		if(consoleName == null)
+			consoleName = GLOBAL_NAME;
+		if(project != null)	{
+			if (CpPlugInUI.getDefault().getPreferenceStore()
+					.getBoolean(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT)) {
+				return new RteConsole(BASE_NAME, project); //simple console just for redirection to CDT 
+			}
+		}		
+		
 		RteConsole rteConsole = null;
-		RteConsole rteBaseConsole = null;
 		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
 		if(consoles != null) {
 			for (IConsole console : consoles) {
 				if(!CONSOLE_TYPE.equals(console.getType())) {
 					continue;
-				}
-				if(consoleName.equals(BASE_NAME)) {
-					rteConsole = (RteConsole) console;
-					break;
 				}
 				String name = console.getName();
 				if (consoleName.equals(name)) {
-					rteConsole = (RteConsole) console;
-					break;
-				} else if(BASE_NAME.equals(name)) {
-					rteBaseConsole = (RteConsole) console;
-				}
-			}
-		}
-		if (rteConsole == null && rteBaseConsole!= null) {
-			rteConsole = rteBaseConsole;
-			if(!consoleName.equals(BASE_NAME)) {
-				rteConsole.setName(consoleName);
-			}
-		} else if (rteConsole == null) {
-			ImageDescriptor imageDescriptor = CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_CONSOLE);
-			rteConsole = new RteConsole(consoleName, imageDescriptor);
-			ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { rteConsole });
-		}
-
-		if(CpPlugInUI.getDefault().getPreferenceStore().getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT)) {
-			showConsole(rteConsole);
-		}
-		return rteConsole;
-	}
-
-	synchronized public static RteConsole openPackManagerConsole() {
-		RteConsole rteConsole = null;
-		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
-		if(consoles != null) {
-			for (IConsole console : consoles) {
-				if(!CONSOLE_TYPE.equals(console.getType())) {
-					continue;
-				}
-				if (PACK_MANAGER_CONSOLE_NAME.equals(console.getName())) {
 					rteConsole = (RteConsole) console;
 					break;
 				}
@@ -326,8 +315,10 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 		}
 		if (rteConsole == null) {
 			ImageDescriptor imageDescriptor = CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_CONSOLE);
-			rteConsole = new RteConsole(PACK_MANAGER_CONSOLE_NAME, imageDescriptor);
-			CpPlugIn.addRteListener(rteConsole);
+			rteConsole = new RteConsole(consoleName, imageDescriptor);
+			if(GLOBAL_NAME.equals(consoleName)) {
+				CpPlugIn.addRteListener(rteConsole);
+			}
 			ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { rteConsole });
 		}
 
@@ -337,42 +328,48 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 		return rteConsole;
 	}
 
+	synchronized public static RteConsole openGlobalConsole() {
+		return openConsole(GLOBAL_NAME, null);
+	}
+
 	synchronized public static void showConsole(final RteConsole console) {
 		asyncExec(() -> ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console));
 	}
 
 	protected static void asyncExec(Runnable runnable) {
-		Display.getDefault().asyncExec(runnable);
+		if(Display.getDefault() != null) {
+			Display.getDefault().asyncExec(runnable);
+		}
 	}
 
 
 	@Override
 	public void handle(RteEvent event) {
-		asyncExec(() -> {
-			String topic = event.getTopic();
-			if(topic.startsWith(RteEvent.PRINT)) {
-				String message = (String) event.getData();
-				switch (topic) {
-				case RteEvent.PRINT_OUTPUT :
-					output(message, null);
-					break;
-				case RteEvent.PRINT_INFO:
-					outputInfo(message, null);
-					break;
-				case RteEvent.PRINT_WARNING:
-					outputWarning(message, null);
-					break;
-				case RteEvent.PRINT_ERROR:
-					outputError(message, null);
-					break;
-				default :
-					break;
-				}
-			} else if (RteEvent.GPDSC_LAUNCH_ERROR.equals(topic)) {
-				String message = (String) event.getData();
-				outputError(message, null);
-			}
-		});
+		String topic = event.getTopic();
+		final int type;
+		switch (topic) {
+		case RteEvent.PRINT :
+		case RteEvent.PRINT_OUTPUT :
+			type = OUTPUT;
+			break;
+		case RteEvent.PRINT_INFO:
+			type = INFO;
+			break;
+		case RteEvent.PRINT_WARNING:
+			type = WARNING;
+			break;
+		case RteEvent.PRINT_ERROR:
+		case RteEvent.GPDSC_LAUNCH_ERROR:			
+			type = ERROR;
+			break;
+		default :
+			return;
+		}
+		String message = (String) event.getData();
+		if(PlatformUI.isWorkbenchRunning()) {
+			asyncExec(() -> output(type, message));
+		} else {
+			 output(type, message);
+		}
 	}
-
 }

@@ -69,6 +69,7 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 
 	private ISelection selection;
 	private TreeViewer fViewer;
+	private boolean fbInitialized = false;
 	Text fileText;
 
 	ICpCodeTemplate selectedCodeTemplate;
@@ -208,7 +209,7 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 					String[] codeTemplates = selectedCodeTemplate.getCodeTemplates();
 					if (codeTemplates.length == 0) {
 						fileText.setEditable(false);
-						fileText.setText(CmsisConstants.EMPTY_STRING);
+						fileText.setText(CmsisConstants.EMPTY_STRING);					
 						return;
 					}
 					fileText.setEditable(true);
@@ -237,9 +238,9 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 
 		IRteProject rteProject = getRteProject();
 		if (rteProject != null) {
-			ICpCodeTemplate codeTemplate = rteProject.getRteConfiguration().getCmsisCodeTemplate();
+			ICpCodeTemplate codeTemplate = rteProject.getRteConfiguration().getCmsisCodeTemplate();				
 			fViewer.setInput(codeTemplate);
-			fViewer.getControl().setFocus();
+			fViewer.getControl().setFocus();			
 		}
 
 		label = new Label(container, SWT.NULL);
@@ -273,10 +274,12 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 		});
 
 		initialize();
+		fbInitialized = true;
 		projectChanged();
 		setControl(container);
 		new Label(container, SWT.NONE);
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent.getParent(), IHelpContextIds.CODE_TEMPLATE_WIZARD);
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(parent.getParent(), IHelpContextIds.CODE_TEMPLATE_WIZARD);	
+		
 	}
 
 	/**
@@ -375,6 +378,8 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 	}
 	
 	void projectChanged() {
+		if(!fbInitialized)
+			return;
 		containerText.setEditable(false);
 		containerBrowse.setEnabled(false);
 		if (getProjectName().isEmpty()) {
@@ -402,9 +407,18 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 	 * Ensures that location and file are set.
 	 */
 	void dialogChanged() {
-		IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
-		String fileName = getFileName();
+		if(!fbInitialized)
+			return;
 
+		//	Check if we have any available template
+		if (fViewer.getTree().getItemCount() == 0) {
+			updateStatus(Messages.CmsisCodeTemplate_NoTemplates);	
+			return;
+		}
+		
+		IResource container = ResourcesPlugin.getWorkspace().getRoot().findMember(new Path(getContainerName()));
+		String fileName = getFileName();	
+		
 		if (getContainerName().isEmpty()) {
 			updateStatus(Messages.CmsisCodeTemplate_FileContainerNotSpecified);
 			return;
@@ -427,11 +441,13 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 		if (segments.length > 0 && segments[0].equals(CmsisConstants.RTE)) {
 			updateStatus(Messages.CmsisCodeTemplate_FileUnderRTEFolder);
 			return;
-		}
+		}	
+		
 		if (fileName.length() == 0) {
 			updateStatus(Messages.CmsisCodeTemplate_FileNameNotSpecified);
 			return;
 		}
+				
 		if (fileName.replace('\\', '/').indexOf('/', 1) > 0) {
 			updateStatus(Messages.CmsisCodeTemplate_FileNameNotValid);
 			return;
@@ -446,6 +462,8 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 			updateStatus(Messages.CmsisCodeTemplate_FileExtensionNotConsistent);
 			return;
 		}
+			
+		
 		updateStatus(null);
 	}
 

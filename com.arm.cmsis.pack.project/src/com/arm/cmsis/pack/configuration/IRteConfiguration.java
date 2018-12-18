@@ -17,6 +17,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.IAdaptable;
 
 import com.arm.cmsis.pack.build.IBuildSettings;
+import com.arm.cmsis.pack.build.IMemorySettings;
 import com.arm.cmsis.pack.data.ICpCodeTemplate;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -105,6 +106,21 @@ public interface IRteConfiguration extends IAdaptable, IEvaluationResult {
 	 */
 	Collection<String> getRteComponentsHCode();
 
+	
+	/**
+	 * Returns collections of all global pre-include strings 
+	 * @return returns pre-include strings as map,  
+	 */
+	Collection<String> getGlobalPreIncludeStrings();
+	
+	
+	/**
+	 * Returns all local pre-include strings as map 
+	 * @return returns pre-include strings as map, key: header filename  
+	 */
+	Map<String, String> getLocalPreIncludeStrings();
+	
+	
 	/**
 	 * Returns collection of headers with component names they come from
 	 * @return map of header file names (without path) to comment
@@ -194,4 +210,20 @@ public interface IRteConfiguration extends IAdaptable, IEvaluationResult {
 	boolean isGeneratedPackUsed(String gpdsc);
 
 
+	/**
+	 * Returns memory settings previously set or created from device information
+	 * @return IMemorySettings
+	 */
+	default IMemorySettings getMemorySettings() {
+		return RteConfiguration.createMemorySettings(getDeviceInfo());
+	}
+
+	/**
+	 * Sets explicit memory settings, usually from an import operation
+	 * @param memorySettings IMemorySettings to set 
+	 */
+	default void setMemorySettings(IMemorySettings memorySettings) {
+		// default does nothing
+	}
+		
 }

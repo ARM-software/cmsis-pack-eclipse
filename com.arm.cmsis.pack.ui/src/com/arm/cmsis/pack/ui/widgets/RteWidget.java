@@ -10,19 +10,15 @@
 *******************************************************************************/
 package com.arm.cmsis.pack.ui.widgets;
 
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
 import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
-import com.arm.cmsis.pack.ui.CpPlugInUI;
+import com.arm.cmsis.pack.generic.AttributedItem;
 
-public abstract class RteWidget<TController extends IRteController> implements IRteEventListener {
-
-	static final Color GREEN = new Color(Display.getCurrent(), CpPlugInUI.GREEN);
-	static final Color YELLOW = new Color(Display.getCurrent(),CpPlugInUI.YELLOW);
+public abstract class RteWidget<TController extends IRteController> extends AttributedItem implements IRteEventListener {
 
 	
 	protected TController fModelController = null;
@@ -31,7 +27,7 @@ public abstract class RteWidget<TController extends IRteController> implements I
 	 * Sets an RTE model controller to be used by the widget 
 	 * @param modelController IRteController controller to use
 	 */
-	protected void setModelController(TController modelController) {
+	public void setModelController(TController modelController) {
 		if(fModelController == modelController)
 			return;
 		if(fModelController != null)
@@ -40,6 +36,16 @@ public abstract class RteWidget<TController extends IRteController> implements I
 		if(fModelController != null)
 			fModelController.addListener(this);
 	}
+
+	/**
+	 * Destroys the widget by destroying children and unregistering from the controller and  
+	 */
+	public void destroy() {
+		if(fModelController != null)
+			fModelController.removeListener(this);
+		fModelController = null;
+	}
+
 	
 	/**
 	 * Returns RTE model controller used by the widget

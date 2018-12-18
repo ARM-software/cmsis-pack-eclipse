@@ -40,13 +40,6 @@ public interface IRteComponent extends IRteComponentItem {
 	 */
 	int getMaxInstanceCount();
 	
-	
-	/**
-	 * Checks if component belongs to bundle
-	 * @return true if the component belongs to a bundle
-	 */
-	boolean hasBundle();
-	
 
 	/**
 	 * Returns number of used (instantiated) instances  

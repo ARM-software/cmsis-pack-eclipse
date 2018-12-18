@@ -44,10 +44,16 @@ public class CmsisItem implements ICmsisItem {
 	}
 	
 	@Override
-	public boolean purge() {
-		return false; // default does nothing
+	public void invalidate() {
+		cachedChildArray = null;
 	}
 
+	@Override
+	public boolean purge() {
+		return isRemoved(); 
+	}
+	
+	
 	@Override
 	public Object getParent() {
 		return null; // default has no parent

@@ -11,9 +11,9 @@
 package com.arm.cmsis.pack.build;
 
 import java.util.Collection;
+import java.util.Map;
 
-
-
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
@@ -37,6 +37,62 @@ public interface IBuildSettings extends IAttributes {
 	 */
 	void addStringListValue(int type, String value);
 
+	
+	/**
+	 * Retrieves setting value as a string, returning the first (usually single) element from the list     
+	 * @param type type of setting to retrieve, see most commonly used type descriptions below 
+	 * @return the settings value string or <code>null</code> if there is no string list for that type or that list is empty
+	 */
+	default String getSingleStringValue(int type) {
+		Collection<String> strings = getStringListValue(type);
+		if(strings == null || strings.isEmpty())
+			return null;
+		return strings.iterator().next();
+	}
+
+// individual build settings for 
+	enum Level {
+		PROJECT, // project level settings(default)  
+		FOLDER,  // folder level for a physical folder
+		VIRTUAL_GROUP,  // a group combining files and folders from different hierarchy levels, e.g. a software component
+		FILE  // file level 
+	};
+	
+	
+	/**
+	 * Returns level of this build settings apply to 
+	 * @return IBuildSettings.Lebvel enum, default is PROJECT
+	 */
+	default Level getLevel() { return Level.PROJECT;}	
+	
+	/**
+	 * Returns individual build settings for resources (folders and files) and virtual groups 
+	 * @return Map<String, IBuildSettings> where key is a resource path relative to the project
+	 */
+	 Map<String, IBuildSettings> getChildren(); 
+	 
+	/**
+	 * Returns individual build settings for given resource or virtual group  
+	 * @param resourcePath file or folder path relative to the project or virtual group name
+	 * @return IBuildSettings or null if no individual settings are available for given resource
+	 */
+	IBuildSettings getBuildSettings(String resourcePath); 
+
+	
+	/**
+	 * Ensures individual IBuildSettings object is allocated for given resource or virtual group 
+	 * @param resourcePath file or folder path relative to the project or virtual group name
+	 * @return created/existing IBuildSettings object 
+	 */
+	IBuildSettings createBuildSettings(String name, Level level); 
+
+	
+	/**
+	 * Returns parent settings of individual one  
+	 * @return parent IBuildSettings if available, null otherwise
+	 */
+	default IBuildSettings getParentSettings() {return null;}
+
 	/**
 	 * Retrieves attribute of selected device<br>
 	 * See: <a href="http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_family_pg.html#element_processor">"http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_family_pg.html#element_processor"</a><br>
@@ -47,13 +103,31 @@ public interface IBuildSettings extends IAttributes {
 	 */
 	String getDeviceAttribute(String key);
 
-
 	/**
 	 * Returns single linker script file (or scatter file)
 	 * @return linker script the very first occurrence of the file if any 
 	 */
 	String getSingleLinkerScriptFile();
+	
+	
+	/**
+	 * Checks if project uses Device Startup component 
+	 * @return true if component is used
+	 */
+	default boolean usesDeviceStartup() { return getAttributeAsBoolean(CmsisConstants.Device_Startup, false);}
+	
+	/**
+	 * Checks if project uses CMSIS Core component 
+	 * @return true if component is used
+	 */
+	default boolean usesCmsisCore() { return getAttributeAsBoolean(CmsisConstants.CMSIS_Core, false);}
 
+	/**
+	 * Checks if project uses a CMSIS RTOS component 
+	 * @return true if component is used
+	 */
+	default boolean usesCmsisRtos() { return getAttributeAsBoolean(CmsisConstants.CMSIS_RTOS, false);}
+	
 	// several build-specific string constants could appear in pdsc file: 	
 	static public final String AMISC_TAG		= "AMisc";		//$NON-NLS-1$ 
 	static public final String CMISC_TAG		= "CMisc";		//$NON-NLS-1$ 
@@ -75,7 +149,8 @@ public interface IBuildSettings extends IAttributes {
 	public static final int RTE_LIBRARY_PATHS  	= RTE_OPTION + 4; // option to hold RTE lib paths
 	public static final int RTE_OBJECTS   		= RTE_OPTION + 5; // option to hold RTE additional object files 
 	public static final int RTE_LINKER_SCRIPT   = RTE_OPTION + 6; // linker script/scatter file
-
+	public static final int RTE_PRE_INCLUDES	= RTE_OPTION + 7; // option to hold RTE pre-include files
+	
 	// user-defined options (defined in derived RteConfiguration or IEnvironnmentProvider) should start here
 	public static final int RTE_USER_OPTION	= RTE_OPTION + 10;     
 	
@@ -92,9 +167,6 @@ public interface IBuildSettings extends IAttributes {
 	// most commonly used options are listed here (it is not mandatory to use all/any of them)
 	public static final int TOOL_CHAIN_OPTION	= RTE_INITIAL_OPTION + 100; 
 	
-	public static final int PRE_BUILD_STEPS 	= TOOL_CHAIN_OPTION + 1; // pre-build steps
-	public static final int POST_BUILD_STEPS 	= TOOL_CHAIN_OPTION + 2; // post-build steps
-
 	public static final int CDEFINES_OPTION 	= TOOL_CHAIN_OPTION + 3;  // C compiler preprocessor definitions (editable)
 	public static final int CPPDEFINES_OPTION 	= TOOL_CHAIN_OPTION + 4;  // CPP compiler preprocessor definitions (editable)
 	public static final int ADEFINES_OPTION 	= TOOL_CHAIN_OPTION + 5;  // assembler compiler preprocessor definitions (editable)
@@ -112,7 +184,21 @@ public interface IBuildSettings extends IAttributes {
 	public static final int AMISC_OPTION 		= TOOL_CHAIN_OPTION + 14; // assembler miscellaneous
 	public static final int ARMISC_OPTION 		= TOOL_CHAIN_OPTION + 15; // archiver (librarian) miscellaneous
 	public static final int LMISC_OPTION 		= TOOL_CHAIN_OPTION + 16; // linker miscellaneous
+	
+	public static final int CUNDEFINES_OPTION 	= TOOL_CHAIN_OPTION + 17;  // C compiler preprocessor definitions: Undefined option
+	public static final int AUNDEFINES_OPTION 	= TOOL_CHAIN_OPTION + 18;  // assembler preprocessor definitions: Undefined option
+	
+	public static final int C5_ASMINCPATHS_OPTION 	= TOOL_CHAIN_OPTION + 19;  // assembler include paths (editable)
+	public static final int C6_ASMINCPATHS_OPTION 	= TOOL_CHAIN_OPTION + 20;  // assembler include paths (editable)
+// pre/post build steps
+	public static final int PRE_BUILD_STEPS 	= TOOL_CHAIN_OPTION + 1; // pre-build steps
+	public static final int POST_BUILD_STEPS 	= TOOL_CHAIN_OPTION + 2; // post-build steps
+	public static final int BUILD_USER 			= 32; // user pre/post post-build steps
+	public static final int PRE_BUILD_STEPS_USER  = PRE_BUILD_STEPS + BUILD_USER; // user pre-build steps
+	public static final int POST_BUILD_STEPS_USER = POST_BUILD_STEPS + BUILD_USER; // user post-build steps
+	
 
+	
 	// options specific to target device   		
 	public static final int TOOLCHAIN_DEVICE_OPTION	= TOOL_CHAIN_OPTION  + 40;
 	public static final int CPU_OPTION 			= TOOLCHAIN_DEVICE_OPTION + 1; 
@@ -122,6 +208,7 @@ public interface IBuildSettings extends IAttributes {
 	public static final int ENDIAN_OPTION 		= TOOLCHAIN_DEVICE_OPTION + 5;
 	public static final int FPU_OPTION 			= TOOLCHAIN_DEVICE_OPTION + 6;
 	public static final int FLOAT_ABI_OPTION 	= TOOLCHAIN_DEVICE_OPTION + 7;
+	public static final int DSP_OPTION 			= TOOLCHAIN_DEVICE_OPTION + 8;
 	
 	// initial toolchain-specific options (defined in derived toolchain adapters) should start here
 	public static final int TOOLCHAIN_USER_OPTION = TOOL_CHAIN_OPTION  + 100;   
@@ -131,7 +218,7 @@ public interface IBuildSettings extends IAttributes {
 	 * @param tag String option type 
 	 * @return integer build type
 	 */
-	static  int getMiscOptionType(String tag) {
+	static int getMiscOptionType(String tag) {
 		switch(tag){
 		case AMISC_TAG:
 			return RTE_ASMMISC;
@@ -154,5 +241,6 @@ public interface IBuildSettings extends IAttributes {
 		
 		return UNKNOWN_OPTION;
 	}
+
 
 }

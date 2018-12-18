@@ -135,7 +135,7 @@ public class RtePackFamily extends RtePackItem implements IRtePackFamily {
 		if(fPacks.isEmpty())
 			return false;
 		for(IRtePack pack : fPacks.values()){
-			if(!pack.isInstalled())
+			if(!pack.isInstalled() && pack.isSelected())
 				return false;
 		}
 		return true;

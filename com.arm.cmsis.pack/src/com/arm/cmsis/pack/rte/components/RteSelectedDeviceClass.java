@@ -26,7 +26,7 @@ public class RteSelectedDeviceClass extends RteComponentClass {
 	String vendorName = null;
 
 	public RteSelectedDeviceClass(IRteComponentItem parent, ICpDeviceInfo deviceInfo) {
-		super(parent, deviceInfo.getDeviceName());
+		super(parent, deviceInfo.getFullDeviceName());
 		fDeviceInfo = deviceInfo;
 	}
 

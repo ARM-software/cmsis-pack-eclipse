@@ -24,7 +24,7 @@ import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.rte.RteConstants;
-import com.arm.cmsis.pack.utils.AlnumComparator;
+import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  *
@@ -142,7 +142,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 		ICpComponent existingApi = getApi(version);
 		if(existingApi == null) { 
 			if(fApis == null)
-				fApis = new TreeMap<String, ICpComponent>(new AlnumComparator());
+				fApis = new TreeMap<String, ICpComponent>(new VersionComparator());
 			fApis.put(cpApi.getVersion(), cpApi);
 		} 
 		if(apiInfo != null) {

@@ -54,12 +54,48 @@ public class CpPackRemoveJob extends CpPackJob {
 		fDelete = delete;
 	}
 
+	private IStatus deleteErrorPack(IProgressMonitor monitor) {
+		if (fPack == null) {
+			return Status.OK_STATUS;
+		}
+
+		fJobId = fPack.getFileName();
+		String path = fPack.getFileName();
+		path = Utils.extractPath(path, false);
+
+		if (path.lastIndexOf(CmsisConstants.DOT_DOWNLOAD) != -1 ||
+			path.lastIndexOf(CmsisConstants.DOT_LOCAL) != -1) {
+			IPath filePath = new Path(fPack.getFileName());
+			File file = filePath.toFile();
+			if(file.exists()) {
+				file.delete();
+			}
+		} else {
+			IPath installedDir = new Path(fPack.getFileName());
+			SubMonitor progress = SubMonitor.convert(monitor, Utils.countFiles(installedDir.toFile()));
+			progress.setTaskName(NLS.bind(Messages.CpPackRemoveJob_DeletingFilesFromFolder, installedDir.toOSString()));
+			PackInstallerUtils.deleteFolderRecursiveWithProgress(installedDir.toFile(), progress);
+			progress.done();
+		}
+		
+		fResult.setPack(fPack);
+		fResult.setSuccess(true);
+		fPackInstaller.jobFinished(fJobId, RteEvent.PACK_DELETE_JOB_FINISHED, fResult);
+
+		return Status.OK_STATUS;
+	}
+	
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		if (fPack == null) {
 			return Status.OK_STATUS;
 		}
 
+		// handle 'Delete' and 'Delete All' items from ERRORS group
+		if (fDelete && fPack.getPackState() == PackState.ERROR) {
+			return deleteErrorPack(monitor);
+		}
+		
 		IPath installedDir;
 		if (fPack.getPackState() == PackState.ERROR) {
 			fJobId = fPack.getTag();
@@ -86,15 +122,7 @@ public class CpPackRemoveJob extends CpPackJob {
 				.append(familyId + CmsisConstants.EXT_PDSC);
 		File localPdscFile = localPdscFilePath.toFile();
 
-		IPath webPdscFilePath = new Path(CpPlugIn.getPackManager().getCmsisPackWebDir())
-				.append(familyId + CmsisConstants.EXT_PDSC);
-		File webPdscFile = webPdscFilePath.toFile();
-
-		boolean bLocalPack = !webPdscFile.exists();
-
 		if (fDelete) {
-			if(downloadPackFile.exists())
-				downloadPackFile.delete();
 			if(downloadPdscFile.exists())
 				downloadPdscFile.delete();
 			// delete local pdsc if no downloaded packs exist for this family id 

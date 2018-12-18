@@ -127,8 +127,24 @@ public class RteEditorPageHeader extends Composite {
 		label.setText(text);
 		imageLabel.setImage(image);
 	}
+	public void setLabelText(String newText) {
+		String text = label.getText();
+		if(text == null && newText == null)
+			return;
+		if(newText != null && newText.equals(text))
+			return;
 
+		boolean bModified = text != null && text.endsWith(STAR);
+		text = newText;
+		if(bModified)
+			text += STAR;	
+		label.setText(text);
+		layout();
+	}
+	
 	public void setModified(boolean bModified) {
+		if(isDisposed())
+			return;
 		String text = label.getText();
 		if (text == null) {
 			return;
@@ -202,7 +218,7 @@ public class RteEditorPageHeader extends Composite {
 					return;
 				}
 				try {
-					// Lookup csave ommand with its ID
+					// Lookup save command with its ID
 					Command command = commandService.getCommand("org.eclipse.ui.file.save"); //$NON-NLS-1$
 					if (command != null && command.isEnabled()) {
 						command.executeWithChecks(new ExecutionEvent());

@@ -62,6 +62,9 @@ public class CpPackUnpackJob extends CpPackJob {
 	/** Destination path of the unpacked file*/
 	protected IPath fDestPath;
 
+	/** Source temporary path with consideration of subfolder */
+	protected IPath fSrcTempPath;
+	
 	protected boolean fInstallRequiredPacks;
 	int returnCode;
 
@@ -161,6 +164,7 @@ public class CpPackUnpackJob extends CpPackJob {
 				return false;
 			}
 			// copy pack from temporary directory to the destination
+			tempFolder = fSrcTempPath.toFile();
 			Utils.copyDirectory(tempFolder, fDestPath.toFile());
 			
 			// copy pdsc to download directory
@@ -212,6 +216,7 @@ public class CpPackUnpackJob extends CpPackJob {
 		
 		// load pack
 		String pdscFile = pdscFiles.iterator().next();
+		fSrcTempPath = new Path(Utils.extractPath(pdscFile,  true));
 		ICpXmlParser parser = new PdscParser();
 		ICpPack pack = (ICpPack) parser.parseFile(pdscFile);
 		if (pack == null) {

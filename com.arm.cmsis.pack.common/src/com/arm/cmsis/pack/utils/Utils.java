@@ -41,6 +41,8 @@ public class Utils {
 	static public final String QUOTE = "\"";  //$NON-NLS-1$
 	static private String host = null;  	  // name of a running host OS : win, mac, or linux
 
+	static public final char[] NUMERIC_SUFFIXES = new char[]{ 'K', 'M', 'G'};
+	static public final int[] NUMERIC_SHIFTS = new int[]{10, 20, 30};
 	/**
 	 * Find all pdsc recursively from given directory
 	 * @param dir directory to start search
@@ -107,6 +109,28 @@ public class Utils {
 		return res.toString();
 	}
 
+	/**
+	 * Replaces all non-alphanumeric characters (slashes, spaces, wildcards, etc.) to  '_' in supplied string
+	 * @param s source string
+	 * @return the resulting string
+	 */
+	static public String nonAlnumToUndersore(String s)	{
+		if(s == null || s.isEmpty()) {
+			return s;
+		}
+
+		StringBuilder res = new StringBuilder();
+		for(int i = 0; i < s.length(); i++){
+			char ch = s.charAt(i);
+
+			if(!Character.isLetterOrDigit(ch) ) {
+				ch = '_';
+			}
+			res.append(ch);
+		}
+		return res.toString();
+	}
+	
 	/**
 	 * Adds trailing slash to path
 	 * @param path path to add slash
@@ -180,7 +204,7 @@ public class Utils {
 	/**
 	 * Extracts file extension (leaves last segment only)
 	 * @param filename absolute or relative filename with forward slashes as delimiters
-	 * @return the result filename
+	 * @return file extension or null if file has no dot (file. will return an empty string) 
 	 */
 	static public String extractFileExtension(String filename) {
 		if(filename == null || filename.isEmpty()) {
@@ -338,11 +362,85 @@ public class Utils {
 		size >>= 10; // Scale to kByte
 		if (size < 1024 || (size % 1024) != 0) {
 			// Less than a MByte or division with rest => show kByte
-			return Long.toString(size) + " kB"; //$NON-NLS-1$
+			return Long.toString(size) + " KB"; //$NON-NLS-1$
 		}
 
 		size >>= 10; // Scale to MByte
 		return Long.toString(size) + " MB"; //$NON-NLS-1$
+	}
+	
+	/**
+	 * Returns readable representation of memory size
+	 * @param size memory size in bytes
+	 * @return readable memory size string
+	 */
+	static public String getFormattedMemorySizeString(long size)
+	{
+		if (size == 0) {
+			return CmsisConstants.EMPTY_STRING;
+		}
+
+		if (size < 1024) {
+			return String.format(" %4d Byte", size);  //$NON-NLS-1$
+		}
+
+		size >>= 10; // Scale to kByte
+		if (size < 1024 || (size % 1024) != 0) {
+			return String.format(" %4d KB  ", size); //$NON-NLS-1$
+		}
+
+		size >>= 10; // Scale to MByte
+			return String.format(" %4d MB  ", size); //$NON-NLS-1$
+	}
+
+	/**
+	 * Converts supplied string to long value, respects Byte, KB, MB and GB suffixes
+	 * @param value string to convert
+	 * @return Long value if successful, otherwise null
+	 * @see getFormattedMemorySizeString
+	 */
+	static public Long stringToLong(String value)
+	{
+		if(value == null || value.isEmpty())
+			return null;
+		
+		int shift = 0;
+		value = value.trim().trim().toUpperCase();
+		// find suffixes
+		for(int i = 0; i < NUMERIC_SUFFIXES.length; i++){
+			int pos = value.indexOf(NUMERIC_SUFFIXES[i]);
+			if(pos < 0)
+				continue;
+			shift = NUMERIC_SHIFTS[i];
+			value = value.substring(0, pos).trim();
+			break;
+		}
+		// for all other suffixes just extract numeric before space; 
+		int delimiter = value.indexOf(' ');
+		if(delimiter >=0 ) {
+			value = value.substring(0, delimiter);
+		}
+		Long result = null;
+		try {
+			result= Long.decode(value);
+		} catch (NumberFormatException e) {
+			return null;
+		}
+		if(shift > 0) {
+			result <<= shift;
+		}
+		return result;
+	}
+
+	
+	/**
+	 * Copy from one directory to another overwriting existing entries
+	 * @param sourceLocation source directory
+	 * @param destLocation destination directory
+	 * @throws IOException
+	 */
+	public static void copyDirectory(File sourceLocation, File destLocation) throws IOException {
+		copyDirectory(sourceLocation, destLocation, true);
 	}
 
 	/**
@@ -350,9 +448,10 @@ public class Utils {
 	 *
 	 * @param sourceLocation source directory
 	 * @param destLocation destination directory
+	 * @param overwrite boolean flag specifies if to overwrite existing entries 
 	 * @throws IOException
 	 */
-	public static void copyDirectory(File sourceLocation, File destLocation) throws IOException {
+	public static void copyDirectory(File sourceLocation, File destLocation, boolean overwrite) throws IOException {
 		if(sourceLocation == null) {
 			return;
 		}
@@ -362,16 +461,18 @@ public class Utils {
 				return;
 			}
 			for (String child : children) {
-				copyDirectory(new File(sourceLocation, child), new File(destLocation, child));
+				copyDirectory(new File(sourceLocation, child), new File(destLocation, child), overwrite);
 			}
 		} else {
 			if (!destLocation.getParentFile().exists()) {
 				destLocation.getParentFile().mkdirs();
 			}
-			copy(sourceLocation, destLocation);
+			copy(sourceLocation, destLocation, overwrite);
 		}
 	}
 
+	
+	
 	/**
 	 * Get the String of current date in the format of "dd-mm-yyyy"
 	 * @return String of current date in the format of "dd-mm-yyyy"
@@ -386,12 +487,23 @@ public class Utils {
 	}
 
 	/**
-	 * Copy sourceFile to destFile
+	 * Copy sourceFile to destFile overwriting existing file
 	 *
 	 * @param source source file
 	 * @param dest destination file
 	 */
 	public static void copy(File source, File dest) throws IOException {
+		copy(source, dest, true);
+	}
+
+	/**
+	 * Copy sourceFile to destFile
+	 *
+	 * @param source source file
+	 * @param dest destination file
+ 	 * @param overwrite boolean flag specifies if to overwrite the existing file 
+	 */
+	public static void copy(File source, File dest, boolean overwrite) throws IOException {
 		InputStream input = null;
 		OutputStream output = null;
 		if (!dest.getParentFile().exists()) {
@@ -399,6 +511,8 @@ public class Utils {
 		}
 		try {
 			if (dest.exists()) {
+				if(!overwrite)
+					return; // keep existing file
 				if(dest.equals(source))
 					return; // do not copy to itself
 				dest.delete();
@@ -421,6 +535,8 @@ public class Utils {
 		}
 	}
 
+
+	
 	/**
 	 * Delete the folder recursively: first file, then folder
 	 *
@@ -453,21 +569,31 @@ public class Utils {
 	/**
 	 * @param archiveFile the zip file
 	 * @return the number of files contained in this zip file
-	 * @throws IOException
+	 * @throws Exception 
 	 */
 	public static int getFilesCount(File archiveFile) throws IOException {
-		ZipInputStream zipInput;
-		zipInput = new ZipInputStream(new FileInputStream(archiveFile));
-		ZipEntry zipEntry = zipInput.getNextEntry();
 		int count = 0;
-		while (zipEntry != null) {
-			if (!zipEntry.isDirectory()) {
-				count++;
+		try {
+			ZipInputStream zipInput;
+			zipInput = new ZipInputStream(new FileInputStream(archiveFile));
+			ZipEntry zipEntry = zipInput.getNextEntry();
+			while (zipEntry != null) {
+				if (!zipEntry.isDirectory()) {
+					count++;
+				}
+				zipEntry = zipInput.getNextEntry();
 			}
-			zipEntry = zipInput.getNextEntry();
+			zipInput.closeEntry();
+			zipInput.close();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			String msg = e.getMessage();
+			msg += "\n" + "One reason could be non-unicode file name in zip file.\nPacks support unicode UTF-8 file names.";
+			throw new IllegalArgumentException(msg, e.getCause());
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
 		}
-		zipInput.closeEntry();
-		zipInput.close();
 
 		return count;
 	}

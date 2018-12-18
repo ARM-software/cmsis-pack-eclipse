@@ -15,6 +15,7 @@ import java.io.File;
 
 import com.arm.cmsis.pack.CpEnvironmentProvider;
 import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpExampleImporter;
 import com.arm.cmsis.pack.ICpPackRootProvider;
 import com.arm.cmsis.pack.build.gnuarmeclipse.GnuarmeclipseToolChainAdapter;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
@@ -48,6 +49,8 @@ public class RefClientEnvironmentProvider extends CpEnvironmentProvider implemen
 
 	@Override
 	public void init() {
+		// initialize default example importer 
+		fExampleImporter = new RefClientEclipseExampleImporter();
 		// install custom pack installer
 		RefClientPackInstaller packInstaller = new RefClientPackInstaller();
 		CpPlugIn.getDefault().setPackInstaller(packInstaller);
@@ -55,8 +58,8 @@ public class RefClientEnvironmentProvider extends CpEnvironmentProvider implemen
 
 	@Override
 	public boolean isExampleSupported(ICpExample example) {
-		return true; // to see all examples, even those that are not supported
-		//return super.isExampleSupported(example);
+		//return true; // uncomment to see all examples, even those that are not supported
+		return super.isExampleSupported(example);
 	}
 
 	
@@ -79,5 +82,11 @@ public class RefClientEnvironmentProvider extends CpEnvironmentProvider implemen
 		return true;
 	}
 
+
+	@Override
+	public void setDefaultImporter(ICpExampleImporter exampleImporter) {
+		if(getDefaultImporter() == null)
+			super.setDefaultImporter(exampleImporter);
+	}
 	
 }

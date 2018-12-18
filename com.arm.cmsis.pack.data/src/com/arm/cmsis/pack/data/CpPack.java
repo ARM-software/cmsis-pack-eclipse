@@ -200,6 +200,38 @@ public class CpPack extends CpRootItem implements ICpPack {
 	}
 
 	/**
+	 * Extracts vendor from id string
+	 * @param id Pack ID string
+	 * @return vendor string
+	 */
+	public static String vendorFromId(final String id){
+		if(id == null) {
+			return CmsisConstants.EMPTY_STRING;
+		}
+		int pos = id.indexOf('.'); // find first separator
+		if(pos > 0 ) {
+			return id.substring(0, pos); 
+		}
+		return id;
+	}
+
+	
+	/**
+	 * Extracts name from id string
+	 * @param id Pack ID string
+	 * @return name string
+	 */
+	public static String nameFromId(final String id){
+		String family = familyFromId(id);
+		int pos = family.indexOf('.'); // find first separator
+		if(pos > 0 ) {
+			return family.substring(pos + 1); 
+		}
+		return CmsisConstants.EMPTY_STRING;
+	}
+
+	
+	/**
 	 * Extracts version from id string
 	 * @param id Pack ID string
 	 * @return version string if found, null otherwise
@@ -218,7 +250,7 @@ public class CpPack extends CpRootItem implements ICpPack {
 		}
 		return CmsisConstants.EMPTY_STRING;
 	}
-
+	
 	/**
 	 * Returns Pack family ID : pack ID without version, i.e. the form Vendor.Name
 	 * @param  id Pack ID string
@@ -307,10 +339,10 @@ public class CpPack extends CpRootItem implements ICpPack {
 	@Override
 	public boolean isDevicelessPack() {
 		if(deviceLess < 0) {
-			// TODO check more
-			if (getId().contains("ARM") ||  //$NON-NLS-1$
-					(getGrandChildren(CmsisConstants.DEVICES_TAG) == null &&
-					getGrandChildren(CmsisConstants.BOARDS_TAG) == null)) {
+			if ( getGrandChildren(CmsisConstants.DEVICES_TAG) == null &&
+				 getGrandChildren(CmsisConstants.BOARDS_TAG)  == null) {
+				deviceLess = 1;
+			} else if(CmsisConstants.ARM.equals(getVendor()) && getName().startsWith(CmsisConstants.CMSIS)) { 
 				deviceLess = 1;
 			}else {
 				deviceLess = 0;
@@ -434,4 +466,22 @@ public class CpPack extends CpRootItem implements ICpPack {
 		}
 		return installingVersion;
 	}
+
+	@Override
+	public String getReleaseUrl(String version) {
+		Collection<? extends ICpItem> releases = getGrandChildren(CmsisConstants.RELEASES_TAG);
+		if (!version.equals(CmsisConstants.EMPTY_STRING) && releases != null) {
+			for (ICpItem release : releases) {
+				if (release.getAttribute(CmsisConstants.VERSION).equals(version)) {
+					String url = release.getAttribute(CmsisConstants.URL);
+					if (!url.isEmpty()) {
+						return url;
+					}
+					break;
+				}
+			}
+		}
+		return CmsisConstants.EMPTY_STRING;
+	}
+	
 }

@@ -36,6 +36,9 @@ public class CpComponent extends CpItem implements ICpComponent {
 		// inherit attributes from bundle
 		if(parent != null && parent.getTag().equals(CmsisConstants.BUNDLE_TAG)) {
 			attributes().mergeAttributes(parent.attributes(), CmsisConstants.C_ATTRIBUTE_PREFIX);
+			String bundleVersion = parent.getVersion();
+			setAttribute(CmsisConstants.CBUNDLEVERSION, bundleVersion);
+			
 		}
 	}
 	
@@ -215,11 +218,7 @@ public class CpComponent extends CpItem implements ICpComponent {
 
 	@Override
 	public String getRteComponentsHCode() {
-		ICpItem child = getFirstChild(CmsisConstants.RTE_COMPONENTS_H);
-		if(child != null) {
-			return child.getText();
-		}
-		return null;
+		return getFirstChildText(CmsisConstants.RTE_COMPONENTS_H);
 	}
 	
 	@Override

@@ -141,6 +141,7 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 				theEnvironmentProvider = new CpEnvironmentProvider();
 			}
 		}
+		theEnvironmentProvider.setRteEventProxy(rteEventProxy);
 		rteEventProxy.addListener(theEnvironmentProvider);
 		theEnvironmentProvider.init();
 	}
@@ -194,6 +195,10 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 		}
 	}
 
+	@Override
+	public IRteEventProxy getRteEventProxy() {
+		return rteEventProxy;
+	}
 
 	@Override
 	public void addListener(IRteEventListener listener) {
@@ -213,17 +218,6 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	@Override
 	public void notifyListeners(RteEvent event) {
 		rteEventProxy.notifyListeners(event);
-	}
-
-	@Override
-	public void emitRteEvent(String topic, Object data) {
-		rteEventProxy.emitRteEvent(topic, data);
-
-	}
-
-	@Override
-	public void handle(RteEvent event) {
-		rteEventProxy.handle(event);
 	}
 
 }

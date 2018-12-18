@@ -77,6 +77,12 @@ public interface ICmsisItem extends ITreeObject {
 	String getDoc();
 
 	/**
+	 * Clears all cashed information if any 
+	 */
+	default void invalidate() { /*default does nothing */ };
+	
+	
+	/**
 	 * Returns collection of child items
 	 * @return collection of child items 
 	 */
@@ -90,6 +96,18 @@ public interface ICmsisItem extends ITreeObject {
 	 */
 	boolean isExclusive();
 
+
+	/**
+	 * Casts a supplied object to a ICmsisItem  
+	 * @param obj object to cast
+	 * @return casted object if possible, null otherwise
+	 */
+	static ICmsisItem cast(Object obj){
+		if(obj instanceof ICmsisItem) {
+			return (ICmsisItem)obj;
+		}
+		return null;
+	}
 	
 	/**
 	 * Visitor pattern to traverse the tree 

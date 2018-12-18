@@ -30,4 +30,12 @@ public interface ICpItemInfo extends ICpItem {
 	 */
 	void updateInfo();
 	
+	/**
+	 * Returns parent ICpItemInfo if this file (component, API or device) 
+	 * @return parent ICpItemInfo
+	 */
+	default ICpItemInfo getParentInfo() {
+		return getParentOfType(ICpItemInfo.class);
+	}
+
 }

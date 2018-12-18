@@ -151,4 +151,17 @@ public interface IRteModelController extends IRteController, IRteModel{
 	 */
 	void setUseAllLatestPacks(boolean bUseLatest);
 
+	/**
+	 * Sets flag to show only used packs in Packs editor page
+	 * @param bShowUsed flag to set
+	 */
+	void setShowUsedPacksOnly(boolean bShowUsed);
+	
+	/**
+	 * Checks if Packs editor page should only show used packs
+	 * @return true if only used packs should be shown
+	 */
+	boolean isShowUsedPacksOnly();
+	
+	
 }

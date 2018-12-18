@@ -46,7 +46,13 @@ public class Messages extends NLS {
 	public static String CmsisCodeTemplateNewWizardPage_LocationNotUnderProject;
 	public static String CmsisCodeTemplateNewWizardPage_Project;
 	public static String CmsisCodeTemplateNewWizardPage_ProjectMustBeSpecified;
-	public static String CmsisCodeTemplateNewWizardPage_ProjectMustExist;
+	public static String CmsisCodeTemplateNewWizardPage_ProjectMustExist;	
+	public static String CmsisCodeTemplate_NoTemplates;
+	public static String CmsisHeadlessBuilder_CmsisPackManagerNotAvailable;
+	public static String CmsisHeadlessBuilder_cmsisPackRootUsage;
+	public static String CmsisHeadlessBuilder_HelpUsage;
+	public static String CmsisHeadlessBuilder_NoCmsisPackRoot;
+	public static String CmsisHeadlessBuilder_NoInstalledPacks;	
 	public static String CreateRteProject_EclipseProjectNotExists;
 	public static String CreateRteProject_ErrorCreatingConfigFile;
 	public static String CreateRteProject_ErrorCreatingRteProject;
@@ -66,6 +72,7 @@ public class Messages extends NLS {
 	public static String RteConfiguration_DeviceHeader;
 	public static String RteProjectManager_ReloadRteProjectMessage;
 	public static String RteProjectManager_ReloadRteProjectTitle;
+	public static String RteProjectNature_AddRteNature;
 	public static String RteProjectRenameParticipant_CheckingPreconditions;
 	public static String RteProjectRenameParticipant_CMSIS_RTE_project_rename_handler;
 	public static String RteProjectRenameParticipant_CreatingChange;
@@ -115,6 +122,33 @@ public class Messages extends NLS {
 	public static String UpdateConfigFileHandler_Downgrade;
 	public static String UpdateConfigFileHandler_UpdateSelectedFiles;
 	public static String UpdateConfigFileHandler_Upgrade;
+	public static String CpEclipseExampleImporter_ErrorWhileCopyingExample;
+	public static String CpEclipseExampleImporter_ErrorWhileOverwritingExistingProject;
+	public static String CpEclipseExampleImporter_ErrorWhileReadingProjectDescriptionFile;
+	public static String CpEclipseExampleImporter_ExistsQuestion;
+	public static String CpEclipseExampleImporter_FailedImportFilesFromFolder;
+	public static String CopyExampleDialog_AttentionMessage;
+	public static String CopyExampleDialog_CopyExampleTitle;
+	public static String CopyExampleDialog_Example;
+	public static String CopyExampleDialog_Pack;
+	public static String CopyExampleDialog_ProjectName;
+	public static String CopyExampleDialog_ReplaceExistingProject;
+	public static String CopyExampleDialog_ProjectLocation;
+	public static String OverwriteQuery_ExistsQuestion;
+	public static String OverwriteQuery_OverwriteNameAndPathQuestion;
+	public static String OverwriteQuery_Question;
+    public static String RteProjectImporter_JobMessage;
+    public static String RteProjectImporter_CancelImport;
+    public static String RteProjectImporter_ErrorCDTProjectCreation;
+
+
+
+	public static String RteProjectImporter_Import_Completed;
+	public static String RteProjectImporter_Importing_Example;
+	public static String RteProjectImporter_Importing_File;
+
+
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, Messages.class);

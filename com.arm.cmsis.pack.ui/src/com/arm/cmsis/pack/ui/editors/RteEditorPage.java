@@ -13,9 +13,11 @@ package com.arm.cmsis.pack.ui.editors;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 
 import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.events.RteEvent;
@@ -27,31 +29,67 @@ import com.arm.cmsis.pack.ui.widgets.RteWidget;
 public abstract class RteEditorPage<TController extends IRteController> extends RteWidget<TController> {
 
 	protected RteEditorPageHeader headerWidget = null;
-    protected boolean bModified = false;
 	protected IAction saveAction = null;
+	protected RteWidget<TController> contentWidget = null;
 
 	/**
 	 * Creates page content
 	 * @param parent parent composite for content
 	 */
-	public abstract void createPageContent(Composite parent);
+	public void createPageContent(Composite parent) {
+		getContentWidget().createControl(parent);
+	};
+
+	@Override
+	public void destroy(){
+		if(contentWidget != null) {
+			contentWidget.destroy();
+			contentWidget = null;
+		}
+		super.destroy();
+	}
+
 	
+	/**
+	 * Creates content widget 
+	 */
+	abstract protected RteWidget<TController> createContentWidget();
+	
+	/**
+	 * Returns page help ID
+	 * @return help ID
+	 */
+	abstract protected String getHelpID();
+	
+	/**
+	 * Returns page image
+	 * @return page Image
+	 */
+	abstract protected Image getImage();
+	
+	/**
+	 * Returns page label
+	 * @return page label string
+	 */
+	abstract protected String getLabel();
+
 	/**
 	 * Check if the page has been modified from last saved state
 	 * @return true if modified
 	 */
-	public boolean isModified() {
-		return bModified;
-	}
-		
+	abstract public boolean isModified();
+
 	/**
-	 *  Creates action elements in the header and sets the header label 
+	 * Creates page content
+	 * @param parent parent composite for content
 	 */
-	protected void setupHeader() {
-		saveAction = headerWidget.addSaveAction();
-		headerWidget.addHelpAction();
+	protected RteWidget<TController> getContentWidget() {
+		if(contentWidget == null) {
+			contentWidget = createContentWidget();
+		}
+		return contentWidget;
 	}
-	
+
 	@Override
 	public Composite createControl(Composite parent) {
 		Composite pageComposite = new Composite(parent, SWT.NONE);
@@ -65,9 +103,9 @@ public abstract class RteEditorPage<TController extends IRteController> extends 
 
     	headerWidget = new RteEditorPageHeader(pageComposite, SWT.NONE);
     	headerWidget.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
     	createPageContent(pageComposite);
     	setupHeader();
+		PlatformUI.getWorkbench().getHelpSystem().setHelp(getFocusWidget(), getHelpID());
     	update();
     	return pageComposite;
 	}
@@ -84,15 +122,59 @@ public abstract class RteEditorPage<TController extends IRteController> extends 
 		}
 		updateSaveAction(); // update on every event
 	}
-	@Override
-	public void update() {
-		updateSaveAction();
+
+	/**
+	 *  Creates action elements in the header and sets the header label 
+	 */
+	protected void setupHeader() {
+		headerWidget.setLabel(getLabel(), getImage());
+		createActions();
+		headerWidget.addHelpAction();
+		headerWidget.setFocusWidget(getFocusWidget());
+		updateActions();
+	}
+	
+	protected void createActions() {
+		saveAction = headerWidget.addSaveAction();		
 	}
 
+	public void updateActions() {
+		updateSaveAction();
+	}
 	
 	protected void updateSaveAction(){
 		if(saveAction != null && getModelController() != null){
 			saveAction.setEnabled(getModelController().isModified());
 		}
 	}
+	
+	@Override
+	public void update() {
+		if(headerWidget != null && getModelController() != null) {
+			headerWidget.setModified(isModified());
+			updateActions(); 
+		}
+	//	refresh(); // TODO : ensure it is redundant
+	}
+	
+	@Override
+	public void refresh() {
+		RteWidget<TController> w = getContentWidget();
+		if(w != null)
+			getContentWidget().refresh();
+	}
+	
+	@Override
+	public void setModelController(TController modelController) {
+		super.setModelController(modelController);
+		getContentWidget().setModelController(modelController);
+		update();
+	}
+
+	
+	@Override
+	public Composite getFocusWidget() {
+		return getContentWidget().getFocusWidget();
+	}
+	
 }

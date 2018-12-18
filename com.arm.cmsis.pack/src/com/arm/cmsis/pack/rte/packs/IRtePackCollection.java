@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.rte.packs;
 
+import java.util.Collection;
 import java.util.Map;
 
 import com.arm.cmsis.pack.data.ICpPackFilter;
@@ -66,5 +67,20 @@ public interface IRtePackCollection extends IRtePackItem {
 	 * @return true if used
 	 */
 	boolean isPackUsed(String id);
+	
+	
+	/**
+	 * Returns collection of all pack families in the collection
+	 * @return collection of IRtePackFamily objects
+	 */
+	Collection<IRtePackFamily> getRtePackFamilies();
+
+	
+	/**
+	 * Returns collection of pack families used in project
+	 * @return collection of IRtePackFamily objects
+	 */
+	Collection<IRtePackFamily> getUsedRtePackFamilies();
+
 	
 }

@@ -20,7 +20,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
@@ -40,10 +39,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
-import org.eclipse.core.resources.IWorkspace;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
@@ -53,16 +49,14 @@ import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.wizards.datatransfer.FileSystemStructureProvider;
-import org.eclipse.ui.wizards.datatransfer.ImportOperation;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.ICpPackManager;
+import com.arm.cmsis.pack.ICpPackRootProvider;
 import com.arm.cmsis.pack.ICpRepoServiceProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpPack;
@@ -81,9 +75,8 @@ import com.arm.cmsis.pack.installer.jobs.CpPackInstallJob;
 import com.arm.cmsis.pack.installer.jobs.CpPackJob;
 import com.arm.cmsis.pack.installer.jobs.CpPackRemoveJob;
 import com.arm.cmsis.pack.installer.jobs.CpPackUnpackJob;
+import com.arm.cmsis.pack.installer.jobs.CpUpdatePacksJob;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
-import com.arm.cmsis.pack.repository.CpRepositoryList;
-import com.arm.cmsis.pack.repository.ICpRepository;
 import com.arm.cmsis.pack.repository.RtePackJobResult;
 import com.arm.cmsis.pack.rte.RteModelUtils;
 import com.arm.cmsis.pack.utils.Utils;
@@ -94,9 +87,10 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class CpPackInstaller extends PlatformObject implements ICpPackInstaller {
 
+	public static boolean updateFinished = true;
 	protected IProgressMonitor fMonitor;
 	protected Map<String, CpPackJob> fJobQueue; // job ID -> pack job
-
+	protected boolean bSuppressMessages = false;
 	/**
 	 * Pack ID -> Collection of required packs' IDs installing
 	 */
@@ -106,12 +100,22 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 	protected ICpRepoServiceProvider fRepoServiceProvider;
 
+	/**
+	 * true if Pack Manager is updating all packs.
+	 */
+	private boolean updatingPacks = false;
+	
 	public CpPackInstaller() {
 		fJobQueue = Collections.synchronizedMap(new HashMap<>());
 		fResolvingPacks = Collections.synchronizedMap(new HashMap<>());
 		fRepoServiceProvider = new CpRepoServiceProvider();
 	}
 
+	@Override
+	public boolean isUpdatingPacks() {
+		return updatingPacks;
+	}
+	
 	@Override
 	public void installPack(String packId) {
 		installPack(packId, true);
@@ -126,12 +130,29 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		}
 		ICpPack pack = allPacks.getPack(packId);
 		if (pack != null) {
-			if (pack.getPackState() == PackState.INSTALLED) {
+			if (pack.getPackState().isInstalledOrLocal()) {
 				return;
 			} else if (pack.getPackState() == PackState.DOWNLOADED) {
 				unpackPack(pack, installRequiredPacks);
 			} else {
-				installPack(pack.getPackId(), pack.getUrl(), installRequiredPacks);
+				String url = pack.getReleaseUrl(CpPack.versionFromId(packId));
+				boolean isReleaseUrl = true;
+				if (url.isEmpty()) {
+					url = pack.getUrl();
+					isReleaseUrl = false;
+				}
+				String ext = CmsisConstants.EXT_PACK;
+				if (isReleaseUrl) {
+					ext = determineExtentsion(url);
+					int index = url.lastIndexOf('/');
+					if (index == -1) {
+						index = url.lastIndexOf('\\');
+					}
+					if (index != -1) {
+						url = url.substring(0, index + 1);	// remove file name from path
+					}
+				}
+				installPack(pack.getPackId(), url, installRequiredPacks, ext);
 			}
 		} else {
 			String familyId = CpPack.familyFromId(packId);
@@ -144,10 +165,38 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			if (CpPack.isPackFamilyId(packId)) {
 				packId += '.' + latestPack.getVersion();
 			}
-			installPack(packId, latestPack.getUrl(), installRequiredPacks);
+			String url = latestPack.getReleaseUrl(CpPack.versionFromId(packId));
+			boolean isReleaseUrl = true;
+			if (url.isEmpty()) {
+				url = latestPack.getUrl();
+				isReleaseUrl = false;
+			}
+			String ext = CmsisConstants.EXT_PACK;
+			if (isReleaseUrl) {
+				ext = determineExtentsion(url);
+				int index = url.lastIndexOf('/');
+				if (index == -1) {
+					index = url.lastIndexOf('\\');
+				}
+				if (index != -1) {
+					url = url.substring(0, index + 1);	// remove file name from path
+				}
+			}
+			installPack(packId, url, installRequiredPacks, ext);
 		}
 	}
 
+	private String determineExtentsion(String url) {
+		String ext = CmsisConstants.EXT_PACK;
+		if (!url.isEmpty()) {
+			int index = url.lastIndexOf('.');
+			if (index != -1) {
+				ext = url.substring(index);
+			}
+		}
+		return ext;
+	}
+	
 	@Override
 	public void installPack(IAttributes packAttributes) {
 		String packId = RteModelUtils.constructEffectivePackId(packAttributes);
@@ -156,7 +205,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 	@Override
 	public Collection<String> installRequiredPacks(ICpPack pack) {
-		if (pack == null || pack.getPackState() != PackState.INSTALLED) {
+		if (pack == null || !pack.getPackState().isInstalledOrLocal()) {
 			return null;
 		}
 		Collection<? extends ICpItem> requiredPacks = pack.getRequiredPacks();
@@ -197,7 +246,24 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 					if (downloadedPack != null && downloadedPack.getPackState() == PackState.DOWNLOADED) {
 						addedToJobQueue = unpackPack(downloadedPack, true);
 					} else {
-						addedToJobQueue = installPack(packId, latestPack.getUrl(), true);
+						String url = latestPack.getReleaseUrl(CpPack.versionFromId(packId));
+						boolean isReleaseUrl = true;
+						if (url.isEmpty()) {
+							url = latestPack.getUrl();
+							isReleaseUrl = false;
+						}
+						String ext = CmsisConstants.EXT_PACK;
+						if (isReleaseUrl) {
+							ext = determineExtentsion(url);
+							int index = url.lastIndexOf('/');
+							if (index == -1) {
+								index = url.lastIndexOf('\\');
+							}
+							if (index != -1) {
+								url = url.substring(0, index + 1);	// remove file name from path
+							}
+						}
+						addedToJobQueue = installPack(packId, url, true, ext);
 					}
 					if (addedToJobQueue) {
 						reqPacks.add(packId);
@@ -232,12 +298,12 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	 * @param installRequiredPacks True if the required packs should also be installed
 	 * @return True if the job is added to the job queue
 	 */
-	private boolean installPack(String packId, String url, boolean installRequiredPacks) {
+	private boolean installPack(String packId, String url, boolean installRequiredPacks, String extension) {
 		if (fJobQueue.containsKey(packId)) {
 			return false;
 		}
 		CpPackJob job = new CpPackInstallJob(NLS.bind(Messages.CpPackInstaller_InstallingPack, packId),
-				this, packId, url, installRequiredPacks);
+				this, packId, url, installRequiredPacks, extension);
 		job.setUser(true);
 		fJobQueue.put(packId, job);
 		job.schedule();
@@ -245,6 +311,8 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	}
 
 	protected void popupInstallError(String errorMessage) {
+		if(isSuppressMessages())
+			return; // do nothing
 		Display.getDefault().asyncExec(() -> {
 			MessageDialog.openError(null, Messages.CpPackInstaller_NoPacksFound,
 					errorMessage);
@@ -306,7 +374,19 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		}
 		String jobName = NLS.bind(Messages.CpPackInstaller_RemovingPack, pack.getId());
 		if (delete) {
-			jobName = NLS.bind(Messages.CpPackInstaller_DeletingPack, pack.getId());
+			jobName = NLS.bind(Messages.CpPackInstaller_DeletingPack, pack.getTag());
+			if (pack.getPackState() == PackState.ERROR) {
+				String path = pack.getFileName();
+				path = Utils.extractPath(path, false);
+				if (path.lastIndexOf(CmsisConstants.DOT_DOWNLOAD) != -1 ||
+					path.lastIndexOf(CmsisConstants.DOT_LOCAL) != -1) {
+					jobName = NLS.bind(Messages.CpPackInstaller_DeletingFile, pack.getFileName());
+				} else {
+					jobName = NLS.bind(Messages.CpPackInstaller_DeletingFolder, path);
+				}
+				id = pack.getFileName();
+			}
+			
 		}
 		CpPackJob job = new CpPackRemoveJob(jobName, this, pack, delete);
 		job.setUser(true);
@@ -320,7 +400,12 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 	@Override
 	public boolean unzip(File archiveFile, IPath destPath, IProgressMonitor monitor) throws IOException {
-		SubMonitor progress = SubMonitor.convert(monitor, Utils.getFilesCount(archiveFile));
+		SubMonitor progress = null;
+		try {
+			progress = SubMonitor.convert(monitor, Utils.getFilesCount(archiveFile));
+		} catch (IOException e1) {
+			throw e1;
+		}
 
 		if (destPath.toFile().exists()) {
 			Utils.deleteFolderRecursive(destPath.toFile());
@@ -343,16 +428,26 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			if (!outFile.getParentFile().exists()) {
 				outFile.getParentFile().mkdirs();
 			}
-			OutputStream output = new FileOutputStream(outFile);
-			byte[] buf = new byte[4096]; // 4096 is a common NTFS block size
-			int bytesRead;
-			while ((bytesRead = zipInput.read(buf)) > 0) {
-				output.write(buf, 0, bytesRead);
-				countBytes += bytesRead;
-			}
-			output.close();
-			outFile.setReadOnly();
-			progress.worked(1);
+			try {
+				OutputStream output = new FileOutputStream(outFile);
+				byte[] buf = new byte[4096]; // 4096 is a common NTFS block size
+				int bytesRead;
+				while ((bytesRead = zipInput.read(buf)) > 0) {
+					output.write(buf, 0, bytesRead);
+					countBytes += bytesRead;
+				}
+				output.close();
+				outFile.setReadOnly();
+				progress.worked(1);
+			} catch (IOException e) {
+				if (e.getMessage().contains("Access is denied")) {	//$NON-NLS-1$
+					if (!outFile.exists()) {
+						zipInput.closeEntry();
+						zipInput.close();
+						throw e;
+					}
+				}
+			}				
 		}
 		zipInput.closeEntry();
 		zipInput.close();
@@ -364,100 +459,40 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 	@Override
 	public IProject copyExample(ICpExample example) {
-		if (example == null) {
-			return null;
-		}
+
 		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
-		if (envProvider == null) {
+		if(envProvider == null) {
 			return null;
 		}
-
-		String loadPath = example.getAbsoluteLoadPath(envProvider.getName());
-		if (loadPath == null || loadPath.isEmpty()) {
+		IAdaptable copyResult = envProvider.copyExample(example);
+		if(copyResult == null) {
 			return null;
 		}
-
-		IPath examplePath = new Path(loadPath);
-		// default implementation assumes that the example is an Eclipse project
-		IProjectDescription projDesc = getProjectDescription(examplePath);
-		if (projDesc == null) {
-			popupCopyError(NLS.bind(Messages.CpPackInstaller_ErrorWhileReadingProjectDescriptionFile,
-					examplePath));
-			return null;
-		}
-		String projectName = projDesc.getName();
-		final IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		final IProject project = workspace.getRoot().getProject(projectName);
-		File destFile = ResourcesPlugin.getWorkspace().getRoot().getLocation()
-				.append(project.getName()).toFile();
-
-		if (!confirmCopyExample(example, destFile, project)) {
-			return null;
-		}
-
-		if (project.exists()) {
-			try {
-				project.delete(true, true, new NullProgressMonitor());
-			} catch (CoreException e) {
-				popupCopyError(NLS.bind(Messages.CpPackInstaller_ErrorWhileOverwritingExistingProject,
-						project.getName()));
-				return null;
-			}
-		} else if (destFile.exists()) {
-			Utils.deleteFolderRecursive(destFile);
-		}
-
-		CpPlugIn.getDefault().emitRteEvent(RteEvent.PRE_IMPORT, null);
-		File importSource = new File(projDesc.getLocationURI());
-		FileSystemStructureProvider structureProvider = FileSystemStructureProvider.INSTANCE;
-
-		ImportOperation operation = new ImportOperation(project.getFullPath(), importSource,
-				structureProvider, new OverwriteQuery(null),
-				structureProvider.getChildren(importSource));
-		operation.setContext(null);
-		operation.setOverwriteResources(true); // need to overwrite
-		operation.setCreateContainerStructure(false);
-		try {
-			operation.run(new NullProgressMonitor());
-		} catch (InvocationTargetException | InterruptedException e) {
-			popupCopyError(NLS.bind(Messages.CpPackInstaller_FailedImportFilesFromFolder,
-					examplePath.removeLastSegments(1)));
-			return null;
-		}
-
-		Utils.clearReadOnly(project.getLocation().toFile(),
-				CmsisConstants.EMPTY_STRING);
-		CpPlugIn.getDefault().emitRteEvent(RteEvent.POST_IMPORT, project);
-		return project;
+		return copyResult.getAdapter(IProject.class);
 	}
 
-	protected boolean confirmCopyExample(ICpExample example, File destFile, IProject project) {
-		CopyExampleDialog copyDialog = new CopyExampleDialog(null, example.getName(),
-				example.getPackId(), destFile.toString(), project.getName(),
-				project.exists() || destFile.exists());
 
-		return copyDialog.open() == Window.OK;
-	}
-
-	protected void popupCopyError(String errorMessage) {
-		Display.getDefault().asyncExec(() -> {
-			MessageDialog.openError(null, Messages.CpPackInstaller_ErrorWhileCopyingExample,
-					errorMessage);
-		});
-	}
-
-	private IProjectDescription getProjectDescription(IPath path) {
-		try {
-			return ResourcesPlugin.getWorkspace().loadProjectDescription(path);
-		} catch (CoreException e) {
-			return null;
+	@Override
+	public void updatePacksAsync() {
+		if (isProcessing(CmsisConstants.REPO_KEIL_PINDEX_FILE)) {
+			return;
 		}
+		CpPackJob job = new CpUpdatePacksJob(Messages.CpPackInstaller_RefreshPacks, this, CmsisConstants.REPO_KEIL_PINDEX_FILE);
+		job.setUser(true);
+		fJobQueue.put(CmsisConstants.REPO_KEIL_PINDEX_FILE, job);
+		job.schedule();
 	}
 
 	@Override
 	public void updatePacks(IProgressMonitor monitor) {
 		fMonitor = monitor;
+		if(monitor.isCanceled())
+			return;
+		updatingPacks = true;
+		CpPlugIn.getDefault().emitRteEvent(RteEvent.PACK_UPDATE_JOB_STARTED);
 		updatePacks();
+		updatingPacks = false;
+		CpPlugIn.getDefault().emitRteEvent(RteEvent.PACK_UPDATE_JOB_FINISHED);		
 	}
 
 	@Override
@@ -480,11 +515,14 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 					fResolvingPacks.put(jobId, reqPacks);
 				}
 			}
-			CpPlugIn.getDefault().emitRteEvent(jobTopic, jobResult);
+			if(jobTopic != null) {
+				CpPlugIn.getDefault().emitRteEvent(jobTopic, jobResult);
+			}
 		} else {
 			output += Messages.CpPackInstaller_WasNotSuccessful;
 			if (jobResult != null) {
-				output += jobResult.getErrorString();
+				if (jobResult.getErrorString() != null)
+					output += ": " + jobResult.getErrorString(); //$NON-NLS-1$
 			}
 			printInConsole(output, ConsoleType.ERROR);
 			// anyway notify the recipients that the job has completed
@@ -531,9 +569,21 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		fJobQueue.clear();
 		fResolvingPacks.clear();
 	}
+	
+	@Override
+	public boolean isSuppressMessages() {
+		return bSuppressMessages;
+	}
+
+	@Override
+	public void setSuppressMessages(boolean bSuppress) {
+		bSuppressMessages = bSuppress;
+	}
 
 	@Override
 	public void printInConsole(String message, ConsoleType type) {
+		if(isSuppressMessages())
+			return;
 		switch (type) {
 		case OUTPUT:
 			CpPlugIn.getDefault().emitRteEvent(RteEvent.PRINT_OUTPUT, message);
@@ -565,38 +615,25 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		}
 
 		boolean success = true;
-
-		CpRepositoryList repos = CpPlugIn.getPackManager().getCpRepositoryList();
-
-		// String[] { url, name, version }
+		 
+		String indexUrl = null;
+		ICpPackRootProvider packRootProvider = CpPreferenceInitializer.getCmsisRootProvider(); 
+		if(packRootProvider != null)
+			indexUrl = packRootProvider.getPackIndexUrl(); 
+		if(indexUrl == null || indexUrl.isEmpty()) {
+			indexUrl = CmsisConstants.REPO_KEIL_INDEX_URL;
+		}
 		List<String[]> indexList = new LinkedList<String[]>();
+		
 		try {
 			boolean needsUpdate = false;
-			List<ICpRepository> reposList = repos.getList();
-			for (ICpRepository repo : reposList) {
-
-				if (fMonitor.isCanceled()) {
-					break;
-				}
-
-				String type = repo.getType();
-				String indexUrl = repo.getUrl();
-				if (CmsisConstants.REPO_PACK_TYPE.equals(type)) {
-
-					// collect all pdsc references in this site
-					int count = readCmsisIndex(indexUrl, indexList);
-					if (count > 0) {
-						indexList.add(0, new String[]{Utils.extractPath(indexUrl, true),
-								Utils.extractFileName(indexUrl),
-								CmsisConstants.EMPTY_STRING});
-						needsUpdate = true;
-					} else if (count == -1) { // this index file is not correctly downloaded/parsed
-						success = false;
-					}
-				} else {
-					printInConsole(NLS.bind(Messages.CpPackInstaller_RepoTypeNotSupported, type),
-							ConsoleType.WARNING);
-				}
+			int count = getRepoServiceProvider().readIndexFile(indexUrl, indexList, fMonitor);
+			
+			// collect all pdsc references in this site
+			if (count > 0) {
+				needsUpdate = true;
+			} else if (count == -1) { // this index file is not correctly downloaded/parsed
+				success = false;
 			}
 			
 			// Set total number of work units to the number of pdsc files
@@ -604,7 +641,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 			// Read all .pdsc files and collect summary if index.pidx's time stamp changes
 			if (needsUpdate) {
-				aggregateCmsis(indexList);
+				updatePdscFiles(indexList);
 			}
 
 			fMonitor.worked(1); // Should reach 100% now
@@ -665,7 +702,10 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		}
 
 		// update .Local folder
-		Map<String, ICpPackFamily> families = manager.getPacks().getFamilies();
+		ICpPackCollection allPacks = manager.getPacks();  
+		if( allPacks == null)
+			return;
+		Map<String, ICpPackFamily> families = allPacks.getFamilies();
 		for (Entry<String, ICpPackFamily> entry : families.entrySet()) {
 			if(fMonitor.isCanceled()) {
 				return;
@@ -686,40 +726,21 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	}
 	
 	/**
-	 * Reads the .index file
-	 *
-	 * @param indexUrl url of .index file
-	 * @param pdscList list of pdsc files
-	 * @return number of pdsc files that needs to be updated. -1 if exception occurs.
-	 */
-	protected int readCmsisIndex(String indexUrl, List<String[]> pdscList) {
-
-		printInConsole(NLS.bind(Messages.CpPackInstaller_Parsing, indexUrl), ConsoleType.INFO);
-
-		try {
-			return fRepoServiceProvider.readIndexFile(indexUrl, pdscList);
-		} catch (FileNotFoundException e) {
-			printInConsole(Messages.CpPackInstaller_FileNotFound + e.getMessage(),
-					ConsoleType.ERROR);
-		} catch (UnknownHostException e) {
-			printInConsole(NLS.bind(Messages.CpPackInstallJob_UnknownHostException, e.getMessage()), ConsoleType.ERROR);
-		} catch (Exception e) {
-			printInConsole(e.toString(), ConsoleType.ERROR);
-		}
-
-		return -1;
-	}
-	
-
-	/**
-	 * Collects pack info from index file
+	 * Downloads pdsc files that need to be updated 
 	 * @param list List of packs, each entry is like {url, name, version}
 	 */
-	protected void aggregateCmsis(List<String[]> list) {
+	protected void updatePdscFiles(List<String[]> list) {
 
 		IPath webFolder = new Path(CpPlugIn.getPackManager().getCmsisPackWebDir());
 
 		// repo keys: { "type", "url", "list" }
+		String pdscServer = null;
+		ICpPackRootProvider packRootProvider = CpPreferenceInitializer.getCmsisRootProvider(); 
+		if(packRootProvider != null) {
+			pdscServer = packRootProvider.getPackPdscUrl();
+			if(pdscServer == null || pdscServer.isEmpty())
+				pdscServer = null;
+		}
 
 		// String[] { url, name, version }
 		for (int i = 0; i < list.size(); i++) {
@@ -728,9 +749,9 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			if (fMonitor.isCanceled()) {
 				break;
 			}
-
-			// Make url always ends in '/'
-			final String pdscUrl = Utils.addTrailingSlash(pdsc[0]);
+			
+//			final String pdscUrl = (pdscServer != null) ? pdscServer : pdsc[0];
+			final String pdscUrl =  pdsc[0];
 			final String pdscName = pdsc[1];
 			final String pdscVersion = pdsc[2];
 			final String packFamilyId = Utils.extractBaseFileName(pdscName);
@@ -759,8 +780,9 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	 * @return true if this pdsc file is successfully downloaded, false otherwise
 	 *         False if this pdsc file needs to be downloaded again.
 	 */
-	private boolean downloadPdscFile(String pdscUrl, String pdscName, String destFileName) {
+	protected boolean downloadPdscFile(String pdscUrl, String pdscName, String destFileName) {
 		
+		pdscUrl = Utils.addTrailingSlash(pdscUrl); // ensure traling slash
 		while(true) { // while for timeout
 			if(fMonitor.isCanceled())
 				return false;
@@ -802,6 +824,9 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
 	/***************** Here begins utility function part *****************/
 	protected int timeoutQuestion(String pdscUrl) {
+		if(isSuppressMessages())
+			return 0; // do not wait
+			
 		RunnableWithIntResult runnable = new RunnableWithIntResult() {
 			@Override
 			public void run() {

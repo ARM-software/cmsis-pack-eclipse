@@ -11,21 +11,14 @@
 
 package com.arm.cmsis.pack.data;
 
+import com.arm.cmsis.pack.build.IMemoryAccess;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
  *  Interface representing memory element in pdsc 
  */
-public interface ICpMemory extends ICpDeviceProperty {
-
-	final static char READ_ACCESS 		= 'r';
-	final static char WRITE_ACCESS		= 'w';
-	final static char EXECUTE_ACCESS	= 'x';
-	final static char SECURE_ACCESS		= 's';
-	final static char NON_SECURE_ACCESS	= 'n';
-	final static char CALLABLE_ACCESS	= 'c';
-	final static char PERIPHERAL_ACCESS	= 'p';
-	
+public interface ICpMemory extends IMemoryAccess, ICpDeviceProperty  {
 	
 	/**
 	 * Checks if the memory shall be used for the startup by linker
@@ -39,26 +32,19 @@ public interface ICpMemory extends ICpDeviceProperty {
 	 * Returns access string corresponding following regular expression pattern: "[rwxpsnc]+"
 	 * @return "access" attribute value if present or default derived from ID for deprecated elements 
 	 */
-	default String getAccess() {
+	@Override
+	default String getAccessString() {
 		return getEffectiveAttribute(CmsisConstants.ACCESS);
 	}
 	
-	/**
-	 * Checks if memory has specified access
-	 * @param access : one of <code>rwxpsnc</code> characters
-	 * @return true if memory provides specified access
-	 */
-	default boolean isAccess(char access) {
-		return getAccess().indexOf(access) >= 0;
-	}
 	
 	/**
 	 * Checks if the memory region represents RAM ("rwx")
 	 * @return true if RAM
 	 */
 	default boolean isRAM() {
-		String access = getAccess();
-		return access.indexOf(READ_ACCESS) >= 0 && access.indexOf(WRITE_ACCESS) >= 0 && access.indexOf(EXECUTE_ACCESS) >= 0;   
+		String access = getAccessString();
+		return access.indexOf(READ_ACCESS) >= 0 && access.indexOf(WRITE_ACCESS) >= 0;   
 	}
 
 	/**
@@ -66,67 +52,10 @@ public interface ICpMemory extends ICpDeviceProperty {
 	 * @return true if ROM
 	 */
 	default boolean isROM() {
-		String access = getAccess();
-		return access.indexOf(WRITE_ACCESS) < 0 && access.indexOf(READ_ACCESS) >= 0 && access.indexOf(EXECUTE_ACCESS) >= 0;   
+		String access = getAccessString();
+		return access.indexOf(WRITE_ACCESS) < 0 && access.indexOf(READ_ACCESS) >= 0;   
 	}
 	
-	
-	/**
-	 * Checks if memory has read access
-	 * @return true if memory has read access
-	 */
-	default boolean isReadAccess() {
-		return isAccess(READ_ACCESS);
-	}
-	
-	/**
-	 * Checks if memory has write access
-	 * @return true if memory has write access
-	 */
-	default boolean isWriteAccess() {
-		return isAccess(WRITE_ACCESS);
-	}
-
-	/**
-	 * Checks if memory has execute access
-	 * @return true if memory has execute access
-	 */
-	default boolean isExecuteAccess() {
-		return isAccess(EXECUTE_ACCESS);
-	}
-	
-	/**
-	 * Checks if memory has secure access
-	 * @return true if memory has secure access
-	 */
-	default boolean isSecureAccess() {
-		return isAccess(SECURE_ACCESS);
-	}
-	
-	/**
-	 * Checks if memory has non-secure access
-	 * @return true if memory has non-secure access
-	 */
-	default boolean isNonSecureAccess() {
-		return isAccess(NON_SECURE_ACCESS) && !isAccess(SECURE_ACCESS);
-	}
-	
-	/**
-	 * Checks if memory has callable access
-	 * @return true if memory has callable access
-	 */
-	default boolean isCallableAccess() {
-		return isAccess(CALLABLE_ACCESS);
-	}
-
-	/**
-	 * Checks if memory has peripheral access
-	 * @return true if memory has peripheral access
-	 */
-	default boolean isPeripheralAccess() {
-		return isAccess(PERIPHERAL_ACCESS);
-	}
-
 	/**
 	 * Returns parent ICpMemory (if parent is ICpMemory)  
 	 * @return parent item as ICpMemory 
@@ -142,5 +71,41 @@ public interface ICpMemory extends ICpDeviceProperty {
 	default String getAlias() {
 		return getAttribute(CmsisConstants.ALIAS);
 	}
+	
+	/**
+	 * Checks if the memory (RAM) should not be zero-initialized  
+	 * @return true if not initialized
+	 */
+	default boolean isNoInit() { return getAttributeAsBoolean(CmsisConstants.INIT, true) == false;}
+	
+	
+	/**
+	 * Returns stop address calculated from start and stop 
+	 * @return stop address as long
+	 */
+	default long getStop() {
+		long size = getSize();
+		if(size > 0)
+			size--;
+		return getStart() + size; 
+	}
+
+	/**
+	 * Returns stop address calculated from start and stop 
+	 * @return stop address as String
+	 */
+	default String getStopString() {
+		return IAttributes.longToHexString(getStop());
+	}
+
+
+	/**
+	 * Returns start-stop string  
+	 * @return start-stop as String
+	 */
+	default String getStartStopString() {
+		return getStartString() + '-' + getStopString(); 
+	}
+
 
 }

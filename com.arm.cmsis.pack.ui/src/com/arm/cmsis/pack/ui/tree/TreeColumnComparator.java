@@ -14,6 +14,7 @@ package com.arm.cmsis.pack.ui.tree;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jface.viewers.CellLabelProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
@@ -41,7 +42,7 @@ public class TreeColumnComparator extends ViewerComparator {
 	protected int maxColumnIndex;
 	protected boolean bDescending;
 	protected boolean bNumeric;
-	protected int[] numericColumns;
+	protected Set<Integer> numericColumns;
 
 	public TreeColumnComparator(TreeViewer viewer, IColumnAdvisor advisor) {
 		this(viewer, advisor, -1); // -1 == no sort
@@ -58,7 +59,7 @@ public class TreeColumnComparator extends ViewerComparator {
 		addColumnSelectionListeners(treeViewer);
 	}
 
-	public void setNumericColumns(int[] columns) {
+	public void setNumericColumns(Set<Integer> columns) {
 		numericColumns = columns;
 		bNumeric = isNumericColumn(columnIndex);
 	}
@@ -69,13 +70,9 @@ public class TreeColumnComparator extends ViewerComparator {
 	 * @return true if column is numeric
 	 */
 	public boolean isNumericColumn(int index) {
-		if(numericColumns == null || numericColumns.length == 0)
+		if(numericColumns == null || numericColumns.size() == 0)
 			return false;
-		for(int i : numericColumns){
-			if(i == index) 
-				return true;
-		}
-		return false;
+		return numericColumns.contains(index);
 	}
 
 	/**
@@ -200,11 +197,7 @@ public class TreeColumnComparator extends ViewerComparator {
 		}
 		long l1 = IAttributes.stringToLong(str1, 0L);
 		long l2 = IAttributes.stringToLong(str2, 0L);
-		if(l1 > l2)
-			return 1;
-		else if(l1 < l2)
-			return -1;
-		return 0;
+		return Long.compare(l1, l2);
 	}
 
 }

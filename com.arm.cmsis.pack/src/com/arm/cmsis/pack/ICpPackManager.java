@@ -24,6 +24,7 @@ import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.data.ICpPackFamily;
+import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.parser.ICpXmlParser;
@@ -35,7 +36,7 @@ import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
 /**
  *  Interface to a Pack manager responsible for loading CMSIS-Packs
  */
-public interface ICpPackManager {
+public interface ICpPackManager extends IRteEventListener {
 
 	/**
 	 * Sets IRteEventProxy to be used by this manger to fire notifications
@@ -286,7 +287,7 @@ public interface ICpPackManager {
 	boolean arePacksLoaded();
 
 	/**
-	 *  Triggers reload of the pack if the have already been loaded
+	 *  Triggers reload of the pack descriptions
 	 */
 	void reload();
 	
@@ -295,4 +296,25 @@ public interface ICpPackManager {
 	 * @return true if all required packs are installed
 	 */
 	boolean isRequiredPacksInstalled(ICpPack pack);
+	
+	/**
+	 * Check if pack is a local repository. Local repository means that
+	 * pack is installed outside RTE root path.
+	 * @return true if pack is a local repository
+	 */
+	boolean isLocalRepository(ICpPack pack);
+	
+	/**
+	 * Checks if search for pack updates is pending 
+	 * @return true if search for pack updates is pending
+	 */
+	boolean isCheckForUpdates();
+	
+	/**
+	 * Sets flag to schedule check for updates  
+	 * @param bCheck flag if to check for updates
+	 */
+	void setCheckForUpdates(boolean bCheck); 
+
+	
 }

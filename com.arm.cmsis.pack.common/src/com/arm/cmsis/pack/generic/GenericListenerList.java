@@ -14,6 +14,8 @@ package com.arm.cmsis.pack.generic;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,17 +23,19 @@ import java.util.Set;
  */
 public class GenericListenerList<L extends IGenericListener<E>, E> implements IGenericListenerList<L, E> {
 
-	protected Set<L> listeners = Collections.synchronizedSet(new LinkedHashSet<L>()); 
-
+	protected Set<L> listeners; 
+	
 	public GenericListenerList() {
+		listeners = Collections.synchronizedSet(new LinkedHashSet<L>());
 	}
 
 	@Override
 	public synchronized void addListener(L listener) {
-		if(listener != null && listener != this) //avoid loops
-			listeners.add(listener);
+		if(listener == null || listener == this) //avoid loops
+			return;
+		listeners.add(listener);
 	}
-
+	
 	@Override
 	public synchronized void removeListener(L listener) {
 		listeners.remove(listener);
@@ -42,10 +46,13 @@ public class GenericListenerList<L extends IGenericListener<E>, E> implements IG
 		listeners.clear();
 	}
 
-
 	@Override
 	public synchronized void notifyListeners(E event) {
-		for (Iterator<? extends L> iterator = listeners.iterator(); iterator.hasNext();) {
+		// make a copy to avoid add/remove conflicts
+		List<L> workingList = new LinkedList<>(listeners);
+		for (Iterator<? extends L> iterator = workingList.iterator(); iterator.hasNext();) {
+			if(listeners.isEmpty())
+				return;
 			L listener = iterator.next();
 			try {
 				listener.handle(event);
@@ -55,5 +62,4 @@ public class GenericListenerList<L extends IGenericListener<E>, E> implements IG
 			}
 		}
 	}
-
 }

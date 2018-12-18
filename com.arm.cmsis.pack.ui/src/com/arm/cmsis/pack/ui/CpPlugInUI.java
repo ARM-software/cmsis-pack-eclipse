@@ -24,7 +24,7 @@ import java.util.Set;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -46,14 +46,15 @@ import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.ICpPackRootProvider;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
+import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * The activator class controls the plug-in life cycle
  */
 public class CpPlugInUI extends AbstractUIPlugin {
 
-	private static HashMap<String, Image> images = new HashMap<String, Image>();
-	private static HashMap<String, ImageDescriptor> imageDescriptors = new HashMap<String, ImageDescriptor>();
+	private static HashMap<String, Image> images = new HashMap<>();
+	private static HashMap<String, ImageDescriptor> imageDescriptors = new HashMap<>();
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.arm.cmsis.pack.ui"; //$NON-NLS-1$
@@ -65,14 +66,24 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICONS_PATH  		= "icons/"; 		//$NON-NLS-1$
 	// icons
 
+	public static final String ICON_ADD  		= "add.gif"; 		//$NON-NLS-1$
+	public static final String ICON_DELETE 		= "delete.gif";		//$NON-NLS-1$
+	public static final String ICON_PROPERTIES	= "properties.gif";	//$NON-NLS-1$
+	public static final String ICON_WIZARD		= "wizard.gif";		//$NON-NLS-1$
+	public static final String ICON_NEW_OVR		= "newOvr.png";		//$NON-NLS-1$
+	public static final String ICON_BLOCK_NEW	= "block_new.png";	//$NON-NLS-1$
+
 	public static final String ICON_ITEM  		= "item.png"; 		//$NON-NLS-1$
 	public static final String ICON_BOOK  		= "book.png"; 		//$NON-NLS-1$
 	public static final String ICON_FILE  		= "file.gif"; 		//$NON-NLS-1$
 	public static final String ICON_FOLDER 		= "folder.gif"; 	//$NON-NLS-1$
 	public static final String ICON_FOLDER_DEVICES = "folderDevices.gif"; 		//$NON-NLS-1$
+	public static final String ICON_LIST  		= "ListViewer.png"; //$NON-NLS-1$
+	public static final String ICON_TREE  		= "TreeViewer.png"; //$NON-NLS-1$
 
 	public static final String ICON_CHECKED 	= "checked.gif"; 	//$NON-NLS-1$
 	public static final String ICON_UNCHECKED 	= "unchecked.gif"; 	//$NON-NLS-1$
+	public static final String ICON_CHECKED_UNDEFINED = "checkedUndefined.png"; 	//$NON-NLS-1$
 
 	public static final String ICON_CHECKED_GREY 	= "checkedGrey.gif"; 	//$NON-NLS-1$
 	public static final String ICON_UNCHECKED_GREY 	= "uncheckedGrey.gif"; 	//$NON-NLS-1$
@@ -122,6 +133,8 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_CHECK4UPDATE 	= "check4Update.gif"; 	//$NON-NLS-1$
 	public static final String ICON_REFRESH 		= "refresh_nav.gif"; 	//$NON-NLS-1$
 	public static final String ICON_IMPORT_FOLDER 	= "import_folder.gif"; 	//$NON-NLS-1$
+	public static final String ICON_MAN_LOCAL_REPO = "edit_repository.png"; //$NON-NLS-1$
+	public static final String ICON_RTE_INSTALLED_LOCAL_REPO = "rte_installed_local_repo.png"; //$NON-NLS-1$
 
 	public static final String ICON_EXAMPLE			= "cmsisExample.png"; 			//$NON-NLS-1$
 
@@ -149,7 +162,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_MEMORY_MAP 		= "memory_map.gif";		//$NON-NLS-1$
 	public static final String ICON_PEERIPHERALS	= "peripherals.gif";		//$NON-NLS-1$
 
-	
+
 	public static final String ICON_RUN 			= "run.gif"; 			//$NON-NLS-1$
 	public static final String ICON_RUN_GREY 		= "runGrey.gif"; 		//$NON-NLS-1$
 
@@ -178,7 +191,8 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String MODIFIED_OVR = "modified_ovr.gif"; 			//$NON-NLS-1$
 
 	public static final String NEWFILE_WIZARD		= "newfile_wiz.png"; 	//$NON-NLS-1$
-
+	public static final String ICON_UV5 			= "uv5.png";			//$NON-NLS-1$
+	
 	public static final RGB GREEN = new RGB(189,249,181);
 	public static final RGB YELLOW = new RGB(252,200, 46);
 
@@ -198,7 +212,6 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		IPreferenceStore store = getCorePreferenceStore();
-
 		store.addPropertyChangeListener(event -> {
 			if (event.getProperty() == CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE) {
 				String newPackRoot = event.getNewValue().toString();
@@ -206,11 +219,19 @@ public class CpPlugInUI extends AbstractUIPlugin {
 				ICpPackRootProvider rootProvider = CpPreferenceInitializer.getCmsisRootProvider();
 				if(pm != null && (rootProvider == null || rootProvider.isUserEditable())
 						&& !newPackRoot.equals(pm.getCmsisPackRootDirectory()) ) {
+					CpPreferenceInitializer.setPackRoot(newPackRoot); // normalize it
 					pm.setCmsisPackRootDirectory(newPackRoot);
+					scheduleCheckForPackUpdates();
 				}
 			}
 		});
-
+		String now = Utils.getCurrentDate();
+		boolean bCheckForUpdates = CpPreferenceInitializer.getAutoUpdateFlag() && !now.equals(CpPreferenceInitializer.getLastUpdateTime());
+		ICpPackManager pm  = CpPlugIn.getPackManager();
+		if(bCheckForUpdates && pm != null) {
+			pm.setCheckForUpdates(bCheckForUpdates);
+		}
+		scheduleCheckForPackUpdates();
 	}
 
 	@Override
@@ -227,12 +248,35 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	}
 
 	/**
+	 * Schedules check-for-pack-updates if needed
+	 */
+	private static void scheduleCheckForPackUpdates() {
+		ICpPackManager pm = CpPlugIn.getPackManager(); 
+		if(pm == null)
+			return;
+		if (pm.isCheckForUpdates()) {
+			pm.setCheckForUpdates(false);
+			startCheckForUpdates(); // this will update the time
+		}
+	}
+
+	public static void startCheckForUpdates() {
+		ICpPackManager pm = CpPlugIn.getPackManager();
+		if(pm == null)
+			return;
+		if (pm.getPackInstaller() != null) {
+			pm.getPackInstaller().updatePacksAsync();
+		}
+	}
+	
+	
+	/**
 	 * Returns preference store of CpPlugIn, since that does not have GUI
 	 * @return IPreferenceStore
 	 */
 	public IPreferenceStore getCorePreferenceStore() {
 		if (fCorePreferenceStore == null) {
-			fCorePreferenceStore= new ScopedPreferenceStore(InstanceScope.INSTANCE, CpPlugIn.PLUGIN_ID);
+			fCorePreferenceStore= new ScopedPreferenceStore(ConfigurationScope.INSTANCE, CpPlugIn.PLUGIN_ID);
 		}
 		return fCorePreferenceStore;
 	}
@@ -274,7 +318,6 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	 * Utility method to get command service from workbench
 	 * @return ICommandService
 	 */
-	@SuppressWarnings("cast")
 	static public ICommandService getCommandService(){
 		if(!PlatformUI.isWorkbenchRunning()) {
 			return null;
@@ -410,7 +453,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		if (!(selection instanceof IStructuredSelection)) {
 			return null;
 		}
-		Set<IProject> projects = new HashSet<IProject>();
+		Set<IProject> projects = new HashSet<>();
 
 		IStructuredSelection structSel = (IStructuredSelection) selection;
 		for (Object element : structSel.toList()) {

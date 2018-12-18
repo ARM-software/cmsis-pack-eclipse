@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2015-2018 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -14,17 +14,13 @@ package com.arm.cmsis.pack.events;
 import com.arm.cmsis.pack.generic.GenericListenerList;
 
 /**
- * Default implementation of IRteEventProxy interface
+ * Convenience base class implementing of IRteEventProxy interface
  */
 public class RteEventProxy extends GenericListenerList<IRteEventListener, RteEvent> implements IRteEventProxy {
 
 	@Override
-	public void emitRteEvent(final String topic, Object data) {
-		notifyListeners(new RteEvent(topic, data));
+	public IRteEventProxy getRteEventProxy() {
+		return this;
 	}
 
-	@Override
-	public void handle(RteEvent event) { // proxy method 
-		notifyListeners(event); 
-	}
 }

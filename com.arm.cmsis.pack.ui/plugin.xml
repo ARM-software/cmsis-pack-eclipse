@@ -11,6 +11,12 @@
       </page>
       <page
             category="com.arm.cmsis.pack.ui.CpPreferencePage"
+            class="com.arm.cmsis.pack.ui.preferences.CpManLocalRepoPage"
+            id="com.arm.cmsis.pack.ui.CpManLocalRepoPage"
+            name="%ManageLocalRepositories">
+      </page>
+      <page
+            category="com.arm.cmsis.pack.ui.CpPreferencePage"
             class="com.arm.cmsis.pack.ui.preferences.CpConsolePreferencePage"
             id="com.arm.cmsis.pack.ui.CpConsolePreferencePage"
             name="%ConsolePage.name">
@@ -31,7 +37,7 @@
          point="org.eclipse.ui.views">
       <category
             id="com.arm.cmsis.pack.category"
-            name="CMSIS Pack Manager">
+            name="%CMSISPackManagerCategory">
       </category>
    </extension>
    <extension
@@ -39,7 +45,7 @@
       <consoleFactory
             class="com.arm.cmsis.pack.ui.console.RteConsoleFactory"
             icon="icons/rteConsole.gif"
-            label="%console.CMSIS_RTE_Console">
+            label="%console.CMSIS_Console">
       </consoleFactory>
    </extension>
    <extension
@@ -50,7 +56,7 @@
    </extension>
    <extension
          id="com.arm.cmsis.pack.ui.rteproblemmarker"
-         name="RTE Problem"
+         name="%RTEProblemMarkerName"
          point="org.eclipse.core.resources.markers">
       <super
             type="org.eclipse.core.resources.problemmarker">

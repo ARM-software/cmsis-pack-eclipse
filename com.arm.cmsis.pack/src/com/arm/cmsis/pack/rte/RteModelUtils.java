@@ -20,7 +20,6 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpPack;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
-import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpItemInfo;
@@ -47,7 +46,7 @@ public class RteModelUtils {
 				ICpItemInfo ci = (ICpItemInfo) cpItem;
 				ICpPackInfo pi = ci.getPackInfo();
 				ICpPack pack = pi.getPack();
-				if (pack == null || pack.getPackState() != PackState.INSTALLED) {
+				if (pack == null || !pack.getPackState().isInstalledOrLocal()) {
 					missingPacks.add(constructEffectivePackId(pi.attributes()));
 				}
 			}
@@ -61,6 +60,8 @@ public class RteModelUtils {
 	 * @return effective pack ID
 	 */
 	public static String constructEffectivePackId(IAttributes packAttributes) {
+		if(packAttributes == null)
+			return CmsisConstants.EMPTY_STRING;
 		String vendor = packAttributes.getAttribute(CmsisConstants.VENDOR);
 		String name = packAttributes.getAttribute(CmsisConstants.NAME);
 		String version = VersionComparator.removeMetadata(packAttributes.getAttribute(CmsisConstants.VERSION));
@@ -80,7 +81,7 @@ public class RteModelUtils {
 			ICpItem latestPack = packs.iterator().next();
 			String latestVersion = VersionComparator.removeMetadata(latestPack.getVersion());
 			int verCmp = VersionComparator.versionCompare(latestVersion, version);
-			if (CpPack.isPackFamilyId(packId) && verCmp >= 0 && verCmp < 4) { // compatible
+			if (CpPack.isPackFamilyId(packId) && verCmp >= 0) { // compatible
 				packId += '.' + latestVersion;
 			} else {
 				packId += '.' + version;

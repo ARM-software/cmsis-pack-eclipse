@@ -126,8 +126,7 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	@Override
 	public String constructId() {
 		// construct Pack ID in the form "Vendor.Name.Version"
-		String version = VersionComparator.removeMetadata(getVersion());
-		
+		String version = VersionComparator.removeMetadata(getVersion());		
 		return getPackFamilyId() + '.' + version;
 	}
 
