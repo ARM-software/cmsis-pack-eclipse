@@ -466,6 +466,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 		} else if(!local) {
 			srcFile = CpVariableResolver.insertCmsisRootVariable(srcFile);
 			if (srcFile != null) {
+				if (srcFile.startsWith(CmsisConstants.CMSIS_RTE_VAR)){
+					// remove prefix variable since resulted URL cannot be created in case of an absolute path  
+					srcFile = srcFile.substring(CmsisConstants.CMSIS_RTE_VAR.length());
+				}
 				ProjectUtils.createLink(project, srcFile, dstFile, monitor);
 			}
 		}
