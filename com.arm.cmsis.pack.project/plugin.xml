@@ -343,6 +343,20 @@
             natureId="com.arm.cmsis.pack.project.CmsisZoneMasterProjectNature">
       </image>
    </extension>
+   <extension
+         id="headlessbuild"
+         name="CMSIS Project Headless Build"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="1"
+            icon="icons/rte.gif"
+            thread="main"
+            visible="true">
+         <run
+               class="com.arm.cmsis.pack.project.CmsisHeadlessBuilder">
+         </run>
+      </application>
+   </extension>
 
 
 </plugin>
