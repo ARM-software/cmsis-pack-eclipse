@@ -4,7 +4,7 @@ The **CMSIS-Pack Management for Eclipse** is created by ARM to provide a open-so
 
 ARM is commited to maintain this **CMSIS-Pack Management for Eclipse** to ensure consistency with future extensions and modifications to the [CMSIS-Pack Specification].  
 
-This release 2.1 provides the following functionality:
+This release 2.4 provides the following functionality:
 * CMSIS Pack manager to install, remove, delete Packs as well as to import examples
 * creation and management of an CDT-based C/C++ projects
 * an editor for configuration files that use [Configuration Wizard Annotations]
@@ -18,7 +18,7 @@ For evaluation you need CMSIS-Pack compliant Software Packs that are available f
 
 **License:** The software is provided under the [Eclipse Public License] Version 1.0. Contributions to this project are under the same license and there is no additional Contributor License Agreement (CLA) required.
 
-**Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.4.0 (Luna) and 4.5.1 (Mars).
+**Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.5.2 (Mars) and 4.6.3 (Neon).
 
 ## Source Code 
 This repository contains the source code of the **CMSIS-Pack Management for Eclipse** that consists of the following plug-ins:
@@ -97,7 +97,7 @@ You may change the component selection and use the **Resolve** toolbar button.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-_Copyright (c) 2014-2016, ARM Limited and Contributors. All rights reserved._
+_Copyright (c) 2014-2018, ARM Limited and Contributors. All rights reserved._
 
 
 [Eclipse Public License]:   ./license.md "Eclipse Public License for CMSIS-Pack Management for Eclipse"
