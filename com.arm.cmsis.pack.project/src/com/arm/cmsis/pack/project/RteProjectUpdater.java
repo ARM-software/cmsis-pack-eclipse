@@ -125,13 +125,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 					Messages.RteProjectUpdater_ErrorProjectIsNull);
 			return status;
 		}
-		buildInfo = ManagedBuildManager.getBuildInfo(project);
-		if(buildInfo == null) {
-			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID,
-					"Error Updating RTE project : CDT build information is not loaded, try to restart Eclipse"); //$NON-NLS-1$
-			return status;
-		}
-
+		
 		this.monitor = monitor;
 		bSaveProject = false;
 		Status status = null;
@@ -148,6 +142,15 @@ public class RteProjectUpdater extends WorkspaceJob {
 			if(packRoot == null || packRoot.isEmpty()){
 				status = new Status(IStatus.WARNING, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ErrorCmisPackRootNotSet);
 				throw new CoreException(status);
+			}
+
+			buildInfo = ManagedBuildManager.getBuildInfo(project);
+			if(buildInfo == null) {
+				if(project.hasNature("org.eclipse.cdt.managedbuilder.core.managedBuildNature")){ //$NON-NLS-1$
+					status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID,
+							"Error Updating RTE project : CDT build information is not loaded, try to restart Eclipse"); //$NON-NLS-1$
+					return status;
+				}
 			}
 
 			projectStorage = rteProject.getProjectStorage();
@@ -613,7 +616,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 				}
 			}
 		}
-
+		
+		if (buildInfo == null) {
+			return;
+		}
 		String[] configNames = buildInfo.getConfigurationNames();
 		for (String name : configNames) {
 			IConfiguration config = ProjectUtils.getConfiguration(project, name);
