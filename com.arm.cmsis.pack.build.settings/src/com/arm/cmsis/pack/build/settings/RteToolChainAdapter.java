@@ -424,6 +424,9 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	protected boolean isToQuoteOption(int oType, IOption option) {
 		if(oType == IBuildSettings.RTE_LINKER_SCRIPT)
 			return true;
+		if(oType == IBuildSettings.RTE_PRE_INCLUDES)
+			return true;
+		
 		int valueType;
 		try {
 			valueType = option.getValueType();
