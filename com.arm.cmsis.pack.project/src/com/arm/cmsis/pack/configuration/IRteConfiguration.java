@@ -26,6 +26,8 @@ import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
+import com.arm.cmsis.pack.info.ICpPackInfo;
+import com.arm.cmsis.pack.rte.IRteModel;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
 
 /**
@@ -45,6 +47,13 @@ public interface IRteConfiguration extends IAdaptable, IEvaluationResult {
 	 * @return ICpConfigurationInfo read from .rteconfig file
 	 */
 	void setConfigurationInfo(ICpConfigurationInfo info);
+	
+	
+	/**
+	 * Returns the underlying RTE Model
+	 * @return IRteModel or null if configuration is not initialized yet
+	 */
+	default IRteModel getRteModel() { return null;}
 
 	/**
 	 * Returns device info stored in the configuration
@@ -57,6 +66,18 @@ public interface IRteConfiguration extends IAdaptable, IEvaluationResult {
 	 * @return ICpDebugConfiguration
 	 */
 	ICpDebugConfiguration getDebugConfiguration();
+	
+	
+	/**
+	 * Returns packs currently used by configuration
+	 * @return map id to ICpPackInfo or null if configuration is not yet initialized
+	 */
+	default Map<String, ICpPackInfo> getUsedPackInfos(){
+		IRteModel model = getRteModel();
+		if(model != null)
+			return model.getUsedPackInfos();
+		return null;
+	}
 
 	/**
 	 * Returns collection of files to add to project

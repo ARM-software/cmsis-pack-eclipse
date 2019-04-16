@@ -119,15 +119,17 @@ public class CpPackCollection extends CpItem implements ICpPackCollection {
 	@Override
 	public Collection<ICpPack> getPacks() {
 		Set<ICpPack> packs = new TreeSet<ICpPack>(new CpPackComparator());
-		for(ICpPackFamily f : fPackFamilies.values()) {
-			Collection<ICpPack> familyPacks = f.getPacks();
-			if(familyPacks == null) {
-				continue;
-			}
-			for(ICpPack pack : familyPacks) {
-				if (pack.getPackState().isInstalledOrLocal() ||
-						pack.isLatest()) {
-					packs.add(pack);
+		if(fPackFamilies != null) {
+			for(ICpPackFamily f : fPackFamilies.values()) {
+				Collection<ICpPack> familyPacks = f.getPacks();
+				if(familyPacks == null) {
+					continue;
+				}
+				for(ICpPack pack : familyPacks) {
+					if (pack.getPackState().isInstalledOrLocal() ||
+							pack.isLatest()) {
+						packs.add(pack);
+					}
 				}
 			}
 		}

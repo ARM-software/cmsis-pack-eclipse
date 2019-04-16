@@ -138,6 +138,8 @@ public class CmsisConstants {
 	static public final String WIN			= "win";			//$NON-NLS-1$
 	static public final String LINUX		= "linux";			//$NON-NLS-1$
 	static public final String MAC			= "mac";			//$NON-NLS-1$
+	static public final String NIX			= "nix";			//$NON-NLS-1$
+	static public final String NUX			= "nux";			//$NON-NLS-1$
 
 	static public final String EXE			= "exe";			//$NON-NLS-1$
 	static public final String ECLIPSE		= "eclipse";		//$NON-NLS-1$

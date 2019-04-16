@@ -111,9 +111,9 @@
             <command
                   commandId="com.arm.cmsis.pack.installer.commands.importFolderPacksCommand"
                   icon="icons/import_folder.gif"
-                  label="Import Packs from Folder"
+                  label="%ImportPacksFromFolderCommand.label"
                   style="push"
-                  tooltip="Import Packs from Folder">
+                  tooltip="%ImportPacksFromFolderCommand.tooltip">
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -127,9 +127,9 @@
             <command
                   commandId="com.arm.cmsis.pack.installer.commands.manLocalRepoCommand"
                   icon="icons/edit_repository.png"
-                  label="Manage Local Repositories"
+                  label="%ManageLocalRepositoriesCommand.label"
                   style="push"
-                  tooltip="Manage Local Repositories">
+                  tooltip="%ManageLocalRepositoriesCommand.tooltip">
                <visibleWhen
                      checkEnabled="false">
                   <with
@@ -166,12 +166,12 @@
       <command
             categoryId="com.arm.cmsis.pack.installer.commands"
             id="com.arm.cmsis.pack.installer.commands.importFolderPacksCommand"
-            name="Import Packs from Folder">
+            name="%ImportPacksFromFolderCommand.name">
       </command>
       <command
             categoryId="com.arm.cmsis.pack.installer.commands"
             id="com.arm.cmsis.pack.installer.commands.manLocalRepoCommand"
-            name="Manage Local Repositories">
+            name="%ManageLocalRepositoriesCommand.name">
       </command>
    </extension>
    <extension

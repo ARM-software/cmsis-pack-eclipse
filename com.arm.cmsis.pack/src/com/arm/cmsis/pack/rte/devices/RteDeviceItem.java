@@ -199,6 +199,8 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
 
 	protected boolean isToAddProcessors(ICpDeviceItem item) {
 		Map<String, ICpItem> processors = item.getProcessors();
+		if(processors == null || processors.isEmpty())
+			return false;
 		if(processors.size() > 1)
 			return true;
 		Entry<String, ICpItem> e = processors.entrySet().iterator().next();

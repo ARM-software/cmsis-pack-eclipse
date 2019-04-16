@@ -137,7 +137,11 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		return fConfigInfo;
 	}
 
-
+	@Override
+	public IRteModel getRteModel() {
+		return fModel;
+	}
+	
 	@Override
 	public ICpDeviceInfo getDeviceInfo() {
 		return fConfigInfo != null ? fConfigInfo.getDeviceInfo() : null;
@@ -552,7 +556,12 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		case HEADER:
 			headers.put(effectivePath, comment);
 			break; // we no longer add include paths here due to "path" attribute
-		case SOURCE:
+		case SOURCE: {
+			String ext = Utils.extractFileExtension(effectivePath);
+			if(ext == null || !ext.equals("s")) //$NON-NLS-1$
+				break;
+			// else fall through and treat the file as an assembler source
+		  } 
 		case SOURCE_ASM:
 			effectivePath = ProjectUtils.removeLastPathSegment(effectivePath);
 		case INCLUDE:

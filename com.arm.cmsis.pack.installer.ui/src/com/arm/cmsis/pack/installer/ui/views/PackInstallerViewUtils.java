@@ -23,25 +23,25 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
  */
 public class PackInstallerViewUtils {
 
+	private static final String[][] VIEW_MENU_COMMANDS = { // id, image
+			{ "com.arm.cmsis.pack.installer.commands.reloadCommand", CpPlugInUI.ICON_REFRESH }, //$NON-NLS-1$
+			{ "com.arm.cmsis.pack.installer.commands.updateCommand", CpPlugInUI.ICON_CHECK4UPDATE }, //$NON-NLS-1$
+			{ "com.arm.cmsis.pack.installer.commands.importPackCommand", CpPlugInUI.ICON_RTE_UNPACK }, //$NON-NLS-1$
+			{ "com.arm.cmsis.pack.installer.commands.importFolderPacksCommand", CpPlugInUI.ICON_IMPORT_FOLDER }, //$NON-NLS-1$
+			{ "com.arm.cmsis.pack.installer.commands.manLocalRepoCommand", CpPlugInUI.ICON_MAN_LOCAL_REPO } //$NON-NLS-1$
+	};
+	
 	/**
 	 * Add the Management Commands to the Local Tool bar
 	 * @param viewPart the view part, e.g. PacksView, ExamplesView...
 	 * @param manager the contributionManager
 	 */
 	public static void addManagementCommandsToLocalToolBar(IViewPart viewPart, IContributionManager manager) {
-		String[][] commands = { // id, image
-				{ "com.arm.cmsis.pack.installer.commands.reloadCommand", CpPlugInUI.ICON_REFRESH }, //$NON-NLS-1$
-				{ "com.arm.cmsis.pack.installer.commands.updateCommand", CpPlugInUI.ICON_CHECK4UPDATE }, //$NON-NLS-1$
-				{ "com.arm.cmsis.pack.installer.commands.importPackCommand", CpPlugInUI.ICON_RTE_UNPACK }, //$NON-NLS-1$
-				{ "com.arm.cmsis.pack.installer.commands.importFolderPacksCommand", CpPlugInUI.ICON_IMPORT_FOLDER }, //$NON-NLS-1$
-				{ "com.arm.cmsis.pack.installer.commands.manLocalRepoCommand", CpPlugInUI.ICON_MAN_LOCAL_REPO } //$NON-NLS-1$
-		};
-
-		for (int i = 0; i < commands.length; i++) {
-			String commandId = commands[i][0];
+		for (int i = 0; i < VIEW_MENU_COMMANDS.length; i++) {
+			String commandId = VIEW_MENU_COMMANDS[i][0];
 			CommandContributionItemParameter p = new CommandContributionItemParameter(viewPart.getSite(), commandId, commandId,
 					CommandContributionItem.STYLE_PUSH);
-			p.icon = CpPlugInUI.getImageDescriptor(commands[i][1]);
+			p.icon = CpPlugInUI.getImageDescriptor(VIEW_MENU_COMMANDS[i][1]);
 			CommandContributionItem item = new CommandContributionItem(p);
 			manager.add(item);
 		}
