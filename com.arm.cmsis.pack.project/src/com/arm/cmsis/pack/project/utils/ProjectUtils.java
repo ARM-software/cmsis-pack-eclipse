@@ -542,6 +542,8 @@ public class ProjectUtils {
 	 */
 	static public void setExcludeFromBuild(IProject project, String path, boolean bExclude) throws CoreException {
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
+		if(buildInfo == null)
+			return;
 		IConfiguration activeConfig = buildInfo.getDefaultConfiguration();
 		ICSourceEntry[] sourceEntries = activeConfig.getSourceEntries();
 		sourceEntries = CDataUtil.setExcluded(new Path(path), false, bExclude, sourceEntries);
