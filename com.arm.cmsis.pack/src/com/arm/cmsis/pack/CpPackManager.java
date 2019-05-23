@@ -688,6 +688,11 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		if(pack == null) {
 			return;
 		}
+		
+		if(allPacks == null) {
+			loadPacks(cmsisPackRootDirectory);
+		}
+		
 		// Update pack collection
 		allPacks.addChild(pack);
 		if (pack.isDevicelessPack()) {
@@ -714,6 +719,9 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		if (allExamples != null) {
 			allExamples.addExamples(pack);
 		}
+		
+		//Reload packs
+		reload();
 	}
 
 	protected void processPackRemoved(RtePackJobResult jobResult, String topic) {
