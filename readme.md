@@ -97,7 +97,7 @@ You may change the component selection and use the **Resolve** toolbar button.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-_Copyright (c) 2014-2018, ARM Limited and Contributors. All rights reserved._
+_Copyright (c) 2014-2019, ARM Limited and Contributors. All rights reserved._
 
 
 [Eclipse Public License]:   ./license.md "Eclipse Public License for CMSIS-Pack Management for Eclipse"
