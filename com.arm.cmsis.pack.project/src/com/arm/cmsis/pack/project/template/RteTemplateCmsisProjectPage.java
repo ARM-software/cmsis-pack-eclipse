@@ -169,6 +169,7 @@ public class RteTemplateCmsisProjectPage extends AbstractWizardDataPage implemen
 		lblOutput.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 
 		adapterSelector = new RteToolChainAdapterSelector(mainComposite, SWT.NONE);
+		adapterSelector.addListener(this);
 		GridData gd = new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1);
 		adapterSelector.setLayoutData(gd);
 
