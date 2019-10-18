@@ -191,6 +191,10 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 
 	@Override
 	public void setConfigurationInfo(ICpConfigurationInfo info) {
+		if(info == getDataInfo()) {
+			return;
+		}
+		
 		if(info == null) {
 			clear();
 			return;
@@ -206,7 +210,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		fRtePackCollection.setUsedPacks(getUsedPackInfos());
 		fSavedComponentKeys = collectComponentKeys(); // initial update
 		fSavedGpdscFiles = collectGpdscFiles();// initial update
-
+		emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this); // will update widgets if they are already open
 	}
 
 	@Override
@@ -228,6 +232,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		fRtePackCollection.setUsedPacks(getUsedPackInfos());
 	}
 	
+	@Override
 	public void update() {
 		update(RteConstants.NONE);
 	}

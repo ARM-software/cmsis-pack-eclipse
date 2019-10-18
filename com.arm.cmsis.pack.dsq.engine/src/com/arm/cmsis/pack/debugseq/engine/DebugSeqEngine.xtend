@@ -168,9 +168,9 @@ class DebugSeqEngine implements IDsqEngine {
 		if (seq !== null) {
 			contexts.clear
 			enterScope(false)
-			dsqModel.debugvars.interpret
 			// set the value of pre-defined variables
 			setPredefinedVariableValues(seqContext)
+			dsqModel.debugvars.interpret
 			seq.interpret
 			exitScope
 		} else if (!seqContext.sequenceName.isEmptyDefaultSequence) {
@@ -273,18 +273,36 @@ class DebugSeqEngine implements IDsqEngine {
 		val c = dsqContext.getPredefinedVariableValue(IDsqContext::CONNECTION)
 		val tc = dsqContext.getPredefinedVariableValue(IDsqContext::TRACEOUT)
 		val ec = dsqContext.getPredefinedVariableValue(IDsqContext::ERRORCONTROL)
-		if (ap !== null)
+		if (ap !== null) {
 			contexts.peek.put(IDsqContext::AP, ap)
-		if (dp !== null)
+			if (logger!== null)
+				logger.logStatement("__var " + IDsqContext::AP + " = " + ap, 0L, 0)
+		}
+		if (dp !== null) {
 			contexts.peek.put(IDsqContext::DP, dp)
-		if (p !== null)
+			if (logger!== null)
+				logger.logStatement("__var " + IDsqContext::DP + " = " + dp, 0L, 0)
+		}
+		if (p !== null) {
 			contexts.peek.put(IDsqContext::PROTOCOL, p)
-		if (c !== null)
+			if (logger!== null)
+				logger.logStatement("__var " + IDsqContext::PROTOCOL + " = " + p, 0L, 0)
+		}
+		if (c !== null) {
 			contexts.peek.put(IDsqContext::CONNECTION, c)
-		if (tc !== null)
+			if (logger!== null)
+				logger.logStatement("__var " + IDsqContext::CONNECTION + " = " + c, 0L, 0)
+		}
+		if (tc !== null) {
 			contexts.peek.put(IDsqContext::TRACEOUT, tc)
-		if (ec !== null)
+			if (logger!== null)
+				logger.logStatement("__var " + IDsqContext::TRACEOUT + " = " + tc, 0L, 0)
+		}
+		if (ec !== null) {
 			contexts.peek.put(IDsqContext::ERRORCONTROL, ec)
+			if (logger!== null)
+				logger.logStatement("__var " + IDsqContext::ERRORCONTROL + " = " + ec, 0L, 0)
+		}
 	}
 	
 	/**
@@ -381,7 +399,15 @@ class DebugSeqEngine implements IDsqEngine {
 	}
 	
 	def dispatch Long interpret(DebugVars debugvars) throws DsqException {
-		debugvars.statements.forEach[logger.log(it, interpret.toLong)]
+		// filter out predefined variables - logged when set
+		val stats = debugvars.statements.filter(VariableDeclaration)
+			.filter[it.name != IDsqContext::AP]
+			.filter[it.name != IDsqContext::DP]
+			.filter[it.name != IDsqContext::CONNECTION]
+			.filter[it.name != IDsqContext::PROTOCOL]
+			.filter[it.name != IDsqContext::TRACEOUT]
+			.filter[it.name != IDsqContext::ERRORCONTROL]
+		stats.forEach[logger.log(it, interpret.toLong)]
 		0L
 	}
 	

@@ -1,229 +1,1085 @@
-* {
-    font-family: Gill Sans MT,Gill Sans,Calibri,sans-serif;
+/**************************************************************************
+ * Framing
+ *************************************************************************/
+
+frameset {
+	color: white;
+	background-color: white;
 }
+
+html {
+	border: 0;
+}
+
+body {
+	background-color: white;
+	border: 0;
+	margin-bottom: 1em;
+}
+
+
+/**************************************************************************
+ * Header and footer layout
+ *************************************************************************/
+
+.headers,
+.footers {
+	clear: both;
+}
+
+.headers {
+	margin-top: 10px;
+}
+
+.logobar {
+	/* no longer used */
+	display: none;
+}
+
+.navbar {
+	/* no longer used */
+	display: none;
+	background-color:#003366;
+}
+
+.titlingbar,
+.titlebar {
+	background-color:#0f758e;
+}
+
+.titlebar td {
+	color: white;
+    font-size: 125%;
+}
+
+.titlebar .titlecell {
+    font-weight: bold;
+}
+
+.titlebar .subtitlecell {
+    font-weight: normal;
+}
+
+.titlebar td {
+	padding-left: 17px;
+	padding-right: 17px;
+	padding-top: 0.2em;
+	padding-bottom: 0.2em;
+}
+
+.breadcrumbbar td,
+.breadcrumbbar :link,
+.breadcrumbbar :visited {
+	color:#999999;
+}
+
+.breadcrumbbar td {
+	padding-top: 0.25em;
+	padding-bottom: 0.25em;
+}
+
+.legalfooter td {
+	color:#003366;
+}
+
+.legalfooter {
+	background-color:#eaf9fd;
+	margin-top: 1em;
+}
+
+.legalfooter td {
+	padding-left: 1em;
+	padding-right: 1em;
+	padding-top: 0.25em;
+	padding-bottom: 0.25em;
+}
+
+.legalfooter .pdflinkcell {
+	padding-bottom: 0.5em;
+}
+
+@media print {
+
+	.headers {
+		border-top: 1px solid gray;
+		border-bottom: 1px solid gray;
+		margin-bottom: 2em; 
+	}
+
+	.footers {
+		border-top: 1px solid gray;
+		margin-top: 2em; 
+	}
+
+	.logobar,
+	.logobar td,
+	.navbar,
+	.navbar td,
+    .breadcrumbbar,
+    .breadcrumbbar td,
+	.pdflinkbar,
+	.pdflinkbar td {
+		display: none;
+	}
+
+	.titlingbar,
+	.titlebar,
+	.legalfooter {
+		background-color: inherit;
+	}
+
+	.titlebar td,
+	.legalfooter td {
+		color: inherit;
+	}
+
+	.titlebar td {
+		padding-left: 0;
+		padding-right: 0;
+	}
+
+	.legalfooter {
+		margin-top: 0;
+	}
+
+	.legalfooter td {
+		padding-left: 0;
+		padding-right: 0;
+	}
+}
+
+
+/**************************************************************************
+ * Font families and colors
+ *************************************************************************/
+
+body,
 table {
-    width: 100%;
-    margin: 5px;
+	color: black;
+	font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
 }
-table, th, td {
-    border: 1px solid black;
-    border-collapse: collapse;
+
+pre,
+code,
+.cmdsynopsis,
+.funcsynopsis,
+.command,
+.code,
+.codeph,
+.errortext,
+.type,
+.sourcecode {
+	color:#333399;
+	font-family:'Lucida Sans Typewriter', 'Courier New', Courier, monospace;
 }
+
+.replaceable > code {
+	color: inherit;
+	font-family: inherit;
+}
+
+.browserwarning {
+	color: red;
+}
+
+
+/**************************************************************************
+ * Font sizes
+ *************************************************************************/
+
+body,
+table {
+	font-size: small;
+}
+
+.toc {
+	font-family: Verdana, Tahoma, Arial, Helvetica, sans-serif;
+}
+
+h1 {
+	font-size: 1.6em;
+}
+
+h2 {
+	font-size: 1.4em;
+}
+
+h3,
+h4,
+h5,
+h6{
+	font-size: 1.2em;
+}
+
+h3.note,
+h3.caution,
+h3.warning {
+	font-size: 1em;
+}
+
+pre,
+code,
+.cmdsynopsis,
+.funcsynopsis,
+.command,
+.errortext,
+.type,
+.sourcecode {
+	font-size: 0.9em;
+}
+
+pre pre, pre code, pre .cmdsynopsis, pre .funcsynopsis, pre .command, pre .errortext, pre .type, pre .sourcecode,
+code pre, code code, code .cmdsynopsis, code .funcsynopsis, code .command, code .errortext, code .type, code .sourcecode,
+.cmdsynopsis pre, .cmdsynopsis code, .cmdsynopsis .cmdsynopsis, .cmdsynopsis .funcsynopsis, .cmdsynopsis .command, .cmdsynopsis .errortext, .cmdsynopsis .type, .cmdsynopsis .sourcecode,
+.funcsynopsis pre, .funcsynopsis code, .funcsynopsis .cmdsynopsis, .funcsynopsis .funcsynopsis, .funcsynopsis .command, .funcsynopsis .errortext, .funcsynopsis .type, .funcsynopsis .sourcecode,
+.command pre, .command code, .command .cmdsynopsis, .command .funcsynopsis, .command .command, .command .errortext, .command .type, .command .sourcecode,
+.errortext pre, .errortext code, .errortext .cmdsynopsis, .errortext .funcsynopsis, .errortext .command, .errortext .errortext, .errortext .type, .errortext .sourcecode,
+.type pre, .type code, .type .cmdsynopsis, .type .funcsynopsis, .type .command, .type .errortext, .type .type, .type .sourcecode,
+.sourcecode pre, .sourcecode code, .sourcecode .cmdsynopsis, .sourcecode .funcsynopsis, .sourcecode .command, .sourcecode .errortext, .sourcecode .type, .sourcecode .sourcecode {
+	/* ensure nested occurences of above do not change size */
+	font-size: 100%;
+}
+
+.replaceable > code {
+	font-size: 100%;
+}
+
+
+/**************************************************************************
+ * Font styling
+ *************************************************************************/
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	font-weight:bold;
+	font-style:normal;
+}
+
+h2.sectiontitle {
+    font-size:1.2em;
+}
+
+dt {
+	font-weight: bold;
+}
+
+dt.typographydt {
+	font-weight: normal;
+}
+
+dt.typographydtbold {
+	font-weight: bold;
+}
+
+dt.normaldt {
+	font-weight: normal;
+}
+
+.toc dt,
+.list-of-figures dt,
+.list-of-tables dt {
+	font-weight: normal;
+}
+
 th {
-    background-color:#454545;
-    color: white;
+	font-weight: bold;
 }
-td {
-    vertical-align:top;
-    padding: 5px;
+
+.ENCODING thead th,
+.ENCODING thead td {
+	font-weight: normal;
 }
-div.note {
-	clear:both;
-	color:#000;
-	background-color:#fafafa;
-	padding:5px;
-	border:1px solid #eee;
+
+em {
+	font-style: italic;
 }
-div.note p {
-	margin-top:1px;
-	margin-bottom:0;
+
+strong {
+	font-weight: bold;
 }
-.vam {
-    vertical-align: middle;
+
+var {
+	font-style: italic;
 }
+
+.interface,
+.uicontrol {
+    font-weight: bold;
+}
+
+.smallcaps,
+.archterm {
+	font-variant: small-caps;
+	font-weight: inherit;
+	font-style: normal;
+}
+
+.classname,
+.code,
+.codeph,
+.command,
+.command > strong,
+.errortext,
+.filename,
+.function,
+.literal,
+.option,
+.parameter,
+.structfield,
+.structname {
+	font-weight: normal;
+}
+
+.filepath 
+{
+	color:#333399;
+	font-family:'Lucida Sans Typewriter', 'Courier New', Courier, monospace;
+	font-weight: inherit;
+	font-size: 100%;
+}
+
+.kwd
+{
+	font-size: 100%;
+	font-weight: bold;
+}
+
+.pt {
+	color:#333399;
+	font-family:'Lucida Sans Typewriter', 'Courier New', Courier, monospace;
+	font-size:100%;
+    font-weight: bold;
+}
+
+.cmdname {
+	color:#333399;
+	font-family:'Lucida Sans Typewriter', 'Courier New', Courier, monospace;
+	font-size:100%;
+}
+
+.wintitle {
+	font-weight: bold;
+	}
+	
+.msgnum,
+.varname,
+.oper,
+.delim,
+.sep,
+.repsep,
+.parmname,
+.apiname {
+	font-weight: normal;
+	font-size: 100%;
+}
+
+.var {
+	font-style: italic;
+	font-size: 100%;
+}
+
+.msgph,
+.sysout {
+	font-weight: inherit;
+	font-size: 100%;
+}
+
+.codeph {
+	font-size: 100%;
+}
+
+.menuselection {
+	font-weight: bold;
+}
+
+.signal {
+    font-weight: bold;
+}
+
+.type {
+    font-weight: bold;
+}
+
+.sgmltag-starttag {
+    font-weight: inherit;
+}
+
+.underline {
+  text-decoration: underline;
+}
+
+.uput {
+  color:#333399;
+  text-decoration: underline;
+  font-family:'Lucida Sans Typewriter', 'Courier New', Courier, monospace;
+}
+
+.userinput {
+    font-weight: inherit;
+    color:#333399;
+	font-family:'Lucida Sans Typewriter', 'Courier New', Courier, monospace;
+}
+
+em.parameter,
+em.structfield {
+    font-style: inherit;
+}
+
+
+/**************************************************************************
+ * Margins and borders
+ *************************************************************************/
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	clear: both;
+}
+
+.headers + h1,
+.headers + div > h1:first-child,
+.headers + div > div:first-child > h1:first-child,
+.headers + div > div:first-child > div:first-child > h1:first-child,
+.headers + div > div:first-child > div:first-child > div:first-child > h1:first-child,
+.headers + h2,
+.headers + div > h2:first-child,
+.headers + div > div:first-child > h2:first-child,
+.headers + div > div:first-child > div:first-child > h2:first-child,
+.headers + div > div:first-child > div:first-child > div:first-child > h2:first-child,
+.headers + h3,
+.headers + div > h3:first-child,
+.headers + div > div:first-child > h3:first-child,
+.headers + div > div:first-child > div:first-child > h3:first-child,
+.headers + div > div:first-child > div:first-child > div:first-child > h3:first-child {
+	/* an h1, h2, or h3 at top of page */
+	margin-top: 0.25em !important;
+	margin-bottom: 0 !important;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+	margin-top: 1.2em;
+	margin-bottom: 0;
+}
+
+h1 + *,
+h2 + *,
+h3 + *,
+h4 + *,
+h5 + *,
+h6 + *,
+.titlepage + *{
+    /* element after a heading */
+	margin-top: 0.4em !important;
+	margin-bottom: 0.2em !important;
+}
+
+.p,
+p {
+	margin-top: 0.8em;
+	margin-bottom: 0.2em;
+}
+
 pre {
-	color:#000;
-	border-top:1px solid #eee;
-	border-bottom:1px solid #eee;
-	background:#fafafa;
-	font:normal courier new,courier;
-	margin:1px 0;
-	padding:5px;
-	overflow:auto
-}
-pre b {
-	color:red;
-	background:#fafafa;
-	font:normal 14px/120% courier new,courier,monospace
-}
-figure {
-    display: inline-block;
-    margin: 5px; /* adjust as needed */
-}
-figure img {
-    vertical-align: top;
-}
-figure figcaption {
-    text-align: center;
-}
-img {
-    margin: 5px;
+	margin-top: 0.8em;
+	margin-bottom: 0.2em;
+	margin-left: 0.5em;
 }
 
+ul,
+ol,
+dl {
+	margin-top: 0.8em;
+	margin-bottom: 0.2em;
+}
+
+ul li,
+ol li,
+dl dt {
+	margin-top: 0.6em;
+	margin-bottom: 0.2em;
+} 
+
+ul li *,
+ol li *,
+dl dd,
+dl dd *{
+    margin-top: 0.4em;
+	margin-bottom: 0.2em;
+} 
+
+ul[compact],
+ol[compact],
+dl[compact]{
+    margin-top: 0.4em;
+	margin-bottom: 0.2em;
+}
+
+ul[compact] li,
+ol[compact] li,
+dl[compact] dt {
+	margin-top: 0.3em;
+	margin-bottom: 0.2em;
+} 
+
+ul[compact] li *,
+ol[compact] li *,
+dl[compact] dd,
+dl[compact] dd *{
+    margin-top: 0.3em;
+	margin-bottom: 0.2em;
+} 
+
+ul ul,
+ul ol,
+ul dl,
+ol ul,
+ol ol,
+ol dl,
+dl ul,
+dl ol,
+dl dl {
+	margin-top: 0.6em;
+	margin-bottom: 0.2em;
+}
+
+ul ul li,
+ul ol li,
+ul dl dt,
+ol ul li,
+ol ol li,
+ol dl dt,
+dl ul li,
+dl ol li,
+dl dl dt {
+	margin-top: 0.4em;
+	margin-bottom: 0.2em;
+} 
+
+ul ul li *,
+ul ol li *,
+ul dl dd,
+ul dl dd *,
+ol ul li *,
+ol ol li *,
+ol dl dd,
+ol dl dd *,
+dl ul li *,
+dl ol li *,
+dl dl dd,
+dl dl dd *{
+    margin-top: 0.3em;
+	margin-bottom: 0.2em;
+}
+
+div.note,
+div.caution,
+div.warning {
+	background-color:#f5f5f5;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	padding-top: 0.2em;
+	padding-bottom: 0.2em;
+}
+
+.codeblock,
+.example {
+	background-color:#f5f5f5;
+	margin-left: 0 !important;
+	margin-right: 0 !important;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	padding-bottom: 0.2em;
+}
+
+@media print {
+    div.note,
+    div.caution,
+    div.warning {
+    	border-left: 1px solid silver;
+    	background-color: inherit;
+    	padding-left: 0.5em;
+    	padding-right: 0;
+    	padding-top: 0;
+    	padding-bottom: 0;
+    }
+}
+
+h3.note,
+h3.caution,
+h3.warning {
+	margin-top: 0 !important;
+}
+
+.note,
+.caution,
+.warning {
+	margin-top: 0.8em;
+	margin-bottom: 0.2em;
+}
+
+.note *,
+.caution *,
+.warning *{
+    margin-top: 0.6em;
+	margin-bottom: 0.2em;
+}
+
+ul .note,
+ul .caution,
+ul .warning,
+ol .note,
+ol .caution,
+ol .warning,
+dl .note,
+dl .caution,
+dl .warning {
+	margin-top: 0.6em;
+	margin-bottom: 0.2em;
+} 
+
+ul .note *,
+ul .caution *,
+ul .warning *,
+ol .note *,
+ol .caution *,
+ol .warning *,
+dl .note *,
+dl .caution *,
+dl .warning *{
+    margin-top: 0.4em;
+	margin-bottom: 0.2em;
+} 
+
+ul[compact] .note,
+ul[compact] .caution,
+ul[compact] .warning,
+ol[compact] .note,
+ol[compact] .caution,
+ol[compact] .warning,
+dl[compact] .note,
+dl[compact] .caution,
+dl[compact] .warning {
+	margin-top: 0.4em;
+	margin-bottom: 0.2em;
+} 
+
+ul[compact] .note *,
+ul[compact] .caution *,
+ul[compact] .warning *,
+ol[compact] .note *,
+ol[compact] .caution *,
+ol[compact] .warning *,
+dl[compact] .note *,
+dl[compact] .caution *,
+dl[compact] .warning *{
+    margin-top: 0.3em;
+	margin-bottom: 0.2em;
+} 
+
+ul ul .note,
+ul ul .caution,
+ul ul .warning,
+ul ol .note,
+ul ol .caution,
+ul ol .warning,
+ul dl .note,
+ul dl .caution,
+ul dl .warning,
+ol ul .note,
+ol ul .caution,
+ol ul .warning,
+ol ol .note,
+ol ol .caution,
+ol ol .warning,
+ol dl .note,
+ol dl .caution,
+ol dl .warning,
+dl ul .note,
+dl ul .caution,
+dl ul .warning,
+dl ol .note,
+dl ol .caution,
+dl ol .warning,
+dl dl dt,
+dl dl .note,
+dl dl .caution,
+dl dl .warning {
+	margin-top: 0.4em;
+	margin-bottom: 0.2em;
+} 
+
+ul ul .note *,
+ul ul .caution *,
+ul ul .warning *,
+ul ol .note *,
+ul ol .caution *,
+ul ol .warning *,
+ul dl .note *,
+ul dl .caution *,
+ul dl .warning *,
+ol ul .note *,
+ol ul .caution *,
+ol ul .warning *,
+ol ol .note *,
+ol ol .caution *,
+ol ol .warning *,
+ol dl .note *,
+ol dl .caution *,
+ol dl .warning *,
+dl ul .note *,
+dl ul .caution *,
+dl ul .warning *,
+dl ol .note *,
+dl ol .caution *,
+dl ol .warning *,
+dl dl .note *,
+dl dl .caution *,
+dl dl .warning *{
+    margin-top: 0.3em;
+	margin-bottom: 0.2em;
+} 
+
+ul.simple {
+list-style-type:none;
+}
+
+h2.subtitle {
+	margin-top: 0.2em;
+}
+
+.list-of-figures,
+.list-of-tables,
+.legalnotice-title,
+.revhistory,
+.abstract {
+	margin-top: 1.2em;
+}
+
+.toc dt {
+	margin-top: 0.2em;
+	margin-bottom: 0.2em;
+}
+
+.toc dl {
+	margin-top: 0.4em;
+	margin-bottom: 0.3em;
+}
+
+.toc dd {
+	margin-left: 2.4em;
+}
+
+.noindent dl dd {
+	margin-left: 0;
+}
 
 
-/*-----------------------------------------------------------
- CHM Style Sheet
------------------------------------------------------------*/
-body                    { color: #000; background: #FFF; font-size: 100%; }
-body.first              { background-image: url('lblue_chm.jpg'); background-repeat: repeat-y; }
+/**************************************************************************
+ * Links
+ *************************************************************************/
 
-a:link                  { color: #00F; text-decoration: underline; }
-a:visited               { color: #00F; text-decoration: underline; }
-a:active                { color: #F00; text-decoration: underline; }
-a:hover                 { color: #F00; text-decoration: underline; }
+:link {
+	color:#0f758e;
+}
 
-table                   { font-size: 100%; border-width: 0; padding: 0; }
-th                      { color: #FFF; background: #000080; text-align: left; vertical-align: bottom; padding-right: 6pt; }
-tr                      { text-align: left; vertical-align: top; }
-td                      { text-align: left; vertical-align: top; padding-right: 6pt; }
+:visited {
+	color:#4f0f8e;
+}
 
-/*-----------------------------------------------------------
------------------------------------------------------------*/
-h1                      { font-size: 125%; clear: both; }
-h2                      { font-size: 115%; clear: both; margin-top: 9pt; }
-h3                      { font-size: 105%; clear: both; margin-top: 9pt; }
-h4                      { font-size: 100%; clear: both; margin-top: 9pt; }
-h5                      { font-size: 100%; clear: both; margin-top: 9pt; }
-h6                      { font-size: 100%; clear: both; margin-top: 9pt; }
+:link,
+:visited {
+	text-decoration: none;
+}
 
-ul                      { margin-bottom: 3px; margin-top: 6px;      list-style-type: square;  }
-ul li                   { margin-bottom: 6px;                  margin-left: 2px;              }
-ul li ul                { margin-bottom: 3px; margin-top: 6px;                                }
-ul li ul li             { margin-bottom: 6px;                  margin-left: 6px;              }
-ul li ol                { margin-bottom: 3px; margin-top: 6px;                                }
-ul li ol li             { margin-bottom: 6px;                  margin-left: 2px;              }
+:link:hover,
+:visited:hover {
+	color:#faa61a;
+	border-bottom: 1px dotted;
+}
+
+:link:active,
+:visited:active {
+	color:#faa61a;
+}
+
+@media print {
+	:link,
+	:visited,
+	:link:hover,
+	:visited:hover,
+	:link:active,
+	:visited:active {
+		color: inherit;
+		text-decoration: inherit;
+		border-bottom: inherit;
+	}
+}
 
 
-ol                      { margin-bottom: 3px;  margin-top: 6px;                                  }
-ol li                   { margin-bottom: 6px;     margin-left: 2px;                              }
-ol li ul                { margin-bottom: 3px;  margin-top: 6px;         list-style-type: square; }
-ol li ul li             { margin-bottom: 6px;     margin-left: 2px;                              }
 
-pre                     { color: #000; background: #E0E0E0; font-family: Courier New, Courier; line-height: 120%; font-style: normal; }
-i.pre                   { font: italic 9pt Courier New, Courier;  }
-b.pre                   { font: bold 9pt Courier New, Courier;    }
-p.pre                   { font: normal 9pt; Courier New, Courier; }
+/**************************************************************************
+ * Table borders : note that class TABLE was old style with row separators only
+ * .TABLE is old style rowseps only
+ * .NEWTABLE  is new style grisd
+ * .custom is override to allow users ot specify their own rules
+ *************************************************************************/
 
-pre i                   { font: italic 9pt Courier New, Courier; }
-pre b                   { font: bold 9pt Courier New, Courier;   }
-pre strong              { font: normal 9pt Courier New, Courier; color: red; }
+.TABLE table,
+.NEWTABLE table,
+.custom table,
+.revhistory table,
+.COMPACT table,
+.ENCODING table,
+.ENCODINGTOP table,
+.SYNTAX table {
+	border-collapse: collapse;
+	border-width: 0;
+}
 
-.pre                    { font: normal 9pt Courier New, Courier; }
 
-code                    { color: #000; background: #E0E0E0; font-family: Courier New, Courier; line-height: 120%; font-style: normal; }
+.TABLE thead th,
+.TABLE thead td,
+.revhistory thead th,
+.revhistory thead td,
+.COMPACT thead th,
+.COMPACT thead td {
+	border-top-width: 2px;
+	border-left-width: 0;
+	border-right-width: 0;
+	border-bottom-width: 2px;
+	border-top-style: solid;
+	border-left-style: hidden;
+	border-right-style: hidden;
+	border-bottom-style: solid;
+	border-color: black;
+}
 
-/*-----------------------------------------------------------
-Procedure
------------------------------------------------------------*/
-p.proc                  { font-weight: bold; clear: both; }
+/* rules everywhere for non custom table */
+.NEWTABLE thead th,
+.NEWTABLE thead td,
+.NEWTABLE tbody th,
+.NEWTABLE tbody td,
+.NEWTABLE tfoot th,
+.NEWTABLE tfoot td {
+	border-top-width: 1px;
+	border-left-width: 1px;
+	border-right-width: 1px;
+	border-bottom-width: 1px;
+	border-top-style: solid;
+	border-left-style: solid;
+	border-right-style: solid;
+	border-bottom-style: solid;
+	border-color: black;
+}
 
-/*-----------------------------------------------------------
-Image Tags
------------------------------------------------------------*/
-img.part                { border: 1px dotted #000; }
-img.left                { margin-right: 10px; }
-img.right               { margin-left: 10px; }
+.cellrowborder {
+  border-left: none;
+  border-top: none;
+  border-right: solid 1px;
+  border-bottom: solid 1px;
+  border-color: black;
+}
+.row-nocellborder {
+  border-left: none;
+  border-top: none;
+  border-right: hidden;
+  border-bottom: solid 1px;
+  border-color: black;
+}
+.cell-norowborder {
+  border-top: none;
+  border-left: none;
+  border-bottom: hidden;
+  border-right: solid 1px;
+  border-color: black;
+}
+.nocellnorowborder {
+  border: none;
+  border-right: hidden;
+  border-bottom: hidden;
+  border-color: black;
+}
 
-img.uvbutton            { border: none; margin-top: 2pt; margin-bottom: 2pt; vertical-align: middle; }
-img.uvtoolbar           { border: none; margin-top: 2pt; margin-bottom: 2pt; vertical-align: middle; }
-img.uvicon              { border: 1px solid #000; margin-top: 2pt; margin-bottom: 2pt; vertical-align: middle; }
-img.uvbuttonl           { border: none; margin-right: 10px; margin-bottom: 10px; clear: left; }
-img.uvbuttonr           { border: none; margin-left: 10px; margin-bottom: 10px; clear: right; }
+.TABLE tbody th,
+.TABLE tbody td,
+.TABLE tfoot th,
+.TABLE tfoot td,
+.revhistory tbody th,
+.revhistory tbody td,
+.revhistory tfoot th,
+.revhistory tfoot td,
+.COMPACT tbody th,
+.COMPACT tbody td,
+.COMPACT tfoot th,
+.COMPACT tfoot td {
+	border-top-width: 1px;
+	border-left-width: 0;
+	border-right-width: 0;
+	border-bottom-width: 1px;
+	border-top-style: solid;
+	border-left-style: hidden;
+	border-right-style: hidden;
+	border-bottom-style: solid;
+	border-color: black;
+}
 
-/*-----------------------------------------------------------
-Notes
------------------------------------------------------------*/
-p.note                  { font-weight: bold; clear: both; padding-top: 6px; margin-bottom: 3px; }
-p.res                   { font-weight: bold; clear: both; padding-top: 6px; margin-bottom: 3px; }
+.ENCODING thead th,
+.ENCODING thead td {
+	border-top-width: 0;
+	border-left-width: 0;
+	border-right-width: 0;
+	border-bottom-width: 1px;
+	border-top-style: hidden;
+	border-left-style: hidden;
+	border-right-style: hidden;
+	border-bottom-style: solid;
+	border-color: black;
+}
 
-/*-----------------------------------------------------------
-Tiny Text
------------------------------------------------------------*/
-p.tiny                  { font-size: 8pt; }
-p.copyright             { font-size: 8pt; clear: both; text-align: center; }
+.ENCODING tbody th,
+.ENCODING tbody td,
+.ENCODING tfoot th,
+.ENCODING tfoot td {
+	border-width: 1px;
+	border-style: solid;
+	border-color: black;
+}
 
-/*-----------------------------------------------------------
-Expanding/Contracting Divisions
------------------------------------------------------------*/
-p.expand                { border: none; cursor: pointer; }
-img.expand              { border: none; }
-div.expand              { margin-top: 0; margin-left: 9pt; display: none; color:#000; background:#FFC; }
+.ENCODINGTOP th,
+.ENCODINGTOP td,
+.SYNTAX th,
+.SYNTAX td {
+	border-width: 0;
+	border-style: hidden;
+	border-color: black;
+}
 
-/*-----------------------------------------------------------
-Where List Tags
-These are used to create a where item and the list.
------------------------------------------------------------*/
-p.wh                    { font-weight: bold; clear: both; margin-top: 6pt; margin-bottom: 3pt; }
-table.wh                { border-width: 0; padding: 0; }
-table.wh td             { text-align: left; vertical-align: top; padding-bottom: 6pt; padding-right: 6pt; }
+th > :first-child,
+td > :first-child {
+	margin-top: 0 !important;
+}
 
-table.wh td.wh          { white-space: nowrap; }
-table.wh td.whI         { white-space: nowrap; font-style: italic; }
-table.wh td.whB         { white-space: nowrap; font-weight: bold; }
-table.wh td.whP         { white-space: nowrap; font: normal 9pt Courier New, Courier; }
-table.wh td.whPi        { white-space: nowrap; font: italic 9pt Courier New, Courier; }
-table.wh td.whPb        { white-space: nowrap; font: bold 9pt Courier New, Courier; }
-table.wh td.whP i       { white-space: nowrap; font: italic 9pt Courier New, Courier; }
-table.wh td.whP b       { white-space: nowrap; font: bold 9pt Courier New, Courier; }
 
-/*-----------------------------------------------------------
-Full-Width Table Tags
------------------------------------------------------------*/
-table.kt                { border-spacing: 0; width: 100%; border: 1px solid #000; padding: 0; border-collapse: collapse; }
-table.kt tr             { text-align: left; vertical-align: top; }
-table.kt th             { text-align: left; color: #FFF; background: #000080; vertical-align: bottom; padding: 4px 6px; white-space: nowrap; border-bottom: 1px solid #000; }
-table.kt th.ktC         { text-align: center; }
-table.kt th.ktR         { text-align: right; }
-table.kt td             { text-align: left; vertical-align: top;  padding: 2px 6px; color: #000; background: #E0E0E0; border-top: 1px solid #A0A0A0; }
-table.kt td.ktC         { text-align: center; }
-table.kt td.ktR         { text-align: right; }
+/**************************************************************************
+ * Table padding
+ *************************************************************************/
 
-/*-----------------------------------------------------------
-Matched-Width Table Tags
------------------------------------------------------------*/
-table.kt_nowidth        { border-spacing: 0; border: 1px solid #000; padding: 0; border-collapse: collapse; }
-table.kt_nowidth tr     { text-align: left; vertical-align: top; }
-table.kt_nowidth th     { text-align: left; color: #FFF; background: #000080; vertical-align: bottom; padding: 4px 6px; white-space: nowrap; border-bottom: 1px solid #000; }
-table.kt_nowidth th.ktC { text-align: center; }
-table.kt_nowidth th.ktR { text-align: right; }
-table.kt_nowidth td     { text-align: left; color: #000; background: #E0E0E0; vertical-align: top; padding: 2px 6px; border-top: 1px solid #A0A0A0; }
-table.kt_nowidth td.ktC { text-align: center; }
-table.kt_nowidth td.ktR { text-align: right; }
+.TABLE th,
+.TABLE td,
+.NEWTABLE th,
+.NEWTABLE td,
+.custom td,
+.custom th,
+.revhistory th,
+.revhistory td {
+	padding: 0.5em;
+}
 
-/*-----------------------------------------------------------
-Reference Table Tags
-These are used for function and directive references.
------------------------------------------------------------*/
-pre.rf                  { font-style: normal; line-height: 120%; font-family: Courier New, Courier; color: #000; background: #E0E0E0; margin-bottom: 0; }
-table.rf                { border-spacing: 0; width: 100%; border-width: 0; padding: 0; }
-tr.rf                   { }
-td.rfItem               { text-align: left; vertical-align: top; font-weight: bold; white-space: nowrap; padding: 6px 6px 6px; }
-td.rfDesc               { text-align: left; vertical-align: top; padding: 6px 6px 6px;}
-pre.def                 { font-style: normal; line-height: 120%; font-family: Courier New, Courier; color: #000; background: #E0E0E0; margin-bottom: 0; padding: 3px; border: 1px solid #808080; }
-pre.def b               { font-weight: bold; font-family: Courier New, Courier; }
-pre.def i               { font-style: italic; font-family: Courier New, Courier; }
+.COMPACT th,
+.COMPACT td,
+.ENCODING th,
+.ENCODING td {
+	padding: 0.25em;
+}
 
-/*-----------------------------------------------------------
-Definition Lists
-These are used for the Dialog Help pages of uVision
------------------------------------------------------------*/
-dl.kd                   { }
-dt.kd                   { margin: 12px 0 3px 24px; font-weight: bold; }
-dd.kd                   { margin: 3px 0 12px 36px; }
-dd pre                  { font: normal 9pt/120% Courier New, Courier; color: #000; background: #FFF; margin-top: 3px; }
+.ENCODINGTOP th,
+.ENCODINGTOP td,
+.SYNTAX th,
+.SYNTAX td {
+	padding: 0.125em;
+}
 
-/*-----------------------------------------------------------
-Assembler Instruction Set
------------------------------------------------------------*/
-table.psw               { border: 1px solid #000 ; border-collapse: collapse; }
-table.psw td.used       { border-right: 1px solid #000; color: #000; background: #FFF; font-weight: bold; width: 32px; height: 28px; text-align: center; }
-table.psw td.unused     { border-right: 1px solid #000; color: #d3d3d3; background: #FFF; font-weight: bold; width: 32px; height: 28px; text-align: center; }
 
-td.ins_encode           { border: 1px solid #000; text-align: center; font-family: Courier New; font-size: 9pt; padding: 0; margin: 0; width: 135px; height: 25px; }
+/**************************************************************************
+ * Table content alignment
+ *************************************************************************/
 
-pre.ins_pseudo          { color: #000; background: #FFF; font: normal 9pt/120% Courier New, Courier; margin-bottom: 0; }
+.TABLE table thead,
+.NEWTABLE table thead,
+.custom table thead,
+.revhistory table thead,
+.COMPACT table thead,
+.ENCODINGTOP table thead,
+.SYNTAX table thead {
+	text-align: left;
+	vertical-align: middle;
+}
 
-/*-----------------------------------------------------------
-Revision: 2006.11.15
------------------------------------------------------------*/
+.TABLE table tbody,
+.NEWTABLE table tbody,
+.custom table thead,
+.revhistory table tbody,
+.COMPACT table tbody,
+.ENCODINGTOP table tbody,
+.SYNTAX table tbody {
+	text-align: left;
+	vertical-align: top;
+}
+
+.TABLE table tfoot,
+.NEWTABLE table tfoot,
+.custom table thead,
+.revhistory table tfoot,
+.COMPACT table tfoot,
+.ENCODINGTOP table tfoot,
+.SYNTAX table tfoot {
+	text-align: left;
+	vertical-align: middle;
+}
+
+.ENCODING table thead {
+	text-align: center;
+	vertical-align: bottom;
+}
+
+.ENCODING table tbody {
+	text-align: center;
+	vertical-align: middle;
+}
+
+.ENCODING table tfoot {
+	text-align: center;
+	vertical-align: top;
+}
+
+.footnote {
+    font-size: 80%;
+}
+
+object[classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e"]
+{ display:none; }
+
+/**************************************************************************
+ * Condition coloring
+ *************************************************************************/
+
+.conditionConfigurable {
+	background-color:#DDEEFF;
+}
+
+.conditionOptional {
+	background-color:#EEDDFF;
+}
+
+
+/**************************************************************************
+ * Toggler
+ *************************************************************************/
+
+.toggler {
+	cursor:pointer;
+}

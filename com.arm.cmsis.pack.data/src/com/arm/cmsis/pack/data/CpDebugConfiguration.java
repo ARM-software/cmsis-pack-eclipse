@@ -59,6 +59,11 @@ public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguratio
 	}
 
 	@Override
+	public boolean hasDormantState() {
+		return attributes().getAttributeAsBoolean(CmsisConstants.DORMANT, false);
+	}
+
+	@Override
 	public long getDefaultClock() {
 		return attributes().getAttributeAsLong(CmsisConstants.CLOCK, CmsisConstants.DEFAULT_DEBUG_CLOCK);
 	}

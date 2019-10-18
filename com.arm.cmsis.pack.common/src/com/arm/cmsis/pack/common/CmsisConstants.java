@@ -282,6 +282,7 @@ public class CmsisConstants {
 	static public final String IRLEN			= "irlen";		//$NON-NLS-1$
 
 	static public final String SWJ				= "swj";		//$NON-NLS-1$
+	static public final String DORMANT			= "dormant";	//$NON-NLS-1$
 
 	static public final String __DP				= "__dp";		//$NON-NLS-1$
 	static public final String __AP				= "__ap";		//$NON-NLS-1$
@@ -479,6 +480,7 @@ public class CmsisConstants {
 	static public final String PROJECT_RTE_Pre_Include_ = PROJECT_RTE_PATH + '/' + Pre_Include_;
 	static public final String CMSIS_device_header = "CMSIS_device_header";  		//$NON-NLS-1$
     public static final String IMPORT_REPORT_TXT = "ImportReport.txt"; 				//$NON-NLS-1$
+    public static final String IMPORT_TEST_REPORT_TXT = "ImportTestReport.txt"; 				//$NON-NLS-1$
 	
 
 	static public final String UV = "uv";  											//$NON-NLS-1$

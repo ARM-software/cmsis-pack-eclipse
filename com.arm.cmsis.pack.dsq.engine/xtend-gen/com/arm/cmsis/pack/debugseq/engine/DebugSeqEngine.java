@@ -13,7 +13,6 @@ package com.arm.cmsis.pack.debugseq.engine;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpDebugVars;
-import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpSequence;
 import com.arm.cmsis.pack.debugseq.DebugSeqStandaloneSetup;
 import com.arm.cmsis.pack.debugseq.debugSeq.And;
@@ -57,7 +56,6 @@ import com.arm.cmsis.pack.debugseq.debugSeq.ReadDP;
 import com.arm.cmsis.pack.debugseq.debugSeq.Rem;
 import com.arm.cmsis.pack.debugseq.debugSeq.Sequence;
 import com.arm.cmsis.pack.debugseq.debugSeq.SequenceCall;
-import com.arm.cmsis.pack.debugseq.debugSeq.Sequences;
 import com.arm.cmsis.pack.debugseq.debugSeq.Shift;
 import com.arm.cmsis.pack.debugseq.debugSeq.Statement;
 import com.arm.cmsis.pack.debugseq.debugSeq.StringConstant;
@@ -81,25 +79,21 @@ import com.arm.cmsis.pack.dsq.IDsqContext;
 import com.arm.cmsis.pack.dsq.IDsqEngine;
 import com.arm.cmsis.pack.dsq.IDsqLogger;
 import com.arm.cmsis.pack.dsq.IDsqSequence;
-import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.parser.PdscParser;
 import com.arm.cmsis.pack.utils.Utils;
 import com.google.common.base.Objects;
+import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Provider;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -110,10 +104,10 @@ import java.util.Stack;
 import java.util.function.Consumer;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtend2.lib.StringConcatenation;
-import org.eclipse.xtext.nodemodel.ICompositeNode;
 import org.eclipse.xtext.nodemodel.util.NodeModelUtils;
 import org.eclipse.xtext.resource.XtextResource;
 import org.eclipse.xtext.resource.XtextResourceSet;
@@ -171,9 +165,7 @@ public class DebugSeqEngine implements IDsqEngine {
     this.debugSeqClient = dsqClient;
     this.logger = log;
     this.debugVars = "";
-    DebugSeqStandaloneSetup _debugSeqStandaloneSetup = new DebugSeqStandaloneSetup();
-    Injector _createInjectorAndDoEMFRegistration = _debugSeqStandaloneSetup.createInjectorAndDoEMFRegistration();
-    _createInjectorAndDoEMFRegistration.injectMembers(this);
+    new DebugSeqStandaloneSetup().createInjectorAndDoEMFRegistration().injectMembers(this);
   }
   
   @Override
@@ -181,23 +173,17 @@ public class DebugSeqEngine implements IDsqEngine {
     List<String> _xblockexpression = null;
     {
       if ((this.dsqModel == null)) {
-        DebugSeqModel _parse = this.parse();
-        this.dsqModel = _parse;
+        this.dsqModel = this.parse();
       }
       List<String> _xifexpression = null;
       if ((this.dsqModel != null)) {
-        Sequences _sequences = this.dsqModel.getSequences();
-        EList<Sequence> _sequences_1 = _sequences.getSequences();
         final Function1<Sequence, String> _function = (Sequence it) -> {
           return it.getName();
         };
-        List<String> _map = ListExtensions.<Sequence, String>map(_sequences_1, _function);
         final Function1<String, Boolean> _function_1 = (String it) -> {
-          Collection<String> _defaultSqs = this.getDefaultSqs();
-          return Boolean.valueOf(_defaultSqs.contains(it));
+          return Boolean.valueOf(this.getDefaultSqs().contains(it));
         };
-        Iterable<String> _filter = IterableExtensions.<String>filter(_map, _function_1);
-        _xifexpression = IterableExtensions.<String>toList(_filter);
+        _xifexpression = IterableExtensions.<String>toList(IterableExtensions.<String>filter(ListExtensions.<Sequence, String>map(this.dsqModel.getSequences().getSequences(), _function), _function_1));
       } else {
         _xifexpression = CollectionLiterals.<String>newArrayList();
       }
@@ -209,19 +195,16 @@ public class DebugSeqEngine implements IDsqEngine {
   @Override
   public boolean isSequenceDisabled(final String sequenceName) {
     if ((this.dsqModel == null)) {
-      DebugSeqModel _parse = this.parse();
-      this.dsqModel = _parse;
+      this.dsqModel = this.parse();
     }
     if ((this.dsqModel == null)) {
       return true;
     }
-    Sequences _sequences = this.dsqModel.getSequences();
-    EList<Sequence> _sequences_1 = _sequences.getSequences();
     final Function1<Sequence, Boolean> _function = (Sequence it) -> {
       String _name = it.getName();
       return Boolean.valueOf(Objects.equal(_name, sequenceName));
     };
-    final Sequence seq = IterableExtensions.<Sequence>findFirst(_sequences_1, _function);
+    final Sequence seq = IterableExtensions.<Sequence>findFirst(this.dsqModel.getSequences().getSequences(), _function);
     return ((seq == null) || (seq.getDisable() != 0));
   }
   
@@ -231,18 +214,16 @@ public class DebugSeqEngine implements IDsqEngine {
     if ((seq != null)) {
       this.contexts.clear();
       this.enterScope(false);
-      DebugVars _debugvars = this.dsqModel.getDebugvars();
-      this.interpret(_debugvars);
       this.setPredefinedVariableValues(seqContext);
+      this.interpret(this.dsqModel.getDebugvars());
       this.interpret(seq);
       this.exitScope();
     } else {
-      String _sequenceName = seqContext.getSequenceName();
-      boolean _isEmptyDefaultSequence = DebugSeqUtil.isEmptyDefaultSequence(_sequenceName);
+      boolean _isEmptyDefaultSequence = DebugSeqUtil.isEmptyDefaultSequence(seqContext.getSequenceName());
       boolean _not = (!_isEmptyDefaultSequence);
       if (_not) {
-        String _sequenceName_1 = seqContext.getSequenceName();
-        String _plus = ("Sequence named \'" + _sequenceName_1);
+        String _sequenceName = seqContext.getSequenceName();
+        String _plus = ("Sequence named \'" + _sequenceName);
         String _plus_1 = (_plus + "\' is undefined");
         throw new DsqException(_plus_1);
       }
@@ -254,16 +235,13 @@ public class DebugSeqEngine implements IDsqEngine {
     String _xblockexpression = null;
     {
       if ((this.generator == null)) {
-        DsqScriptGeneratorFactory _instance = DsqScriptGeneratorFactory.getInstance();
-        IDsqScriptGenerator _extender = _instance.getExtender(generatorID);
-        this.generator = _extender;
+        this.generator = DsqScriptGeneratorFactory.getInstance().getExtender(generatorID);
         if ((this.generator == null)) {
           return null;
         }
       }
       if ((this.dsqModel == null)) {
-        DebugSeqModel _parse = this.parse();
-        this.dsqModel = _parse;
+        this.dsqModel = this.parse();
       }
       _xblockexpression = this.generator.generate(this.dsqModel, header);
     }
@@ -276,27 +254,22 @@ public class DebugSeqEngine implements IDsqEngine {
     }
     this.checkPredefinedVariables(seqContext);
     if ((this.dsqModel == null)) {
-      DebugSeqModel _parse = this.parse();
-      this.dsqModel = _parse;
+      this.dsqModel = this.parse();
     }
-    Sequences _sequences = this.dsqModel.getSequences();
-    EList<Sequence> _sequences_1 = _sequences.getSequences();
     final Function1<Sequence, Boolean> _function = (Sequence it) -> {
       return Boolean.valueOf((Objects.equal(it.getName(), seqContext.getSequenceName()) && Objects.equal(it.getPname(), this.deviceInfo.getProcessorName())));
     };
-    final Sequence matchedSeq = IterableExtensions.<Sequence>findFirst(_sequences_1, _function);
+    final Sequence matchedSeq = IterableExtensions.<Sequence>findFirst(this.dsqModel.getSequences().getSequences(), _function);
     Sequence _xifexpression = null;
     if ((matchedSeq != null)) {
       _xifexpression = matchedSeq;
     } else {
-      Sequences _sequences_2 = this.dsqModel.getSequences();
-      EList<Sequence> _sequences_3 = _sequences_2.getSequences();
       final Function1<Sequence, Boolean> _function_1 = (Sequence it) -> {
         String _name = it.getName();
         String _sequenceName = seqContext.getSequenceName();
         return Boolean.valueOf(Objects.equal(_name, _sequenceName));
       };
-      _xifexpression = IterableExtensions.<Sequence>findFirst(_sequences_3, _function_1);
+      _xifexpression = IterableExtensions.<Sequence>findFirst(this.dsqModel.getSequences().getSequences(), _function_1);
     }
     final Sequence seq = _xifexpression;
     return seq;
@@ -310,16 +283,14 @@ public class DebugSeqEngine implements IDsqEngine {
       if (_tripleEquals) {
         _xifexpression = null;
       } else {
-        ICpDebugConfiguration _debugConfiguration_1 = this.deviceInfo.getDebugConfiguration();
-        _xifexpression = _debugConfiguration_1.getDebugVars();
+        _xifexpression = this.deviceInfo.getDebugConfiguration().getDebugVars();
       }
       final ICpDebugVars dv = _xifexpression;
       String _xifexpression_1 = null;
       if ((dv == null)) {
         _xifexpression_1 = "";
       } else {
-        IAttributes _attributes = dv.attributes();
-        String _xmlString = _attributes.toXmlString();
+        String _xmlString = dv.attributes().toXmlString();
         _xifexpression_1 = (" " + _xmlString);
       }
       final String attributes = _xifexpression_1;
@@ -336,27 +307,27 @@ public class DebugSeqEngine implements IDsqEngine {
       _builder.append(initialBody, "\t\t    ");
       _builder.newLineIfNotEmpty();
       _builder.append("__var ");
-      _builder.append(IDsqContext.AP, "");
+      _builder.append(IDsqContext.AP);
       _builder.append(" = 0;");
       _builder.newLineIfNotEmpty();
       _builder.append("__var ");
-      _builder.append(IDsqContext.DP, "");
+      _builder.append(IDsqContext.DP);
       _builder.append(" = 0;");
       _builder.newLineIfNotEmpty();
       _builder.append("__var ");
-      _builder.append(IDsqContext.PROTOCOL, "");
+      _builder.append(IDsqContext.PROTOCOL);
       _builder.append(" = 0;");
       _builder.newLineIfNotEmpty();
       _builder.append("__var ");
-      _builder.append(IDsqContext.CONNECTION, "");
+      _builder.append(IDsqContext.CONNECTION);
       _builder.append(" = 0;");
       _builder.newLineIfNotEmpty();
       _builder.append("__var ");
-      _builder.append(IDsqContext.TRACEOUT, "");
+      _builder.append(IDsqContext.TRACEOUT);
       _builder.append(" = 0;");
       _builder.newLineIfNotEmpty();
       _builder.append("__var ");
-      _builder.append(IDsqContext.ERRORCONTROL, "");
+      _builder.append(IDsqContext.ERRORCONTROL);
       _builder.append(" = 0;");
       _builder.newLineIfNotEmpty();
       sb.append(_builder);
@@ -366,16 +337,13 @@ public class DebugSeqEngine implements IDsqEngine {
           final Path path = Paths.get(dgbConfFileName);
           boolean _exists = Files.exists(path);
           if (_exists) {
-            URI _uri = path.toUri();
-            URL _uRL = _uri.toURL();
-            final String text = this.readFile(_uRL);
+            final String text = this.readFile(path.toUri().toURL());
             sb.append(text);
           }
         }
       }
       sb.append("</debugvars>");
-      String _string = sb.toString();
-      this.debugVars = _string;
+      this.debugVars = sb.toString();
     } catch (Throwable _e) {
       throw Exceptions.sneakyThrow(_e);
     }
@@ -416,28 +384,40 @@ public class DebugSeqEngine implements IDsqEngine {
     final Long tc = dsqContext.getPredefinedVariableValue(IDsqContext.TRACEOUT);
     final Long ec = dsqContext.getPredefinedVariableValue(IDsqContext.ERRORCONTROL);
     if ((ap != null)) {
-      Map<String, Long> _peek = this.contexts.peek();
-      _peek.put(IDsqContext.AP, ap);
+      this.contexts.peek().put(IDsqContext.AP, ap);
+      if ((this.logger != null)) {
+        this.logger.logStatement(((("__var " + IDsqContext.AP) + " = ") + ap), Long.valueOf(0L), 0);
+      }
     }
     if ((dp != null)) {
-      Map<String, Long> _peek_1 = this.contexts.peek();
-      _peek_1.put(IDsqContext.DP, dp);
+      this.contexts.peek().put(IDsqContext.DP, dp);
+      if ((this.logger != null)) {
+        this.logger.logStatement(((("__var " + IDsqContext.DP) + " = ") + dp), Long.valueOf(0L), 0);
+      }
     }
     if ((p != null)) {
-      Map<String, Long> _peek_2 = this.contexts.peek();
-      _peek_2.put(IDsqContext.PROTOCOL, p);
+      this.contexts.peek().put(IDsqContext.PROTOCOL, p);
+      if ((this.logger != null)) {
+        this.logger.logStatement(((("__var " + IDsqContext.PROTOCOL) + " = ") + p), Long.valueOf(0L), 0);
+      }
     }
     if ((c != null)) {
-      Map<String, Long> _peek_3 = this.contexts.peek();
-      _peek_3.put(IDsqContext.CONNECTION, c);
+      this.contexts.peek().put(IDsqContext.CONNECTION, c);
+      if ((this.logger != null)) {
+        this.logger.logStatement(((("__var " + IDsqContext.CONNECTION) + " = ") + c), Long.valueOf(0L), 0);
+      }
     }
     if ((tc != null)) {
-      Map<String, Long> _peek_4 = this.contexts.peek();
-      _peek_4.put(IDsqContext.TRACEOUT, tc);
+      this.contexts.peek().put(IDsqContext.TRACEOUT, tc);
+      if ((this.logger != null)) {
+        this.logger.logStatement(((("__var " + IDsqContext.TRACEOUT) + " = ") + tc), Long.valueOf(0L), 0);
+      }
     }
     if ((ec != null)) {
-      Map<String, Long> _peek_5 = this.contexts.peek();
-      _peek_5.put(IDsqContext.ERRORCONTROL, ec);
+      this.contexts.peek().put(IDsqContext.ERRORCONTROL, ec);
+      if ((this.logger != null)) {
+        this.logger.logStatement(((("__var " + IDsqContext.ERRORCONTROL) + " = ") + ec), Long.valueOf(0L), 0);
+      }
     }
   }
   
@@ -446,9 +426,7 @@ public class DebugSeqEngine implements IDsqEngine {
    * @return The root node of the parsed model
    */
   private DebugSeqModel parse() throws DsqException {
-    Resource _resource = this.getResource();
-    EList<EObject> _contents = _resource.getContents();
-    EObject _get = _contents.get(0);
+    EObject _get = this.getResource().getContents().get(0);
     return ((DebugSeqModel) _get);
   }
   
@@ -457,13 +435,10 @@ public class DebugSeqEngine implements IDsqEngine {
       return CmsisConstants.EMPTY_STRING;
     }
     final PdscParser xmlParser = new PdscParser();
-    Collection<ICpSequence> _values = sequences.values();
     final Function1<ICpSequence, String> _function = (ICpSequence it) -> {
       return xmlParser.writeToXmlString(it);
     };
-    Iterable<String> _map = IterableExtensions.<ICpSequence, String>map(_values, _function);
-    String _join = IterableExtensions.join(_map, "\n");
-    return this.postProcess(_join);
+    return this.postProcess(IterableExtensions.join(IterableExtensions.<ICpSequence, String>map(sequences.values(), _function), "\n"));
   }
   
   private Resource getResource() {
@@ -478,32 +453,28 @@ public class DebugSeqEngine implements IDsqEngine {
       if (_tripleEquals) {
         _xifexpression = null;
       } else {
-        ICpDebugConfiguration _debugConfiguration_1 = this.deviceInfo.getDebugConfiguration();
-        _xifexpression = _debugConfiguration_1.getSequences();
+        _xifexpression = this.deviceInfo.getDebugConfiguration().getSequences();
       }
       final Map<String, ICpSequence> sequences = _xifexpression;
       StringConcatenation _builder = new StringConcatenation();
-      _builder.append(this.debugVars, "");
+      _builder.append(this.debugVars);
       _builder.newLineIfNotEmpty();
       _builder.append("<sequences>");
       _builder.newLine();
       String _sequencesAsString = this.getSequencesAsString(sequences);
-      _builder.append(_sequencesAsString, "");
+      _builder.append(_sequencesAsString);
       _builder.newLineIfNotEmpty();
       String _addDefaultSeqs = this.addDefaultSeqs(sequences);
-      _builder.append(_addDefaultSeqs, "");
+      _builder.append(_addDefaultSeqs);
       _builder.newLineIfNotEmpty();
       _builder.append("</sequences>");
       _builder.newLine();
       final String modelString = _builder.toString();
       final XtextResourceSet resourceSet = this.resourceSetProvider.get();
       resourceSet.addLoadOption(XtextResource.OPTION_RESOLVE_ALL, Boolean.TRUE);
-      org.eclipse.emf.common.util.URI _createURI = org.eclipse.emf.common.util.URI.createURI("dummy:/dummy.dsq");
-      Resource _createResource = resourceSet.createResource(_createURI);
-      this.resource = _createResource;
+      this.resource = resourceSet.createResource(URI.createURI("dummy:/dummy.dsq"));
       StringInputStream _stringInputStream = new StringInputStream(modelString);
-      Map<Object, Object> _loadOptions = resourceSet.getLoadOptions();
-      this.resource.load(_stringInputStream, _loadOptions);
+      this.resource.load(_stringInputStream, resourceSet.getLoadOptions());
       final List<Issue> issues = this.validator.validate(this.resource, CheckMode.ALL, CancelIndicator.NullImpl);
       boolean _isEmpty = issues.isEmpty();
       boolean _not = (!_isEmpty);
@@ -520,10 +491,8 @@ public class DebugSeqEngine implements IDsqEngine {
           String _substring = modelString.substring((_offset).intValue(), _plus_2);
           return (_plus + _substring);
         };
-        List<String> _map = ListExtensions.<Issue, String>map(issues, _function);
-        final String errors = IterableExtensions.join(_map, "\n\n");
-        ICpPack _pack = this.deviceInfo.getPack();
-        String _fileName = _pack.getFileName();
+        final String errors = IterableExtensions.join(ListExtensions.<Issue, String>map(issues, _function), "\n\n");
+        String _fileName = this.deviceInfo.getPack().getFileName();
         String _plus = ("Error while validating the debug sequences in pack file:\n" + _fileName);
         String _plus_1 = (_plus + "\n\nDevice: ");
         String _fullDeviceName = this.deviceInfo.getFullDeviceName();
@@ -543,8 +512,7 @@ public class DebugSeqEngine implements IDsqEngine {
       String _xblockexpression = null;
       {
         String result = "";
-        URLConnection _openConnection = url.openConnection();
-        final InputStream inputStream = _openConnection.getInputStream();
+        final InputStream inputStream = url.openConnection().getInputStream();
         InputStreamReader _inputStreamReader = new InputStreamReader(inputStream);
         final BufferedReader in = new BufferedReader(_inputStreamReader);
         String inputLine = "";
@@ -569,11 +537,10 @@ public class DebugSeqEngine implements IDsqEngine {
         final URL url = FileLocator.toFileURL(_uRL);
         String _file = url.getFile();
         final File defaultSeqsFolder = new File(_file);
-        String[] _list = defaultSeqsFolder.list();
         final Function1<String, String> _function = (String it) -> {
           return Utils.extractBaseFileName(it);
         };
-        _xblockexpression = ListExtensions.<String, String>map(((List<String>)Conversions.doWrapArray(_list)), _function);
+        _xblockexpression = ListExtensions.<String, String>map(((List<String>)Conversions.doWrapArray(defaultSeqsFolder.list())), _function);
       }
       return _xblockexpression;
     } catch (Throwable _e) {
@@ -606,13 +573,35 @@ public class DebugSeqEngine implements IDsqEngine {
   protected Long _interpret(final DebugVars debugvars) throws DsqException {
     long _xblockexpression = (long) 0;
     {
-      EList<Statement> _statements = debugvars.getStatements();
-      final Consumer<Statement> _function = (Statement it) -> {
-        Object _interpret = this.interpret(it);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        this.log(this.logger, it, Long.valueOf(_long));
+      final Function1<VariableDeclaration, Boolean> _function = (VariableDeclaration it) -> {
+        String _name = it.getName();
+        return Boolean.valueOf((!Objects.equal(_name, IDsqContext.AP)));
       };
-      _statements.forEach(_function);
+      final Function1<VariableDeclaration, Boolean> _function_1 = (VariableDeclaration it) -> {
+        String _name = it.getName();
+        return Boolean.valueOf((!Objects.equal(_name, IDsqContext.DP)));
+      };
+      final Function1<VariableDeclaration, Boolean> _function_2 = (VariableDeclaration it) -> {
+        String _name = it.getName();
+        return Boolean.valueOf((!Objects.equal(_name, IDsqContext.CONNECTION)));
+      };
+      final Function1<VariableDeclaration, Boolean> _function_3 = (VariableDeclaration it) -> {
+        String _name = it.getName();
+        return Boolean.valueOf((!Objects.equal(_name, IDsqContext.PROTOCOL)));
+      };
+      final Function1<VariableDeclaration, Boolean> _function_4 = (VariableDeclaration it) -> {
+        String _name = it.getName();
+        return Boolean.valueOf((!Objects.equal(_name, IDsqContext.TRACEOUT)));
+      };
+      final Function1<VariableDeclaration, Boolean> _function_5 = (VariableDeclaration it) -> {
+        String _name = it.getName();
+        return Boolean.valueOf((!Objects.equal(_name, IDsqContext.ERRORCONTROL)));
+      };
+      final Iterable<VariableDeclaration> stats = IterableExtensions.<VariableDeclaration>filter(IterableExtensions.<VariableDeclaration>filter(IterableExtensions.<VariableDeclaration>filter(IterableExtensions.<VariableDeclaration>filter(IterableExtensions.<VariableDeclaration>filter(IterableExtensions.<VariableDeclaration>filter(Iterables.<VariableDeclaration>filter(debugvars.getStatements(), VariableDeclaration.class), _function), _function_1), _function_2), _function_3), _function_4), _function_5);
+      final Consumer<VariableDeclaration> _function_6 = (VariableDeclaration it) -> {
+        this.log(this.logger, it, Long.valueOf(DebugSeqUtil.toLong(this.interpret(it))));
+      };
+      stats.forEach(_function_6);
       _xblockexpression = 0L;
     }
     return Long.valueOf(_xblockexpression);
@@ -622,23 +611,20 @@ public class DebugSeqEngine implements IDsqEngine {
     long _xblockexpression = (long) 0;
     {
       if ((this.logger != null)) {
-        String _name = seq.getName();
-        this.logger.logSeqStart(_name);
+        this.logger.logSeqStart(seq.getName());
       }
       this.enterScope(true);
       EList<CodeBlock> _codeblocks = seq.getCodeblocks();
       boolean _tripleNotEquals = (_codeblocks != null);
       if (_tripleNotEquals) {
-        EList<CodeBlock> _codeblocks_1 = seq.getCodeblocks();
         final Consumer<CodeBlock> _function = (CodeBlock it) -> {
           this.interpret(it);
         };
-        _codeblocks_1.forEach(_function);
+        seq.getCodeblocks().forEach(_function);
       }
       this.exitScope();
       if ((this.logger != null)) {
-        String _name_1 = seq.getName();
-        this.logger.logSeqEnd(_name_1);
+        this.logger.logSeqEnd(seq.getName());
       }
       _xblockexpression = 0L;
     }
@@ -651,8 +637,7 @@ public class DebugSeqEngine implements IDsqEngine {
       if ((this.logger != null)) {
         long _atomic = block.getAtomic();
         boolean _tripleNotEquals = (_atomic != 0);
-        String _info = block.getInfo();
-        this.logger.logBlockStart(_tripleNotEquals, _info);
+        this.logger.logBlockStart(_tripleNotEquals, block.getInfo());
       }
       final Stack<Map<String, Long>> tempContexts = new Stack<Map<String, Long>>();
       long _atomic_1 = block.getAtomic();
@@ -660,38 +645,24 @@ public class DebugSeqEngine implements IDsqEngine {
       if (_tripleNotEquals_1) {
         this.inAtomic = true;
         this.collectingCommands = true;
-        ArrayList<IDsqCommand> _newArrayList = CollectionLiterals.<IDsqCommand>newArrayList();
-        this.commands = _newArrayList;
+        this.commands = CollectionLiterals.<IDsqCommand>newArrayList();
         final Consumer<Map<String, Long>> _function = (Map<String, Long> it) -> {
           HashMap<String, Long> _hashMap = new HashMap<String, Long>(it);
           tempContexts.push(_hashMap);
         };
         this.contexts.forEach(_function);
       }
-      EList<Statement> _statements = block.getStatements();
-      this.interpretUntilLast(_statements);
-      EList<Statement> _statements_1 = block.getStatements();
-      Statement _last = IterableExtensions.<Statement>last(_statements_1);
-      Object result = this.interpret(_last);
-      EList<Statement> _statements_2 = block.getStatements();
-      Statement _last_1 = IterableExtensions.<Statement>last(_statements_2);
-      long _long = DebugSeqUtil.toLong(result);
-      this.log(this.logger, _last_1, Long.valueOf(_long));
+      this.interpretUntilLast(block.getStatements());
+      Object result = this.interpret(IterableExtensions.<Statement>last(block.getStatements()));
+      this.log(this.logger, IterableExtensions.<Statement>last(block.getStatements()), Long.valueOf(DebugSeqUtil.toLong(result)));
       if (this.inAtomic) {
         this.debugSeqClient.execute(this.commands, true);
         this.contexts = tempContexts;
         this.collectingCommands = false;
         this.commandIndex = 0;
-        EList<Statement> _statements_3 = block.getStatements();
-        this.interpretUntilLast(_statements_3);
-        EList<Statement> _statements_4 = block.getStatements();
-        Statement _last_2 = IterableExtensions.<Statement>last(_statements_4);
-        Object _interpret = this.interpret(_last_2);
-        result = _interpret;
-        EList<Statement> _statements_5 = block.getStatements();
-        Statement _last_3 = IterableExtensions.<Statement>last(_statements_5);
-        long _long_1 = DebugSeqUtil.toLong(result);
-        this.log(this.logger, _last_3, Long.valueOf(_long_1));
+        this.interpretUntilLast(block.getStatements());
+        result = this.interpret(IterableExtensions.<Statement>last(block.getStatements()));
+        this.log(this.logger, IterableExtensions.<Statement>last(block.getStatements()), Long.valueOf(DebugSeqUtil.toLong(result)));
         this.inAtomic = false;
         this.commands.clear();
       }
@@ -708,21 +679,15 @@ public class DebugSeqEngine implements IDsqEngine {
     {
       long result = 0L;
       if ((this.logger != null)) {
-        String _info = control.getInfo();
-        this.logger.logContorlStart(_info);
+        this.logger.logContorlStart(control.getInfo());
       }
       this.enterScope(false);
       if (((control.getIf() == null) || ((this.logIf(this.logger, control.getIf(), Long.valueOf(DebugSeqUtil.toLong(this.interpret(control.getIf()))))).longValue() != 0))) {
         Expression _while = control.getWhile();
         boolean _tripleEquals = (_while == null);
         if (_tripleEquals) {
-          EList<CodeBlock> _codeblocks = control.getCodeblocks();
-          this.interpretUntilLast(_codeblocks);
-          EList<CodeBlock> _codeblocks_1 = control.getCodeblocks();
-          CodeBlock _last = IterableExtensions.<CodeBlock>last(_codeblocks_1);
-          Object _interpret = this.interpret(_last);
-          long _long = DebugSeqUtil.toLong(_interpret);
-          result = _long;
+          this.interpretUntilLast(control.getCodeblocks());
+          result = DebugSeqUtil.toLong(this.interpret(IterableExtensions.<CodeBlock>last(control.getCodeblocks())));
         } else {
           long timeout = control.getTimeout();
           if ((timeout == 0)) {
@@ -732,13 +697,8 @@ public class DebugSeqEngine implements IDsqEngine {
           final long startTime = System.nanoTime();
           while ((((this.logWhile(this.logger, control.getWhile(), Long.valueOf(DebugSeqUtil.toLong(this.interpret(control.getWhile()))))).longValue() != 0) && (runningTime < timeout))) {
             {
-              EList<CodeBlock> _codeblocks_2 = control.getCodeblocks();
-              this.interpretUntilLast(_codeblocks_2);
-              EList<CodeBlock> _codeblocks_3 = control.getCodeblocks();
-              CodeBlock _last_1 = IterableExtensions.<CodeBlock>last(_codeblocks_3);
-              Object _interpret_1 = this.interpret(_last_1);
-              long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-              result = _long_1;
+              this.interpretUntilLast(control.getCodeblocks());
+              result = DebugSeqUtil.toLong(this.interpret(IterableExtensions.<CodeBlock>last(control.getCodeblocks())));
               long _nanoTime = System.nanoTime();
               long _minus = (_nanoTime - startTime);
               long _divide = (_minus / 1000);
@@ -774,10 +734,8 @@ public class DebugSeqEngine implements IDsqEngine {
         _matched=true;
         Long _xblockexpression = null;
         {
-          VariableDeclaration _variable = ((VariableRef)e).getVariable();
-          final String k = _variable.getName();
-          Map<String, Long> _context = this.getContext(k);
-          _xblockexpression = _context.get(k);
+          final String k = ((VariableRef)e).getVariable().getName();
+          _xblockexpression = this.getContext(k).get(k);
         }
         _switchResult = _xblockexpression;
       }
@@ -785,11 +743,8 @@ public class DebugSeqEngine implements IDsqEngine {
     if (!_matched) {
       if (e instanceof Not) {
         _matched=true;
-        Expression _expression = ((Not)e).getExpression();
-        Object _interpret = this.interpret(_expression);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        boolean _equals = (_long == 0);
-        _switchResult = Long.valueOf(DebugSeqUtil.toLong(Boolean.valueOf(_equals)));
+        long _long = DebugSeqUtil.toLong(this.interpret(((Not)e).getExpression()));
+        _switchResult = Long.valueOf(DebugSeqUtil.toLong(Boolean.valueOf((_long == 0))));
       }
     }
     if (!_matched) {
@@ -798,66 +753,66 @@ public class DebugSeqEngine implements IDsqEngine {
         long _xblockexpression = (long) 0;
         {
           Expression _left = ((Assignment)e).getLeft();
-          VariableDeclaration _variable = ((VariableRef) _left).getVariable();
-          final String k = _variable.getName();
-          Map<String, Long> _context = this.getContext(k);
-          final Long i = _context.get(k);
-          Expression _right = ((Assignment)e).getRight();
-          Object _interpret = this.interpret(_right);
-          final long v = DebugSeqUtil.toLong(_interpret);
+          final String k = ((VariableRef) _left).getVariable().getName();
+          final Long i = this.getContext(k).get(k);
+          final long v = DebugSeqUtil.toLong(this.interpret(((Assignment)e).getRight()));
           long _switchResult_1 = (long) 0;
           String _op = ((Assignment)e).getOp();
-          switch (_op) {
-            case "=":
-              _switchResult_1 = this.updateValue(k, v);
-              break;
-            case "+=":
-              _switchResult_1 = this.updateValue(k, ((i).longValue() + v));
-              break;
-            case "-=":
-              _switchResult_1 = this.updateValue(k, ((i).longValue() - v));
-              break;
-            case "*=":
-              _switchResult_1 = this.updateValue(k, ((i).longValue() * v));
-              break;
-            case "/=":
-              long _xblockexpression_1 = (long) 0;
-              {
-                final long value = Long.divideUnsigned((i).longValue(), v);
-                _xblockexpression_1 = this.updateValue(k, value);
-              }
-              _switchResult_1 = _xblockexpression_1;
-              break;
-            case "%=":
-              long _xblockexpression_2 = (long) 0;
-              {
-                final long value = Long.remainderUnsigned((i).longValue(), v);
-                _xblockexpression_2 = this.updateValue(k, value);
-              }
-              _switchResult_1 = _xblockexpression_2;
-              break;
-            case "&lt;&lt;=":
-              int _integer = DebugSeqUtil.toInteger(Long.valueOf(v));
-              long _doubleLessThan = ((i).longValue() << _integer);
-              _switchResult_1 = this.updateValue(k, _doubleLessThan);
-              break;
-            case "&gt;&gt;=":
-              int _integer_1 = DebugSeqUtil.toInteger(Long.valueOf(v));
-              long _doubleGreaterThan = ((i).longValue() >> _integer_1);
-              _switchResult_1 = this.updateValue(k, _doubleGreaterThan);
-              break;
-            case "&amp;=":
-              _switchResult_1 = this.updateValue(k, ((i).longValue() & v));
-              break;
-            case "^=":
-              _switchResult_1 = this.updateValue(k, ((i).longValue() ^ v));
-              break;
-            case "|=":
-              _switchResult_1 = this.updateValue(k, ((i).longValue() | v));
-              break;
-            default:
-              _switchResult_1 = 0L;
-              break;
+          if (_op != null) {
+            switch (_op) {
+              case "=":
+                _switchResult_1 = this.updateValue(k, v);
+                break;
+              case "+=":
+                _switchResult_1 = this.updateValue(k, ((i).longValue() + v));
+                break;
+              case "-=":
+                _switchResult_1 = this.updateValue(k, ((i).longValue() - v));
+                break;
+              case "*=":
+                _switchResult_1 = this.updateValue(k, ((i).longValue() * v));
+                break;
+              case "/=":
+                long _xblockexpression_1 = (long) 0;
+                {
+                  final long value = Long.divideUnsigned((i).longValue(), v);
+                  _xblockexpression_1 = this.updateValue(k, value);
+                }
+                _switchResult_1 = _xblockexpression_1;
+                break;
+              case "%=":
+                long _xblockexpression_2 = (long) 0;
+                {
+                  final long value = Long.remainderUnsigned((i).longValue(), v);
+                  _xblockexpression_2 = this.updateValue(k, value);
+                }
+                _switchResult_1 = _xblockexpression_2;
+                break;
+              case "&lt;&lt;=":
+                int _integer = DebugSeqUtil.toInteger(Long.valueOf(v));
+                long _doubleLessThan = ((i).longValue() << _integer);
+                _switchResult_1 = this.updateValue(k, _doubleLessThan);
+                break;
+              case "&gt;&gt;=":
+                int _integer_1 = DebugSeqUtil.toInteger(Long.valueOf(v));
+                long _doubleGreaterThan = ((i).longValue() >> _integer_1);
+                _switchResult_1 = this.updateValue(k, _doubleGreaterThan);
+                break;
+              case "&amp;=":
+                _switchResult_1 = this.updateValue(k, ((i).longValue() & v));
+                break;
+              case "^=":
+                _switchResult_1 = this.updateValue(k, ((i).longValue() ^ v));
+                break;
+              case "|=":
+                _switchResult_1 = this.updateValue(k, ((i).longValue() | v));
+                break;
+              default:
+                _switchResult_1 = 0L;
+                break;
+            }
+          } else {
+            _switchResult_1 = 0L;
           }
           _xblockexpression = _switchResult_1;
         }
@@ -868,15 +823,12 @@ public class DebugSeqEngine implements IDsqEngine {
       if (e instanceof Ternary) {
         _matched=true;
         Object _xifexpression = null;
-        Expression _left = ((Ternary)e).getLeft();
-        Object _interpret = this.interpret(_left);
+        Object _interpret = this.interpret(((Ternary)e).getLeft());
         boolean _tripleNotEquals = (_interpret != Integer.valueOf(0));
         if (_tripleNotEquals) {
-          Expression _exp1 = ((Ternary)e).getExp1();
-          _xifexpression = this.interpret(_exp1);
+          _xifexpression = this.interpret(((Ternary)e).getExp1());
         } else {
-          Expression _exp2 = ((Ternary)e).getExp2();
-          _xifexpression = this.interpret(_exp2);
+          _xifexpression = this.interpret(((Ternary)e).getExp2());
         }
         _switchResult = _xifexpression;
       }
@@ -896,46 +848,25 @@ public class DebugSeqEngine implements IDsqEngine {
     if (!_matched) {
       if (e instanceof BitOr) {
         _matched=true;
-        Expression _left = ((BitOr)e).getLeft();
-        Object _interpret = this.interpret(_left);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _right = ((BitOr)e).getRight();
-        Object _interpret_1 = this.interpret(_right);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-        _switchResult = Long.valueOf((_long | _long_1));
+        _switchResult = Long.valueOf((DebugSeqUtil.toLong(this.interpret(((BitOr)e).getLeft())) | DebugSeqUtil.toLong(this.interpret(((BitOr)e).getRight()))));
       }
     }
     if (!_matched) {
       if (e instanceof BitXor) {
         _matched=true;
-        Expression _left = ((BitXor)e).getLeft();
-        Object _interpret = this.interpret(_left);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _right = ((BitXor)e).getRight();
-        Object _interpret_1 = this.interpret(_right);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-        _switchResult = Long.valueOf((_long ^ _long_1));
+        _switchResult = Long.valueOf((DebugSeqUtil.toLong(this.interpret(((BitXor)e).getLeft())) ^ DebugSeqUtil.toLong(this.interpret(((BitXor)e).getRight()))));
       }
     }
     if (!_matched) {
       if (e instanceof BitAnd) {
         _matched=true;
-        Expression _left = ((BitAnd)e).getLeft();
-        Object _interpret = this.interpret(_left);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _right = ((BitAnd)e).getRight();
-        Object _interpret_1 = this.interpret(_right);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-        _switchResult = Long.valueOf((_long & _long_1));
+        _switchResult = Long.valueOf((DebugSeqUtil.toLong(this.interpret(((BitAnd)e).getLeft())) & DebugSeqUtil.toLong(this.interpret(((BitAnd)e).getRight()))));
       }
     }
     if (!_matched) {
       if (e instanceof BitNot) {
         _matched=true;
-        Expression _expression = ((BitNot)e).getExpression();
-        Object _interpret = this.interpret(_expression);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        _switchResult = Long.valueOf((~_long));
+        _switchResult = Long.valueOf((~DebugSeqUtil.toLong(this.interpret(((BitNot)e).getExpression()))));
       }
     }
     if (!_matched) {
@@ -945,19 +876,13 @@ public class DebugSeqEngine implements IDsqEngine {
         String _op = ((Equality)e).getOp();
         boolean _equals = Objects.equal(_op, "==");
         if (_equals) {
-          Expression _left = ((Equality)e).getLeft();
-          Object _interpret = this.interpret(_left);
-          Expression _right = ((Equality)e).getRight();
-          Object _interpret_1 = this.interpret(_right);
-          boolean _equals_1 = Objects.equal(_interpret, _interpret_1);
-          _xifexpression = DebugSeqUtil.toLong(Boolean.valueOf(_equals_1));
+          Object _interpret = this.interpret(((Equality)e).getLeft());
+          Object _interpret_1 = this.interpret(((Equality)e).getRight());
+          _xifexpression = DebugSeqUtil.toLong(Boolean.valueOf(Objects.equal(_interpret, _interpret_1)));
         } else {
-          Expression _left_1 = ((Equality)e).getLeft();
-          Object _interpret_2 = this.interpret(_left_1);
-          Expression _right_1 = ((Equality)e).getRight();
-          Object _interpret_3 = this.interpret(_right_1);
-          boolean _notEquals = (!Objects.equal(_interpret_2, _interpret_3));
-          _xifexpression = DebugSeqUtil.toLong(Boolean.valueOf(_notEquals));
+          Object _interpret_2 = this.interpret(((Equality)e).getLeft());
+          Object _interpret_3 = this.interpret(((Equality)e).getRight());
+          _xifexpression = DebugSeqUtil.toLong(Boolean.valueOf((!Objects.equal(_interpret_2, _interpret_3))));
         }
         _switchResult = Long.valueOf(_xifexpression);
       }
@@ -967,38 +892,34 @@ public class DebugSeqEngine implements IDsqEngine {
         _matched=true;
         long _xblockexpression = (long) 0;
         {
-          Expression _left = ((Comparison)e).getLeft();
-          Object _interpret = this.interpret(_left);
-          final long left = DebugSeqUtil.toLong(_interpret);
-          Expression _right = ((Comparison)e).getRight();
-          Object _interpret_1 = this.interpret(_right);
-          final long right = DebugSeqUtil.toLong(_interpret_1);
+          final long left = DebugSeqUtil.toLong(this.interpret(((Comparison)e).getLeft()));
+          final long right = DebugSeqUtil.toLong(this.interpret(((Comparison)e).getRight()));
           long _switchResult_1 = (long) 0;
           String _op = ((Comparison)e).getOp();
-          switch (_op) {
-            case "&lt;":
-              int _compareUnsigned = Long.compareUnsigned(left, right);
-              boolean _lessThan = (_compareUnsigned < 0);
-              _switchResult_1 = DebugSeqUtil.toLong(Boolean.valueOf(_lessThan));
-              break;
-            case "&gt;":
-              int _compareUnsigned_1 = Long.compareUnsigned(left, right);
-              boolean _greaterThan = (_compareUnsigned_1 > 0);
-              _switchResult_1 = DebugSeqUtil.toLong(Boolean.valueOf(_greaterThan));
-              break;
-            case "&lt;=":
-              int _compareUnsigned_2 = Long.compareUnsigned(left, right);
-              boolean _lessEqualsThan = (_compareUnsigned_2 <= 0);
-              _switchResult_1 = DebugSeqUtil.toLong(Boolean.valueOf(_lessEqualsThan));
-              break;
-            case "&gt;=":
-              int _compareUnsigned_3 = Long.compareUnsigned(left, right);
-              boolean _greaterEqualsThan = (_compareUnsigned_3 >= 0);
-              _switchResult_1 = DebugSeqUtil.toLong(Boolean.valueOf(_greaterEqualsThan));
-              break;
-            default:
-              _switchResult_1 = 0L;
-              break;
+          if (_op != null) {
+            switch (_op) {
+              case "&lt;":
+                int _compareUnsigned = Long.compareUnsigned(left, right);
+                _switchResult_1 = DebugSeqUtil.toLong(Boolean.valueOf((_compareUnsigned < 0)));
+                break;
+              case "&gt;":
+                int _compareUnsigned_1 = Long.compareUnsigned(left, right);
+                _switchResult_1 = DebugSeqUtil.toLong(Boolean.valueOf((_compareUnsigned_1 > 0)));
+                break;
+              case "&lt;=":
+                int _compareUnsigned_2 = Long.compareUnsigned(left, right);
+                _switchResult_1 = DebugSeqUtil.toLong(Boolean.valueOf((_compareUnsigned_2 <= 0)));
+                break;
+              case "&gt;=":
+                int _compareUnsigned_3 = Long.compareUnsigned(left, right);
+                _switchResult_1 = DebugSeqUtil.toLong(Boolean.valueOf((_compareUnsigned_3 >= 0)));
+                break;
+              default:
+                _switchResult_1 = 0L;
+                break;
+            }
+          } else {
+            _switchResult_1 = 0L;
           }
           _xblockexpression = _switchResult_1;
         }
@@ -1010,25 +931,24 @@ public class DebugSeqEngine implements IDsqEngine {
         _matched=true;
         long _xblockexpression = (long) 0;
         {
-          Expression _left = ((Shift)e).getLeft();
-          Object _interpret = this.interpret(_left);
-          final long left = DebugSeqUtil.toLong(_interpret);
-          Expression _right = ((Shift)e).getRight();
-          Object _interpret_1 = this.interpret(_right);
-          long _long = DebugSeqUtil.toLong(_interpret_1);
-          final int right = DebugSeqUtil.toInteger(Long.valueOf(_long));
+          final long left = DebugSeqUtil.toLong(this.interpret(((Shift)e).getLeft()));
+          final int right = DebugSeqUtil.toInteger(Long.valueOf(DebugSeqUtil.toLong(this.interpret(((Shift)e).getRight()))));
           long _switchResult_1 = (long) 0;
           String _op = ((Shift)e).getOp();
-          switch (_op) {
-            case "&lt;&lt;":
-              _switchResult_1 = (left << right);
-              break;
-            case "&gt;&gt;":
-              _switchResult_1 = (left >> right);
-              break;
-            default:
-              _switchResult_1 = 0L;
-              break;
+          if (_op != null) {
+            switch (_op) {
+              case "&lt;&lt;":
+                _switchResult_1 = (left << right);
+                break;
+              case "&gt;&gt;":
+                _switchResult_1 = (left >> right);
+                break;
+              default:
+                _switchResult_1 = 0L;
+                break;
+            }
+          } else {
+            _switchResult_1 = 0L;
           }
           _xblockexpression = _switchResult_1;
         }
@@ -1038,61 +958,37 @@ public class DebugSeqEngine implements IDsqEngine {
     if (!_matched) {
       if (e instanceof Plus) {
         _matched=true;
-        Expression _left = ((Plus)e).getLeft();
-        Object _interpret = this.interpret(_left);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _right = ((Plus)e).getRight();
-        Object _interpret_1 = this.interpret(_right);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Plus)e).getLeft()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((Plus)e).getRight()));
         _switchResult = Long.valueOf((_long + _long_1));
       }
     }
     if (!_matched) {
       if (e instanceof Minus) {
         _matched=true;
-        Expression _left = ((Minus)e).getLeft();
-        Object _interpret = this.interpret(_left);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _right = ((Minus)e).getRight();
-        Object _interpret_1 = this.interpret(_right);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Minus)e).getLeft()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((Minus)e).getRight()));
         _switchResult = Long.valueOf((_long - _long_1));
       }
     }
     if (!_matched) {
       if (e instanceof Mul) {
         _matched=true;
-        Expression _left = ((Mul)e).getLeft();
-        Object _interpret = this.interpret(_left);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _right = ((Mul)e).getRight();
-        Object _interpret_1 = this.interpret(_right);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Mul)e).getLeft()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((Mul)e).getRight()));
         _switchResult = Long.valueOf((_long * _long_1));
       }
     }
     if (!_matched) {
       if (e instanceof Div) {
         _matched=true;
-        Expression _left = ((Div)e).getLeft();
-        Object _interpret = this.interpret(_left);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _right = ((Div)e).getRight();
-        Object _interpret_1 = this.interpret(_right);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-        _switchResult = Long.valueOf(Long.divideUnsigned(_long, _long_1));
+        _switchResult = Long.valueOf(Long.divideUnsigned(DebugSeqUtil.toLong(this.interpret(((Div)e).getLeft())), DebugSeqUtil.toLong(this.interpret(((Div)e).getRight()))));
       }
     }
     if (!_matched) {
       if (e instanceof Rem) {
         _matched=true;
-        Expression _left = ((Rem)e).getLeft();
-        Object _interpret = this.interpret(_left);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _right = ((Rem)e).getRight();
-        Object _interpret_1 = this.interpret(_right);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-        _switchResult = Long.valueOf(Long.remainderUnsigned(_long, _long_1));
+        _switchResult = Long.valueOf(Long.remainderUnsigned(DebugSeqUtil.toLong(this.interpret(((Rem)e).getLeft())), DebugSeqUtil.toLong(this.interpret(((Rem)e).getRight()))));
       }
     }
     if (!_matched) {
@@ -1100,25 +996,22 @@ public class DebugSeqEngine implements IDsqEngine {
         _matched=true;
         Object _xblockexpression = null;
         {
-          Sequences _containingSequences = DebugSeqUtil.containingSequences(e);
-          EList<Sequence> _sequences = _containingSequences.getSequences();
           final Function1<Sequence, Boolean> _function = (Sequence it) -> {
             String _name = it.getName();
             String _seqname = ((SequenceCall)e).getSeqname();
             return Boolean.valueOf(Objects.equal(_name, _seqname));
           };
-          final Sequence seq = IterableExtensions.<Sequence>findFirst(_sequences, _function);
+          final Sequence seq = IterableExtensions.<Sequence>findFirst(DebugSeqUtil.containingSequences(e).getSequences(), _function);
           Object _xifexpression = null;
           if ((seq != null)) {
             _xifexpression = this.interpret(seq);
           } else {
             Object _xifexpression_1 = null;
-            String _seqname = ((SequenceCall)e).getSeqname();
-            boolean _isEmptyDefaultSequence = DebugSeqUtil.isEmptyDefaultSequence(_seqname);
+            boolean _isEmptyDefaultSequence = DebugSeqUtil.isEmptyDefaultSequence(((SequenceCall)e).getSeqname());
             boolean _not = (!_isEmptyDefaultSequence);
             if (_not) {
-              String _seqname_1 = ((SequenceCall)e).getSeqname();
-              String _plus = ("Sequence with name \'" + _seqname_1);
+              String _seqname = ((SequenceCall)e).getSeqname();
+              String _plus = ("Sequence with name \'" + _seqname);
               String _plus_1 = (_plus + "\' is undefined");
               throw new DsqException(_plus_1);
             }
@@ -1132,31 +1025,19 @@ public class DebugSeqEngine implements IDsqEngine {
     if (!_matched) {
       if (e instanceof Query) {
         _matched=true;
-        Expression _type = ((Query)e).getType();
-        Object _interpret = this.interpret(_type);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        String _message = ((Query)e).getMessage();
-        Expression _default = ((Query)e).getDefault();
-        Object _interpret_1 = this.interpret(_default);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-        _switchResult = Long.valueOf(this.debugSeqClient.query(_long, _message, _long_1));
+        _switchResult = Long.valueOf(this.debugSeqClient.query(DebugSeqUtil.toLong(this.interpret(((Query)e).getType())), ((Query)e).getMessage(), DebugSeqUtil.toLong(this.interpret(((Query)e).getDefault()))));
       }
     }
     if (!_matched) {
       if (e instanceof QueryValue) {
         _matched=true;
-        String _message = ((QueryValue)e).getMessage();
-        Expression _default = ((QueryValue)e).getDefault();
-        Object _interpret = this.interpret(_default);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        _switchResult = Long.valueOf(this.debugSeqClient.query(IDsqClient.QUERY_VALUE_TYPE, _message, _long));
+        _switchResult = Long.valueOf(this.debugSeqClient.query(IDsqClient.QUERY_VALUE_TYPE, ((QueryValue)e).getMessage(), DebugSeqUtil.toLong(this.interpret(((QueryValue)e).getDefault()))));
       }
     }
     if (!_matched) {
       if (e instanceof LoadDebugInfo) {
         _matched=true;
-        String _path = ((LoadDebugInfo)e).getPath();
-        String _absolutePath = this.deviceInfo.getAbsolutePath(_path);
+        String _absolutePath = this.deviceInfo.getAbsolutePath(((LoadDebugInfo)e).getPath());
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_LOAD_DEBUG_INFO, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList()), Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(_absolutePath))));
       }
     }
@@ -1165,16 +1046,12 @@ public class DebugSeqEngine implements IDsqEngine {
         _matched=true;
         long _xblockexpression = (long) 0;
         {
-          EList<Parameter> _parameters = ((Message)e).getParameters();
           final Function1<Parameter, Object> _function = (Parameter it) -> {
             return this.interpret(it);
           };
-          final List<Object> parameters = ListExtensions.<Parameter, Object>map(_parameters, _function);
-          String _format = ((Message)e).getFormat();
-          final String message = DebugSeqUtil.formatWithValues(_format, parameters);
-          Expression _type = ((Message)e).getType();
-          Object _interpret = this.interpret(_type);
-          long _long = DebugSeqUtil.toLong(_interpret);
+          final List<Object> parameters = ListExtensions.<Parameter, Object>map(((Message)e).getParameters(), _function);
+          final String message = DebugSeqUtil.formatWithValues(((Message)e).getFormat(), parameters);
+          long _long = DebugSeqUtil.toLong(this.interpret(((Message)e).getType()));
           _xblockexpression = this.executeCommand(IDsqCommand.DSQ_MESSAGE, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long))), Collections.<String>unmodifiableList(CollectionLiterals.<String>newArrayList(message)));
         }
         _switchResult = Long.valueOf(_xblockexpression);
@@ -1183,195 +1060,137 @@ public class DebugSeqEngine implements IDsqEngine {
     if (!_matched) {
       if (e instanceof Read8) {
         _matched=true;
-        Expression _addr = ((Read8)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Read8)e).getAddr()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_READ_8, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof Read16) {
         _matched=true;
-        Expression _addr = ((Read16)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Read16)e).getAddr()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_READ_16, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof Read32) {
         _matched=true;
-        Expression _addr = ((Read32)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Read32)e).getAddr()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_READ_32, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof Read64) {
         _matched=true;
-        Expression _addr = ((Read64)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Read64)e).getAddr()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_READ_64, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof ReadAP) {
         _matched=true;
-        Expression _addr = ((ReadAP)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((ReadAP)e).getAddr()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_READ_AP, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof ReadDP) {
         _matched=true;
-        Expression _addr = ((ReadDP)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((ReadDP)e).getAddr()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_READ_DP, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof Write8) {
         _matched=true;
-        Expression _addr = ((Write8)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _val = ((Write8)e).getVal();
-        Object _interpret_1 = this.interpret(_val);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Write8)e).getAddr()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((Write8)e).getVal()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_WRITE_8, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1)))));
       }
     }
     if (!_matched) {
       if (e instanceof Write16) {
         _matched=true;
-        Expression _addr = ((Write16)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _val = ((Write16)e).getVal();
-        Object _interpret_1 = this.interpret(_val);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Write16)e).getAddr()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((Write16)e).getVal()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_WRITE_16, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1)))));
       }
     }
     if (!_matched) {
       if (e instanceof Write32) {
         _matched=true;
-        Expression _addr = ((Write32)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _val = ((Write32)e).getVal();
-        Object _interpret_1 = this.interpret(_val);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Write32)e).getAddr()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((Write32)e).getVal()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_WRITE_32, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1)))));
       }
     }
     if (!_matched) {
       if (e instanceof Write64) {
         _matched=true;
-        Expression _addr = ((Write64)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _val = ((Write64)e).getVal();
-        Object _interpret_1 = this.interpret(_val);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((Write64)e).getAddr()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((Write64)e).getVal()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_WRITE_64, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1)))));
       }
     }
     if (!_matched) {
       if (e instanceof WriteAP) {
         _matched=true;
-        Expression _addr = ((WriteAP)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _val = ((WriteAP)e).getVal();
-        Object _interpret_1 = this.interpret(_val);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((WriteAP)e).getAddr()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((WriteAP)e).getVal()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_WRITE_AP, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1)))));
       }
     }
     if (!_matched) {
       if (e instanceof WriteDP) {
         _matched=true;
-        Expression _addr = ((WriteDP)e).getAddr();
-        Object _interpret = this.interpret(_addr);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _val = ((WriteDP)e).getVal();
-        Object _interpret_1 = this.interpret(_val);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((WriteDP)e).getAddr()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((WriteDP)e).getVal()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_WRITE_DP, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1)))));
       }
     }
     if (!_matched) {
       if (e instanceof DapDelay) {
         _matched=true;
-        Expression _delay = ((DapDelay)e).getDelay();
-        Object _interpret = this.interpret(_delay);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((DapDelay)e).getDelay()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_DAP_DELAY, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof DapWriteABORT) {
         _matched=true;
-        Expression _value = ((DapWriteABORT)e).getValue();
-        Object _interpret = this.interpret(_value);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((DapWriteABORT)e).getValue()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_DAP_WRITE_ABORT, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof DapSwjPins) {
         _matched=true;
-        Expression _pinout = ((DapSwjPins)e).getPinout();
-        Object _interpret = this.interpret(_pinout);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _pinselect = ((DapSwjPins)e).getPinselect();
-        Object _interpret_1 = this.interpret(_pinselect);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-        Expression _pinwait = ((DapSwjPins)e).getPinwait();
-        Object _interpret_2 = this.interpret(_pinwait);
-        long _long_2 = DebugSeqUtil.toLong(_interpret_2);
+        long _long = DebugSeqUtil.toLong(this.interpret(((DapSwjPins)e).getPinout()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((DapSwjPins)e).getPinselect()));
+        long _long_2 = DebugSeqUtil.toLong(this.interpret(((DapSwjPins)e).getPinwait()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_DAP_SWJ_PINS, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1), Long.valueOf(_long_2)))));
       }
     }
     if (!_matched) {
       if (e instanceof DapSwjClock) {
         _matched=true;
-        Expression _value = ((DapSwjClock)e).getValue();
-        Object _interpret = this.interpret(_value);
-        long _long = DebugSeqUtil.toLong(_interpret);
+        long _long = DebugSeqUtil.toLong(this.interpret(((DapSwjClock)e).getValue()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_DAP_SWJ_CLOCK, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long)))));
       }
     }
     if (!_matched) {
       if (e instanceof DapSwjSequence) {
         _matched=true;
-        Expression _cnt = ((DapSwjSequence)e).getCnt();
-        Object _interpret = this.interpret(_cnt);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _val = ((DapSwjSequence)e).getVal();
-        Object _interpret_1 = this.interpret(_val);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
+        long _long = DebugSeqUtil.toLong(this.interpret(((DapSwjSequence)e).getCnt()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((DapSwjSequence)e).getVal()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_DAP_SWJ_SEQUENCE, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1)))));
       }
     }
     if (!_matched) {
       if (e instanceof DapJtagSequence) {
         _matched=true;
-        Expression _cnt = ((DapJtagSequence)e).getCnt();
-        Object _interpret = this.interpret(_cnt);
-        long _long = DebugSeqUtil.toLong(_interpret);
-        Expression _tms = ((DapJtagSequence)e).getTms();
-        Object _interpret_1 = this.interpret(_tms);
-        long _long_1 = DebugSeqUtil.toLong(_interpret_1);
-        Expression _tdi = ((DapJtagSequence)e).getTdi();
-        Object _interpret_2 = this.interpret(_tdi);
-        long _long_2 = DebugSeqUtil.toLong(_interpret_2);
+        long _long = DebugSeqUtil.toLong(this.interpret(((DapJtagSequence)e).getCnt()));
+        long _long_1 = DebugSeqUtil.toLong(this.interpret(((DapJtagSequence)e).getTms()));
+        long _long_2 = DebugSeqUtil.toLong(this.interpret(((DapJtagSequence)e).getTdi()));
         _switchResult = Long.valueOf(this.executeCommand(IDsqCommand.DSQ_DAP_JTAG_SEQUENCE, Collections.<Long>unmodifiableList(CollectionLiterals.<Long>newArrayList(Long.valueOf(_long), Long.valueOf(_long_1), Long.valueOf(_long_2)))));
       }
     }
@@ -1476,12 +1295,8 @@ public class DebugSeqEngine implements IDsqEngine {
       if (_isEmpty) {
         this.enterScope(false);
       }
-      Expression _value = vardecl.getValue();
-      Object _interpret = this.interpret(_value);
-      final long value = DebugSeqUtil.toLong(_interpret);
-      Map<String, Long> _peek = this.contexts.peek();
-      String _name = vardecl.getName();
-      _peek.put(_name, Long.valueOf(value));
+      final long value = DebugSeqUtil.toLong(this.interpret(vardecl.getValue()));
+      this.contexts.peek().put(vardecl.getName(), Long.valueOf(value));
       _xblockexpression = value;
     }
     return Long.valueOf(_xblockexpression);
@@ -1497,8 +1312,7 @@ public class DebugSeqEngine implements IDsqEngine {
   private long updateValue(final String variableName, final long newValue) {
     long _xblockexpression = (long) 0;
     {
-      Map<String, Long> _context = this.getContext(variableName);
-      _context.put(variableName, Long.valueOf(newValue));
+      this.getContext(variableName).put(variableName, Long.valueOf(newValue));
       _xblockexpression = newValue;
     }
     return _xblockexpression;
@@ -1512,15 +1326,13 @@ public class DebugSeqEngine implements IDsqEngine {
     }
     int _size_1 = l.size();
     int _minus = (_size_1 - 1);
-    List<? extends EObject> _subList = l.subList(0, _minus);
     final Consumer<EObject> _function = (EObject it) -> {
       final Object result = this.interpret(it);
       if ((it instanceof Statement)) {
-        long _long = DebugSeqUtil.toLong(result);
-        this.log(this.logger, ((Statement)it), Long.valueOf(_long));
+        this.log(this.logger, ((Statement)it), Long.valueOf(DebugSeqUtil.toLong(result)));
       }
     };
-    _subList.forEach(_function);
+    l.subList(0, _minus).forEach(_function);
     return null;
   }
   
@@ -1529,23 +1341,15 @@ public class DebugSeqEngine implements IDsqEngine {
       throw new DsqException("The symbol table is empty");
     }
     if ((!store)) {
-      HashMap<String, Long> _newHashMap = CollectionLiterals.<String, Long>newHashMap();
-      this.contexts.push(_newHashMap);
+      this.contexts.push(CollectionLiterals.<String, Long>newHashMap());
     } else {
-      Map<String, Long> _context = this.getContext(IDsqContext.DP);
-      final Long dp = _context.get(IDsqContext.DP);
-      Map<String, Long> _context_1 = this.getContext(IDsqContext.AP);
-      final Long ap = _context_1.get(IDsqContext.AP);
-      Map<String, Long> _context_2 = this.getContext(IDsqContext.ERRORCONTROL);
-      final Long ec = _context_2.get(IDsqContext.ERRORCONTROL);
-      HashMap<String, Long> _newHashMap_1 = CollectionLiterals.<String, Long>newHashMap();
-      this.contexts.push(_newHashMap_1);
-      Map<String, Long> _peek = this.contexts.peek();
-      _peek.put(IDsqContext.DP, dp);
-      Map<String, Long> _peek_1 = this.contexts.peek();
-      _peek_1.put(IDsqContext.AP, ap);
-      Map<String, Long> _peek_2 = this.contexts.peek();
-      _peek_2.put(IDsqContext.ERRORCONTROL, ec);
+      final Long dp = this.getContext(IDsqContext.DP).get(IDsqContext.DP);
+      final Long ap = this.getContext(IDsqContext.AP).get(IDsqContext.AP);
+      final Long ec = this.getContext(IDsqContext.ERRORCONTROL).get(IDsqContext.ERRORCONTROL);
+      this.contexts.push(CollectionLiterals.<String, Long>newHashMap());
+      this.contexts.peek().put(IDsqContext.DP, dp);
+      this.contexts.peek().put(IDsqContext.AP, ap);
+      this.contexts.peek().put(IDsqContext.ERRORCONTROL, ec);
     }
   }
   
@@ -1560,9 +1364,7 @@ public class DebugSeqEngine implements IDsqEngine {
     } else {
       Long _xblockexpression = null;
       {
-        ICompositeNode _node = NodeModelUtils.getNode(stmt);
-        String _tokenText = NodeModelUtils.getTokenText(_node);
-        logger.logStatement(_tokenText, result, 0);
+        logger.logStatement(NodeModelUtils.getTokenText(NodeModelUtils.getNode(stmt)), result, 0);
         _xblockexpression = result;
       }
       _xifexpression = _xblockexpression;
@@ -1577,9 +1379,7 @@ public class DebugSeqEngine implements IDsqEngine {
     } else {
       Long _xblockexpression = null;
       {
-        ICompositeNode _node = NodeModelUtils.getNode(stmt);
-        String _tokenText = NodeModelUtils.getTokenText(_node);
-        logger.logIfStatement(_tokenText, result, 0);
+        logger.logIfStatement(NodeModelUtils.getTokenText(NodeModelUtils.getNode(stmt)), result, 0);
         _xblockexpression = result;
       }
       _xifexpression = _xblockexpression;
@@ -1594,9 +1394,7 @@ public class DebugSeqEngine implements IDsqEngine {
     } else {
       Long _xblockexpression = null;
       {
-        ICompositeNode _node = NodeModelUtils.getNode(stmt);
-        String _tokenText = NodeModelUtils.getTokenText(_node);
-        logger.logWhileStatement(_tokenText, result, 0);
+        logger.logWhileStatement(NodeModelUtils.getTokenText(NodeModelUtils.getNode(stmt)), result, 0);
         _xblockexpression = result;
       }
       _xifexpression = _xblockexpression;
@@ -1608,14 +1406,10 @@ public class DebugSeqEngine implements IDsqEngine {
     String _xblockexpression = null;
     {
       String s = str.replace("&#13;", "");
-      String _replace = s.replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>", "");
-      s = _replace;
-      String _replace_1 = s.replace("xmlns:xs=\"http://www.w3.org/2001/XMLSchema-instance\"", "");
-      s = _replace_1;
-      String _replace_2 = s.replace(">", ">\n");
-      s = _replace_2;
-      String _replace_3 = s.replace("<", "\n<");
-      _xblockexpression = s = _replace_3;
+      s = s.replace("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>", "");
+      s = s.replace("xmlns:xs=\"http://www.w3.org/2001/XMLSchema-instance\"", "");
+      s = s.replace(">", ">\n");
+      _xblockexpression = s = s.replace("<", "\n<");
     }
     return _xblockexpression;
   }

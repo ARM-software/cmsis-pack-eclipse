@@ -60,6 +60,7 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 	protected IFile fFile = null;
 	
 	protected boolean fbSaving = false;
+	protected String fXmlString = CmsisConstants.EMPTY_STRING; // saved XML string for modification comparison
 
 	abstract protected ICpXmlParser createParser();
 	abstract protected TController createController();
@@ -74,6 +75,7 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
 		fParser = null;
 		fModelController = null;
+		fXmlString = null;
 		super.dispose();
 	}
 
@@ -107,17 +109,40 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 		if(parser == null)
 			return;
 		ICpItem root = parser.parseFile(file.getAbsolutePath());
+		String xmlString = getXmlString(root);
+		if(xmlString.equals(fXmlString))
+			return; // nothing has changed
+
+		fXmlString = xmlString; 
 		fModelController.setDataInfo(root);
+		
 	}
 	
-	protected String getXmlString() {
-		if (fModelController != null && getParser()!= null) {
-			ICpItem info = fModelController.getDataInfo();
-			return fParser.writeToXmlString(info);
+	/**
+	 * Generates XML string from editor's datata
+	 * root ICpItem representing data root
+	 * @return generated XML String
+	 */
+	protected String getXmlString(ICpItem root) {
+		if (root != null && getParser()!= null) {
+			return fParser.writeToXmlString(root);
 		}
 		return CmsisConstants.EMPTY_STRING;
 	}
 
+	/**
+	 * Generates XML string from editor's datata
+	 * @return generated XML String
+	 */
+	protected String getXmlString() {
+		if (fModelController != null) {
+			ICpItem info = fModelController.getDataInfo();
+			return getXmlString(info);
+		}
+		return CmsisConstants.EMPTY_STRING;
+	}
+
+	
 	protected synchronized boolean isSaving() {
 		return fbSaving;
 	}
@@ -151,8 +176,8 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 	 * @throws CoreException 
 	 */
 	protected void saveXml(IProgressMonitor monitor) throws CoreException{
-		String xml = getXmlString();
-		saveXmlToFile(xml, fFile, monitor);
+		fXmlString = getXmlString();
+		saveXmlToFile(fXmlString, fFile, monitor);
 	}
 
 	/**

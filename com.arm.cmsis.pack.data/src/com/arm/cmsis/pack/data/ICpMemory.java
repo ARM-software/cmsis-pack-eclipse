@@ -76,7 +76,7 @@ public interface ICpMemory extends IMemoryAccess, ICpDeviceProperty  {
 	 * Checks if the memory (RAM) should not be zero-initialized  
 	 * @return true if not initialized
 	 */
-	default boolean isNoInit() { return getAttributeAsBoolean(CmsisConstants.INIT, true) == false;}
+	default boolean isNoInit() { return getAttributeAsBoolean(CmsisConstants.INIT, false);}
 	
 	
 	/**

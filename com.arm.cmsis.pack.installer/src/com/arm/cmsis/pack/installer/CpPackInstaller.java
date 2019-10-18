@@ -88,7 +88,7 @@ import com.arm.cmsis.pack.utils.VersionComparator;
 public class CpPackInstaller extends PlatformObject implements ICpPackInstaller {
 
 	public static boolean updateFinished = true;
-	protected IProgressMonitor fMonitor;
+	private IProgressMonitor fMonitor = null;
 	protected Map<String, CpPackJob> fJobQueue; // job ID -> pack job
 	protected boolean bSuppressMessages = false;
 	/**
@@ -111,6 +111,14 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		fRepoServiceProvider = new CpRepoServiceProvider();
 	}
 
+	protected IProgressMonitor getMonitor() {
+		if(fMonitor == null) {
+			fMonitor = new NullProgressMonitor();
+		}
+		return fMonitor;
+	}
+
+	
 	@Override
 	public boolean isUpdatingPacks() {
 		return updatingPacks;
@@ -486,7 +494,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	@Override
 	public void updatePacks(IProgressMonitor monitor) {
 		fMonitor = monitor;
-		if(monitor.isCanceled())
+		if(getMonitor().isCanceled())
 			return;
 		updatingPacks = true;
 		CpPlugIn.getDefault().emitRteEvent(RteEvent.PACK_UPDATE_JOB_STARTED);
@@ -607,7 +615,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		if (CpPlugIn.getPackManager().getCmsisPackRootDirectory() == null
 				|| CpPlugIn.getPackManager().getCmsisPackRootDirectory().isEmpty()) {
 			// if this is not an automatic update, print the message on the console
-			if (!(fMonitor instanceof NullProgressMonitor)) {
+			if (!(getMonitor() instanceof NullProgressMonitor)) {
 				printInConsole(Messages.CpPackInstaller_SetCmsisPackRootFolderAndTryAgain,
 						ConsoleType.ERROR);
 			}
@@ -627,7 +635,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		
 		try {
 			boolean needsUpdate = false;
-			int count = getRepoServiceProvider().readIndexFile(indexUrl, indexList, fMonitor);
+			int count = getRepoServiceProvider().readIndexFile(indexUrl, indexList, getMonitor());
 			
 			// collect all pdsc references in this site
 			if (count > 0) {
@@ -637,24 +645,24 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			}
 			
 			// Set total number of work units to the number of pdsc files
-			fMonitor.beginTask(Messages.CpPackInstaller_RefreshAllPacks, indexList.size() + 7);
+			getMonitor().beginTask(Messages.CpPackInstaller_RefreshAllPacks, indexList.size() + 7);
 
 			// Read all .pdsc files and collect summary if index.pidx's time stamp changes
 			if (needsUpdate) {
 				updatePdscFiles(indexList);
 			}
 
-			fMonitor.worked(1); // Should reach 100% now
+			getMonitor().worked(1); // Should reach 100% now
 
 		} catch (Exception e) {
 			printInConsole(e.toString(), ConsoleType.ERROR);
 		}
 		
-		if (fMonitor.isCanceled()) {
+		if (getMonitor().isCanceled()) {
 			printInConsole(Messages.CpPackInstaller_JobCancelled, ConsoleType.WARNING);
 		} else if (success) {
 			updateWebAndLocalFolders(indexList);
-			if (!fMonitor.isCanceled()) {
+			if (!getMonitor().isCanceled()) {
 				CpPreferenceInitializer.updateLastUpdateTime(true);
 			}
 		}
@@ -707,16 +715,19 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			return;
 		Map<String, ICpPackFamily> families = allPacks.getFamilies();
 		for (Entry<String, ICpPackFamily> entry : families.entrySet()) {
-			if(fMonitor.isCanceled()) {
+			if(getMonitor().isCanceled()) {
 				return;
 			}
 			ICpPackFamily family = entry.getValue(); 
 			ICpPack latestPack = family.getPack();
-			if(latestPack.isDeprecated())
+			if(latestPack == null || latestPack.isDeprecated())
 				continue;
 			String familyId = entry.getKey(); 
 			final String pdscName = familyId + CmsisConstants.EXT_PDSC;
 			if (indexPdscFiles.contains(pdscName)) {
+				continue;
+			}
+			if (latestPack.getPackState() != PackState.INSTALLED) {
 				continue;
 			}
 			final String pdscUrl = latestPack.getUrl();
@@ -737,7 +748,10 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		String pdscServer = null;
 		ICpPackRootProvider packRootProvider = CpPreferenceInitializer.getCmsisRootProvider(); 
 		if(packRootProvider != null) {
-			pdscServer = packRootProvider.getPackPdscUrl();
+			// take pdsc download URL from ICpPackRootProvider, 
+			// the default returns CmsisConstants.REPO_KEIL_PACK_SERVER : "http://www.keil.com/pack/"
+			 
+			pdscServer = packRootProvider.getPackPdscUrl();  
 			if(pdscServer == null || pdscServer.isEmpty())
 				pdscServer = null;
 		}
@@ -746,17 +760,16 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		for (int i = 0; i < list.size(); i++) {
 			String[] pdsc = list.get(i);
 
-			if (fMonitor.isCanceled()) {
+			if (getMonitor().isCanceled()) {
 				break;
 			}
 			
-//			final String pdscUrl = (pdscServer != null) ? pdscServer : pdsc[0];
-			final String pdscUrl =  pdsc[0];
+			final String pdscUrl = (pdscServer != null) ? pdscServer : pdsc[0];
 			final String pdscName = pdsc[1];
 			final String pdscVersion = pdsc[2];
 			final String packFamilyId = Utils.extractBaseFileName(pdscName);
 
-			fMonitor.subTask(NLS.bind(Messages.CpPackInstaller_Updating, pdscName, pdscUrl));
+			getMonitor().subTask(NLS.bind(Messages.CpPackInstaller_Updating, pdscName, pdscUrl));
 
 			String destFileName = webFolder.append(pdscName).toOSString();
 
@@ -764,7 +777,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			if (pdscName.endsWith(CmsisConstants.EXT_PDSC)
 					&& new File(destFileName).exists()
 					&& skipUpdate(pdscUrl, packFamilyId, pdscVersion)) {
-				fMonitor.worked(1);
+				getMonitor().worked(1);
 				continue;
 			}
 			downloadPdscFile(pdscUrl, pdscName, destFileName);
@@ -784,10 +797,10 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 		
 		pdscUrl = Utils.addTrailingSlash(pdscUrl); // ensure traling slash
 		while(true) { // while for timeout
-			if(fMonitor.isCanceled())
+			if(getMonitor().isCanceled())
 				return false;
 			try {
-				fRepoServiceProvider.getPdscFile(pdscUrl, pdscName, destFileName, fMonitor);
+				fRepoServiceProvider.getPdscFile(pdscUrl, pdscName, destFileName, getMonitor());
 			} catch (FileNotFoundException e) {
 				String url = pdscUrl + pdscName;
 				printInConsole(NLS.bind(Messages.CpPackInstallJob_FileNotFound, url), ConsoleType.ERROR);
@@ -797,14 +810,14 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 				return false;
 			} catch (SocketTimeoutException e) {
 				int wait = timeoutQuestion(pdscUrl);
-				if (wait == 0) { // Yes
+				if (wait == 1) { // No
 					return false;
-				} else if (wait == 1) { // No
+				} else if (wait == 0) { // Yes
 					printInConsole(NLS.bind(Messages.CpPackInstaller_TimeoutConsoleMessage,
 							pdscName, pdscUrl), ConsoleType.WARNING);
 					continue;
 				} else { // Cancel
-					fMonitor.setCanceled(true);
+					getMonitor().setCanceled(true);
 					return false;
 				}
 			} catch (InterruptedIOException e) {
@@ -818,7 +831,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			break;
 		}
 		// One more unit completed
-		fMonitor.worked(1);
+		getMonitor().worked(1);
 		return true;
 	}
 

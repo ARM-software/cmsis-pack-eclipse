@@ -452,7 +452,7 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	 * @return string list or null if there is no value for this option
 	 * @throws BuildException
 	 */
-	protected List<String> getCurrentStringListValue(IOption option) throws BuildException {
+	static public List<String> getCurrentStringListValue(IOption option) throws BuildException {
 	       
 		int basicType = option.getBasicValueType();
 		if(basicType != IOption.STRING_LIST)

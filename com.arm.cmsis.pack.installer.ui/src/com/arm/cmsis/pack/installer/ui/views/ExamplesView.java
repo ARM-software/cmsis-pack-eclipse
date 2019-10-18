@@ -317,6 +317,10 @@ public class ExamplesView extends PackInstallerView {
 		}
 		String line3 = NLS.bind(Messages.ExamplesView_Pack,	example.getPackId());
 		String line4 = example.getDescription();
+		if(line4.length() > 128) {
+			// truncate long description
+			line4 = line4.substring(0, 128) + "...";  //$NON-NLS-1$
+		}
 		String line5 = CmsisConstants.EMPTY_STRING;
 		IRteExampleItem item = getRteExampleItem(obj);
 		if (item != null)

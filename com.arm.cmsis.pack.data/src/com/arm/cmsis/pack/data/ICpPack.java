@@ -14,6 +14,8 @@ package com.arm.cmsis.pack.data;
 import java.util.Collection;
 import java.util.Set;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
+
 /**
  * Represents CMISIS Pack meta data read from pdsc file
  * Provides access method to underlying structure of the Pack
@@ -95,7 +97,25 @@ public interface ICpPack extends ICpRootItem {
 	 */
 	Set<String> getBoardNames();
 
+	/**
+	 * Checks if pack contains device descriptions
+	 * @return true if pack contains at least one device item 
+	 */
+	default boolean hasDevices() {
+		Collection<? extends ICpItem> devices = getGrandChildren(CmsisConstants.DEVICES_TAG);
+		return devices != null && !devices.isEmpty();
+	}
+			
+	/**
+	 * Checks if pack contains board descriptions
+	 * @return true if pack contains at least one board item 
+	 */
+	default boolean hasBoards() {
+		Collection<? extends ICpItem> boards = getGrandChildren(CmsisConstants.BOARDS_TAG);
+		return boards != null && !boards.isEmpty();
+	}
 
+	
 	/**
 	 * Check if this pack is generic or not
 	 * @return true if this pack is generic

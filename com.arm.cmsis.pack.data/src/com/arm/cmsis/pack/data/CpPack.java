@@ -339,18 +339,17 @@ public class CpPack extends CpRootItem implements ICpPack {
 	@Override
 	public boolean isDevicelessPack() {
 		if(deviceLess < 0) {
-			if ( getGrandChildren(CmsisConstants.DEVICES_TAG) == null &&
-				 getGrandChildren(CmsisConstants.BOARDS_TAG)  == null) {
-				deviceLess = 1;
-			} else if(CmsisConstants.ARM.equals(getVendor()) && getName().startsWith(CmsisConstants.CMSIS)) { 
+			deviceLess = 0;
+			if(CmsisConstants.ARM.equals(getVendor()) && getName().startsWith(CmsisConstants.CMSIS)) { 
 				deviceLess = 1;
 			}else {
-				deviceLess = 0;
+			if ( !hasDevices() && !hasBoards()) 
+				deviceLess = 1;
 			}
 		}
 		return deviceLess == 1;
 	}
-
+			
 	@Override
 	public boolean isLatest() {
 		return (getParent() != null && getParent().getFirstChild() == this);

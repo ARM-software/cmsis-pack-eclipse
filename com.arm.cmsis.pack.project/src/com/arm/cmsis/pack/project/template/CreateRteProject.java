@@ -76,10 +76,6 @@ public class CreateRteProject extends ProcessRunner {
 			msg += rteConfigName;
 			throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg));
 		}	
-		// Open Rte configuration file if this is the last step
-		if ("1".equals(lastStep) && rteFile != null) { //$NON-NLS-1$
-			ProjectUtils.openEditorAsync(rteFile);
-		}
 		//Create Rte project
 		IRteProject rteProject = ProjectUtils.createRteProject(project, adapterInfo); // never fails	
 		//Set Rte configuration
@@ -93,6 +89,10 @@ public class CreateRteProject extends ProcessRunner {
 		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
 		if (envProvider != null) {
 			envProvider.contibuteToNewProject(projectName);
+		}
+		// Open Rte configuration file if this is the last step
+		if ("1".equals(lastStep) && rteFile != null) { //$NON-NLS-1$
+			ProjectUtils.openEditorAsync(rteFile);
 		}
 	}
 }

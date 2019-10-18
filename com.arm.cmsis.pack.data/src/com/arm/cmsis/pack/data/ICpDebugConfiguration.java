@@ -32,6 +32,12 @@ public interface ICpDebugConfiguration extends ICpItem {
 	 * @return true if SWJ-DP 
 	 */
 	boolean isSWJ();
+	
+	/**
+	 * Returns if Debug Port supports dormant state (default is false)
+	 * @return true if dormant state supported
+	 */
+	default boolean hasDormantState() { return false; }
 
 	
 	/**

@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.data;
 
+import java.util.Collection;
+
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 
@@ -18,7 +20,8 @@ import com.arm.cmsis.pack.enums.EEvaluationResult;
  *
  */
 public class CpCondition extends CpItem implements ICpCondition {
-
+	protected int deviceDependent = -1; // not initialized
+	
 	/**
 	 * @param parent
 	 */
@@ -62,5 +65,24 @@ public class CpCondition extends CpItem implements ICpCondition {
 		}
 		return result;		
 	}
-
+	
+	@Override
+	public boolean isDeviceDependent() {
+		if(deviceDependent  < 0) {
+			deviceDependent = 0;
+			Collection<? extends ICpItem> children = getChildren();
+			if(children == null || children.isEmpty()) {
+				return false;
+			}
+			for(ICpItem child :  children) {
+				if(!(child instanceof ICpExpression))
+					continue;
+				if(child.isDeviceDependent()) {
+					deviceDependent = 1;
+					break;
+				}
+			}
+		}
+		return deviceDependent > 0;
+	}
 }

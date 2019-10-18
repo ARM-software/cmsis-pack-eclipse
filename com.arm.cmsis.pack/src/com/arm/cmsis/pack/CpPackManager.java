@@ -603,6 +603,11 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		ICpPackRootProvider packRootProvider = CpPreferenceInitializer.getCmsisRootProvider(); 
 		if(packRootProvider == null)
 			return  false;
+		
+		String cmsisPackRootDirectory = getCmsisPackRootDirectory();
+		if(cmsisPackRootDirectory == null) 
+			return  false;	
+		
 		IPath rootPath = new Path(getCmsisPackRootDirectory());
 		IPath pidx = rootPath.append(CmsisConstants.DOT_WEB).append(CmsisConstants.REPO_KEIL_PINDEX_FILE);
 		if(pidx.toFile().exists())
@@ -688,6 +693,11 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		if(pack == null) {
 			return;
 		}
+		// fix for GitHub Issue #44: NPE in CpPackManager.processPackAdded() when installing first Pack into empty CMSIS root folder
+		if(getPacks() == null) { // ensure pack collections exist
+			return; // should not happen sinse default implementation of getPacks() allocates allPacks if not null 
+		}
+		
 		// Update pack collection
 		allPacks.addChild(pack);
 		if (pack.isDevicelessPack()) {
