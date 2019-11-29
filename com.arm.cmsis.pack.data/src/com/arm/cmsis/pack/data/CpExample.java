@@ -64,13 +64,22 @@ public class CpExample extends CpItem implements ICpExample {
 
 	@Override
 	public String getLoadPath(String environmentName) {
-		if(environmentName == null)
+		return getEnvironmentAttribute(environmentName, CmsisConstants.LOAD);
+	}
+
+	@Override
+	public String getProjectFolder(String environmentName) {
+		return getEnvironmentAttribute(environmentName, CmsisConstants.FOLDER);
+	}
+
+	private String getEnvironmentAttribute(String environmentName, String attributeName) {
+		if (environmentName == null)
 			return null;
 		Collection<? extends ICpItem> environments = getGrandChildren(CmsisConstants.PROJECT_TAG);
 		if (environments != null) {
 			for (ICpItem environment : environments) {
-				if (environment.getName().equals(environmentName)){
-					return environment.getAttribute(CmsisConstants.LOAD);
+				if (environment.getName().equals(environmentName)) {
+					return environment.getAttribute(attributeName);
 				}
 			}
 		}

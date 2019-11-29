@@ -49,4 +49,11 @@ public interface ICpExample extends ICpItem {
 	 * @return true if contains board 
 	 */
 	boolean containsBoard(String boardId);
+
+	/**
+	 * Gets the folder attribute stored in the environment tag.
+	 * @return folder in the project, or null of it does not exist.
+	 */
+	String getProjectFolder(String environmentName);
+
 }
