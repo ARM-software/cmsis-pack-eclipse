@@ -72,7 +72,14 @@ public class CpExample extends CpItem implements ICpExample {
 		return getEnvironmentAttribute(environmentName, CmsisConstants.FOLDER);
 	}
 
-	private String getEnvironmentAttribute(String environmentName, String attributeName) {
+	/**
+	 * Fetch an attribute from the environment tag of an example project.
+	 * 
+	 * @param environmentName
+	 * @param attributeName
+	 * @return
+	 */
+	protected String getEnvironmentAttribute(String environmentName, String attributeName) {
 		if (environmentName == null)
 			return null;
 		Collection<? extends ICpItem> environments = getGrandChildren(CmsisConstants.PROJECT_TAG);
