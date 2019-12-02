@@ -94,7 +94,8 @@ public interface IRteExampleItem extends ICmsisMapItem<IRteExampleItem> {
 	 * Return the folder attribute
 	 * @return folder path, null if not supported.
 	 */
-	String getProjectFolder();
-
+	default String getProjectFolder() {
+		return null;
+	};
 
 }

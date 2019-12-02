@@ -54,6 +54,8 @@ public interface ICpExample extends ICpItem {
 	 * Gets the folder attribute stored in the environment tag.
 	 * @return folder in the project, or null of it does not exist.
 	 */
-	String getProjectFolder(String environmentName);
+	default String getProjectFolder(String environmentName) {
+		return null;
+	};
 
 }
