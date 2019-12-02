@@ -154,6 +154,19 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
 			return null;
 		return getName();
 	}
+
+	/**
+	 * Gets the project folder, i.e., the folder attribute listed in the environment tag.
+	 * @param example  ICpExample to get the environment folder from.
+	 * @return the project relative path to the folder listed in the environment,
+	 *         <code>null</code> if not supported.
+	 */
+	default String getProjectFolder(ICpExample example) {
+		if (example == null)
+			return null;
+		return example.getProjectFolder(getName());
+	}
+
 	
 	/**
 	 * Contributes to newly created CMSIS RTE project. It could be an additional project nature, additional files, etc.

@@ -36,6 +36,7 @@ public class RteExampleItem extends CmsisMapItem<IRteExampleItem> implements IRt
 	protected Boolean fImport = null;
 	protected String fEnvironment = null;
 	protected String fLoadPath = null;
+	protected String fProjectFolder = null;
 	protected ICpPack fPack = null; // example's pack
 
 	/**
@@ -235,6 +236,15 @@ public class RteExampleItem extends CmsisMapItem<IRteExampleItem> implements IRt
 			fLoadPath = envProvider.getAbsoluteLoadPath(getExample());
 		}
 		return fLoadPath;	
+	}
+
+	@Override
+	public String getProjectFolder() {
+		if (fProjectFolder == null && isSupported()) {
+			ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+			fProjectFolder = envProvider.getProjectFolder(getExample());
+		}
+		return fProjectFolder;
 	}
 
 	@Override
