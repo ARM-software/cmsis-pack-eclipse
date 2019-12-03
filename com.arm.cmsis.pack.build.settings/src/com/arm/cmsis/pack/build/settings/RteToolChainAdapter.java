@@ -392,6 +392,12 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	 */
 	protected boolean canSetOption(int oType, IBuildObject configuration, IHoldsOptions tool, IOption option,	IBuildSettings buildSettings) throws BuildException {
 		switch(oType) {
+		case IBuildSettings.RTE_LINKER_SCRIPT: 	// set the option only on initial update or if the option is empty 
+			if(!bInitialUpdate) {
+				String val = getCurrentStringValue(option);
+				if(val != null && !val.isEmpty())
+					return false; // do not override user value
+			}
 		case IBuildSettings.RTE_DEFINES:
 		case IBuildSettings.RTE_INCLUDE_PATH:
 		case IBuildSettings.RTE_ASMMISC:
@@ -582,7 +588,8 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 		case "Cortex-A53":	//$NON-NLS-1$
 		case "Cortex-A57":	//$NON-NLS-1$
 		case "Cortex-A72":	//$NON-NLS-1$
-		case "ARMV8MML": 	//$NON-NLS-1$			
+		case "ARMV8MML": 	//$NON-NLS-1$
+		case "ARMV81MML": 	//$NON-NLS-1$			
 			return true;
 		}
 	}
@@ -680,6 +687,8 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 			return buildSettings.getDeviceAttribute(CmsisConstants.DDSP);
 		case IBuildSettings.ENDIAN_OPTION:
 			return buildSettings.getDeviceAttribute(CmsisConstants.DENDIAN);
+		case IBuildSettings.MVE_OPTION:
+			return buildSettings.getDeviceAttribute(CmsisConstants.DMVE);
 		default:
 			break;
 		}

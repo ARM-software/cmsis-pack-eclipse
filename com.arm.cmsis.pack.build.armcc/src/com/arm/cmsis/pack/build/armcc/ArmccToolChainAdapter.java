@@ -60,9 +60,8 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 	static public final String GENERIC = "Generic";  //$NON-NLS-1$
 	static public final String GENERIC_ARMV8M_BASE = GENERIC + ".ARMv8-M.Base";  //$NON-NLS-1$
 	static public final String GENERIC_ARMV8M_MAIN = GENERIC + ".ARMv8-M.Main";  //$NON-NLS-1$
+	static public final String GENERIC_ARMV81M_MAIN = GENERIC + ".ARMv8.1-M.Main";  //$NON-NLS-1$
 	
-	static public final String SPACE = " ";  //$NON-NLS-1$
-	static public final String QUOTE = "\"";  //$NON-NLS-1$
 	static public final String NoFPU = "NoFPU";  //$NON-NLS-1$
 	static public final String NoDSP_NoFPU = "NoDSP.NoFPU";  //$NON-NLS-1$
 	
@@ -508,7 +507,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 			String cpu = getDeviceAttribute(IBuildSettings.CPU_OPTION, buildSettings);
 			if(cpu.startsWith(CORTEX_A) ){
 				return CmsisConstants.Vectors;
-			} else if (cpu.startsWith(CORTEX_M)){
+			} else if (cpu.startsWith(CORTEX_M) || cpu.startsWith("ARMV8M") || cpu.startsWith("ARMV81M")){
 				return CmsisConstants.Reset_Handler;
 			} else if(buildSettings.usesDeviceStartup())
 				return CmsisConstants.Reset_Handler;
@@ -722,7 +721,8 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 		if(cpu == null ||cpu.isEmpty())
 			return null;
 
-		String cpuFpu = getCpuPrefix(cpu);
+		String mve = getDeviceAttribute(IBuildSettings.MVE_OPTION, buildSettings);
+		String cpuFpu = getCpuPrefix(cpu, mve);
 		// do we need to change the value for Cortex-A processors or V8?
 		if(cpuFpu.startsWith(CORTEX_A) || cpuFpu.startsWith(GENERIC)) { 
 			String oldValue = getCurrentStringValue(option);
@@ -731,7 +731,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 		}
 		String fpu = getDeviceAttribute(IBuildSettings.FPU_OPTION, buildSettings);
 		String dsp = getDeviceAttribute(IBuildSettings.DSP_OPTION, buildSettings);
-		String fpuSuffix = getFpuSuffix(cpu, fpu, dsp);
+		String fpuSuffix = getFpuSuffix(cpu, fpu, dsp, mve);
 		if(fpuSuffix != null && !fpuSuffix.isEmpty()){
 			cpuFpu += '.' + fpuSuffix;
 		}
@@ -742,9 +742,10 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 	/**
 	 * Constructs CPU prefix for CPU-FPU option
 	 * @param cpu device info's Dcore attribute 
+	 * @param mve device info's Dmve attribute 
 	 * @return CPU prefix string
 	 */
-	protected String getCpuPrefix(String cpu) {
+	protected String getCpuPrefix(String cpu, String mve) {
 		if(cpu.equals("Cortex-M0+")) { //$NON-NLS-1$
 			return "Cortex-M0.Plus"; //$NON-NLS-1$
 		}
@@ -754,17 +755,39 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 		if(cpu.equals("ARMV8MML")){ //$NON-NLS-1$
 			return  GENERIC_ARMV8M_MAIN;
 		}
+		
+		if(cpu.equals("ARMV81MML")){ //$NON-NLS-1$
+			String prefix = GENERIC_ARMV81M_MAIN; 
+			switch(mve){
+			case CmsisConstants.MVE:
+				prefix += ".MVEI";
+				break;
+			case CmsisConstants.FP_MVE:
+				prefix += ".MVEF";
+				break;
+			case CmsisConstants.NO_MVE:
+			default:
+				break;
+			}
+			
+			return prefix;
+		}
 		return cpu;
 	}
 	
 	/**
 	 * Returns required FPU string depending on device info attributes 
 	 * @param cpu device info's Dcore attribute
-	 * @param fpu device info's Dfpu attribute 
+	 * @param fpu device info's Dfpu attribute
+	 * @param mve device info's Ddsp attribute 
+  	 * @param mve device info's Dmve attribute 
 	 * @return resulting FPU string
 	 */
-	public String getFpuSuffix(String cpu, String fpu, String dsp) {
+	public String getFpuSuffix(String cpu, String fpu, String dsp, String mve) {
 		if(fpu == null || fpu.equals(CmsisConstants.NO_FPU) || !coreHasFpu(cpu)) {
+			if(CmsisConstants.FP_MVE.equals(mve)) {
+				return  "FP16.FP32"; 	//$NON-NLS-1$
+			}
 			if("Cortex-M33".equals(cpu)) { //$NON-NLS-1$
 				if(!CmsisConstants.DSP.equals(dsp)){
 					return NoDSP_NoFPU; 
@@ -821,7 +844,9 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 		
 		case "ARMV8MML": 	//$NON-NLS-1$
 			return "FPv5_D16"; 	//$NON-NLS-1$
-			
+		case "ARMV81MML": 	//$NON-NLS-1$
+			return dp ? "FP16.FP32.FP64" : "FP16.FP32"; 	//$NON-NLS-1$ //$NON-NLS-2$
+
 		case "Cortex-M35P": //$NON-NLS-1$
 		case "Cortex-M33": 	//$NON-NLS-1$
 			return "FPv5_SP_D16"; //$NON-NLS-1$

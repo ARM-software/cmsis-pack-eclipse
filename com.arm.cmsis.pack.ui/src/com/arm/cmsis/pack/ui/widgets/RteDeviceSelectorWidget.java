@@ -71,6 +71,10 @@ public class RteDeviceSelectorWidget extends Composite {
 	private Label lblCpu;
 	Combo comboFpu;
 	Combo comboEndian;
+	Combo comboSecurity;
+	
+	static final String[] SECURITY_VALUES = 
+			new String[] {CmsisConstants.NON_SECURE, CmsisConstants.SECURE, CmsisConstants.TZ_DISABLED}; 
 
 	IRteDeviceItem fDevices = null;
 	IRteDeviceItem fSelectedItem = null;
@@ -83,8 +87,10 @@ public class RteDeviceSelectorWidget extends Composite {
 	// list of listeners (e.g parent widgets to monitor events)
 	StatusMessageListerenList listeners = new StatusMessageListerenList();
 	String fSearchString = CmsisConstants.EMPTY_STRING;
-	String selectedFpu;
-	String selectedEndian;
+	String fSelectedFpu = CmsisConstants.EMPTY_STRING;
+	String fSelectedEndian = CmsisConstants.EMPTY_STRING;
+	String fSelectedSecurity = CmsisConstants.EMPTY_STRING;
+	String fSelectedMve = CmsisConstants.EMPTY_STRING;
 	boolean fbShowProcessors = true;
 
 	boolean updatingControls = false;
@@ -92,7 +98,7 @@ public class RteDeviceSelectorWidget extends Composite {
 	private Link linkUrl;
 	String url = CmsisConstants.EMPTY_STRING;
 	private Label lblPack;
-	private Label lblClock;
+	private Combo comboMve;
 	
 	static IRteDeviceItem getDeviceTreeItem(Object obj) {
 		if (obj instanceof IRteDeviceItem) {
@@ -174,11 +180,9 @@ public class RteDeviceSelectorWidget extends Composite {
 
 		Label lblCpuLabel = new Label(this, SWT.NONE);
 		lblCpuLabel.setText(CpStringsUI.RteDeviceSelectorWidget_CPULabel);
-		lblCpuLabel.setBounds(0, 0, 36, 13);
 
 		lblCpu = new Label(this, SWT.NONE);
 		lblCpu.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
-		lblCpu.setBounds(0, 0, 32, 13);
 		new Label(this, SWT.NONE);
 
 		Label lblVendorLabel = new Label(this, SWT.NONE);
@@ -188,11 +192,11 @@ public class RteDeviceSelectorWidget extends Composite {
 		lblVendor.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		new Label(this, SWT.NONE);
 
-		Label lblClocklabel = new Label(this, SWT.NONE);
-		lblClocklabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblClocklabel_text);
+		Label lblMemoryLabel = new Label(this, SWT.NONE);
+		lblMemoryLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblMemory);
 
-		lblClock = new Label(this, SWT.NONE);
-		lblClock.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		lblMemory = new Label(this, SWT.NONE);
+		lblMemory.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
 
 		Label lblPackLabel = new Label(this, SWT.NONE);
@@ -202,11 +206,21 @@ public class RteDeviceSelectorWidget extends Composite {
 		lblPack.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
 
-		Label lblMemoryLabel = new Label(this, SWT.NONE);
-		lblMemoryLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblMemory);
+		Label lblSecuritylabel = new Label(this, SWT.NONE);
+		lblSecuritylabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblSecurityLabel_text);
 
-		lblMemory = new Label(this, SWT.NONE);
-		lblMemory.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		comboSecurity = new Combo(this, SWT.READ_ONLY);
+		comboSecurity.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				if(updatingControls) {
+					return;
+				}
+				int index = comboSecurity.getSelectionIndex();
+				fSelectedSecurity = securityIndexToString(index);
+			}
+		});
+		comboSecurity.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		new Label(this, SWT.NONE);
 
 		Label lblUrlLabel = new Label(this, SWT.NONE);
@@ -224,7 +238,6 @@ public class RteDeviceSelectorWidget extends Composite {
 
 		Label lblFpuLabel = new Label(this, SWT.NONE);
 		lblFpuLabel.setText(CpStringsUI.RteDeviceSelectorWidget_FPULabel);
-		lblFpuLabel.setBounds(0, 0, 38, 13);
 		comboFpu = new Combo(this, SWT.READ_ONLY);
 		comboFpu.addModifyListener(new ModifyListener() {
 			@Override
@@ -233,10 +246,32 @@ public class RteDeviceSelectorWidget extends Composite {
 					return;
 				}
 				int index = comboFpu.getSelectionIndex();
-				selectedFpu = fpuIndexToString(index);
+				fSelectedFpu = fpuIndexToString(index);
 			}
 		});
 		comboFpu.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+		new Label(this, SWT.NONE);
+		
+		Label lblMve = new Label(this, SWT.NONE);
+		lblMve.setText(CpStringsUI.RteDeviceSelectorWidget_lblNewLabel_text);
+		
+		comboMve = new Combo(this, SWT.READ_ONLY);
+		comboMve.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
+		comboMve.addModifyListener(new ModifyListener() {
+			@Override
+			public void modifyText(ModifyEvent e) {
+				if(updatingControls) {
+					return;
+				}
+				int index = comboMve.getSelectionIndex();
+				fSelectedMve = mveIndexToString(index);
+			}
+		});
+
+		
 		new Label(this, SWT.NONE);
 
 
@@ -257,7 +292,6 @@ public class RteDeviceSelectorWidget extends Composite {
 
 		Label lblEndian = new Label(this, SWT.NONE);
 		lblEndian.setText(CpStringsUI.RteDeviceSelectorWidget_Endian);
-		lblEndian.setBounds(0, 0, 37, 13);
 
 		comboEndian = new Combo(this, SWT.READ_ONLY);
 		comboEndian.addModifyListener(new ModifyListener() {
@@ -266,7 +300,7 @@ public class RteDeviceSelectorWidget extends Composite {
 				if(updatingControls) {
 					return;
 				}
-				selectedEndian = adjustEndianString(comboEndian.getText());
+				fSelectedEndian = adjustEndianString(comboEndian.getText());
 			}
 		});
 		comboEndian.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -323,7 +357,7 @@ public class RteDeviceSelectorWidget extends Composite {
 		text.setLayoutData(gd_text);
 		text.setEditable(false);
 
-		setTabList(new Control[]{txtSearch, tree, comboFpu, comboEndian});
+		setTabList(new Control[]{txtSearch, tree, comboSecurity, comboFpu, comboEndian});
 
 		addDisposeListener(new DisposeListener() {
 			@Override
@@ -419,9 +453,9 @@ public class RteDeviceSelectorWidget extends Composite {
 		String vendorName = CmsisConstants.EMPTY_STRING;
 		String deviceName = CmsisConstants.EMPTY_STRING;
 		String cpu = CmsisConstants.EMPTY_STRING;
-		String clock = CmsisConstants.EMPTY_STRING;
 		String pack = CmsisConstants.EMPTY_STRING;
 		String mem = CmsisConstants.EMPTY_STRING;
+		String mve = CmsisConstants.EMPTY_STRING;
 		url = CmsisConstants.EMPTY_STRING;
 		String urlText = CmsisConstants.EMPTY_STRING;
 
@@ -445,9 +479,9 @@ public class RteDeviceSelectorWidget extends Composite {
 		}
 
 		if(fDeviceInfo != null) {
-			clock = fDeviceInfo.getClockSummary();
+			String clock = fDeviceInfo.getClockSummary();
 			pack = fDeviceInfo.getPackId();
-			cpu = "ARM " + fDeviceInfo.getAttribute(CmsisConstants.DCORE); //$NON-NLS-1$
+			cpu = CmsisConstants.ARM + CmsisConstants.SPACE + fDeviceInfo.getAttribute(CmsisConstants.DCORE) + CmsisConstants.SPACE + clock ; 
 			mem = fDeviceInfo.getMemorySummary();
 			// this happens in the import process, when the device is not installed
 			if (deviceName.isEmpty()) {
@@ -470,13 +504,14 @@ public class RteDeviceSelectorWidget extends Composite {
 		lblDevice.setText(deviceName);
 		text.setText(description);
 		lblCpu.setText(cpu);
-		lblClock.setText(clock);
 		lblPack.setText(pack);
 		linkUrl.setText(urlText);
 		linkUrl.setToolTipText(url);
 		lblMemory.setText(mem);
 
+		updateSecurity();
 		updateFpu();
+		updateMve();
 		updateEndian();
 
 		updateStatus(message);
@@ -521,7 +556,7 @@ public class RteDeviceSelectorWidget extends Composite {
 		String[] endianStrings = getEndianStrings(endian);
 		comboEndian.setItems(endianStrings);
 
-		endian = adjustEndianString(selectedEndian);
+		endian = adjustEndianString(fSelectedEndian);
 		int index = comboEndian.indexOf(endian);
 		if(index < 0 || index >= endianStrings.length) {
 			index = 0;
@@ -560,10 +595,12 @@ public class RteDeviceSelectorWidget extends Composite {
 		String fpu = null;
 		if(fDeviceInfo != null) {
 			fpu = fDeviceInfo.getAttribute(CmsisConstants.DFPU);
+			if(fSelectedFpu.isEmpty())
+				fSelectedFpu = fpu;
 		}
 
 		String[] fpuStrings = getFpuStrings(fpu);
-		int index = fpuStringToIndex(selectedFpu);
+		int index = fpuStringToIndex(fSelectedFpu);
 		if(index < 0 || index >= fpuStrings.length) {
 			index = fpuStringToIndex(fpu);
 		}
@@ -576,6 +613,30 @@ public class RteDeviceSelectorWidget extends Composite {
 		comboFpu.setEnabled(fpuStrings.length > 1);
 	}
 
+	private void updateMve() {
+		int index = -1;
+		String mve = null;
+		if(fDeviceInfo != null && "ARMV81MML".equals(fDeviceInfo.getAttribute(CmsisConstants.DCORE))){ //$NON-NLS-1$
+			mve = fDeviceInfo.getAttribute(CmsisConstants.DMVE);
+			if(fSelectedMve.isEmpty())
+				fSelectedMve = mve;
+			index = mveStringToIndex(fSelectedMve);
+		}
+	   
+		if(index < 0) {
+			comboMve.removeAll();
+			comboMve.setEnabled(false);
+		} else {
+			String[] mveStrings = getMveStrings(mve);
+			if(index >= mveStrings.length) {
+				index = mveStringToIndex(mve);
+			}
+			comboMve.setItems(mveStrings);
+			comboMve.setEnabled(mveStrings.length > 1);
+			comboMve.select(index);
+		}
+	}
+	
 	private String[] getFpuStrings(String fpu){
 		if(fpu != null) {
 			switch(fpu){
@@ -591,6 +652,100 @@ public class RteDeviceSelectorWidget extends Composite {
 		}
 		return new String[]{CmsisConstants.EMPTY_STRING};
 	}
+
+	private String[] getMveStrings(String mve){
+		if(mve != null) {
+			switch(mve){
+			case CmsisConstants.MVE:
+				return new String[]{CpStringsUI.RteDeviceSelectorWidget_none, CpStringsUI.RteDeviceSelectorWidget_Integer};
+			case CmsisConstants.FP_MVE:
+				return new String[]{CpStringsUI.RteDeviceSelectorWidget_none, CpStringsUI.RteDeviceSelectorWidget_Integer, CpStringsUI.RteDeviceSelectorWidget_IntegerAndFloat};
+			default:
+				return new String[]{CpStringsUI.RteDeviceSelectorWidget_none};
+			}
+		}
+		return new String[]{CmsisConstants.EMPTY_STRING};
+	}
+
+	String mveIndexToString(int index){
+		switch(index){
+		case -1:
+			return null;
+		case 1:
+			return CmsisConstants.MVE;
+		case 2:
+			return CmsisConstants.FP_MVE;
+		default:
+			break;
+		}
+		return CmsisConstants.NO_MVE;
+	}
+
+	private int mveStringToIndex(String mve){
+		if(mve != null) {
+			switch(mve){
+			case CmsisConstants.MVE:
+				return 1;
+			case CmsisConstants.FP_MVE:
+				return 2;
+			default:
+				return 0;
+			}
+		}
+		return -1;
+	}
+
+	private void updateSecurity() {
+		int index = -1;
+		if(fDeviceInfo != null && CmsisConstants.TZ.equals(fDeviceInfo.getAttribute(CmsisConstants.DTZ))) {
+			index = securityStringToIndex(fSelectedSecurity);
+			if(index < 0) {
+				String security = fDeviceInfo.getAttribute(CmsisConstants.DSECURE);
+				index = securityStringToIndex(security);
+			}
+			if(index < 0 )
+				index = 0;
+		}
+
+		if(index < 0) {
+			comboSecurity.removeAll();
+			comboSecurity.setEnabled(false);
+		} else {
+			comboSecurity.setItems(SECURITY_VALUES);
+			comboSecurity.setEnabled(true);
+			comboSecurity.select(index);
+		}
+
+	}
+
+	private int securityStringToIndex(String security){
+		if(security != null) {
+			switch(security){
+			case CmsisConstants.NON_SECURE:
+				return 0;
+			case CmsisConstants.SECURE:
+				return 1;
+			case CmsisConstants.TZ_DISABLED:
+				return 2;
+			}
+		}
+		return -1;
+	}
+
+	String securityIndexToString(int index) {
+		if(comboSecurity.isEnabled()) {
+			switch(index) {
+			case 0:
+				return CmsisConstants.NON_SECURE;
+			case 1:
+				return CmsisConstants.SECURE;
+			case 2:
+				return CmsisConstants.TZ_DISABLED;
+			}
+		}
+		return CmsisConstants.EMPTY_STRING;
+	}
+	
 
 	String fpuIndexToString(int index){
 		switch(index){
@@ -642,14 +797,30 @@ public class RteDeviceSelectorWidget extends Composite {
 		if(fDeviceInfo != null){
 			int index = comboFpu.getSelectionIndex();
 			String fpu = fpuIndexToString(index);
-			fDeviceInfo.attributes().setAttribute(CmsisConstants.DFPU, fpu);
+			fDeviceInfo.setAttribute(CmsisConstants.DFPU, fpu);
 
 			String endian = comboEndian.getText();
 			if(endian == null || endian.isEmpty()) {
 				endian = CmsisConstants.LITTLENDIAN;
 			}
-
-			fDeviceInfo.attributes().setAttribute(CmsisConstants.DENDIAN, endian);
+			fDeviceInfo.setAttribute(CmsisConstants.DENDIAN, endian);
+			
+			index = comboSecurity.getSelectionIndex();
+			if(index >= 0) {
+				String security = securityIndexToString(index);
+				fDeviceInfo.setAttribute(CmsisConstants.DSECURE, security);
+			} else {
+				fDeviceInfo.removeAttribute(CmsisConstants.DSECURE);
+			}
+			
+			index = comboMve.getSelectionIndex();
+			if(index >= 0) {
+				String mve = mveIndexToString(index);
+				fDeviceInfo.setAttribute(CmsisConstants.DMVE, mve);
+			} else {
+				fDeviceInfo.removeAttribute(CmsisConstants.DMVE);
+			}
+			
 		}
 		return fDeviceInfo;
 	}
@@ -657,8 +828,10 @@ public class RteDeviceSelectorWidget extends Composite {
 	public void setDeviceInfo(ICpDeviceInfo deviceInfo) {
 		fDeviceInfo = deviceInfo;
 		if(fDeviceInfo != null) {
-			selectedFpu = fDeviceInfo.getAttribute(CmsisConstants.DFPU);
-			selectedEndian = fDeviceInfo.getAttribute(CmsisConstants.DENDIAN);
+			fSelectedFpu = fDeviceInfo.getAttribute(CmsisConstants.DFPU);
+			fSelectedEndian = fDeviceInfo.getAttribute(CmsisConstants.DENDIAN);
+			fSelectedSecurity = fDeviceInfo.getAttribute(CmsisConstants.DSECURE);
+			fSelectedMve = fDeviceInfo.getAttribute(CmsisConstants.DMVE);
 			// set initial selection
 			IRteDeviceItem item = fDevices.findItem(fDeviceInfo.attributes());
 			if(item != null ){

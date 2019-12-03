@@ -209,6 +209,7 @@ public interface IBuildSettings extends IAttributes {
 	public static final int FPU_OPTION 			= TOOLCHAIN_DEVICE_OPTION + 6;
 	public static final int FLOAT_ABI_OPTION 	= TOOLCHAIN_DEVICE_OPTION + 7;
 	public static final int DSP_OPTION 			= TOOLCHAIN_DEVICE_OPTION + 8;
+	public static final int MVE_OPTION 			= TOOLCHAIN_DEVICE_OPTION + 9;
 	
 	// initial toolchain-specific options (defined in derived toolchain adapters) should start here
 	public static final int TOOLCHAIN_USER_OPTION = TOOL_CHAIN_OPTION  + 100;   

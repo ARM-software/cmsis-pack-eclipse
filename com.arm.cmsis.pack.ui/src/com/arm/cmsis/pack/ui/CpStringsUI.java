@@ -94,6 +94,8 @@ public class CpStringsUI extends NLS {
 	public static String RteDeviceSelectorWidget_SearchLabel;
 	public static String RteDeviceSelectorWidget_SearchTooltip;
 	public static String RteDeviceSelectorWidget_SinglePrecision;
+	public static String RteDeviceSelectorWidget_Integer;
+	public static String RteDeviceSelectorWidget_IntegerAndFloat;
 	public static String RteDeviceSelectorWidget_VendorLabel;
 	public static String RteDevicePage_Device;
 	public static String RteValidateWidget_Description;
@@ -118,7 +120,7 @@ public class CpStringsUI extends NLS {
 	public static String RteDeviceSelectorWidget_lblUrl;
 	public static String RteDeviceSelectorWidget_lblMemory;
 	public static String RteDeviceSelectorWidget_lblPack_text;
-	public static String RteDeviceSelectorWidget_lblClocklabel_text;
+	public static String RteDeviceSelectorWidget_lblSecurityLabel_text;
 	public static String RteDeviceInfoWidget_btnChange_text;
 	public static String RteDeviceInfoWidget_lblFpu_text;
 	public static String RteDeviceInfoWidget_lblEndian_text;
@@ -138,6 +140,7 @@ public class CpStringsUI extends NLS {
 	public static String PathMustBeDirectory;
 	public static String PathInvalidOrNonAccesible;
 	public static String PathErrorCreatingCmsisPackRootDirectory;
+	public static String RteDeviceSelectorWidget_lblNewLabel_text;
 
 	static {
 		// initialize resource bundle

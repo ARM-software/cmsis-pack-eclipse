@@ -17,7 +17,6 @@ import java.util.Collection;
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
@@ -64,7 +63,7 @@ public class RteDeviceInfoWidget extends Composite {
 	private Label lblCpu;
 	private Label lblMemory;
 	private Label lblPack;
-	private Label lblClock;
+	private Label lblSecurity;
 	private Label lblFpu;
 	private Label lblEndian;
 	private Link linkUrl;
@@ -93,8 +92,9 @@ public class RteDeviceInfoWidget extends Composite {
 		public Object[] getElements(Object inputElement) {
 			if(fDeviceInfo != null && fDeviceInfo == inputElement) {
 				Collection<ICpItem> books = fDeviceInfo.getBooks();
-				if(books != null && ! books.isEmpty())
+				if(books != null && ! books.isEmpty()) {
 					return books.toArray();
+				}
 			}
 			return ITreeObject.EMPTY_OBJECT_ARRAY;
 		}
@@ -133,30 +133,6 @@ public class RteDeviceInfoWidget extends Composite {
 		}
 	}
 	
-	public class RteBoardLabelProvider extends LabelProvider{
-		@Override
-		public Image getImage(Object element) {
-			ICpItem item = ICpItem.cast(element);
-			if(item != null) {
-				if(item.getTag().equals(CmsisConstants.BOOK_TAG)) {
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOOK);
-				}
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
-			}
-			return null;
-		}
-
-		@Override
-		public String getText(Object element) {
-			ICpItem item = ICpItem.cast(element);
-			if(item != null) {
-				if(item.getTag().equals(CmsisConstants.BOOK_TAG))
-					return item.getAttribute(CmsisConstants.TITLE);
-				return item.getName();
-			}
-			return CmsisConstants.EMPTY_STRING;	
-		}
-	}
 	
 	/**  
 	 * Column label provider for books tree 
@@ -272,11 +248,12 @@ public class RteDeviceInfoWidget extends Composite {
 		lblSubfamily.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
 		
-		Label lblClocklabel = new Label(this, SWT.NONE);
-		lblClocklabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblClocklabel_text);
+		Label lblMemoryLabel = new Label(this, SWT.NONE);
+		lblMemoryLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblMemory);
 		
-		lblClock = new Label(this, SWT.NONE);
-		lblClock.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		lblMemory = new Label(this, SWT.NONE);
+		lblMemory.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+
 		new Label(this, SWT.NONE);
 		
 		Label lblVendorLabel = new Label(this, SWT.NONE);
@@ -286,20 +263,20 @@ public class RteDeviceInfoWidget extends Composite {
 		lblVendor.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		new Label(this, SWT.NONE);
 		
-		Label lblMemoryLabel = new Label(this, SWT.NONE);
-		lblMemoryLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblMemory);
+		Label lblSecuritylabel = new Label(this, SWT.NONE);
+		lblSecuritylabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblSecurityLabel_text);
 		
-		lblMemory = new Label(this, SWT.NONE);
-		lblMemory.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
+		lblSecurity = new Label(this, SWT.NONE);
+		lblSecurity.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
-		
+
 		Label lblPackLabel = new Label(this, SWT.NONE);
 		lblPackLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblPack_text);
 		
 		lblPack = new Label(this, SWT.NONE);
 		lblPack.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
-		
+
 		Label lblFpuLabel = new Label(this, SWT.NONE);
 		lblFpuLabel.setText(CpStringsUI.RteDeviceSelectorWidget_FPULabel);
 		lblFpuLabel.setBounds(0, 0, 38, 13);
@@ -307,7 +284,7 @@ public class RteDeviceInfoWidget extends Composite {
 		lblFpu = new Label(this, SWT.NONE);
 		lblFpu.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
-		
+
 		Label lblUrlLabel = new Label(this, SWT.NONE);
 		lblUrlLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblUrl);
 		
@@ -319,8 +296,7 @@ public class RteDeviceInfoWidget extends Composite {
 	    		 OpenURL.open(url, getShell());
 	    	}
 	    });
-		
-		
+
 		Label lblEndianLabel = new Label(this, SWT.NONE);
 		lblEndianLabel.setText(CpStringsUI.RteDeviceSelectorWidget_Endian);
 		lblEndianLabel.setBounds(0, 0, 37, 13);
@@ -341,14 +317,15 @@ public class RteDeviceInfoWidget extends Composite {
 		
 		tableViewer = new TableViewer(this, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
 		table = tableViewer.getTable();
-		table.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 3, 1));
+		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
+		gd_table.minimumHeight = 80;
+		table.setLayoutData(gd_table);
 	
 		fBookColumnAdvisor = new RteBookColumnAdvisor(tableViewer);
 		ColumnViewerToolTipSupport.enableFor(tableViewer);
 
 		
 		tableViewer.setContentProvider(new RteBookContentProvider());
-	//	tableViewer.setLabelProvider(new RteBookLabelProvider());
 		tableViewer.setLabelProvider(new AdvisedCellLabelProvider(fBookColumnAdvisor, 0));
 		
 		text = new Text(this, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
@@ -365,11 +342,11 @@ public class RteDeviceInfoWidget extends Composite {
 		
 		treeViewer = new TreeViewer(this, SWT.BORDER| SWT.FULL_SELECTION);
 		tree = treeViewer.getTree();
-		tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1));
+		GridData gd_tree = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
+		gd_tree.minimumHeight = 80;
+		tree.setLayoutData(gd_tree);
 		
 		treeViewer.setContentProvider(new RteBoardContentProvider());
-//		treeViewer.setLabelProvider(new RteBoardLabelProvider());
-
 		fBoardColumnAdvisor = new RteBookColumnAdvisor(treeViewer);
 		ColumnViewerToolTipSupport.enableFor(treeViewer);
 		treeViewer.setLabelProvider(new AdvisedCellLabelProvider(fBoardColumnAdvisor, 0));
@@ -383,7 +360,7 @@ public class RteDeviceInfoWidget extends Composite {
 		String vendorName = CmsisConstants.EMPTY_STRING;
 		String deviceName = CmsisConstants.EMPTY_STRING;
 		String cpu = CmsisConstants.EMPTY_STRING;
-		String clock = CmsisConstants.EMPTY_STRING;
+		String security = CmsisConstants.EMPTY_STRING;
 		String pack = CmsisConstants.EMPTY_STRING;
 		String mem = CmsisConstants.EMPTY_STRING;
 		String fpu = CmsisConstants.EMPTY_STRING;
@@ -395,12 +372,12 @@ public class RteDeviceInfoWidget extends Composite {
 		
 		if(fDeviceInfo != null) {
 			deviceName = fDeviceInfo.getFullDeviceName();
-			
-			cpu = "ARM " + fDeviceInfo.getAttribute(CmsisConstants.DCORE); //$NON-NLS-1$
+			String clock = fDeviceInfo.getClockSummary();
+			cpu = CmsisConstants.ARM + CmsisConstants.SPACE + fDeviceInfo.getAttribute(CmsisConstants.DCORE) + CmsisConstants.SPACE + clock ; 
 			fpu = getFpuString(fDeviceInfo.getAttribute(CmsisConstants.DFPU));
+			security = fDeviceInfo.getAttribute(CmsisConstants.DSECURE);
 			endian = fDeviceInfo.getAttribute(CmsisConstants.DENDIAN);
 			vendorName = DeviceVendor.getOfficialVendorName(fDeviceInfo.getVendor());
-			clock = fDeviceInfo.getClockSummary();
 			pack = fDeviceInfo.getPackId();
 			family = fDeviceInfo.getAttribute(CmsisConstants.DFAMILY);
 			subFamily = fDeviceInfo.getAttribute(CmsisConstants.DSUBFAMILY);
@@ -420,7 +397,7 @@ public class RteDeviceInfoWidget extends Composite {
 		lblDevice.setText(deviceName);
 		text.setText(description);
 		lblCpu.setText(cpu);
-		lblClock.setText(clock);
+		lblSecurity.setText(security);
 		lblPack.setText(pack);
 		linkUrl.setText(urlText);
 		linkUrl.setToolTipText(url);

@@ -24,7 +24,13 @@ public class CmsisConstants {
 
 	static public final String COLON		= ":";		//$NON-NLS-1$
 	static public final String DOUBLE_COLON	= "::";		//$NON-NLS-1$
+	static public final String COMMA		= ",";		//$NON-NLS-1$
+	static public final String POINT		= ".";		//$NON-NLS-1$
+	static public final String QUOTE 		= "\"";  	//$NON-NLS-1$
+	public static final String EQUAL 		= "=";  	//$NON-NLS-1$
+    static public final String SPACE 		= " "; 		//$NON-NLS-1$
 
+	
 	static public final String ARM			= "ARM";	//$NON-NLS-1$
 	static public final String CORTEX		= "Cortex";	//$NON-NLS-1$
 	static public final String CMSIS		= "CMSIS";	//$NON-NLS-1$
@@ -74,6 +80,7 @@ public class CmsisConstants {
 	static public final String CVERSION 	= "Cversion";		//$NON-NLS-1$
 	static public final String CAPIVERSION 	= "Capiversion";	//$NON-NLS-1$
 	static public final String EXCLUSIVE	= "exclusive";   	//$NON-NLS-1$
+	static public final String CUSTOM 		= "custom";   		//$NON-NLS-1$
 	static public final String MAX_INSTANCES = "maxInstances";	//$NON-NLS-1$
 	static public final String IS_DEFAULT_VARIANT = "isDefaultVariant";   //$NON-NLS-1$
 
@@ -91,6 +98,11 @@ public class CmsisConstants {
 	static public final String DSECURE		= "Dsecure";		//$NON-NLS-1$
 	static public final String DENDIAN		= "Dendian";		//$NON-NLS-1$
 	static public final String DCLOCK		= "Dclock";			//$NON-NLS-1$
+	static public final String DMVE			= "Dmve";			//$NON-NLS-1$
+	
+	static public final String MVE			= "MVE";			//$NON-NLS-1$
+	static public final String NO_MVE		= "NO_MVE";			//$NON-NLS-1$
+	static public final String FP_MVE		= "FP_MVE";			//$NON-NLS-1$
 
 	static public final String CATEGORY 	= "category";		//$NON-NLS-1$
 	static public final String ATTR 		= "attr";			//$NON-NLS-1$
@@ -184,7 +196,7 @@ public class CmsisConstants {
 
 	static public final String SECURE		= "Secure";				//$NON-NLS-1$
 	static public final String NON_SECURE	= "Non-secure";			//$NON-NLS-1$
-
+	static public final String TZ_DISABLED	= "TZ-disabled";		//$NON-NLS-1$
 
 	static public final String COPY			= "copy";			//$NON-NLS-1$
 	static public final String CONFIG		= "config";			//$NON-NLS-1$
@@ -303,7 +315,8 @@ public class CmsisConstants {
 	static public final String SIZE				= "size";		//$NON-NLS-1$
 	static public final String STARTUP			= "startup";	//$NON-NLS-1$
 	static public final String DEFAULT			= "default";	//$NON-NLS-1$
-	static public final String INIT				= "init";		//$NON-NLS-1$
+	static public final String INIT				= "init";		//$NON-NLS-1$ // deprecated, use UNINIT
+	static public final String UNINIT			= "uninit";		//$NON-NLS-1$
 	static public final String ADDRESS			= "address";	//$NON-NLS-1$
 	static public final String VALUE			= "value";		//$NON-NLS-1$
 	static public final String MASK				= "mask";		//$NON-NLS-1$
