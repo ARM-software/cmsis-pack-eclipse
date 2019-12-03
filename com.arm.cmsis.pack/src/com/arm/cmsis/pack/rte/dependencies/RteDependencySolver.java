@@ -534,6 +534,11 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 
 		IRteComponent c = dependency.getBestMatch();
 		if(c != null) {
+			ICpComponent cpComponent = c.getActiveCpComponent();
+			if(cpComponent == null || cpComponent.isCustom()) {
+				return false; // custom component cannot be selected automatically 
+			}
+			
 			rteModel.selectComponent(c, 1);
 			rteModel.evaluateComponentDependencies(); // re-evaluate dependencies to remove resolved ones
 			return true;
