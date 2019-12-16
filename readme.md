@@ -1,10 +1,11 @@
 # CMSIS-Pack Management for Eclipse
 
-The **CMSIS-Pack Management for Eclipse** is created by ARM to provide a open-source reference implementation for the support of the CMSIS-Pack specification in the [Eclipse] environment. It implements the fundamentals to access the information and resources contained in Software Packs and can be re-used by the ARM eco-system in any type of tools, for example configuration utilities or development environments.
+The **CMSIS-Pack Management for Eclipse** is created by ARM to provide a open-source reference implementation for the support of the CMSIS-Pack and CMSIS-Zone specification in the [Eclipse] environment. It implements the fundamentals to access the information and resources contained in Software Packs and can be re-used by the ARM eco-system in any type of tools, for example configuration utilities or development environments.
 
 ARM is commited to maintain this **CMSIS-Pack Management for Eclipse** to ensure consistency with future extensions and modifications to the [CMSIS-Pack Specification].  
 
-This release 2.4 provides the following functionality:
+This release 2.5 provides the following functionality:
+* CMSIS Zone plug-ins to support [CMSIS-Zone](https://arm-software.github.io/CMSIS_5/Zone/html/index.html) functionality 
 * CMSIS Pack manager to install, remove, delete Packs as well as to import examples
 * creation and management of an CDT-based C/C++ projects
 * an editor for configuration files that use [Configuration Wizard Annotations]
@@ -12,13 +13,15 @@ This release 2.4 provides the following functionality:
 * integrated help based on Eclipse help framework
 * extensible interfaces to integrate the plug-ins into development environments  
 * support for [gpdsc] files to connect to configuration utilities
+* the plug-ins support Maven-based build 
 
 
 For evaluation you need CMSIS-Pack compliant Software Packs that are available for download from the [CMSIS Pack Repository].
 
 **License:** The software is provided under the [Eclipse Public License] Version 1.0. Contributions to this project are under the same license and there is no additional Contributor License Agreement (CLA) required.
+The [Apache FreeMarker 2.3.29](https://freemarker.apache.org/) is delivered under the Apache License 2.0: https://freemarker.apache.org/docs/app_license.html
 
-**Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 4.5.2 (Mars) and 4.6.3 (Neon).
+**Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse and 4.6.3 (Neon), 2019-03, 2019-06 and 2019-9.
 
 ## Source Code 
 This repository contains the source code of the **CMSIS-Pack Management for Eclipse** that consists of the following plug-ins:
@@ -38,6 +41,20 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 * **com.arm.cmsis.help** - integrated help
 * **com.arm.cmsis.pack.refclient** - a reference example for engineers integrating CMSIS-Pack plug-in into their development environments (not included in binary build)
 
+Starting from version 2.5.0 [CMSIS-Zone](https://arm-software.github.io/CMSIS_5/Zone/html/index.html) functionality is supported. It includes the following plug-ins:
+* **com.arm.cmsis.zone**: datatypes, parser and algorithms 
+* **com.arm.cmsis.zone.ui**: code generation based on FreeMarker templates, an editor for zone files (*.azone), 
+   wizards and dialogs to manipulate memory regions, support for *CMSIS Zone project** new project
+* **com.arm.tpip.freemarker**: OSGI wrapper of [Apache FreeMarker 2.3.29](https://freemarker.apache.org/) freemarker.jar 
+* **com.arm.cmsis.zone.tests**:  JUnit-based integration test of CMSIS-Zone code generator
+
+The following projects are added in version 2.5.0 to support Mave-based build:
+* **com.arm.cmsis.parent**: Maven parent project containing master pom file. 
+* **com.arm.cmsis.target**: target platform
+* **com.arm.cmsis.pack.feature**: Eclipse feature combining CMSIS-Pack plug-ins 
+* **com.arm.cmsis.zone.feature**: Eclipse feature combining CMSIS-Zone plug-ins
+* **com.arm.cmsis.pack.repository**: P2 repository project containing the features
+ 
 **Requirements:** This release of the CMSIS-Pack Management for Eclipse requires JRE 1.8 to run and JDK 1.8 to build.
 
 ### CMSIS-Pack Management Plug-In 1.0 has been presented at the Eclipse Conference Europe 2015
