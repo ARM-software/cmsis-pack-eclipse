@@ -23,13 +23,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 
@@ -44,13 +44,14 @@ public class Utils {
 	static public final char[] NUMERIC_SUFFIXES = new char[]{ 'K', 'M', 'G'};
 	static public final int[] NUMERIC_SHIFTS = new int[]{10, 20, 30};
 	/**
-	 * Find all pdsc recursively from given directory
+	 * Find files recursively from given directory (hidden files are exculed)
 	 * @param dir directory to start search
+	 * @param ext file extension to consider, or null to list all files
 	 * @param files list to collect items, if null the list will be allocated
 	 * @param depth number of sub-directory levels to search for: 0 - search current directory only
-	 * @return list of found pdsc files
+	 * @return list of found files
 	 */
-	static public Collection<String> findPdscFiles(File dir, Collection<String> files, int depth){
+	static public Collection<String> findFiles(File dir, String ext, Collection<String> files, int depth){
 		if( files == null) {
 			files = new LinkedList<String>();
 		}
@@ -62,12 +63,19 @@ public class Utils {
 
 		// search dir for pdsc files
 		for ( File f : list ) {
-			if( f.isFile() && !f.isHidden()) {
-				String name = f.getName();
-				if(!name.startsWith(".") && name.endsWith(CmsisConstants.EXT_PDSC)){   //$NON-NLS-1$
-					files.add(f.getAbsolutePath());
+			if( !f.isFile() || f.isHidden()) {
+				continue;
+			}
+			String name = f.getName();
+			if(name.startsWith(CmsisConstants.DOT))
+				continue;
+			if(ext != null) {
+				String fileExt = extractFileExtension(name);
+				if(!ext.equals(fileExt)) {
+					continue;
 				}
 			}
+			files.add(f.getAbsolutePath());
 		}
 
 		if(depth <= 0) {
@@ -77,10 +85,21 @@ public class Utils {
 		// search dir for pdsc files
 		for ( File f : list ) {
 			if( f.isDirectory() && !f.isHidden() && !f.getName().startsWith(".")) { //$NON-NLS-1$
-				findPdscFiles(f,  files, depth-1);
+				findFiles(f,  ext, files, depth-1);
 			}
 		}
 		return  files;
+	}
+
+	/**
+	 * Find all pdsc recursively from given directory
+	 * @param dir directory to start search
+	 * @param files list to collect items, if null the list will be allocated
+	 * @param depth number of sub-directory levels to search for: 0 - search current directory only
+	 * @return list of found pdsc files
+	 */
+	static public Collection<String> findPdscFiles(File dir, Collection<String> files, int depth){
+		return findFiles(dir, CmsisConstants.PDSC, files, depth);
 	}
 
 	/**
@@ -143,7 +162,7 @@ public class Utils {
 		if(path.endsWith(File.separator)) {
 			path = removeTrailingSlash(path);
 		}
-		return path + "/";  //$NON-NLS-1$
+		return path + CmsisConstants.SLASH; 
 	}
 
 	/**
@@ -155,7 +174,7 @@ public class Utils {
 		if(path == null || path.isEmpty()) {
 			return path;
 		}
-		if(path.endsWith("/") || path.endsWith(File.separator)) { //$NON-NLS-1$
+		if(path.endsWith(CmsisConstants.SLASH) || path.endsWith(File.separator)) {
 			return path.substring(0, path.length() - 1);
 		}
 		return path;
@@ -202,8 +221,25 @@ public class Utils {
 	}
 
 	/**
+	 * Extracts absolute base filename portion (without extension) out of supplied pathname
+	 * @param path absolute or relative path 
+	 * @return the result filename
+	 */
+	static public String removeFileExtension(String path) {
+		if(path == null || path.isEmpty()) {
+			return path;
+		}
+		int pos = path.lastIndexOf('.');
+		if(pos >= 0 ) {
+			return path.substring(0, pos);
+		}
+		return path;
+	}
+
+	
+	/**
 	 * Extracts file extension (leaves last segment only)
-	 * @param filename absolute or relative filename with forward slashes as delimiters
+	 * @param filename absolute or relative filename
 	 * @return file extension or null if file has no dot (file. will return an empty string) 
 	 */
 	static public String extractFileExtension(String filename) {
@@ -218,7 +254,20 @@ public class Utils {
 		return null;
 	}
 
-
+	/**
+	 * Replaces file extension with the new one 
+	 * @param path absolute or relative filename
+	 * @param newExtension new file extension
+	 * @return the result filename
+	 */
+	static public String changeFileExtension(String path, String newExtension) {
+		String newfileName = removeFileExtension(path);
+		if(newfileName != null && newExtension != null)
+			return newfileName + '.' + newExtension;
+		return path;
+	}
+	
+	
 	/**
 	 * Extracts path portion out of supplied pathname (removes section out last slash)
 	 * @param path absolute or relative path with forward slashes as delimiters
@@ -374,23 +423,27 @@ public class Utils {
 	 * @param size memory size in bytes
 	 * @return readable memory size string
 	 */
-	static public String getFormattedMemorySizeString(long size)
+	static public String getFormattedMemorySizeString(Long size)
 	{
+		if (size == null ) {
+			return "??????"; //$NON-NLS-1$
+		}
+		
 		if (size == 0) {
 			return CmsisConstants.EMPTY_STRING;
 		}
 
-		if (size < 1024) {
-			return String.format(" %4d Byte", size);  //$NON-NLS-1$
-		}
-
-		size >>= 10; // Scale to kByte
 		if (size < 1024 || (size % 1024) != 0) {
-			return String.format(" %4d KB  ", size); //$NON-NLS-1$
+			return String.format("   %4d B", size); //$NON-NLS-1$
+		}
+		
+		size >>= 10; // Scale to kByte		
+		if (size < 1024 || (size % 1024) != 0) {
+			return String.format("   %4d KB", size); //$NON-NLS-1$
 		}
 
 		size >>= 10; // Scale to MByte
-			return String.format(" %4d MB  ", size); //$NON-NLS-1$
+			return String.format("   %4d MB", size); //$NON-NLS-1$
 	}
 
 	/**
@@ -566,38 +619,6 @@ public class Utils {
 		}
 	}
 
-	/**
-	 * @param archiveFile the zip file
-	 * @return the number of files contained in this zip file
-	 * @throws Exception 
-	 */
-	public static int getFilesCount(File archiveFile) throws IOException {
-		int count = 0;
-		try {
-			ZipInputStream zipInput;
-			zipInput = new ZipInputStream(new FileInputStream(archiveFile));
-			ZipEntry zipEntry = zipInput.getNextEntry();
-			while (zipEntry != null) {
-				if (!zipEntry.isDirectory()) {
-					count++;
-				}
-				zipEntry = zipInput.getNextEntry();
-			}
-			zipInput.closeEntry();
-			zipInput.close();
-		} catch (IllegalArgumentException e) {
-			e.printStackTrace();
-			String msg = e.getMessage();
-			msg += "\n" + "One reason could be non-unicode file name in zip file.\nPacks support unicode UTF-8 file names.";
-			throw new IllegalArgumentException(msg, e.getCause());
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw e;
-		}
-
-		return count;
-	}
-
 
 	/**
 	 * Count the number of files in specific folder
@@ -725,5 +746,15 @@ public class Utils {
 			}
 		}
 		return host;
+	}
+	
+	
+	/**
+	 * Returns current time as string
+	 * @return time stamp string
+	 */
+	public static String getCurrentTimeStamp() {
+		long startTime = System.currentTimeMillis();
+		return new SimpleDateFormat("HH:mm:ss").format(new Date(startTime)); //$NON-NLS-1$
 	}
 }

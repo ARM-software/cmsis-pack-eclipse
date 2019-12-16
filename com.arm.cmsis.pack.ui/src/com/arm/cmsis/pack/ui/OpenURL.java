@@ -57,12 +57,11 @@ public class OpenURL implements IOpenURL{
 	 * @param url URL to open
 	 * @return null if successfully opened, otherwise reason why operation failed
 	 */
-	@SuppressWarnings("cast")
 	static public String open(String url){
 		IOpenURL openURL = null;
 		ICpEnvironmentProvider provider = CpPlugIn.getEnvironmentProvider();
 		if(provider != null) {
-			openURL = (IOpenURL)provider.getAdapter(IOpenURL.class);  
+			openURL = provider.getAdapter(IOpenURL.class);  
 		}
 		if(openURL == null) {
 			// use default implementation

@@ -451,6 +451,7 @@ public class ProjectUtils {
 	}
 
 
+	
 	/**
 	 * Returns IResource for the given object if any
 	 * @param obj an object that is derived from IResource or adapts IResource
@@ -692,6 +693,10 @@ public class ProjectUtils {
 	 * @param iFile file to be opened in dedicated editor
 	 */
 	public static void openEditorAsync(IFile iFile, Optional<String> perspectiveId){
+		if(iFile == null) {
+			return; // nothing to open
+		}
+		
 		if(!PlatformUI.isWorkbenchRunning()) {
 			return; // nothing to do in headless mode
 		}		

@@ -3,13 +3,12 @@ package com.arm.cmsis.pack.ui;
 import org.eclipse.osgi.util.NLS;
 
 public class CpStringsUI extends NLS {
-	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.ui.CpStringsUI"; //$NON-NLS-1$
+	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.ui.CpStringsUI"; //$NON-NLS-1$	
+	public static String RteEditor_ChangeDialogMsgTitle;
 	public static String PreferencesPackRootLabel;
 	public static String UseAllLatestPacks;
-	public static String UseAllLatestPacksTooltip;
-	
-	public static String ShowOnlyUsedPacks;
-	
+	public static String UseAllLatestPacksTooltip;	
+	public static String ShowOnlyUsedPacks;	
 	public static String CollapseAll;
 	public static String CollapseSelected;
 	public static String CollapseAllNodes;
@@ -21,6 +20,8 @@ public class CpStringsUI extends NLS {
 	public static String CpConsolePreferencePage_OutputColor;
 	public static String CpConsolePreferencePage_PrintInCdtConsole;
 	public static String CpConsolePreferencePage_WarnColor;
+	public static String CpItemTreeDialog_Name;
+	public static String CpItemTreeDialog_Tree;
 	public static String CpManLocalRepoPage_Add;
 	public static String CpManLocalRepoPage_AddPackFromLocalRepo;
 	public static String CpManLocalRepoPage_ErrorInPdsc;
@@ -110,6 +111,24 @@ public class CpStringsUI extends NLS {
 	public static String PackView_Tag;
 	public static String PackView_Text;
 	public static String Launch;
+	public static String MemoryPermissionsControl_Access;
+	public static String MemoryPermissionsControl_CharCallable;
+	public static String MemoryPermissionsControl_CharNoSecure;
+	public static String MemoryPermissionsControl_CharSecure;
+	public static String MemoryPermissionsControl_Execute;
+	public static String MemoryPermissionsControl_NonSecure;
+	public static String MemoryPermissionsControl_NonSecureCallable;
+	public static String MemoryPermissionsControl_NoSecureCallable;
+	public static String MemoryPermissionsControl_NotSpecified;
+	public static String MemoryPermissionsControl_Peripheral;
+	public static String MemoryPermissionsControl_Permissions;
+	public static String MemoryPermissionsControl_Privilege;
+	public static String MemoryPermissionsControl_Privileged;
+	public static String MemoryPermissionsControl_Read;
+	public static String MemoryPermissionsControl_Secure;
+	public static String MemoryPermissionsControl_Security;
+	public static String MemoryPermissionsControl_Unprivileged;
+	public static String MemoryPermissionsControl_Write;
 	public static String RteConfigurationEditor_ComponentsTab;
 	public static String RteConfigurationEditor_PacksTab;
 	public static String RteConfigurationEditor_ErrorCreatingNestedEditor;
@@ -133,6 +152,9 @@ public class CpStringsUI extends NLS {
 	public static String RteDeviceInfoWidget_lblFamily_text;
 	public static String RteDeviceInfoWidget_lblSubFamily_text;
 	public static String RteDeviceInfoWidget_lblBoards_text;
+	public static String RteEditor_ChangeDialogMsg;
+	public static String RteEditor_ChangeDialogNoReplaceButton;
+	public static String RteEditor_ChangeDialogReplaceButton;
 	public static String RteEditorPageHeader_ShowHelp;
 	public static String RtePackPage_ShowOnlyUsedPacksTooltip;
 	public static String PathMustExist;

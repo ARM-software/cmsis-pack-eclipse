@@ -21,7 +21,7 @@ public class CmsisColumnInfo {
 
 	// constants for column type
 	public enum ColumnType {
-		COLNAME, COLOP, COLVARIANT, COLVENDOR, COLVERSION, COLACCESS, COLSIZE, COLSTART, COLOFFSET, COLINFO, COLOTHER;
+		COLNAME, COLOP, COLVARIANT, COLVENDOR, COLVERSION, COLACCESS, COLSIZE, COLADDRESS, COLSTART, COLEND, COLOFFSET, COLINFO, COLOTHER;
 	};
 
 	private TreeViewerColumn fColumn; // column associated with info 

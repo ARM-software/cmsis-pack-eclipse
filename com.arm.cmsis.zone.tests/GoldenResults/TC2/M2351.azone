@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<azone xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.2.0" xs:noNamespaceSchemaLocation="azone.xsd">
+  <rzone name="M2351.rzone"/>
+  <partition>
+    <memory access="rw" fixed="1" info="Non-secure RAM for DATA section" name="DATA_NS" offset="0x8000" parent="SRAM_NS" privilege="" security="n" size="0x10000"/>
+    <memory access="rw" fixed="1" info="Secure RAM for DATA section" name="DATA_S" offset="0x0" parent="SRAM_S" privilege="" security="s" size="0x8000"/>
+    <memory fixed="1" info="Non-secure FLASH for CODE execution" name="CODE_NS" offset="0x40000" parent="FLASH_NS" size="0x40000"/>
+    <memory access="rx" fixed="1" info="Secure FLASH for CODE execution" name="CODE_S" offset="0x0" parent="FLASH_S" privilege="" security="s" size="0x3F800" startup="1"/>
+    <memory fixed="1" info="Secure FLASH for CODE Veneer table" name="VENEER" offset="0x3F800" parent="FLASH_S" size="0x800"/>
+    <peripheral access="prw" group="ECAP" info="ECAP Register Map" name="ECAP1" size="0x20" start="0x500B5000" start_s="0x400B5000"/>
+    <peripheral access="prw" group="QEI" info="QEI Register Map" name="QEI1" size="0x10" start="0x500B1000" start_s="0x400B1000"/>
+    <peripheral access="prw" group="EPWM" info="EPWM Register Map" name="EPWM0" size="0x2C" start="0x50058000" start_s="0x40058000"/>
+    <peripheral access="prw" group="GPIO" info="GPIO Register Map" name="GPIOE" size="0x40" start="0x50004900" start_s="0x40004900"/>
+    <peripheral access="prw" group="PDMA" info="PDMA Register Map" name="PDMA0" security="s" size="0xA0" start_s="0x40008000"/>
+    <peripheral access="prw" group="GPIO" info="GPIO Register Map" name="GPIOB" size="0x40" start="0x50004840" start_s="0x40004840"/>
+    <peripheral access="prw" group="BPWM" info="BPWM Register Map" name="BPWM1" size="0x8" start="0x5005B000" start_s="0x4005B000"/>
+    <peripheral access="prw" group="I2C" info="I2C Register Map" name="I2C2" size="0x34" start="0x50082000" start_s="0x40082000"/>
+    <peripheral access="prw" group="USB" info="USBH Register Map" name="USBH" size="0x54" start="0x50009000" start_s="0x40009000"/>
+    <peripheral access="prw" group="PDMA" info="PDMA Register Map" name="PDMA1" size="0xA0" start="0x50018000" start_s="0x40018000"/>
+    <peripheral access="prw" group="USB" info="OTG Register Map" name="OTG" size="0x14" start="0x5004D000" start_s="0x4004D000"/>
+    <peripheral access="prw" group="UART" info="UART Register Map" name="UART4" size="0x34" start="0x50074000" start_s="0x40074000"/>
+    <peripheral access="prw" group="SC" info="SC Register Map" name="SC2" size="0x38" start="0x50092000" start_s="0x40092000"/>
+    <peripheral access="prw" group="ECAP" info="ECAP Register Map" name="ECAP0" size="0x20" start="0x500B4000" start_s="0x400B4000"/>
+    <peripheral access="prw" group="GPIO" info="GPIO Register Map" name="GPIOD" size="0x40" start="0x500048C0" start_s="0x400048C0"/>
+    <peripheral access="prw" group="UART" info="UART Register Map" name="UART1" privilege="" security="n" size="0x4C" start="0x50071000" start_s="0x40071000"/>
+    <peripheral access="prw" group="UART" info="UART Register Map" name="UART3" size="0x34" start="0x50073000" start_s="0x40073000"/>
+    <peripheral access="prw" group="UART" info="UART Register Map" name="UART5" size="0x34" start="0x50075000" start_s="0x40075000"/>
+    <peripheral access="prw" group="SPI" info="SPI Register Map" name="SPI3" size="0x18" start="0x50064000" start_s="0x40064000"/>
+    <peripheral access="prw" group="SC" info="SC Register Map" name="SC0" size="0x38" start="0x50090000" start_s="0x40090000"/>
+    <peripheral access="prw" group="USCI" info="USCI Register Map" name="USCI1" size="0x100" start="0x500D1000" start_s="0x400D1000"/>
+    <peripheral access="prw" group="SPI" info="SPI Register Map" name="SPI2" size="0x18" start="0x50063000" start_s="0x40063000"/>
+    <peripheral access="prw" group="SPI" info="SPI Register Map" name="SPI1" size="0x18" start="0x50062000" start_s="0x40062000"/>
+    <peripheral access="prw" group="I2C" info="I2C Register Map" name="I2C1" size="0x34" start="0x50081000" start_s="0x40081000"/>
+    <peripheral access="prw" group="TIMER" info="TIMER Register Map" name="TMR01" security="s" size="0x200" start_s="0x40050000"/>
+    <peripheral access="prw" group="EPWM" info="EPWM Register Map" name="EPWM1" size="0x2C" start="0x50059000" start_s="0x40059000"/>
+    <peripheral access="prw" group="GPIO" info="GPIO Register Map" name="GPIOH" size="0x40" start="0x500049C0" start_s="0x400049C0"/>
+    <peripheral access="prw" group="SC" info="SC Register Map" name="SC1" size="0x38" start="0x50091000" start_s="0x40091000"/>
+    <peripheral access="prw" group="TIMER" info="TIMER Register Map" name="TMR23" size="0x200" start="0x50051000" start_s="0x40051000"/>
+    <peripheral access="prw" group="BPWM" info="BPWM Register Map" name="BPWM0" size="0x8" start="0x5005A000" start_s="0x4005A000"/>
+    <peripheral access="prw" group="GPIO" info="GPIO Register Map" name="GPIOC" size="0x40" start="0x50004880" start_s="0x40004880"/>
+    <peripheral access="prw" group="USB" info="USBD Register Map" name="USBD" size="0x1C" start="0x500C0000" start_s="0x400C0000"/>
+    <peripheral access="prw" group="SPI" info="SPI Register Map" name="SPI0" size="0x18" start="0x50061000" start_s="0x40061000"/>
+    <peripheral access="prw" group="UART" info="UART Register Map" name="UART0" privilege="" security="s" size="0x4C" start="0x50070000" start_s="0x40070000"/>
+    <peripheral access="prw" group="GPIO" info="GPIO Register Map" name="GPIOG" size="0x40" start="0x50004980" start_s="0x40004980"/>
+    <peripheral access="prw" group="QEI" info="QEI Register Map" name="QEI0" size="0x10" start="0x500B0000" start_s="0x400B0000"/>
+    <peripheral access="prw" group="UART" info="UART Register Map" name="UART2" size="0x34" start="0x50072000" start_s="0x40072000"/>
+    <peripheral access="prw" group="GPIO" info="GPIO Register Map" name="GPIOA" size="0x40" start="0x50004800" start_s="0x40004800"/>
+    <peripheral access="prw" group="USCI" info="USCI Register Map" name="USCI0" size="0x100" start="0x500D0000" start_s="0x400D0000"/>
+    <peripheral access="prw" group="GPIO" info="GPIO Register Map" name="GPIOF" size="0x40" start="0x50004940" start_s="0x40004940"/>
+    <peripheral access="prw" group="I2C" info="I2C Register Map" name="I2C0" size="0x34" start="0x50080000" start_s="0x40080000"/>
+  </partition>
+  <zones>
+    <zone Dname="M2351KIAAE" Pname="" info="" name="Secure" security="s">
+      <assign memory="DATA_S"/>
+      <assign memory="VENEER"/>
+      <assign memory="CODE_S"/>
+    </zone>
+    <zone Dname="M2351KIAAE" Pname="" info="" name="NonSecure" security="n">
+      <assign memory="DATA_NS"/>
+      <assign memory="CODE_NS"/>
+      <assign group="UART" peripheral="UART1"/>
+      <assign group="GPIO" peripheral="GPIOC"/>
+    </zone>
+  </zones>
+  <configure/>
+</azone>

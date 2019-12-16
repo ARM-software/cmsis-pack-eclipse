@@ -41,6 +41,15 @@ public class Attributes implements IAttributes {
 	}
 
 
+	/**
+	 * Constructor out of map
+	 * @param attributes attributes key-value map to set  
+	 */
+	public Attributes(Map<String, String> attributes) {
+		setAttributes(attributes);
+	}
+	
+
 	@Override
 	synchronized public void clear() {
 		if(fAttributes != null) {
@@ -207,7 +216,14 @@ public class Attributes implements IAttributes {
 		if(attributes == null || !attributes.hasAttributes()) {
 			return; // nothing to merge
 		}
-		Map<String, String> attributesMap = attributes.getAttributesAsMap();
+		mergeAttributes(attributes.getAttributesAsMap());
+	}
+
+	@Override
+	synchronized public void mergeAttributes(Map<String, String> attributesMap) {
+		if(attributesMap == null || attributesMap.isEmpty()) {
+			return; // nothing to merge
+		}
 		if(fAttributes == null) {
 			setAttributes(attributesMap);
 		}
@@ -215,7 +231,8 @@ public class Attributes implements IAttributes {
 			mergeAttribute(e.getKey(), e.getValue());
 		}
 	}
-
+	
+	
 	@Override
 	synchronized public void mergeAttributes(final IAttributes attributes, final String prefix) {
 		if(attributes == null || !attributes.hasAttributes()) {
@@ -242,6 +259,13 @@ public class Attributes implements IAttributes {
 			}
 		}
 		return false;
+	}
+
+	@Override
+	public boolean equalsAttributes(final IAttributes otherAttributes){
+		if(otherAttributes == null)
+			return false;
+		return equals(otherAttributes);
 	}
 
 

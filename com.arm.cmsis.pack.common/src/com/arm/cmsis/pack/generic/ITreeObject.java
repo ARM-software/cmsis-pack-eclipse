@@ -70,6 +70,7 @@ public interface ITreeObject {
 	 */
 	Object[] getChildArray();
 	
+	
 	/**
 	 * Casts this object to the given type if possible
 	 * @param type lass type to cast to

@@ -60,11 +60,6 @@ public interface ICpDebugConfiguration extends ICpItem {
 	 */
 	String getSvdFile(); 
 
-	/**
-	 * Returns number of processor units 
-	 * @return processor unit count (1 is default) 
-	 */
-	int getPunitsCount();
 	
 	/**
 	 * Returns "debug" item for processor unit 0 (default) 

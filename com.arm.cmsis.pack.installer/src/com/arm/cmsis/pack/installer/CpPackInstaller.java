@@ -51,6 +51,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
@@ -410,7 +411,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	public boolean unzip(File archiveFile, IPath destPath, IProgressMonitor monitor) throws IOException {
 		SubMonitor progress = null;
 		try {
-			progress = SubMonitor.convert(monitor, Utils.getFilesCount(archiveFile));
+			progress = SubMonitor.convert(monitor, ICpPackInstaller.getFilesCount(archiveFile));
 		} catch (IOException e1) {
 			throw e1;
 		}
@@ -580,7 +581,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 	
 	@Override
 	public boolean isSuppressMessages() {
-		return bSuppressMessages;
+		return bSuppressMessages || !PlatformUI.isWorkbenchRunning();
 	}
 
 	@Override

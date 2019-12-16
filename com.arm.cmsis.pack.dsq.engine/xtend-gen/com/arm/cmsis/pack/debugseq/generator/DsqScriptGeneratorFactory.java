@@ -14,13 +14,12 @@ import com.arm.cmsis.pack.debugseq.generator.IDsqScriptGenerator;
 import java.util.Collection;
 import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.xtext.xbase.lib.CollectionLiterals;
 import org.eclipse.xtext.xbase.lib.Exceptions;
 
 @SuppressWarnings("all")
 public class DsqScriptGeneratorFactory extends CpAbstractExtensionFactory<IDsqScriptGenerator> {
-  public final static String SCRIPT_GENERATOR = "ScriptGenerator";
+  public static final String SCRIPT_GENERATOR = "ScriptGenerator";
   
   private static DsqScriptGeneratorFactory theFactory = null;
   
@@ -51,8 +50,7 @@ public class DsqScriptGeneratorFactory extends CpAbstractExtensionFactory<IDsqSc
     boolean _containsKey_1 = this.elements.containsKey(generatorID);
     if (_containsKey_1) {
       try {
-        IConfigurationElement _get = this.elements.get(generatorID);
-        IDsqScriptGenerator generator = this.createExtender(_get);
+        IDsqScriptGenerator generator = this.createExtender(this.elements.get(generatorID));
         if ((generator != null)) {
           this.fDsqScriptGenerators.put(generatorID, generator);
           return generator;

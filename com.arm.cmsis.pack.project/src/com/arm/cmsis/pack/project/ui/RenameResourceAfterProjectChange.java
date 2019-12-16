@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.ltk.core.refactoring.Change;
 import org.eclipse.ltk.core.refactoring.resource.RenameResourceChange;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.project.Messages;
 
 /**
@@ -74,7 +75,7 @@ public class RenameResourceAfterProjectChange extends RenameResourceChange {
 		if(bUndo) {
 			return srcPath;
 		}
-		IPath dstPath = new Path("/" + newProjectName + "/" + srcPath.removeFirstSegments(1)); //$NON-NLS-1$ //$NON-NLS-2$
+		IPath dstPath = new Path(CmsisConstants.SLASH + newProjectName + CmsisConstants.SLASH + srcPath.removeFirstSegments(1));
 		return dstPath;
 		
 	}

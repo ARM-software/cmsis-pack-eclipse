@@ -12,7 +12,6 @@
 package com.arm.cmsis.pack.ui.console;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +35,7 @@ import org.eclipse.ui.console.MessageConsole;
 import org.eclipse.ui.console.MessageConsoleStream;
 
 import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.error.ICmsisConsole;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
@@ -46,21 +46,17 @@ import com.arm.cmsis.pack.ui.preferences.CpUIPreferenceConstants;
  * Console to display RTE messages from RteProject
  *
  */
-public class RteConsole extends MessageConsole implements IPropertyChangeListener, IRteEventListener {
+public class RteConsole extends MessageConsole implements ICmsisConsole, IPropertyChangeListener, IRteEventListener {
 
 	public static final String CONSOLE_TYPE = "com.arm.cmsis.pack.rte.console";	 //$NON-NLS-1$
 	public static final String BASE_NAME = CpStringsUI.RteConsole_BaseName;
 	public static final String GLOBAL_NAME = CpStringsUI.RteConsole_GlobalName;
-	public static final int OUTPUT = 0;
-	public static final int INFO = 1;
-	public static final int WARNING = 2;
-	public static final int ERROR = 3;
-	public static final int STREAM_COUNT = 4;
 	public boolean redirectToCDT = false;
 	protected IProject fProject = null;
 
 	private Map<Integer, MessageConsoleStream> fStreams = new HashMap<Integer, MessageConsoleStream>();
 
+	
 	public RteConsole(String name, ImageDescriptor imageDescriptor) {
 		super(name, CONSOLE_TYPE, imageDescriptor, true);
 		updateBackGround();
@@ -189,17 +185,13 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 
 	/**
 	 * Outputs the message to specified console stream
-	 * @param streamType stream type: OUTPUT, INFO, ERROR
+	 * @param streamType stream type: OUTPUT, INFO, WARNING, ERROR
 	 * @param msg message to output
 	 */
+	@Override
 	public void output(int streamType, String msg) {
 		if(!PlatformUI.isWorkbenchRunning()) {
-			PrintStream stream;
-			if(streamType == ERROR || streamType == WARNING)
-				stream = System.err;
-			else
-				stream = System.out;
-			stream.println(msg);
+			ICmsisConsole.super.output(streamType, msg); // standard IO
 			return;
 		}
 		
@@ -211,26 +203,8 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 		}
 	}
 
-	public void output(final String message) {
-		output(OUTPUT, message);
-	}
-
-	public void outputInfo(final String message) {
-		output(INFO, message);
-	}
-
-	public void outputInfo(final String message, IProject project) {
-		output(INFO, message);
-	}
-
-	public void outputWarning(final String message) {
-		output(WARNING, message);
-	}
-
-	public void outputError(final String message) {
-		output(ERROR, message);
-	}
-
+	
+	
 	public static void writeToCDTConsole(int streamType, String msg, IProject project) {
 		IBuildConsoleManager manager = CUIPlugin.getDefault().getConsoleManager();
 		if (manager == null) {
@@ -259,6 +233,7 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 			}
 			infoStream.write(msg.getBytes());
 		} catch (IOException | CoreException e) {
+			e.printStackTrace();
 		} finally {
 			if (infoStream != null) {
 				try {
@@ -270,6 +245,13 @@ public class RteConsole extends MessageConsole implements IPropertyChangeListene
 		}
 	}
 
+	/**
+	 * Opens RteConsole 
+	 * @return RteConsole
+	 */
+	public static RteConsole openConsole() {
+		return openConsole(null);
+	}
 
 	/**
 	 * Opens RteConsole for given project

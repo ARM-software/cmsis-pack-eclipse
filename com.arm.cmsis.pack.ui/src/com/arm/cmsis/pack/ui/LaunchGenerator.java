@@ -54,12 +54,11 @@ public class LaunchGenerator {
 	}
 
 
-	@SuppressWarnings("cast")
 	static protected LaunchGenerator getInstance(ICpGenerator generator, ICpConfigurationInfo configInfo) {
 		LaunchGenerator launchGenerator = null;
 		ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
 		if (ep != null) {
-			launchGenerator = (LaunchGenerator) ep.getAdapter(LaunchGenerator.class);
+			launchGenerator = ep.getAdapter(LaunchGenerator.class);
 		}
 		if (launchGenerator == null) {
 			// use default implementation

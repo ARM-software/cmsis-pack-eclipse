@@ -23,7 +23,7 @@ public class DECValueConverter extends AbstractLexerBasedConverter<Long> {
   protected String toEscapedString(final Long value) {
     StringConcatenation _builder = new StringConcatenation();
     String _string = value.toString();
-    _builder.append(_string, "");
+    _builder.append(_string);
     return _builder.toString();
   }
   
@@ -33,9 +33,9 @@ public class DECValueConverter extends AbstractLexerBasedConverter<Long> {
     if (((value).longValue() < 0)) {
       StringConcatenation _builder = new StringConcatenation();
       String _ruleName = this.getRuleName();
-      _builder.append(_ruleName, "");
+      _builder.append(_ruleName);
       _builder.append("-value may not be negative (value: ");
-      _builder.append(value, "");
+      _builder.append(value);
       _builder.append(").");
       throw new ValueConverterException(_builder.toString(), 
         null, null);
@@ -56,7 +56,7 @@ public class DECValueConverter extends AbstractLexerBasedConverter<Long> {
         final NumberFormatException e = (NumberFormatException)_t;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Couldn\'t convert \'");
-        _builder.append(string, "");
+        _builder.append(string);
         _builder.append("\' to an decimal value.");
         throw new ValueConverterException(_builder.toString(), node, e);
       } else {

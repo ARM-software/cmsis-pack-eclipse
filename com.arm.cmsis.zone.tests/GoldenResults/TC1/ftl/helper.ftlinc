@@ -1,0 +1,92 @@
+<#-- 
+Helper functions for CMSIS-Zone FreeMaker generation
+
+Usage:
+Add the following line to a FreeMarker template file
+
+<#include "helper.ftlinc"/>
+
+Copyright (c) 2019 ARM Ltd. 
+-->
+ 
+<#--
+Converts a hexadecimal string to a number
+
+Parameters:
+   hex  The hex string, optionally starting with 0x.
+
+Returns:
+   Hex value converted to integer number.
+   
+Example:
+   hex2num(0x0000032F) => 815
+   hex2num(0x002F)     => 47
+   hex2num(102)        => 258
+-->
+<#function hex2num hex>
+  <#local hexdigit={ "A":10, "B":11, "C":12, "D":13, "E":14, "F":15 } />
+  <#local result=0 />
+  <#local hex=hex?remove_beginning("0x") />
+  <#list hex?length-1..0 as i>
+    <#attempt>
+      <#local result += hex[i]?number*pow2(i?index*4)/>
+    <#recover>
+      <#local result += hexdigit[hex[i]]*pow2(i?index*4)/>
+    </#attempt>
+  </#list>
+  <#return result/>
+</#function>
+
+<#--
+Convert number to hexadecimal string
+ 
+Parameters:
+   num     number to be converted
+   prefix  prefix to be prepended, default "0x"
+   pad     number of digits to output, default 8
+    
+Returns:
+   number as string in hexadecimal format 
+ 
+Example:
+   num2hex(815)         => 0x0000032F
+   num2hex(47, "0x", 4) => 0x002F
+   num2hex(258, "", 2)  => 102
+-->
+<#function num2hex num prefix="0x" pad=8>
+  <#local result=""/>
+  <#if num / 16 gte 1.0>
+    <#local result = num2hex((num/16)?floor, "", 1)/>
+  </#if>
+  <#if num % 16 gte 10>
+    <#local result += ((num % 16)-9)?upper_abc/>
+  <#else>
+    <#local result += (num % 16)?c/>
+  </#if>
+  <#return prefix+result?left_pad(pad, "0")/>
+</#function>
+
+
+<#--
+Calculate power of 2 for 'n'
+
+Parameter:
+   n       exponent value
+
+Returns:
+   power of 2 with n as the exponent
+ 
+Example:
+   pow2(0)  => 1
+   pow2(1)  => 2
+   pow2(4)  => 16
+   pow2(16) => 65536
+-->
+<#function pow2 n>
+  <#if n == 0>
+    <#return 1/>
+  <#else>
+    <#return 2 * pow2(n-1)/>
+  </#if>
+</#function>
+

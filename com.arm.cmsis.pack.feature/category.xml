@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/com.arm.cmsis.pack.feature_2.5.0.qualifier.jar" id="com.arm.cmsis.pack.feature" version="2.5.0.qualifier">
+      <category name="cmsis-eclipse"/>
+   </feature>
+   <category-def name="cmsis-eclipse" label="CMSIS Eclipse plug-ins">
+      <description>
+        Eclipse plug-ins for CMSIS support
+      </description>
+   </category-def>
+</site>

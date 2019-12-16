@@ -11,17 +11,19 @@
 
 package com.arm.cmsis.pack.parser;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpItemFactory;
+import com.arm.cmsis.pack.error.ICmsisErrorCollection;
 
 /**
  * Interface to CMSIS pack description file (*.pdsc) parser
  */
-public interface ICpXmlParser extends ICpItemFactory {
+public interface ICpXmlParser extends ICpItemFactory, ICmsisErrorCollection {
+
 	/**
 	 * Initializes the parser
 	 * @return true if successful
@@ -43,22 +45,8 @@ public interface ICpXmlParser extends ICpItemFactory {
 	 * Returns schema file used by parser
 	 * @return absolute schema file name or null if not set
 	 */
-	public String getXsdFile();
+	String getXsdFile();
 
-	/**
-	 * @return the errorStrings
-	 */
-	List<String> getErrorStrings();
-
-	/**
-	 * @return number of errors
-	 */
-	int getErrorCount();
-
-	/**
-	 * @return number of warnings
-	 */
-	int getWarningCount();
 
 	/**
 	 * Sets XML tags to ignore during parsing
@@ -67,9 +55,24 @@ public interface ICpXmlParser extends ICpItemFactory {
 	void setIgnoreTags(Set<String> ignoreTags);
 
 	/**
-	 * Sets XML tags to ignore during writing
-	 * @param ignoreTags set of tags to ignore
+	 * Sets XML tags to ignore during parsing
+	 * @param ignoreTags array of tags to ignore
 	 */
+	default void setIgnoreTagsFromArray(String[] ignoreTags) {
+		Set<String> tagSet = new HashSet<>();
+		if(ignoreTags != null && ignoreTags.length > 0)
+			for (String tag : ignoreTags) {
+				tagSet.add(tag);
+			}
+		setIgnoreTags(tagSet);
+	}
+
+	/**
+	 * Sets XML tags to ignore during writing, does the same as setIgnoreTags()
+	 * @param ignoreTags set of tags to ignore
+	 * @deprecated
+	 */
+	@Deprecated
 	void setWriteIgnoreTags(Set<String> ignoreTags);
 
 	/**

@@ -365,24 +365,20 @@ public abstract class CmsisColumnAdvisor<TController extends IRteController> ext
 		case CmsisConstants.PROCESSOR_TAG:
 			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_PROCESSOR);
 			break;
-		case CmsisConstants.RESOURCES_TAG:
-		case CmsisConstants.PERIPHERALS_TAG:
-			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_PEERIPHERALS);
+		case CmsisConstants.RESOURCES:
+		case CmsisConstants.PERIPHERALS:
+			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_PERIPHERALS);
 			break;
-		case CmsisConstants.MEMORY_MAP_TAG:
-			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_MEMORY_MAP);
-			break;
-		case CmsisConstants.GROUP_TAG:
+		case CmsisConstants.GROUP:
 			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT);
 			break;
 		case CmsisConstants.MEMORY_TAG:
 			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_MEMORY);
 			break;
-		case CmsisConstants.REGION_TAG:
 		case CmsisConstants.BLOCK_TAG:
 			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
 			break;
-		case CmsisConstants.PERIPHERAL_TAG:
+		case CmsisConstants.PERIPHERAL:
 			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_GROUP);
 			break;
 		default:

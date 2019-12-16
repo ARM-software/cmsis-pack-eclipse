@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2015 - 2019 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,13 +35,14 @@ import com.arm.cmsis.pack.utils.Utils;
  */
 public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	
-	protected IAttributes fAttributes = new CpAttributes(); 
+	protected IAttributes fAttributes = null; 
 	
 	protected ICpItem fCondition = null; // cached condition reference for quick access
 
 	protected String fURL = null;
 	protected String fId   = null;
 
+	public static final Collection<ICpItem> EMPTY_LIST = new LinkedList<>();
 	
 	/**
 	 * Default hierarchy constructor
@@ -61,12 +63,20 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	}
 	
 	
-	
+
 	@Override
 	public IAttributes attributes() {
+		if(fAttributes == null)
+			fAttributes = createAttributes(); 
 		return fAttributes;
 	}
 
+	@Override
+	public IAttributes createAttributes() {
+		return new CpAttributes();
+	}
+
+	
 	@Override
 	public void invalidate() {
 		fId = null;
@@ -203,13 +213,27 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		return null;
 	}
 
+
+	@Override
+	protected List<ICpItem> children() {
+		return (List<ICpItem>)super.children();
+	}
+	
+	@Override
+	public Collection<? extends ICpItem> getChildren() {
+		if(fChildren != null) {
+			return fChildren;
+		}
+		return EMPTY_LIST;
+	}
+	
 	@Override
 	public Collection<? extends ICpItem> getGrandChildren(String tag) {
 		ICpItem child = getFirstChild(tag);
 		if(child != null) {
 			return child.getChildren();
 		}
-		return null;
+		return EMPTY_LIST;
 	}
 
 	
@@ -227,14 +251,84 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 		return tagChildren;
 	}
 
+	
 	@Override
-	protected List<ICpItem> children() {
-		return (List<ICpItem>)super.children();
+	public ICpItem clone() {
+		ICpItem clonedItem = createItem();
+		if(clonedItem != null && attributes().hasAttributes()) {
+			clonedItem.attributes().setAttributes(attributes());
+		}
+		return clonedItem;
 	}
+
+	/**
+	 * Creates a an item of the same class as this one, called by clone()  
+	 * @return new ICpItem 
+	 */
+	protected ICpItem createItem() {
+		ICpItem parent = getParent();
+		if(parent != null) {
+			return parent.createItem(parent, getTag());
+		} 
+		return createItem(parent, getTag());
+	}
+	
+	@Override
+	public ICpItem copyTo(ICpItem parent, boolean copyChildren) {
+		ICpItem clonedItem = clone();
+		clonedItem.setParent(parent);
+		if(parent != null) {
+			parent.addChild(clonedItem);
+		}
+		if(copyChildren)
+			copyChildrenTo(clonedItem);
+		return clonedItem;
+	}
+
+	
+	@Override
+	public void copyChildrenTo(ICpItem newParent) {
+		if(!hasChildren())
+			return;
+		for(ICpItem child : getChildren()) {
+			child.copyTo(newParent);
+		}
+	}
+
+	@Override
+	public boolean updateItem(ICpItem other) {
+		if(other == null)
+			return false;
+		boolean bModified = updateAttributes(other);
+		Collection<? extends ICpItem> otherChildren = other.getChildren();
+		Collection<? extends ICpItem> children = getChildren();
+		if(otherChildren.size() != children.size()) {
+			// replace all children
+			fChildren = null;
+			other.copyChildrenTo(this);
+			return true;
+		}
+		
+		Iterator<? extends ICpItem> it = children.iterator();
+		Iterator<? extends ICpItem> itOther = otherChildren.iterator();
+	    while (it.hasNext() && itOther.hasNext()) {
+	        ICpItem child = it.next();
+	        ICpItem otherChild = itOther.next();
+	    	if(child.updateItem(otherChild))
+	    		bModified = true;
+	    }
+		
+		return bModified;
+	}
+	
+
 	
 	@Override
 	public ICpItem createItem(ICpItem parent, String tag) {
 		ICpItem item = createChildItem(tag);
+		if(parent != this) {
+			item.setParent(parent);
+		}
 		return item;
 	}
 
@@ -614,4 +708,51 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	public boolean isRemoved() {
 		return getAttributeAsBoolean(CmsisConstants.REMOVED, false);
 	}
+
+	@Override
+	public ICpItem toSimpleTree(ICpItem parent) {
+		String tag = getTag();
+		if(tag == null || tag.isEmpty())
+			return null; // no element without tag
+		ICpItem item = new CpItem(parent, tag);
+		if(parent != null) {
+			parent.addChild(item); 
+		}
+		// add text if no children or attributes 
+		String text = getText();
+		if(text != null && !text.isEmpty()) {
+			if(hasChildren() || attributes().hasAttributes()){
+				// cannot add text to item directly , reate a separate "text" one
+				ICpItem t = new CpItem(item, CmsisConstants.TEXT);
+				t.setText(text);
+				item.addChild(t);
+			} else{
+				item.setText(text);
+			}
+		}
+		// expand attributes
+		if(attributes().hasAttributes()) {
+			Map<String, String> attributesMap = attributes().getAttributesAsMap();
+			for(Entry<String, String> e: attributesMap.entrySet()) {
+				ICpItem a = toSimpleItem(item,  e.getKey(),  e.getValue());
+				item.addChild(a);
+			}
+		}
+		if(hasChildren()) {
+			for(ICpItem c: getChildren() ){ 
+				item.addChild(c.toSimpleTree(item)); 
+			}
+		}
+		return item;
+	}
+	
+	@Override
+	public ICpItem toSimpleItem(ICpItem parent, String key, String value) {
+		if(key == null)
+			return null; // cannot create an item without tag
+		ICpItem item = new CpItem(parent, key);
+		item.setText(value);
+		return item;
+	}
+	
 }

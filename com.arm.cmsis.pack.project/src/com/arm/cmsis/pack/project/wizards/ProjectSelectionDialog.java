@@ -76,7 +76,6 @@ public class ProjectSelectionDialog extends SelectionStatusDialog {
 			}
 		});
 		fTableViewer.addDoubleClickListener(new IDoubleClickListener() {
-			@SuppressWarnings("synthetic-access")
 			@Override
 			public void doubleClick(DoubleClickEvent event) {
                 okPressed();

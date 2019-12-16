@@ -281,7 +281,7 @@ public class RtePackCollection extends RtePackItem implements IRtePackCollection
 				case EXCLUDED:
 					continue;
 				case LATEST:
-					ICpPackInfo info = new CpPackInfo(filterInfo, f.getAttributes());
+					ICpPackInfo info = new CpPackInfo(filterInfo, f.attributes());
 					info.setVersionMatchMode(mode);
 					filterInfo.addChild(info);
 					continue;
@@ -295,7 +295,7 @@ public class RtePackCollection extends RtePackItem implements IRtePackCollection
 					if(pack != null)
 						info = new CpPackInfo(filterInfo, pack);
 					else
-						info = new CpPackInfo(filterInfo, p.getAttributes());
+						info = new CpPackInfo(filterInfo, p.attributes());
 					info.setVersionMatchMode(mode);
 					filterInfo.addChild(info);
 				}
@@ -324,10 +324,10 @@ public class RtePackCollection extends RtePackItem implements IRtePackCollection
 	}
 
 	@Override
-	public IAttributes getAttributes() {
+	public IAttributes attributes() {
 		return null;
 	}
-
+	
 	@Override
 	public Collection<IRtePackFamily> getRtePackFamilies() {
 		return fPackFamilies.values();

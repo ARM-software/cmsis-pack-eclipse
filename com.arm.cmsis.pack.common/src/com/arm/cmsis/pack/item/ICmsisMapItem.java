@@ -18,5 +18,5 @@ import com.arm.cmsis.pack.generic.ITreeMapItem;
  * Basic generic interface for CMSIS items with String-to-Item map collections 
  */
 public interface ICmsisMapItem<T extends ITreeItem<T> & ICmsisItem> extends ICmsisTreeItem<T>, ITreeMapItem<String, T > {
-	 
+	 // Convenience synthetic interface without own methods
 }

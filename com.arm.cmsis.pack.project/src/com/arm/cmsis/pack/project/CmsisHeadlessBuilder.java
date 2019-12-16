@@ -29,6 +29,7 @@ import org.eclipse.osgi.service.datalocation.Location;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 
 /**
@@ -232,7 +233,7 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
 				}
 				if(cmsisRootArg.equals(a)){
 					cmsisPackRoot = args[++i];
-					if(cmsisPackRoot.endsWith("\\")){
+					if(cmsisPackRoot.endsWith(CmsisConstants.SLASH) || cmsisPackRoot.endsWith(CmsisConstants.BACKSLASH)){
 						cmsisPackRoot = cmsisPackRoot.substring(0, cmsisPackRoot.length()-1);
 					}					
 					continue;

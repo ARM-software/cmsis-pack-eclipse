@@ -50,6 +50,7 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 	protected Object selectedUpSpinner = null;
 	protected Object selectedDownSpinner = null;
 	protected Object selectedRightAlignedButton = null;
+	
 	public static final Rectangle EMPTY_RECTANGLE = new Rectangle(0,0,0,0);
 
 	/**
@@ -156,9 +157,11 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 	 * @param e
 	 */
 	protected void handleMouseDown(MouseEvent e) {
-		if (e.button != 1) { // must be left key
+
+		if (e.button != 1) { // we only process left key
 			return;
 		}
+
 		Point pt = new Point(e.x, e.y);
 		ViewerCell cell = getViewer().getCell(pt);
 		if (cell == null) {
@@ -203,9 +206,10 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 	 * @param e mouse event
 	 */
 	protected void handleMouseUp(MouseEvent e) {
-		if (e.button != 1) {
+		if (e.button != 1) { // we only process left key
 			return;
 		}
+		
 		Point pt = new Point(e.x, e.y);
 		ViewerCell cell = getViewer().getCell(pt);
 		if (cell == null) {
@@ -213,6 +217,7 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		}
 
 		int colIndex = cell.getColumnIndex();
+
 		Object element = cell.getElement();
 		if (!isEnabled(element, colIndex)) {
 			return;
@@ -761,4 +766,17 @@ public abstract class ColumnAdvisor implements IColumnAdvisor {
 		return imageWidth + textWidth;
 	}
 	
+	@Override
+	public int getMouseColumn() {
+		if(control == null)
+			return -1;
+		
+		Point pt = control.toControl(Display.getDefault().getCursorLocation());
+		if(pt.y < 0 ) {
+			pt.y = 1; // we need column information even if clicked on  on header, use the first item 
+		}
+		ViewerCell cell = getViewer().getCell(pt);
+		return cell == null ? -1 : cell.getColumnIndex();
+	}
+
 }

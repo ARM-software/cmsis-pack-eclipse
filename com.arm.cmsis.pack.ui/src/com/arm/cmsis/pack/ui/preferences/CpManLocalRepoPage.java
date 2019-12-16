@@ -31,7 +31,6 @@ import org.eclipse.ui.PlatformUI;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.parser.CpPidxParser;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 

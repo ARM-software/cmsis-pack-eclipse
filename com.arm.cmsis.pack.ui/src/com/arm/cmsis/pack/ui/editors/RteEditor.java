@@ -28,11 +28,15 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Path;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.ide.IGotoMarker;
@@ -45,8 +49,11 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.events.IRteController;
 import com.arm.cmsis.pack.events.IRteEventListener;
 import com.arm.cmsis.pack.events.RteEvent;
+import com.arm.cmsis.pack.parser.CpXmlParser;
 import com.arm.cmsis.pack.parser.ICpXmlParser;
+import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
+import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * An abstract multi-page editor for IRteCondroller-backed models. 
@@ -54,14 +61,12 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
 public abstract class RteEditor<TController extends IRteController> extends MultiPageEditorPart implements IResourceChangeListener, IRteEventListener, IGotoMarker {
 
 	protected int activePageIndex = 0; // initially the page with index 0 is activated
-
 	protected TController fModelController = null;
 	protected ICpXmlParser fParser = null;
-	protected IFile fFile = null;
-	
 	protected boolean fbSaving = false;
 	protected String fXmlString = CmsisConstants.EMPTY_STRING; // saved XML string for modification comparison
 
+	protected String fAbsFileName = null;
 	abstract protected ICpXmlParser createParser();
 	abstract protected TController createController();
 	
@@ -70,6 +75,24 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
 	}
 
+	
+	/**
+	 * Returns primary file being edited 
+	 * @return String
+	 */
+	public String getFile() {
+		return fAbsFileName; 
+	}
+	
+	/**
+	 * Check if file is relevant to this editor 
+	 * @return boolean
+	 */
+	public boolean isRelevantFile(String absFileName) {
+		return absFileName != null && absFileName.equals(getFile()); 
+	}
+	
+	
 	@Override
 	public void dispose() {
 		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
@@ -82,11 +105,40 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 	
 	@Override
 	protected void setInput(IEditorInput input) {
-		super.setInput(input);
-		fFile = ResourceUtil.getFile(input);
-		String title= input.getName();
-		setPartName(title);
-		loadData();
+		super.setInput(input);					
+		
+		String absFileName = CmsisConstants.EMPTY_STRING;
+		if(input instanceof IURIEditorInput) {
+			IURIEditorInput uriInput = (IURIEditorInput)input;
+			File f = new File(uriInput.getURI());
+			absFileName = f.getAbsolutePath();
+		} else {
+			IFile file = ResourceUtil.getFile(input);		
+			if(file!= null) {
+				absFileName = file.getLocation().toPortableString();
+			}
+		}
+		
+		if(absFileName.isEmpty())
+			return;
+
+		//Show change dialog if file was changed
+		if(isDirty()) {
+			//Standardize file's path 
+			String filePath = absFileName;
+			if(filePath.startsWith(CmsisConstants.SLASH) || filePath.startsWith(CmsisConstants.BACKSLASH)) {
+				filePath = filePath.substring(1,filePath.length());
+			}
+
+			String msgTitle= CpStringsUI.RteEditor_ChangeDialogMsgTitle;
+			String msg= NLS.bind(CpStringsUI.RteEditor_ChangeDialogMsg, filePath);
+			MessageDialog msgDlg = new MessageDialog(getSite().getShell(), msgTitle, null, msg, MessageDialog.QUESTION, 0,
+					new String[] { CpStringsUI.RteEditor_ChangeDialogReplaceButton, CpStringsUI.RteEditor_ChangeDialogNoReplaceButton});
+			if(msgDlg.open() != 0) {
+				return;
+			}
+		}
+		loadData(absFileName);
 	}
 
 
@@ -97,27 +149,59 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 		return fParser;
 	}
 
-	protected void loadData() {
+	protected void loadData(String absFileName ) {
+		if(absFileName == null || absFileName.isEmpty()) {
+			fAbsFileName = CmsisConstants.EMPTY_STRING;
+			return;
+		}
+
+		fAbsFileName = new Path(absFileName).toPortableString();
+		
+		//Create model controller
 		if(fModelController == null) {
 			fModelController = createController();
 			fModelController.addListener(this);
-		}
-
-		File file = fFile.getLocation().toFile();
+		}	
+		//fAbsFileName  = absFileName;
+		String title= Utils.extractFileName(absFileName);
+		setPartName(title);
 		
 		ICpXmlParser parser = getParser();
 		if(parser == null)
 			return;
-		ICpItem root = parser.parseFile(file.getAbsolutePath());
-		String xmlString = getXmlString(root);
-		if(xmlString.equals(fXmlString))
+		ICpItem root = parser.parseFile(absFileName);
+		if(!checkInputChanged(root))
 			return; // nothing has changed
-
-		fXmlString = xmlString; 
+		 
 		fModelController.setDataInfo(root);
 		
 	}
 	
+	/**
+	 * Checks input and updates fXmlString if changed 
+	 * @param root item to check 
+	 * @return true if changed
+	 */
+	protected boolean checkInputChanged(ICpItem root) {
+		String xmlString = getXmlString(root);
+		if(xmlString.equals(fXmlString))
+			return false; // nothing has changed
+		fXmlString = xmlString;
+		return true;
+	}
+	
+	/**
+	 * Saves editor XML content to file
+	 * @param monitor IProgressMonitor
+	 * @throws CoreException 
+	 */
+	protected void saveXml(IProgressMonitor monitor) throws CoreException{
+		fXmlString = getXmlString();			
+		CpXmlParser.saveXmlToFile(fXmlString, fAbsFileName);
+		CpPlugInUI.refreshFile(fAbsFileName);
+	}
+
+		
 	/**
 	 * Generates XML string from editor's datata
 	 * root ICpItem representing data root
@@ -161,24 +245,13 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 			saveXml(monitor);
 			fModelController.emitRteEvent(RteEvent.CONFIGURATION_COMMITED, fModelController);
 			firePropertyChange(IEditorPart.PROP_DIRTY);
-		} catch (CoreException e) {
-			// TODO Auto-generated catch block
+		} catch (CoreException e) {	
 			e.printStackTrace();
 		} finally{ 
 			setSaving(false);
 		}
 	}
-
 	
-	/**
-	 * Saves editor XML content to file
-	 * @param monitor IProgressMonitor
-	 * @throws CoreException 
-	 */
-	protected void saveXml(IProgressMonitor monitor) throws CoreException{
-		fXmlString = getXmlString();
-		saveXmlToFile(fXmlString, fFile, monitor);
-	}
 
 	/**
 	 * Saves XML string to file
@@ -210,9 +283,6 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 	 */
 	@Override
 	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
-		if (!(editorInput instanceof IFileEditorInput)) {
-			throw new PartInitException(CpStringsUI.RteConfigurationEditor_InvalidInput);
-		}
 		super.init(site, editorInput);
 	}
 
@@ -262,21 +332,83 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 		return fModelController;
 	}
 
+	
+	/**
+	 * Processes file change (modify, rename, delete) 
+	 * @param file changed IFile  
+	 * @param delta IResourceDelta describing change
+	 * @return returns true if file is relevant and the change is processed
+	 */
+	protected boolean processFileChange(IFile file, IResourceDelta delta) {
+
+		if (file == null) {
+			return false;
+		}
+		IPath path = file.getLocation();
+		if(path == null)
+			return false;
+		if(!isRelevantFile(path.toPortableString())) {
+			return false;
+		}
+		
+		int kind = delta.getKind();
+		int flags = delta.getFlags();
+		if ( kind == IResourceDelta.REMOVED) {
+			if (flags == 0) { // project or folder or file deleted 
+				Display.getDefault().asyncExec(() -> {
+					// close editor if still open
+					IEditorSite site = getEditorSite();
+					if(site == null)
+						return;
+					IWorkbenchPage page = site.getPage();
+					if(page == null)
+						return;
+					page.closeEditor(this, true);
+				});
+				return true;
+			}
+			if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
+				// renamed
+				IPath newPath = delta.getMovedToPath();
+				IFile r = (IFile) ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
+				
+				final FileEditorInput fileEditorInput = new FileEditorInput(r);
+				Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
+				return true;
+			} 
+		} else if ( kind == IResourceDelta.CHANGED && (flags & IResourceDelta.CONTENT) == IResourceDelta.CONTENT ) {
+			if(isSaving())
+				return false;
+			
+			IFile iFile = CpPlugInUI.getFileForLocation(fAbsFileName);
+			if(iFile != null) {
+				final FileEditorInput fileEditorInput = new FileEditorInput(iFile); // reload
+				Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
+			}			
+			return true;
+		}
+		
+		return false;
+	}
+	
 	/**
 	 * Closes all project files on project close.
 	 */
 	@Override
 	public void resourceChanged(final IResourceChangeEvent event) {
 		if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
-			Display.getDefault().asyncExec(() -> {
-				IProject project = fFile.getProject();
-				IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
-				for (int i = 0; i < pages.length; i++) {
-					if (project.equals(event.getResource())) {
-						IEditorPart editorPart = ResourceUtil.findEditor(pages[i], fFile);
-						pages[i].closeEditor(editorPart, true);
+			Display.getDefault().asyncExec(() -> {				
+				IFile iFile = CpPlugInUI.getFileForLocation(fAbsFileName);
+				if(iFile != null) {
+					IProject project = iFile.getProject();
+					IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
+					for (int i = 0; i < pages.length; i++) {
+						if (project.equals(event.getResource())) {
+							IEditorPart editorPart = ResourceUtil.findEditor(pages[i], iFile);
+							pages[i].closeEditor(editorPart, true);
+						}
 					}
-				}
+				}				
 			});
 			return;
 		}
@@ -290,34 +422,9 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 					if (type == IResource.ROOT || type == IResource.PROJECT) {
 						return true; // workspace or project => visit children
 					}
-
-					int kind = delta.getKind();
-					int flags = delta.getFlags();
-
-					if (type == IResource.FILE  && resource.equals(fFile)) {
-						if ( kind == IResourceDelta.REMOVED) {
-							if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
-								// renamed
-								IPath newPath = delta.getMovedToPath();
-								IFile r = (IFile) ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
-								final FileEditorInput fileEditorInput = new FileEditorInput(r);
-								Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
-								return false;
-							} else if (flags == 0) { // project deleted
-								Display.getDefault().asyncExec(() -> {
-									RteEditor.this.getEditorSite().getPage()
-									.closeEditor(RteEditor.this, true);
-								});
-								return false;
-							}
-							return false;
-						} else if ( kind == IResourceDelta.CHANGED && (flags & IResourceDelta.CONTENT) == IResourceDelta.CONTENT ) {
-							if(isSaving())
-								return false;
-							final FileEditorInput fileEditorInput = new FileEditorInput(fFile);
-							Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
-							return false;
-						}
+					if (type == IResource.FILE ) {
+						if(processFileChange((IFile)resource, delta))
+							return false; // processed, no more change
 					}
 					return true;
 				}
@@ -329,5 +436,5 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 			}
 		}
 	}
-
+	
 }

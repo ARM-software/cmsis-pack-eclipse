@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<rzone xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="rzone.xsd" schemaVersion="0.1.1">
+  <device Dvendor="NXP:11" Dname="LPC55S69" info="Cortex-M33, 320kB on-chip SRAM, 640kB on-chip Flash">
+    <package name="LPC55S69_DFP" url="http://mcuxpresso.nxp.com/cmsis_pack/repo/" vendor="NXP" version="11.0.0" info="Device Family Pack for LPC55S69"/>
+    <processor Pname="cm33_core0" Dcore="Cortex-M33" DcoreVersion="r0p3" Dclock="100000000" Dendian="Little-endian" Ddsp="DSP"    Dfpu="SP_FPU" Dmpu="MPU"    Dtz="TZ"    DnumInterrupts="60"  DnumSauRegions="8" />
+    <processor Pname="cm33_core1" Dcore="Cortex-M33" DcoreVersion="r0p3" Dclock="100000000" Dendian="Little-endian" Ddsp="NO_DSP" Dfpu="NO_FPU" Dmpu="NO_MPU" Dtz="NO_TZ" DnumInterrupts="60"  DnumSauRegions="8" />
+  </device>
+  <resources>
+    <memories>
+      <memory name="FLASH"       type="ROM" start="0x00000000"                       size="0x0009DE00" access="rx"  security=""  info="Flash" />
+      <memory name="FLASH_FFR"   type="ROM" start="0x0009DE00"                       size="0x00002000" access="rx"  security=""  info="Flash FFR" />
+      <memory name="FLASH_S"     type="ROM" start="0x10000000" physical="0x00000000" size="0x0009DE00" access="rx"  security="c" info="Flash (Secure)"/>
+      <memory name="FLASH_FFR_S" type="ROM" start="0x1009DE00" physical="0x0009DE00" size="0x00002000" access="rx"  security="c" info="Flash FFR (Secure)"/>
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_FLASH_ROM[0].SEC_CTRL_FLASH_MEM_RULE" start="0x00000000" type="sp" size="0x000A0000" blk_size="0x8000" info="Flash" />
+
+
+      <memory name="ROM"         type="ROM" start="0x03000000"                       size="0x00020000" access="rx"  security=""  info="Boot ROM" />
+      <memory name="ROM_S"       type="ROM" start="0x13000000" physical="0x03000000" size="0x00020000" access="rx"  security="c" info="Boot ROM (Secure)"/>
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_FLASH_ROM[0].SEC_CTRL_ROM_MEM_RULE" start="0x03000000" type="sp" size="0x00020000" blk_size="0x1000" info="Boot ROM" />
+
+      <memory name="SRAMX"       type="RAM" start="0x04000000"                       size="0x00008000" access="rwx" security=""  info="SRAMX" />
+      <memory name="SRAMX_S"     type="RAM" start="0x14000000" physical="0x04000000" size="0x00008000" access="rwx" security="c" info="SRAMX (Secure)"/>
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_RAMX[0].MEM_RULE" start="0x04000000" type="sp" size="0x00008000" blk_size="0x1000" info="SRAMX" />
+
+      <memory name="SRAM"        type="RAM" start="0x20000000"                       size="0x00044000" access="rw"  security=""  info="SRAM Banks 0-4" />
+      <memory name="SRAM_S"      type="RAM" start="0x30000000" physical="0x20000000" size="0x00044000" access="rw"  security="s" info="SRAM Banks 0-4 (Secure)"/>
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_RAM0[0].MEM_RULE" start="0x20000000" type="sp" size="0x00010000" blk_size="0x1000" info="SRAM Bank 0" />
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_RAM1[0].MEM_RULE" start="0x20010000" type="sp" size="0x00010000" blk_size="0x1000" info="SRAM Bank 1" />
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_RAM2[0].MEM_RULE" start="0x20020000" type="sp" size="0x00010000" blk_size="0x1000" info="SRAM Bank 2" />
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_RAM3[0].MEM_RULE" start="0x20030000" type="sp" size="0x00010000" blk_size="0x1000" info="SRAM Bank 3" />
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_RAM4[0].MEM_RULE" start="0x20040000" type="sp" size="0x00004000" blk_size="0x1000" info="SRAM Bank 4" />
+
+      <memory name="USB_SRAM"    type="RAM" start="0x40100000"                       size="0x00004000" access="rw"  security=""  info="USB SRAM" />
+      <memory name="USB_SRAM_S"  type="RAM" start="0x50100000" physical="0x40100000" size="0x00004000" access="rw"  security="s" info="USB SRAM (Secure)"/>
+      <mpc name="AHB_SECURE_CTRL-&gt;SEC_CTRL_USB_HS[0].MEM_RULE" start="0x40100000" type="sp" size="0x00004000" blk_size="0x1000" info="USB SRAM" />
+    </memories>
+    <peripherals>
+      <peripheral name="ADC" start="0x400A0000" start_s="0x500A0000" size="0x1000" access="rw" info="ADC Controller">
+        <interrupt name="ADC" irqn="22" info="ADC Completion"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00000001" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00000002" security="s"/>
+      </peripheral>
+      <peripheral name="AHB_SECURE_CTRL" start="0x400AC000" start_s="0x500AC000" size="0x1000" access="rw" info="AHB Secure Controller">
+        <interrupt name="SEC_VIO" irqn ="53" info="Secure Violation"/>
+        <interrupt name="HYPERVISOR" irqn ="49" info="Hypervisor"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_1_SLAVE_RULE" value="0x00000010" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_1_SLAVE_RULE" value="0x00000020" security="s"/>
+      </peripheral>
+      <peripheral name="ANACTRL" start="0x40013000" start_s="0x50013000" size="0x010C" access="rw" info="Analog Control">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL2" value="0x00001000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL2" value="0x00002000" security="s"/>
+      </peripheral>
+      <peripheral name="CRC_ENGINE" start="0x40095000" start_s="0x50095000" size="0x000C" access="rw" info="CRC Engine">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_0_SLAVE_RULE" value="0x00100000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_0_SLAVE_RULE" value="0x00200000" security="s"/>
+      </peripheral>
+      <peripheral name="CASPER" start="0x400A5000" start_s="0x500A5000" size="0x1000" access="rw" info="Cryptographic Accelerator">
+        <interrupt name="CASPER" irqn ="55" info="Cryptographic Accelerator"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00100000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00200000" security="s"/>
+      </peripheral>
+      <group name="CTIMER" info="Standard Counter/Timers">
+        <peripheral name="CTIMER0" start="0x40008000" start_s="0x50008000" size="0x0088" access="rw" info="Standard Counter/Timer 0">
+          <interrupt name="CTIMER0" irqn="10" info="Standard Counter/Timer 0"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x00000001" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x00000002" security="s"/>
+        </peripheral>
+        <peripheral name="CTIMER1" start="0x40009000" start_s="0x50009000" size="0x0088" access="rw" info="Standard Counter/Timer 1">
+          <interrupt name="CTIMER1" irqn="11" info="Standard Counter/Timer 1"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x00000010" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x00000020" security="s"/>
+        </peripheral>
+        <peripheral name="CTIMER2" start="0x40028000" start_s="0x50028000" size="0x0088" access="rw" info="Standard Counter/Timer 2">
+          <interrupt name="CTIMER2" irqn="36" info="Standard Counter/Timer 2"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00000001" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00000002" security="s"/>
+        </peripheral>
+        <peripheral name="CTIMER3" start="0x40029000" start_s="0x50029000" size="0x0088" access="rw" info="Standard Counter/Timer 3">
+          <interrupt name="CTIMER3" irqn="13" info="Standard Counter/Timer 3"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00000010" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00000020" security="s"/>
+        </peripheral>
+        <peripheral name="CTIMER4" start="0x4002A000" start_s="0x5002A000" size="0x0088" access="rw" info="Standard Counter/Timer 4">
+          <interrupt name="CTIMER4" irqn="37" info="Standard Counter/Timer 4"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00000100" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00000200" security="s"/>
+        </peripheral>
+      </group>
+      <peripheral name="DGBMAILBOX" start="0x4009C000" start_s="0x5009C000" size="0x0100" access="rw" info="Debug Mailbox">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_1_SLAVE_RULE" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_1_SLAVE_RULE" value="0x00020000" security="s"/>
+      </peripheral>
+      <group name="DMA" info="DMA Controllers">
+        <peripheral name="DMA0" start="0x40082000" start_s="0x50082000" size="0x05FC" access="rw" info="DMA Controller 0">
+          <interrupt name="SDMA0" irqn="1" info="DMA Controller 0"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x00000100" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x00000200" security="s"/>
+        </peripheral>
+        <peripheral name="DMA1" start="0x400A7000" start_s="0x500A7000" size="0x05FC" access="rw" info="Secure DMA Controller 1">
+          <interrupt name="SDMA1" irqn="58" info="Secure DMA Controller 1"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x10000000" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x20000000" security="s"/>
+        </peripheral>
+      </group>
+      <peripheral name="FLASH" start="0x40034000" start_s="0x50034000" size="0x1000" access="rw" info="Flash Controller">
+        <interrupt name="FLASH" irqn ="0" info="Flash Controller"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL2" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL2" value="0x00020000" security="s"/>
+      </peripheral>
+      <group name="FLEXCOMM" info="Flexcomm (I2C, I2S, SPI, or USART) Interfaces">
+        <peripheral name="FLEXCOMM0" start="0x40086000" start_s="0x50086000" size="0x1000" access="rw" info="configurable as I2C, I2S, SPI, or USART">
+          <interrupt name="FLEXCOMM0" irqn ="14" info="Flexcomm Interface 0"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x01000000" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x02000000" security="s"/>
+        </peripheral>
+        <peripheral name="FLEXCOMM1" start="0x40087000" start_s="0x50087000" size="0x1000" access="rw" info="configurable as I2C, I2S, SPI, or USART">
+          <interrupt name="FLEXCOMM1" irqn ="15" info="Flexcomm Interface 1"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x10000000" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x20000000" security="s"/>
+        </peripheral>
+        <peripheral name="FLEXCOMM2" start="0x40088000" start_s="0x50088000" size="0x1000" access="rw" info="configurable as I2C, I2S, SPI, or USART">
+          <interrupt name="FLEXCOMM2" irqn ="16" info="Flexcomm Interface 2"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00000001" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00000002" security="s"/>
+        </peripheral>
+        <peripheral name="FLEXCOMM3" start="0x40089000" start_s="0x50089000" size="0x1000" access="rw" info="configurable as I2C, I2S, SPI, or USART">
+          <interrupt name="FLEXCOMM3" irqn ="17" info="Flexcomm Interface 3"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00000010" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00000020" security="s"/>
+        </peripheral>
+        <peripheral name="FLEXCOMM4" start="0x4008A000" start_s="0x5008A000" size="0x1000" access="rw" info="configurable as I2C, I2S, SPI, or USART">
+          <interrupt name="FLEXCOMM4" irqn ="18" info="Flexcomm Interface 4"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00000100" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00000200" security="s"/>
+        </peripheral>
+        <peripheral name="FLEXCOMM5" start="0x40096000" start_s="0x50096000" size="0x1000" access="rw" info="configurable as I2C, I2S, SPI, or USART">
+          <interrupt name="FLEXCOMM5" irqn ="19" info="Flexcomm Interface 5"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_0_SLAVE_RULE" value="0x01000000" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_0_SLAVE_RULE" value="0x02000000" security="s"/>
+        </peripheral>
+        <peripheral name="FLEXCOMM6" start="0x40097000" start_s="0x50097000" size="0x1000" access="rw" info="configurable as I2C, I2S, SPI, or USART">
+          <interrupt name="FLEXCOMM6" irqn ="20" info="Flexcomm Interface 6"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_0_SLAVE_RULE" value="0x10000000" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_0_SLAVE_RULE" value="0x20000000" security="s"/>
+        </peripheral>
+        <peripheral name="FLEXCOMM7" start="0x40098000" start_s="0x50098000" size="0x1000" access="rw" info="configurable as I2C, I2S, SPI, or USART">
+          <interrupt name="FLEXCOMM7" irqn ="21" info="Flexcomm Interface 7"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_1_SLAVE_RULE" value="0x00000001" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_1_SLAVE_RULE" value="0x00000002" security="s"/>
+        </peripheral>
+      </group>
+      <group name="GINT" info="Group GPIO Input Interrupts">
+        <peripheral name="GINT0" start="0x40002000" start_s="0x50002000" size="0x0048" access="rw" info="Group GPIO Input Interrupt 0">
+          <interrupt name="GINT0" irqn ="2" info="Group GPIO Input Interrupt 0"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00000100" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00000200" security="s"/>
+        </peripheral>
+        <peripheral name="GINT1" start="0x40003000" start_s="0x50003000" size="0x0048" access="rw" info="Group GPIO Input Interrupt 1">
+          <interrupt name="GINT1" irqn ="3" info="Group GPIO Input Interrupt 1"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00001000" privilege="p"/>
+          <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00002000" security="s"/>
+        </peripheral>
+      </group>
+      <peripheral name="GPIO" start="0x4008C000" start_s="0x5008C000" size="0x2490" access="rw" info="General Purpose I/O">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00020000" security="s"/>
+      </peripheral>
+      <peripheral name="HASH-AES" start="0x400A4000" start_s="0x500A4000" size="0x00A0" access="rw" info="HASH-AES">
+        <interrupt name="HASH" irqn ="54" info="HASH"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00020000" security="s"/>
+      </peripheral>
+      <peripheral name="INPUTMUX" start="0x40006000" start_s="0x50006000" size="0x07B4" access="rw" info="Input Multiplexing">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x01000000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x02000000" security="s"/>
+      </peripheral>
+      <peripheral name="IOCON" start="0x40001000" start_s="0x50001000" size="0x0100" access="rw" info="I/O Pin Configuration">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00000010" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00000020" security="s"/>
+      </peripheral>
+      <peripheral name="MAILBOX" start="0x4008B000" start_s="0x5008B000" size="0x00FC" access="rw" info="Inter-CPU Mailbox">
+        <interrupt name="MAILBOX" irqn ="31" info="Inter-CPU Mailbox"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00001000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_1_SLAVE_RULE" value="0x00002000" security="s"/>
+      </peripheral>
+      <peripheral name="MRT" start="0x4000D000" start_s="0x5000D000" size="0x00FC" access="rw" info="Multi-Rate Timer">
+        <interrupt name="MRT" irqn ="9" info="Multi-Rate Timer"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x00100000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x00200000" security="s"/>
+      </peripheral>
+      <peripheral name="OSEVTIMER" start="0x4002D000" start_s="0x5002D000" size="0x0020" access="rw" info="OS Event Timer">
+        <interrupt name="OSEVTIMER" irqn ="38" info="OS Event Timer"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00100000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00200000" security="s"/>
+      </peripheral>
+      <peripheral name="PINT" start="0x40004000" start_s="0x50004000" size="0x0034" access="rw" info="Pin Interrupt and Pattern Match">
+        <interrupt name="PIN_INT0" irqn ="4"  info="Pin Interrupt 0 or Pattern Match 0"/>
+        <interrupt name="PIN_INT1" irqn ="5"  info="Pin Interrupt 1 or Pattern Match 1"/>
+        <interrupt name="PIN_INT2" irqn ="6"  info="Pin Interrupt 2 or Pattern Match 2"/>
+        <interrupt name="PIN_INT3" irqn ="7"  info="Pin Interrupt 3 or Pattern Match 3"/>
+        <interrupt name="PIN_INT4" irqn ="32" info="Pin Interrupt 4 or Pattern Match 4"/>
+        <interrupt name="PIN_INT5" irqn ="33" info="Pin Interrupt 5 or Pattern Match 5"/>
+        <interrupt name="PIN_INT6" irqn ="34" info="Pin Interrupt 6 or Pattern Match 6"/>
+        <interrupt name="PIN_INT7" irqn ="35" info="Pin Interrupt 7 or Pattern Match 7"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00020000" security="s"/>
+      </peripheral>
+      <peripheral name="POWERQUAD" start="0x40150000" start_s="0x50150000" size="0x0260" access="rw" info="PowerQuad DSP Coprocessor and Accelerator">
+        <interrupt name="POWERQUAD" irqn ="57" info="PowerQuad DSP Coprocessor and Accelerator"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x01000000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x02000000" security="s"/>
+      </peripheral>
+      <peripheral name="PRINCE" start="0x40035000" start_s="0x50035000" size="0x0040" access="rw" info="PRINCE dynamic encrypt/decrypt">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL2" value="0x00100000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL2" value="0x00200000" security="s"/>
+      </peripheral>
+      <peripheral name="PLU" start="0x4003D000" start_s="0x5003D000" size="0x0C20" access="rw" info="Programmable Logic Unit">
+        <interrupt name="PLU" irqn ="52" info="Programmable Logic Unit"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3" value="0x00100000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3" value="0x00200000" security="s"/>
+      </peripheral>
+      <peripheral name="PMC" start="0x40020000" start_s="0x50020000" size="0x00CC" access="rw" info="Power Management">
+        <interrupt name="ACMP" irqn ="24" info="Analog Comparator"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL0" value="0x00000001" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL0" value="0x00000002" security="s"/>
+      </peripheral>
+      <peripheral name="PUF" start="0x4003B000" start_s="0x5003B000" size="0x0260" access="rw" info="Physical Unclonable Function">
+        <interrupt name="PUF" irqn ="56" info="Physical Unclonable Function"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3" value="0x00001000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3" value="0x00002000" security="s"/>
+      </peripheral>
+      <peripheral name="RNG" start="0x4003A000" start_s="0x5003A000" size="0x1000" access="rw" info="True Random Number Generator">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3" value="0x00000100" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3" value="0x00000200" security="s"/>
+      </peripheral>
+      <peripheral name="RTC" start="0x4002C000" start_s="0x5002C000" size="0x0060" access="rw" info="Real-Time Clock">
+        <interrupt name="RTC" irqn ="29" info="Real-Time Clock"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL1" value="0x00020000" security="s"/>
+      </peripheral>
+      <peripheral name="SCT" start="0x40085000" start_s="0x50085000" size="0x0550" access="rw" info="SCTimer/PWM">
+        <interrupt name="SCT" irqn ="12" info="SCTimer/PWM"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x00100000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x00200000" security="s"/>
+      </peripheral>
+      <peripheral name="SDMMC" start="0x4009B000" start_s="0x5009B000" size="0x1000" access="rw" info="SD/MMC">
+        <interrupt name="SDIO" irqn ="42" info="SD/MMC"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_1_SLAVE_RULE" value="0x00001000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_1_SLAVE_RULE" value="0x00002000" security="s"/>
+      </peripheral>
+      <peripheral name="SGPIO" start="0x400A8000" start_s="0x500A8000" size="0x2490" access="rw" info="Secure General Purpose I/O">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_1_SLAVE_RULE" value="0x00000001" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_1_SLAVE_RULE" value="0x00000002" security="s"/>
+      </peripheral>
+      <peripheral name="SPINT" start="0x40005000" start_s="0x50005000" size="0x0034" access="rw" info="Secure Pin Interrupt and Pattern Match">
+        <interrupt name="SGPIO_INT0_IRQ0" irqn ="50" info="Secure GPIO IRQ 0"/>
+        <interrupt name="SGPIO_INT0_IRQ1" irqn ="51" info="Secure GPIO IRQ 1"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00100000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00200000" security="s"/>
+      </peripheral>
+      <peripheral name="SPI8" start="0x4009F000" start_s="0x5009F000" size="0x1000" access="rw" info="Hi-speed SPI Interface">
+        <interrupt name="HS_SPI" irqn ="59" info="High-speed SPI"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_1_SLAVE_RULE" value="0x10000000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_1_SLAVE_RULE" value="0x20000000" security="s"/>
+      </peripheral>
+      <peripheral name="SYSCON" start="0x40000000" start_s="0x50000000" size="0x1000" access="rw" info="Syscon">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00000001" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0" value="0x00000002" security="s"/>
+      </peripheral>
+      <peripheral name="SYSCTL" start="0x40023000" start_s="0x50023000" size="0x1000" access="rw" info="Sysctl (I2S signal sharing)">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL0" value="0x00001000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL0" value="0x00002000" security="s"/>
+      </peripheral>
+      <peripheral name="USBFSD" start="0x40084000" start_s="0x50084000" size="0x0038" access="rw" info="USB0 Full-speed Device Controller">
+        <interrupt name="USB0"         irqn ="28" info="USB0 Host and Device"/>
+        <interrupt name="USB0_NEEDCLK" irqn ="27" info="USB0 Activity"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB0_0_SLAVE_RULE" value="0x00020000" security="s"/>
+      </peripheral>
+      <peripheral name="USBFSH" start="0x400A2000" start_s="0x500A2000" size="0x0060" access="rw" info="USB0 Full-speed Host Controller">
+        <interrupt name="USB0"         irqn ="28" info="USB0 Host and Device"/>
+        <interrupt name="USB0_NEEDCLK" irqn ="27" info="USB0 Activity"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00000100" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00000200" security="s"/>
+      </peripheral>
+      <peripheral name="USBHSD" start="0x40094000" start_s="0x50094000" size="0x0038" access="rw" info="USB1 High-speed Device Controller">
+        <interrupt name="USB1"         irqn ="47" info="USB1 Host and Device"/>
+        <interrupt name="USB1_NEEDCLK" irqn ="48" info="USB1 Activity"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_0_SLAVE_RULE" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB1_0_SLAVE_RULE" value="0x00020000" security="s"/>
+      </peripheral>
+      <peripheral name="USBHSH" start="0x400A3000" start_s="0x500A3000" size="0x0054" access="rw" info="USB1 High-speed Host Controller">
+        <interrupt name="USB1"         irqn ="47" info="USB1 Host and Device"/>
+        <interrupt name="USB1_NEEDCLK" irqn ="48" info="USB1 Activity"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00001000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_AHB2[0].SEC_CTRL_AHB2_0_SLAVE_RULE" value="0x00002000" security="s"/>
+      </peripheral>
+      <peripheral name="USBPHY" start="0x40038000" start_s="0x50038000" size="0x0110" access="rw" info="USB1 High-speed PHY">
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3" value="0x00000001" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE1_MEM_CTRL3" value="0x00000002" security="s"/>
+      </peripheral>
+      <peripheral name="UTICK" start="0x4000E000" start_s="0x5000E000" size="0x0020" access="rw" info="Micro-Tick Timer">
+        <interrupt name="UTICK" irqn ="8" info="Micro-Tick Timer"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x01000000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x02000000" security="s"/>
+      </peripheral>
+      <peripheral name="WWDT" start="0x4000C000" start_s="0x5000C000" size="0x001C" access="rw" info="Windowed Watchdog Timer">
+        <interrupt name="WDT" irqn ="0" info="Windowed Watchdog Timer"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x00010000" privilege="p"/>
+        <setup name="AHB_SECURE_CTRL-&gt;SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL1" value="0x00020000" security="s"/>
+      </peripheral>
+    </peripherals>
+  </resources>
+</rzone>

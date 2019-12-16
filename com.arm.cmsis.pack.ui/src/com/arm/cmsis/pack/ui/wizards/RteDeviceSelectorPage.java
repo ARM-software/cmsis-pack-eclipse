@@ -34,6 +34,9 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 	protected boolean fbShowProcessors = true;
 
 
+	/**
+	 * @wbp.parser.constructor
+	 */
 	public RteDeviceSelectorPage() {
 		this(true);
 	}

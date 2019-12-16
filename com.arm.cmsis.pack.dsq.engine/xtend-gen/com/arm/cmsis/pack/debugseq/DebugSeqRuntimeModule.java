@@ -7,9 +7,6 @@ import com.arm.cmsis.pack.debugseq.AbstractDebugSeqRuntimeModule;
 import com.arm.cmsis.pack.debugseq.converter.DebugSeqTerminalConverters;
 import com.arm.cmsis.pack.debugseq.lexer.DebugSeqLexer;
 import com.google.inject.Binder;
-import com.google.inject.binder.AnnotatedBindingBuilder;
-import com.google.inject.binder.LinkedBindingBuilder;
-import com.google.inject.name.Named;
 import com.google.inject.name.Names;
 import org.eclipse.xtext.conversion.IValueConverterService;
 import org.eclipse.xtext.parser.antlr.Lexer;
@@ -27,9 +24,6 @@ public class DebugSeqRuntimeModule extends AbstractDebugSeqRuntimeModule {
   
   @Override
   public void configureRuntimeLexer(final Binder binder) {
-    AnnotatedBindingBuilder<Lexer> _bind = binder.<Lexer>bind(Lexer.class);
-    Named _named = Names.named(LexerBindings.RUNTIME);
-    LinkedBindingBuilder<Lexer> _annotatedWith = _bind.annotatedWith(_named);
-    _annotatedWith.to(DebugSeqLexer.class);
+    binder.<Lexer>bind(Lexer.class).annotatedWith(Names.named(LexerBindings.RUNTIME)).to(DebugSeqLexer.class);
   }
 }

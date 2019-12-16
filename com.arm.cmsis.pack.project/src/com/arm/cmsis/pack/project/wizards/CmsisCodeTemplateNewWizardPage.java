@@ -301,8 +301,7 @@ public class CmsisCodeTemplateNewWizardPage extends WizardPage {
 				}
 			} else if (obj instanceof IAdaptable) {
 				IAdaptable adaptable = (IAdaptable) obj;
-				@SuppressWarnings("cast")
-				IResource res = (IResource) adaptable.getAdapter(IResource.class);
+				IResource res = adaptable.getAdapter(IResource.class);
 				if (res == null) {
 					return;
 				}

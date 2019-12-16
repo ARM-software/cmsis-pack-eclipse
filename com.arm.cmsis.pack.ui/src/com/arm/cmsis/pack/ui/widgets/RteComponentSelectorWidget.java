@@ -921,6 +921,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 			manager.add(new Separator());
 	}
 	
+	@Override
 	protected void fillContextMenu(IMenuManager manager) {
 		addGeneratorActions(manager);
 		manager.add(expandAllSelected);
@@ -928,8 +929,9 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 		manager.add(collapseAll);
 	}
 	
+	@Override
 	public boolean isExpandAllSelectedSupported() {
-		return true; // default does not support it 
+		return true; 
 	}
 
 	
@@ -954,6 +956,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 		}
 	}
 
+	@Override
 	protected void makeActions() {
 		super.makeActions();
 		

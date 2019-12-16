@@ -12,8 +12,11 @@
 package com.arm.cmsis.pack.project;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IProjectNature;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 
 /**
  * Base class for CMSIS and RTE project natures 
@@ -68,6 +71,35 @@ public class CmsisProjectNature implements IProjectNature {
 		}
 		return false;
 	}
+	
+	// Copied from CProjectNature.addNature
+    public static void addNature(IProject project, String natureId, IProgressMonitor monitor) {
+        if (monitor == null) {
+            monitor = new NullProgressMonitor();
+        }
+        try {
+            IProjectDescription description = project.getDescription();
+            String[] prevNatures = description.getNatureIds();
+            for (String prevNature : prevNatures) {
+                if (natureId.equals(prevNature)) {
+                    return;
+                }
+            }
+            String[] newNatures = new String[prevNatures.length + 1];
+            System.arraycopy(prevNatures, 0, newNatures, 0, prevNatures.length);
+            newNatures[prevNatures.length] = natureId;
+            description.setNatureIds(newNatures);
+            project.setDescription(description, monitor);
+        }
+
+        catch (CoreException e) {
+        }
+
+        finally {
+            monitor.done();
+        }
+    }
+	
 
 	public boolean hasNature(IProject project){
 		return hasNature(project, natureID);

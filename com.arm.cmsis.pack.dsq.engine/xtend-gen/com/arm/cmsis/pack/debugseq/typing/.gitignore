@@ -1,15 +1,5 @@
 /.BoolType.java._trace
-/.BoolType.xtendbin
-/.IntType.java._trace
-/.IntType.xtendbin
-/.StringType.java._trace
-/.StringType.xtendbin
 /.DebugSeqType.java._trace
-/.DebugSeqType.xtendbin
 /.DebugSeqTypeProvider.java._trace
-/.DebugSeqTypeProvider.xtendbin
-/BoolType.java
-/DebugSeqType.java
-/DebugSeqTypeProvider.java
-/IntType.java
-/StringType.java
+/.IntType.java._trace
+/.StringType.java._trace

@@ -11,11 +11,30 @@
 
 package com.arm.cmsis.pack.item;
 
+import java.util.Collection;
+
 import com.arm.cmsis.pack.generic.ITreeItem;
 
 /**
  * Base interface for CMSIS homogeneous generic tree items 
  */
 public interface ICmsisTreeItem<T extends ITreeItem<T> & ICmsisItem> extends ITreeItem<T> , ICmsisItem  {
-
+	/**
+	 * Searches child collection for the first item corresponding to the given tag
+	 * @param tag item tag to search for 
+	 * @return child item if found, null otherwise
+	 * @see #getFirstChild(String) 
+	 */
+	default T getFirstChildByTag(final String tag) {
+		if(tag == null || tag.isEmpty())
+			return null;
+		Collection<? extends T> children = getChildren();
+		 if(children == null)
+			 return null;
+		 for(T child : children ) {
+			 if(child.getTag().equals(tag))
+				 return child;
+		 }
+		 return null;
+	}
 }

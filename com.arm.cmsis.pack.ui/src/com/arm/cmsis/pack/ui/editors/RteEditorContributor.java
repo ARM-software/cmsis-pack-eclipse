@@ -11,7 +11,7 @@
 *******************************************************************************/
 package com.arm.cmsis.pack.ui.editors;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.actions.ActionFactory;
@@ -48,6 +48,7 @@ public class RteEditorContributor extends MultiPageEditorActionBarContributor {
 		super.setActiveEditor(part);
 	}
 
+	@Override
 	public void setActivePage(IEditorPart part) {
 		if (activeEditorPart == part)
 			return;

@@ -12,16 +12,6 @@
       </runtime>
    </extension>
    <extension
-         id="CmsisZoneMasterProjectNature"
-         name="%CmsisZoneMasterProjectNature"
-         point="org.eclipse.core.resources.natures">
-      <runtime>
-         <run
-               class="com.arm.cmsis.pack.project.CmsisZoneMasterProjectNature">
-         </run>
-      </runtime>
-   </extension>
-   <extension
          point="org.eclipse.cdt.core.templates">
       <template
             id="com.arm.cmsis.pack.project.template"
@@ -330,18 +320,6 @@
                class="org.eclipse.core.resources.IResource">
          </selection>
       </wizard>
-      <category
-            id="com.arm.cmsis.pack.project.category.CMSIS"
-            name="CMSIS">
-      </category>
-   </extension>
-   <extension
-         point="org.eclipse.ui.ide.projectNatureImages">
-      <image
-            icon="icons/rte_ovr.gif"
-            id="com.arm.cmsis.pack.project.image.rte_ovr"
-            natureId="com.arm.cmsis.pack.project.CmsisZoneMasterProjectNature">
-      </image>
    </extension>
    <extension
          id="headlessbuild"

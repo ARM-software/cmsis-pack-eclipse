@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: com.arm.cmsis.pack.project;singleton:=true
-Bundle-Version: 2.4.2.qualifier
+Bundle-Version: 2.5.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.project.CpProjectPlugIn
 Bundle-Vendor: %Bundle-Vendor
 Require-Bundle: org.eclipse.core.runtime,
@@ -33,4 +33,6 @@ Export-Package: com.arm.cmsis.pack.configuration,
  com.arm.cmsis.pack.project.importer,
  com.arm.cmsis.pack.project.template,
  com.arm.cmsis.pack.project.ui,
- com.arm.cmsis.pack.project.utils
+ com.arm.cmsis.pack.project.ui.handlers,
+ com.arm.cmsis.pack.project.utils,
+ com.arm.cmsis.pack.project.wizards

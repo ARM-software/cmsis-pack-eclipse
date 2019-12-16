@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: CMSIS Zone framework
+Bundle-SymbolicName: com.arm.cmsis.zone
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: com.arm.cmsis.pack.common;bundle-version="2.5.0",
+ com.arm.cmsis.pack.data;bundle-version="2.5.0"
+Export-Package: com.arm.cmsis.zone.data,
+ com.arm.cmsis.zone.error,
+ com.arm.cmsis.zone.model,
+ com.arm.cmsis.zone.parser,
+ com.arm.cmsis.zone.svd
+Bundle-Vendor: ARM

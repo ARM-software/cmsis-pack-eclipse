@@ -79,9 +79,7 @@ public class BuildSettings extends Attributes implements IBuildSettings {
 		if(value != null) {
 			merged.addAll(value);
 		}
-		if(parentValue != null) {
-			merged.addAll(parentValue);
-		}
+		merged.addAll(parentValue);
 		if(removeValue != null) {
 			merged.removeAll(removeValue);
 		}

@@ -24,7 +24,7 @@ public class HEXValueConverter extends AbstractLexerBasedConverter<Long> {
     StringConcatenation _builder = new StringConcatenation();
     _builder.append("0x");
     String _string = value.toString();
-    _builder.append(_string, "");
+    _builder.append(_string);
     return _builder.toString();
   }
   
@@ -34,9 +34,9 @@ public class HEXValueConverter extends AbstractLexerBasedConverter<Long> {
     if (((value).longValue() < 0)) {
       StringConcatenation _builder = new StringConcatenation();
       String _ruleName = this.getRuleName();
-      _builder.append(_ruleName, "");
+      _builder.append(_ruleName);
       _builder.append("-value may not be negative (value: ");
-      _builder.append(value, "");
+      _builder.append(value);
       _builder.append(").");
       throw new ValueConverterException(_builder.toString(), 
         null, null);
@@ -50,15 +50,14 @@ public class HEXValueConverter extends AbstractLexerBasedConverter<Long> {
       throw new ValueConverterException("Couldn\'t convert empty string to an hex value.", node, null);
     }
     try {
-      String _substring = string.substring(2);
-      long longValue = Long.parseUnsignedLong(_substring, 16);
+      long longValue = Long.parseUnsignedLong(string.substring(2), 16);
       return Long.valueOf(longValue);
     } catch (final Throwable _t) {
       if (_t instanceof NumberFormatException) {
         final NumberFormatException e = (NumberFormatException)_t;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Couldn\'t convert \'");
-        _builder.append(string, "");
+        _builder.append(string);
         _builder.append("\' to an hex value.");
         throw new ValueConverterException(_builder.toString(), node, e);
       } else {

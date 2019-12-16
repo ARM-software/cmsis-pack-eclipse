@@ -1,0 +1,717 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<rzone xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.2.0" xs:noNamespaceSchemaLocation="rzone.xsd">
+  <device Dname="STM32L552ZETxQ" Dvendor="STMicroelectronics:13" info="ARM , 384 KB RAM, 1 MB ROM">
+    <package info="STMicroelectronics STM32L5 Series Device Support" name="STM32L5xx_DFP" url="http://www.keil.com/pack" vendor="Keil" version="1.0.9-dev4"/>
+    <processor Dclock="110000000" Dcore="Cortex-M33" DcoreVersion="r0p0" Ddsp="DSP" Dendian="Little-endian" Dfpu="SP_FPU" Dmpu="MPU" Dtz="TZ" DnumInterrupts="128"  DnumSauRegions="8"/>
+  </device>
+  <resources>
+    <sau_init>
+      <region start="0x40000000" size="0x10000000" security="n" info="Non-Secure Peripherals"/>
+    </sau_init>
+    <memories>
+      <memory access="rx" name="Flash_NS" security="n" size="0x00080000" start="0x08000000" type="ROM"/>
+      <memory access="rx" name="Flash_S" physical="0x08000000" security="c" size="0x00080000" start="0x0C000000" type="ROM"/>
+      <memory access="rwx" name="SRAM_NS" security="n" size="0x00040000" start="0x20000000" type="RAM"/>
+      <memory access="rwx" name="SRAM_S" physical="0x20000000" security="c" size="0x00040000" start="0x30000000" type="RAM"/>
+      <mpc blk_size="0x100" info="SRAM1" name="GTZC_MPCBB1_S" size="0x00030000" start="0x20000000" type="s"/>
+      <mpc blk_size="0x100" info="SRAM2" name="GTZC_MPCBB2_S" size="0x00010000" start="0x20030000" type="s"/>
+    </memories>
+    <peripherals>
+      <group name="ADC">
+        <peripheral access="prw" info="Analog-to-Digital Converter" name="ADC" size="0x400" start="0x42028000" start_s="0x52028000">
+          <interrupt info="ADC1_2 global interrupt" irqn="037" name="ADC1_2"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00000800"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00000800"/>
+        </peripheral>
+        <peripheral access="prw" info="Comparator" name="COMP" size="0x200" start="0x40010200" start_s="0x50010200">
+          <interrupt info="COMP1 and COMP2 interrupts" irqn="072" name="COMP"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x20000000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x20000000"/>
+        </peripheral>
+        <peripheral access="prw" info="Digital filter for sigma delta modulators" name="DFSDM1" size="0x800" start="0x40016000" start_s="0x50016000">
+          <interrupt info="DFSDM1_FLT0 global interrupt" irqn="102" name="DFSDM1_FLT0"/>
+          <interrupt info="DFSDM1_FLT1 global interrupt" irqn="103" name="DFSDM1_FLT1"/>
+          <interrupt info="DFSDM1_FLT2 global interrupt" irqn="104" name="DFSDM1_FLT2"/>
+          <interrupt info="DFSDM1_FLT3 global interrupt" irqn="105" name="DFSDM1_FLT3"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000080"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000080"/>
+        </peripheral>
+      </group>
+      <group info="Direct memory access controller" name="DMA">
+        <peripheral access="prw" info="DMA1 Controller 1" name="DMA1" size="0x400" slot_name="Channels" slot_type="sp" start="0x40020000" start_s="0x50020000">
+          <slot name="Channel 1" secure="1">
+            <interrupt info="DMA1 Channel 1 global interrupt" irqn="029" name="DMA1_Channel1"/>
+            <setup name="DMA1_Channel1_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA1_Channel1_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 2" secure="1">
+            <interrupt info="DMA1 Channel 2 global interrupt" irqn="030" name="DMA1_Channel2"/>
+            <setup name="DMA1_Channel2_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA1_Channel2_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 3" secure="1">
+            <interrupt info="DMA1 Channel 3 interrupt" irqn="031" name="DMA1_Channel3"/>
+            <setup name="DMA1_Channel3_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA1_Channel3_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 4" secure="1">
+            <interrupt info="DMA1 Channel 4 interrupt" irqn="032" name="DMA1_Channel4"/>
+            <setup name="DMA1_Channel4_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA1_Channel4_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 5" secure="1">
+            <interrupt info="DMA1 Channel 5 interrupt" irqn="033" name="DMA1_Channel5"/>
+            <setup name="DMA1_Channel5_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA1_Channel5_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 6" secure="1">
+            <interrupt info="DMA1 Channel 6 interrupt" irqn="034" name="DMA1_Channel6"/>
+            <setup name="DMA1_Channel6_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA1_Channel6_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 7" secure="1">
+            <interrupt info="DMA1 Channel 7 interrupt" irqn="035" name="DMA1_Channel7"/>
+            <setup name="DMA1_Channel7_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA1_Channel7_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 8" secure="1">
+            <interrupt info="DMA1_Channel 8" irqn="036" name="DMA1_Channel8"/>
+            <setup name="DMA1_Channel8_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA1_Channel8_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+        </peripheral>
+        <peripheral access="prw" info="DMA2 Controller 1" name="DMA2" size="0x400" slot_name="Channels" slot_type="sp" start="0x40020400" start_s="0x50020400">
+          <slot name="Channel 1" secure="1">
+            <interrupt info="DMA2_CH1" irqn="080" name="DMA2_CH1"/>
+            <setup name="DMA2_Channel1_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA2_Channel1_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 2" secure="1">
+            <interrupt info="DMA2_CH2" irqn="081" name="DMA2_CH2"/>
+            <setup name="DMA2_Channel2_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA2_Channel2_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 3" secure="1">
+            <interrupt info="DMA2_CH3" irqn="082" name="DMA2_CH3"/>
+            <setup name="DMA2_Channel3_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA2_Channel3_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 4" secure="1">
+            <interrupt info="DMA2_CH4" irqn="083" name="DMA2_CH4"/>
+            <setup name="DMA2_Channel4_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA2_Channel4_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 5" secure="1">
+            <interrupt info="DMA2_CH5" irqn="084" name="DMA2_CH5"/>
+            <setup name="DMA2_Channel5_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA2_Channel5_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 6" secure="1">
+            <interrupt info="DMA2_CH6" irqn="085" name="DMA2_CH6"/>
+            <setup name="DMA2_Channel6_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA2_Channel6_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 7" secure="1">
+            <interrupt info="DMA2_CH7" irqn="086" name="DMA2_CH7"/>
+            <setup name="DMA2_Channel7_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA2_Channel7_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+          <slot name="Channel 8" secure="1">
+            <interrupt info="DMA2_CH8" irqn="087" name="DMA2_CH8"/>
+            <setup name="DMA2_Channel8_S-&gt;CCR" security="s" value="0x00020000"/>
+            <setup name="DMA2_Channel8_S-&gt;CCR" privilege="p" value="0x00100000"/>
+          </slot>
+        </peripheral>
+      </group>
+      <peripheral access="prw" info="CAN / CAN FD" name="FDCAN1" size="0xC00" start="0x4000A400" start_s="0x5000A400">
+        <interrupt info="FDCAN1 Interrupt 0" irqn="039" name="FDCAN1_IT0"/>
+        <interrupt info="FDCAN1 Interrupt 1" irqn="040" name="FDCAN1_IT1"/>
+        <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x02000000"/>
+        <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x02000000"/>
+      </peripheral>
+      <group info="General-purpose I/O Ports" name="GPIO">
+        <peripheral access="prw" info="Port A" name="GPIOA" size="0x400" slot_name="Pins" slot_type="s" start="0x42020000" start_s="0x52020000">
+          <slot name="Pin 0" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000001"/>
+          </slot>
+          <slot name="Pin 1" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000002"/>
+          </slot>
+          <slot name="Pin 2" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000004"/>
+          </slot>
+          <slot name="Pin 3" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000008"/>
+          </slot>
+          <slot name="Pin 4" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000010"/>
+          </slot>
+          <slot name="Pin 5" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000020"/>
+          </slot>
+          <slot name="Pin 6" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000040"/>
+          </slot>
+          <slot name="Pin 7" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000080"/>
+          </slot>
+          <slot name="Pin 8" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000100"/>
+          </slot>
+          <slot name="Pin 9" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000200"/>
+          </slot>
+          <slot name="Pin 10" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000400"/>
+          </slot>
+          <slot name="Pin 11" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00000800"/>
+          </slot>
+          <slot name="Pin 12" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00001000"/>
+          </slot>
+          <slot name="Pin 13" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00002000"/>
+          </slot>
+          <slot name="Pin 14" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00004000"/>
+          </slot>
+          <slot name="Pin 15" secure="1">
+            <setup name="GPIOA_S-&gt;SECCFGR" security="s" value="0x00008000"/>
+          </slot>
+        </peripheral>
+        <peripheral access="prw" info="Port B" name="GPIOB" size="0x400" slot_name="Pins" slot_type="s" start="0x42020400" start_s="0x52020400">
+          <slot name="Pin 0" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000001"/>
+          </slot>
+          <slot name="Pin 1" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000002"/>
+          </slot>
+          <slot name="Pin 2" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000004"/>
+          </slot>
+          <slot name="Pin 3" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000008"/>
+          </slot>
+          <slot name="Pin 4" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000010"/>
+          </slot>
+          <slot name="Pin 5" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000020"/>
+          </slot>
+          <slot name="Pin 6" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000040"/>
+          </slot>
+          <slot name="Pin 7" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000080"/>
+          </slot>
+          <slot name="Pin 8" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000100"/>
+          </slot>
+          <slot name="Pin 9" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000200"/>
+          </slot>
+          <slot name="Pin 10" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000400"/>
+          </slot>
+          <slot name="Pin 11" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00000800"/>
+          </slot>
+          <slot name="Pin 12" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00001000"/>
+          </slot>
+          <slot name="Pin 13" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00002000"/>
+          </slot>
+          <slot name="Pin 14" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00004000"/>
+          </slot>
+          <slot name="Pin 15" secure="1">
+            <setup name="GPIOB_S-&gt;SECCFGR" security="s" value="0x00008000"/>
+          </slot>
+        </peripheral>
+        <peripheral access="prw" info="Port C" name="GPIOC" size="0x400" slot_name="Pins" slot_type="s" start="0x42020800" start_s="0x52020800">
+          <slot name="Pin 0" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000001"/>
+          </slot>
+          <slot name="Pin 1" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000002"/>
+          </slot>
+          <slot name="Pin 2" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000004"/>
+          </slot>
+          <slot name="Pin 3" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000008"/>
+          </slot>
+          <slot name="Pin 4" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000010"/>
+          </slot>
+          <slot name="Pin 5" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000020"/>
+          </slot>
+          <slot name="Pin 6" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000040"/>
+          </slot>
+          <slot name="Pin 7" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000080"/>
+          </slot>
+          <slot name="Pin 8" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000100"/>
+          </slot>
+          <slot name="Pin 9" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000200"/>
+          </slot>
+          <slot name="Pin 10" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000400"/>
+          </slot>
+          <slot name="Pin 11" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00000800"/>
+          </slot>
+          <slot name="Pin 12" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00001000"/>
+          </slot>
+          <slot name="Pin 13" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00002000"/>
+          </slot>
+          <slot name="Pin 14" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00004000"/>
+          </slot>
+          <slot name="Pin 15" secure="1">
+            <setup name="GPIOC_S-&gt;SECCFGR" security="s" value="0x00008000"/>
+          </slot>
+        </peripheral>
+        <peripheral access="prw" info="Port D" name="GPIOD" size="0x400" slot_name="Pins" slot_type="s" start="0x42020C00" start_s="0x52020C00">
+          <slot name="Pin 0" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000001"/>
+          </slot>
+          <slot name="Pin 1" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000002"/>
+          </slot>
+          <slot name="Pin 2" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000004"/>
+          </slot>
+          <slot name="Pin 3" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000008"/>
+          </slot>
+          <slot name="Pin 4" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000010"/>
+          </slot>
+          <slot name="Pin 5" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000020"/>
+          </slot>
+          <slot name="Pin 6" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000040"/>
+          </slot>
+          <slot name="Pin 7" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000080"/>
+          </slot>
+          <slot name="Pin 8" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000100"/>
+          </slot>
+          <slot name="Pin 9" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000200"/>
+          </slot>
+          <slot name="Pin 10" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000400"/>
+          </slot>
+          <slot name="Pin 11" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00000800"/>
+          </slot>
+          <slot name="Pin 12" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00001000"/>
+          </slot>
+          <slot name="Pin 13" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00002000"/>
+          </slot>
+          <slot name="Pin 14" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00004000"/>
+          </slot>
+          <slot name="Pin 15" secure="1">
+            <setup name="GPIOD_S-&gt;SECCFGR" security="s" value="0x00008000"/>
+          </slot>
+        </peripheral>
+        <peripheral access="prw" info="Port E" name="GPIOE" size="0x400" slot_name="Pins" slot_type="s" start="0x42021000" start_s="0x52021000">
+          <slot name="Pin 0" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000001"/>
+          </slot>
+          <slot name="Pin 1" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000002"/>
+          </slot>
+          <slot name="Pin 2" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000004"/>
+          </slot>
+          <slot name="Pin 3" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000008"/>
+          </slot>
+          <slot name="Pin 4" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000010"/>
+          </slot>
+          <slot name="Pin 5" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000020"/>
+          </slot>
+          <slot name="Pin 6" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000040"/>
+          </slot>
+          <slot name="Pin 7" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000080"/>
+          </slot>
+          <slot name="Pin 8" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000100"/>
+          </slot>
+          <slot name="Pin 9" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000200"/>
+          </slot>
+          <slot name="Pin 10" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000400"/>
+          </slot>
+          <slot name="Pin 11" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00000800"/>
+          </slot>
+          <slot name="Pin 12" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00001000"/>
+          </slot>
+          <slot name="Pin 13" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00002000"/>
+          </slot>
+          <slot name="Pin 14" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00004000"/>
+          </slot>
+          <slot name="Pin 15" secure="1">
+            <setup name="GPIOE_S-&gt;SECCFGR" security="s" value="0x00008000"/>
+          </slot>
+        </peripheral>
+        <peripheral access="prw" info="Port F" name="GPIOF" size="0x400" slot_name="Pins" slot_type="s" start="0x42021400" start_s="0x52021400">
+          <slot name="Pin 0" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000001"/>
+          </slot>
+          <slot name="Pin 1" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000002"/>
+          </slot>
+          <slot name="Pin 2" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000004"/>
+          </slot>
+          <slot name="Pin 3" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000008"/>
+          </slot>
+          <slot name="Pin 4" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000010"/>
+          </slot>
+          <slot name="Pin 5" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000020"/>
+          </slot>
+          <slot name="Pin 6" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000040"/>
+          </slot>
+          <slot name="Pin 7" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000080"/>
+          </slot>
+          <slot name="Pin 8" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000100"/>
+          </slot>
+          <slot name="Pin 9" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000200"/>
+          </slot>
+          <slot name="Pin 10" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000400"/>
+          </slot>
+          <slot name="Pin 11" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00000800"/>
+          </slot>
+          <slot name="Pin 12" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00001000"/>
+          </slot>
+          <slot name="Pin 13" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00002000"/>
+          </slot>
+          <slot name="Pin 14" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00004000"/>
+          </slot>
+          <slot name="Pin 15" secure="1">
+            <setup name="GPIOF_S-&gt;SECCFGR" security="s" value="0x00008000"/>
+          </slot>
+        </peripheral>
+        <peripheral access="prw" info="Port G" name="GPIOG" size="0x400" slot_name="Pins" slot_type="s" start="0x42021800" start_s="0x52021800">
+          <slot name="Pin 0" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000001"/>
+          </slot>
+          <slot name="Pin 1" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000002"/>
+          </slot>
+          <slot name="Pin 2" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000004"/>
+          </slot>
+          <slot name="Pin 3" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000008"/>
+          </slot>
+          <slot name="Pin 4" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000010"/>
+          </slot>
+          <slot name="Pin 5" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000020"/>
+          </slot>
+          <slot name="Pin 6" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000040"/>
+          </slot>
+          <slot name="Pin 7" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000080"/>
+          </slot>
+          <slot name="Pin 8" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000100"/>
+          </slot>
+          <slot name="Pin 9" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000200"/>
+          </slot>
+          <slot name="Pin 10" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000400"/>
+          </slot>
+          <slot name="Pin 11" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00000800"/>
+          </slot>
+          <slot name="Pin 12" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00001000"/>
+          </slot>
+          <slot name="Pin 13" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00002000"/>
+          </slot>
+          <slot name="Pin 14" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00004000"/>
+          </slot>
+          <slot name="Pin 15" secure="1">
+            <setup name="GPIOG_S-&gt;SECCFGR" security="s" value="0x00008000"/>
+          </slot>
+        </peripheral>
+        <peripheral access="prw" info="Port H" name="GPIOH" size="0x400" slot_name="Pins" slot_type="s" start="0x42021C00" start_s="0x52021C00">
+          <slot name="Pin 0" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000001"/>
+          </slot>
+          <slot name="Pin 1" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000002"/>
+          </slot>
+          <slot name="Pin 2" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000004"/>
+          </slot>
+          <slot name="Pin 3" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000008"/>
+          </slot>
+          <slot name="Pin 4" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000010"/>
+          </slot>
+          <slot name="Pin 5" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000020"/>
+          </slot>
+          <slot name="Pin 6" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000040"/>
+          </slot>
+          <slot name="Pin 7" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000080"/>
+          </slot>
+          <slot name="Pin 8" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000100"/>
+          </slot>
+          <slot name="Pin 9" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000200"/>
+          </slot>
+          <slot name="Pin 10" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000400"/>
+          </slot>
+          <slot name="Pin 11" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00000800"/>
+          </slot>
+          <slot name="Pin 12" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00001000"/>
+          </slot>
+          <slot name="Pin 13" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00002000"/>
+          </slot>
+          <slot name="Pin 14" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00004000"/>
+          </slot>
+          <slot name="Pin 15" secure="1">
+            <setup name="GPIOH_S-&gt;SECCFGR" security="s" value="0x00008000"/>
+          </slot>
+        </peripheral>
+      </group>
+      <group name="I2C">
+        <peripheral access="prw" info="Inter-integrated circuit" name="I2C1" size="0x400" start="0x40005400" start_s="0x50005400">
+          <interrupt info="I2C1 error interrupt" irqn="056" name="I2C1_ER"/>
+          <interrupt info="I2C1 event interrupt" irqn="055" name="I2C1_EV"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00004000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00004000"/>
+        </peripheral>
+        <peripheral access="prw" name="I2C2" size="0x400" start="0x40005800" start_s="0x50005800">
+          <interrupt info="I2C2 error interrupt" irqn="058" name="I2C2_ER"/>
+          <interrupt info="I2C2 event interrupt" irqn="057" name="I2C2_EV"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00008000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00008000"/>
+        </peripheral>
+        <peripheral access="prw" name="I2C3" size="0x400" start="0x40005C00" start_s="0x50005C00">
+          <interrupt info="I2C3 error interrupt" irqn="089" name="I2C3_ER"/>
+          <interrupt info="I2C3 event interrupt" irqn="088" name="I2C3_EV"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00010000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00010000"/>
+        </peripheral>
+        <peripheral access="prw" name="I2C4" size="0x400" start="0x40008400" start_s="0x50008400">
+          <interrupt info="I2C4 error interrupt" irqn="100" name="I2C4_ER"/>
+          <interrupt info="I2C4 event interrupt" irqn="101" name="I2C4_EV"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00400000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00400000"/>
+        </peripheral>
+      </group>
+      <group name="LPTIM">
+        <peripheral access="prw" info="Low power timer" name="LPTIM1" size="0x400" start="0x40007C00" start_s="0x50007C00">
+          <interrupt info="LP TIM1 interrupt" irqn="067" name="LPTIM1"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00100000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00100000"/>
+        </peripheral>
+        <peripheral access="prw" name="LPTIM3" size="0x400" start="0x40009400" start_s="0x50009400">
+          <interrupt info="LP TIM2 interrupt" irqn="068" name="LPTIM2"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00800000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00800000"/>
+        </peripheral>
+        <peripheral access="prw" name="LPTIM3" size="0x400" start="0x40009800" start_s="0x50009800">
+          <interrupt info="LP TIM3 interrupt" irqn="098" name="LPTIM3"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x01000000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x01000000"/>
+        </peripheral>
+      </group>
+      <group name="OctoSPI">
+        <peripheral access="prw" info="OctoSPI" name="OCTOSPI1" size="0x400" start="0x44021000" start_s="0x54021000">
+          <interrupt info="OCTOSPI1 global interrupt" irqn="076" name="OCTOSPI1"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00040000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00040000"/>
+        </peripheral>
+      </group>
+      <group name="SAI">
+        <peripheral access="prw" info="Serial audio interface 1" name="SAI1" size="0x400" start="0x40015400" start_s="0x50015400">
+          <interrupt info="SAI1 global interrupt" irqn="090" name="SAI1"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00000020"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00000020"/>
+        </peripheral>
+        <peripheral access="prw" info="Serial audio interface 2" name="SAI2" size="0x400" start="0x40015800" start_s="0x50015800">
+          <interrupt info="SAI2 global interrupt" irqn="091" name="SAI2"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00000040"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00000040"/>
+        </peripheral>
+      </group>
+      <group name="SPI">
+        <peripheral access="prw" info="Serial peripheral interface" name="SPI1" size="0x400" start="0x40013000" start_s="0x50013000">
+          <interrupt info="SPI1 global interrupt" irqn="059" name="SPI1"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x80000000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x80000000"/>
+        </peripheral>
+        <peripheral access="prw" name="SPI2" size="0x400" start="0x40003800" start_s="0x50003800">
+          <interrupt info="SPI2 global interrupt" irqn="060" name="SPI2"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000100"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000100"/>
+        </peripheral>
+        <peripheral access="prw" name="SPI3" size="0x400" start="0x40003C00" start_s="0x50003C00">
+          <interrupt info="SPI3" irqn="099" name="SPI3"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000200"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000200"/>
+        </peripheral>
+      </group>
+      <group name="TIM">
+        <peripheral access="prw" info="Advanced-timers" name="TIM1" size="0x400" start="0x40012C00" start_s="0x50012C00">
+          <interrupt info="TIM1 Break" irqn="041" name="TIM1_BRK"/>
+          <interrupt info="TIM1 Capture Compare interrupt" irqn="044" name="TIM1_CC"/>
+          <interrupt info="TIM1 Trigger and Commutation" irqn="043" name="TIM1_TRG_COM"/>
+          <interrupt info="TIM1 Update" irqn="042" name="TIM1_UP"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x40000000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x40000000"/>
+        </peripheral>
+        <peripheral access="prw" info="General-purpose-timers" name="TIM2" size="0x400" start="0x40000000" start_s="0x50000000">
+          <interrupt info="TIM2 global interrupt" irqn="045" name="TIM2"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000001"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000001"/>
+        </peripheral>
+        <peripheral access="prw" info="General-purpose-timers" name="TIM3" size="0x400" start="0x40000400" start_s="0x50000400">
+          <interrupt info="TIM3 global interrupt" irqn="046" name="TIM3"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000002"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000002"/>
+        </peripheral>
+        <peripheral access="prw" info="General-purpose-timers" name="TIM4" size="0x400" start="0x40000800" start_s="0x50000800">
+          <interrupt info="TIM4 global interrupt" irqn="047" name="TIM4"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000004"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000004"/>
+        </peripheral>
+        <peripheral access="prw" name="TIM5" size="0x400" start="0x40000C00" start_s="0x50000C00">
+          <interrupt info="TIM5 global interrupt" irqn="048" name="TIM5"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000008"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000008"/>
+        </peripheral>
+        <peripheral access="prw" name="TIM6" size="0x400" start="0x40001000" start_s="0x50001000">
+          <interrupt info="TIM6 global interrupt" irqn="049" name="TIM6"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000010"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000010"/>
+        </peripheral>
+        <peripheral access="prw" name="TIM7" size="0x400" start="0x40001400" start_s="0x50001400">
+          <interrupt info="TIM7 global interrupt" irqn="050" name="TIM7"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000020"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000020"/>
+        </peripheral>
+        <peripheral access="prw" info="Advanced-timers" name="TIM8" size="0x400" start="0x40013400" start_s="0x50013400">
+          <interrupt info="TIM8 Break Interrupt" irqn="051" name="TIM8_BRK"/>
+          <interrupt info="TIM8 Capture Compare Interrupt" irqn="054" name="TIM8_CC"/>
+          <interrupt info="TIM8 Trigger and Commutation Interrupt" irqn="053" name="TIM8_TRG_COM"/>
+          <interrupt info="TIM8 Update Interrupt" irqn="052" name="TIM8_UP"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00000001"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00000001"/>
+        </peripheral>
+        <peripheral access="prw" info="General purpose timers" name="TIM15" size="0x400" start="0x40014000" start_s="0x50014000">
+          <interrupt info="TIM15 global interrupt" irqn="069" name="TIM15"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00000004"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00000004"/>
+        </peripheral>
+        <peripheral access="prw" info="General purpose timers" name="TIM16" size="0x400" start="0x40014400" start_s="0x50014400">
+          <interrupt info="TIM16 global interrupt" irqn="070" name="TIM16"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00000008"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00000008"/>
+        </peripheral>
+        <peripheral access="prw" info="General purpose timers" name="TIM17" size="0x400" start="0x40014800" start_s="0x50014800">
+          <interrupt info="TIM17 global interrupt" irqn="071" name="TIM17"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00000010"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00000010"/>
+        </peripheral>
+      </group>
+      <group name="UCPD">
+        <peripheral access="prw" info="USB Power Delivery interface" name="UCPD1" size="0x400" start="0x4000DC00" start_s="0x5000DC00">
+          <interrupt info="UCPD global interrupt" irqn="106" name="UCPD1"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x08000000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x08000000"/>
+        </peripheral>
+      </group>
+      <group name="USART">
+        <peripheral access="prw" info="Universal synchronous asynchronous receiver transmitter" name="LPUART1" size="0x400" start="0x40008000" start_s="0x50008000">
+          <interrupt info="LPUART1 global interrupt" irqn="066" name="LPUART1"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00200000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00200000"/>
+        </peripheral>
+        <peripheral access="prw"  info="Universal synchronous asynchronous receiver transmitter" name="USART1" size="0x400" start="0x40013800" start_s="0x50013800">
+          <interrupt info="USART1 global interrupt" irqn="061" name="USART1"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR2" security="s" value="0x00000002"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR2" privilege="p" value="0x00000002"/>
+        </peripheral>
+        <peripheral access="prw" name="USART2" size="0x400" start="0x40004400" start_s="0x50004400">
+          <interrupt info="USART2 global interrupt" irqn="062" name="USART2"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000400"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000400"/>
+        </peripheral>
+        <peripheral access="prw" name="USART3" size="0x400" start="0x40004800" start_s="0x50004800">
+          <interrupt info="USART3 global interrupt" irqn="063" name="USART3"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00000800"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00000800"/>
+        </peripheral>
+        <peripheral access="prw" name="UART4" size="0x400" start="0x40004C00" start_s="0x50004C00">
+          <interrupt info="UART4 global interrupt" irqn="064" name="UART4"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00001000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00001000"/>
+        </peripheral>
+        <peripheral access="prw" name="UART5" size="0x400" start="0x40005000" start_s="0x50005000">
+          <interrupt info="UART5 global interrupt" irqn="065" name="UART5"/>
+          <setup name="GTZC_TZSC-&gt;SECCFGR1" security="s" value="0x00002000"/>
+          <setup name="GTZC_TZSC-&gt;PRIVCFGR1" privilege="p" value="0x00002000"/>
+        </peripheral>
+      </group>
+    </peripherals>
+  </resources>
+</rzone>

@@ -21,9 +21,15 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IWorkspaceRoot;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.preferences.ConfigurationScope;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -73,6 +79,8 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_NEW_OVR		= "newOvr.png";		//$NON-NLS-1$
 	public static final String ICON_BLOCK_NEW	= "block_new.png";	//$NON-NLS-1$
 
+	public static final String ICON_ARRANGE  	= "arrange.png";	//$NON-NLS-1$
+	
 	public static final String ICON_ITEM  		= "item.png"; 		//$NON-NLS-1$
 	public static final String ICON_BOOK  		= "book.png"; 		//$NON-NLS-1$
 	public static final String ICON_FILE  		= "file.gif"; 		//$NON-NLS-1$
@@ -160,7 +168,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_PROCESSOR 		= "processor.gif";		//$NON-NLS-1$
 	public static final String ICON_MEMORY	 		= "memory.gif";		//$NON-NLS-1$
 	public static final String ICON_MEMORY_MAP 		= "memory_map.gif";		//$NON-NLS-1$
-	public static final String ICON_PEERIPHERALS	= "peripherals.gif";		//$NON-NLS-1$
+	public static final String ICON_PERIPHERALS		= "peripherals.gif";		//$NON-NLS-1$
 
 
 	public static final String ICON_RUN 			= "run.gif"; 			//$NON-NLS-1$
@@ -182,6 +190,11 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_COLLAPSE_ALL 	= "collapseall.gif"; 	//$NON-NLS-1$
 	public static final String ICON_REMOVE_ALL	 	= "removeall.png"; 		//$NON-NLS-1$
 
+	public static final String ICON_CMSIS_ZONE	 	= "CMSIS_Zone16.png"; 	//$NON-NLS-1$
+	public static final String ICON_CMSIS_ZONE_48	= "CMSIS_Zone48.png"; 	//$NON-NLS-1$
+	public static final String ICON_CMSIS_ZONE_OVR 	= "CMSIS_Zone8.png"; 	//$NON-NLS-1$
+
+	
 	public static final String ICON_PIN = "pin.png"; 						//$NON-NLS-1$
 	public static final String ICON_DOWNLOAD = "download.png"; 				//$NON-NLS-1$
 	public static final String ERROR_OVR = "error_ovr.gif"; 				//$NON-NLS-1$
@@ -211,27 +224,29 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
-		IPreferenceStore store = getCorePreferenceStore();
-		store.addPropertyChangeListener(event -> {
-			if (event.getProperty() == CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE) {
-				String newPackRoot = event.getNewValue().toString();
-				ICpPackManager pm  = CpPlugIn.getPackManager();
-				ICpPackRootProvider rootProvider = CpPreferenceInitializer.getCmsisRootProvider();
-				if(pm != null && (rootProvider == null || rootProvider.isUserEditable())
-						&& !newPackRoot.equals(pm.getCmsisPackRootDirectory()) ) {
-					CpPreferenceInitializer.setPackRoot(newPackRoot); // normalize it
-					pm.setCmsisPackRootDirectory(newPackRoot);
-					scheduleCheckForPackUpdates();
+		if(PlatformUI.isWorkbenchRunning()) {
+			IPreferenceStore store = getCorePreferenceStore();
+			store.addPropertyChangeListener(event -> {
+				if (event.getProperty() == CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE) {
+					String newPackRoot = event.getNewValue().toString();
+					ICpPackManager pm  = CpPlugIn.getPackManager();
+					ICpPackRootProvider rootProvider = CpPreferenceInitializer.getCmsisRootProvider();
+					if(pm != null && (rootProvider == null || rootProvider.isUserEditable())
+							&& !newPackRoot.equals(pm.getCmsisPackRootDirectory()) ) {
+						CpPreferenceInitializer.setPackRoot(newPackRoot); // normalize it
+						pm.setCmsisPackRootDirectory(newPackRoot);
+						scheduleCheckForPackUpdates();
+					}
 				}
+			});
+			String now = Utils.getCurrentDate();
+			boolean bCheckForUpdates = CpPreferenceInitializer.getAutoUpdateFlag() && !now.equals(CpPreferenceInitializer.getLastUpdateTime());
+			ICpPackManager pm  = CpPlugIn.getPackManager();
+			if(bCheckForUpdates && pm != null) {
+				pm.setCheckForUpdates(bCheckForUpdates);
 			}
-		});
-		String now = Utils.getCurrentDate();
-		boolean bCheckForUpdates = CpPreferenceInitializer.getAutoUpdateFlag() && !now.equals(CpPreferenceInitializer.getLastUpdateTime());
-		ICpPackManager pm  = CpPlugIn.getPackManager();
-		if(bCheckForUpdates && pm != null) {
-			pm.setCheckForUpdates(bCheckForUpdates);
+			scheduleCheckForPackUpdates();
 		}
-		scheduleCheckForPackUpdates();
 	}
 
 	@Override
@@ -261,6 +276,8 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	}
 
 	public static void startCheckForUpdates() {
+		 if(!PlatformUI.isWorkbenchRunning())
+			 return;
 		ICpPackManager pm = CpPlugIn.getPackManager();
 		if(pm == null)
 			return;
@@ -484,6 +501,51 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		return null;
 	}
 
-
+	/**
+	 * Returns IFile for the given absolute file name 
+	 * @param absFileName absolute file name
+	 * @return IFile if can be resolved or null
+	 */
+	static public IFile getFileForLocation(String absFileName) {
+		if(absFileName == null || absFileName.isEmpty()) {
+			return null;
+		}
+		IPath path = new Path(absFileName);
+		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
+		return root.getFileForLocation(path);
+	}
+	
+	
+	/**
+	 * Refreshes IProject containing supplied file  
+	 * @param absFileName absolute file name
+	 * @return true if file belongs to a project in workspace
+	 * @throws CoreException 
+	 */
+	static public boolean refreshProject(String absFileName) throws CoreException {
+		IFile iFile = getFileForLocation(absFileName);
+		if(iFile != null) {
+			IProject project = iFile.getProject();
+			project.refreshLocal(IResource.DEPTH_INFINITE, null);
+			return true;
+		}
+		return false;
+	}
+	
+	
+	/**
+	 * Refreshes IFile corresponding supplied file  
+	 * @param absFileName absolute file name
+	 * @return true if file belongs to a project in workspace
+	 * @throws CoreException 
+	 */
+	static public boolean refreshFile(String absFileName) throws CoreException {
+		IFile iFile = getFileForLocation(absFileName);
+		if(iFile != null) {
+			iFile.refreshLocal(IResource.DEPTH_ZERO, null);
+			return true;
+		}
+		return false;
+	}
 
 }

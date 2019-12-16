@@ -288,10 +288,10 @@ public class RtePackFamily extends RtePackItem implements IRtePackFamily {
 	}
 
 	@Override
-	public IAttributes getAttributes() {
+	public IAttributes attributes() {
 		IRtePack p = getLatestRtePack();
 		if(p != null)
-			return p.getAttributes();
+			return p.attributes();
 		return null;
 	}
 	

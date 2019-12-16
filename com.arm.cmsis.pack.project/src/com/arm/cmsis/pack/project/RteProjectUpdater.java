@@ -3,10 +3,8 @@ package com.arm.cmsis.pack.project;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,6 +43,8 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.EFileCategory;
 import com.arm.cmsis.pack.enums.EFileRole;
+import com.arm.cmsis.pack.error.ICmsisConsole;
+import com.arm.cmsis.pack.error.ICmsisConsoleStrategy;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
@@ -58,7 +58,7 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.console.RteConsole;
 import com.arm.cmsis.pack.utils.Utils;
 
-public class RteProjectUpdater extends WorkspaceJob {
+public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStrategy{
 
 	public static final String RTE_PROBLEM_MARKER = CpPlugInUI.RTE_PROBLEM_MARKER;
 
@@ -77,7 +77,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 	protected boolean bSaveProject = false;
 	protected boolean bDeleteConfigFiles = false;
 	protected boolean bSuppressInfoMessages = false;
-	protected RteConsole fRteConsole = null;
+	protected ICmsisConsole fCmsisConsole = null;
 	
 	protected RteProjectStorage projectStorage = null; 
 	protected IRteToolChainAdapter toolChainAdapter = null;
@@ -99,25 +99,31 @@ public class RteProjectUpdater extends WorkspaceJob {
 	}
 
 	
-	 /**
+
+	@Override
+	public ICmsisConsole getCmsisConsole() {
+		if(fCmsisConsole == null) {
+			fCmsisConsole = createDefaultCmsisConsole();
+		}
+		return fCmsisConsole;
+	}
+
+
+	@Override
+	public void setCmsisConsole(ICmsisConsole console) {
+		fCmsisConsole = console;
+	}
+
+	/**
      * Returns the RteConsole, creates if not yet initialized 
      * @return RteConsole
      */
-    protected RteConsole getRteConsole() {
-    	if(fRteConsole == null)
-    		fRteConsole = RteConsole.openConsole(project);
-    	return fRteConsole;
+    @Override
+	public ICmsisConsole createDefaultCmsisConsole() {
+    	return RteConsole.openConsole(project);
     }
 
-    /**
-     * Sets the RteConsole 
-     * @param getRteConsole() RteConsole to set
-     */
-    public void setRteConsole(RteConsole rteConsole) {
-    	fRteConsole = rteConsole;
-    }
-    
-	
+   
 	@Override
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		if (project == null || rteProject == null) {
@@ -132,10 +138,9 @@ public class RteProjectUpdater extends WorkspaceJob {
 		EEvaluationResult res = EEvaluationResult.FULFILLED;
 		try {
 			if(!bSuppressInfoMessages){
-				long startTime = System.currentTimeMillis();
-				String timestamp = new SimpleDateFormat("HH:mm:ss").format(new Date(startTime)); //$NON-NLS-1$
+				String timestamp = Utils.getCurrentTimeStamp();
 				String msg = timestamp + " **** " + Messages.RteProjectUpdater_UpdatingProject + " " + project.getName(); //$NON-NLS-1$ //$NON-NLS-2$
-				getRteConsole().outputInfo(msg);
+				getCmsisConsole().outputInfo(msg);
 			}
 
 			String packRoot = CpVariableResolver.getCmsisPackRoot();
@@ -164,16 +169,16 @@ public class RteProjectUpdater extends WorkspaceJob {
 			}
 			
 			if (bLoadConfigs) {
-				//	getRteConsole().outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
+				//	getCmsisConsole().outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
 				res = loadConfigFile();
 			}
-			// getRteConsole().outputInfo(Messages.RteProjectUpdater_UpdatingResources);
+			// getCmsisConsole().outputInfo(Messages.RteProjectUpdater_UpdatingResources);
 			addResources();
 			removeResources();
 
 			updateGeneratedHeaders();
 
-			//getRteConsole().outputInfo(Messages.RteProjectUpdater_UpdatingBuildSettings);
+			//getCmsisConsole().outputInfo(Messages.RteProjectUpdater_UpdatingBuildSettings);
 			updateBuildSettings(bForceUpdateToolchain);
 
 			if (bSaveProject) {
@@ -195,22 +200,22 @@ public class RteProjectUpdater extends WorkspaceJob {
 
 		// Output the error message to the RTE console
 		if (res.ordinal() < EEvaluationResult.INSTALLED.ordinal() || status != null) {
-			getRteConsole().outputError(Messages.RteProjectUpdater_Fail);
+			getCmsisConsole().outputError(Messages.RteProjectUpdater_Fail);
 			if(status != null) {
-				getRteConsole().outputInfo(status.getMessage());
+				getCmsisConsole().outputInfo(status.getMessage());
 				IStatus[] statusArray = status.getChildren();
 				if (statusArray != null && statusArray.length > 0) {
 					for (IStatus s : statusArray) {
-						getRteConsole().outputInfo(s.getMessage());
+						getCmsisConsole().outputInfo(s.getMessage());
 					}
 				}
 			}
 		} else if(!bSuppressInfoMessages){			
-			getRteConsole().outputInfo(Messages.RteProjectUpdater_Success);
+			getCmsisConsole().outputInfo(Messages.RteProjectUpdater_Success);
 			
 		} 
 		if(!bSuppressInfoMessages){
-			getRteConsole().output(CmsisConstants.EMPTY_STRING);
+			getCmsisConsole().output(CmsisConstants.EMPTY_STRING);
 		}
 
 		RteProjectDecorator.refresh();
@@ -272,10 +277,10 @@ public class RteProjectUpdater extends WorkspaceJob {
 			return res;
 		}
 		String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + savedRteConfigName + "':"; //$NON-NLS-1$ //$NON-NLS-2$
-		getRteConsole().outputError(msg);
+		getCmsisConsole().outputError(msg);
 		for (IRteDependencyItem item : errors) {
 			String s = item.getName() + " - " + item.getDescription(); //$NON-NLS-1$
-			getRteConsole().output(s);
+			getCmsisConsole().output(s);
 			msg += System.lineSeparator() + s;
 		}
 
@@ -637,7 +642,7 @@ public class RteProjectUpdater extends WorkspaceJob {
 
 	protected String getLinkerScriptFile(ILinkerScriptGenerator lsGen) {
 		IRteConfiguration rteConfiguration = rteProject.getRteConfiguration();
-		String deviceName = rteConfiguration.getDeviceInfo().getDeviceName();
+		String deviceName = rteConfiguration.getDeviceInfo().getFullDeviceName();
 		String fileName = Utils.wildCardsToX(deviceName) + "." + lsGen.getFileExtension(); //$NON-NLS-1$
 		return fileName;
 	}

@@ -50,7 +50,6 @@ import com.arm.cmsis.pack.debugseq.debugSeq.ReadDP;
 import com.arm.cmsis.pack.debugseq.debugSeq.Rem;
 import com.arm.cmsis.pack.debugseq.debugSeq.Sequence;
 import com.arm.cmsis.pack.debugseq.debugSeq.SequenceCall;
-import com.arm.cmsis.pack.debugseq.debugSeq.Sequences;
 import com.arm.cmsis.pack.debugseq.debugSeq.Shift;
 import com.arm.cmsis.pack.debugseq.debugSeq.Statement;
 import com.arm.cmsis.pack.debugseq.debugSeq.StringConstant;
@@ -71,7 +70,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import java.util.Arrays;
 import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.common.util.TreeIterator;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.xtend2.lib.StringConcatenation;
@@ -91,21 +89,21 @@ import org.eclipse.xtext.xbase.lib.IteratorExtensions;
 public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqScriptGenerator {
   private boolean generateFile = false;
   
-  private final static String predefinedVars = new Function0<String>() {
+  private static final String predefinedVars = new Function0<String>() {
     public String apply() {
       StringConcatenation _builder = new StringConcatenation();
       _builder.append("(");
-      _builder.append(IDsqContext.PROTOCOL, "");
+      _builder.append(IDsqContext.PROTOCOL);
       _builder.append(", ");
-      _builder.append(IDsqContext.CONNECTION, "");
+      _builder.append(IDsqContext.CONNECTION);
       _builder.append(", ");
-      _builder.append(IDsqContext.DP, "");
+      _builder.append(IDsqContext.DP);
       _builder.append(", ");
-      _builder.append(IDsqContext.AP, "");
+      _builder.append(IDsqContext.AP);
       _builder.append(", ");
-      _builder.append(IDsqContext.TRACEOUT, "");
+      _builder.append(IDsqContext.TRACEOUT);
       _builder.append(", ");
-      _builder.append(IDsqContext.ERRORCONTROL, "");
+      _builder.append(IDsqContext.ERRORCONTROL);
       _builder.append(")");
       return _builder.toString();
     }
@@ -128,11 +126,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
   
   @Override
   public void doGenerate(final Resource resource, final IFileSystemAccess2 fsa, final IGeneratorContext context) {
-    TreeIterator<EObject> _allContents = resource.getAllContents();
-    Iterable<EObject> _iterable = IteratorExtensions.<EObject>toIterable(_allContents);
-    Iterable<DebugSeqModel> _filter = Iterables.<DebugSeqModel>filter(_iterable, DebugSeqModel.class);
-    DebugSeqModel _get = ((DebugSeqModel[])Conversions.unwrapArray(_filter, DebugSeqModel.class))[0];
-    final String script = this.generate(_get);
+    final String script = this.generate(((DebugSeqModel[])Conversions.unwrapArray((Iterables.<DebugSeqModel>filter(IteratorExtensions.<EObject>toIterable(resource.getAllContents()), DebugSeqModel.class)), DebugSeqModel.class))[0]);
     if (this.generateFile) {
       fsa.generateFile("debug_sequences.py", script);
     }
@@ -145,15 +139,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
   @Override
   public String generate(final DebugSeqModel dsqModel, final String header) {
     StringConcatenation _builder = new StringConcatenation();
-    _builder.append(header, "");
+    _builder.append(header);
     _builder.newLineIfNotEmpty();
     _builder.newLine();
     {
-      Sequences _sequences = dsqModel.getSequences();
-      EList<Sequence> _sequences_1 = _sequences.getSequences();
-      for(final Sequence sequence : _sequences_1) {
+      EList<Sequence> _sequences = dsqModel.getSequences().getSequences();
+      for(final Sequence sequence : _sequences) {
         String _generate = this.generate(sequence);
-        _builder.append(_generate, "");
+        _builder.append(_generate);
         _builder.newLineIfNotEmpty();
         _builder.newLine();
       }
@@ -165,14 +158,12 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
     StringConcatenation _builder = new StringConcatenation();
     _builder.append("def ");
     String _name = seq.getName();
-    _builder.append(_name, "");
-    _builder.append(DsqPythonScriptGenerator.predefinedVars, "");
+    _builder.append(_name);
+    _builder.append(DsqPythonScriptGenerator.predefinedVars);
     _builder.append(":");
     _builder.newLineIfNotEmpty();
     _builder.append("    ");
-    DebugSeqModel _containingDebugSeqModel = DebugSeqUtil.containingDebugSeqModel(seq);
-    DebugVars _debugvars = _containingDebugSeqModel.getDebugvars();
-    String _generate = this.generate(_debugvars);
+    String _generate = this.generate(DebugSeqUtil.containingDebugSeqModel(seq).getDebugvars());
     _builder.append(_generate, "    ");
     _builder.newLineIfNotEmpty();
     {
@@ -190,26 +181,22 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
   protected String _generate(final DebugVars gv) {
     StringConcatenation _builder = new StringConcatenation();
     {
-      EList<Statement> _statements = gv.getStatements();
-      Iterable<VariableDeclaration> _filter = Iterables.<VariableDeclaration>filter(_statements, VariableDeclaration.class);
       final Function1<VariableDeclaration, Boolean> _function = (VariableDeclaration it) -> {
-        String _name = it.getName();
-        boolean _isPredefinedVariable = DebugSeqUtil.isPredefinedVariable(_name);
+        boolean _isPredefinedVariable = DebugSeqUtil.isPredefinedVariable(it.getName());
         return Boolean.valueOf((!_isPredefinedVariable));
       };
-      Iterable<VariableDeclaration> _filter_1 = IterableExtensions.<VariableDeclaration>filter(_filter, _function);
-      for(final VariableDeclaration vardecl : _filter_1) {
+      Iterable<VariableDeclaration> _filter = IterableExtensions.<VariableDeclaration>filter(Iterables.<VariableDeclaration>filter(gv.getStatements(), VariableDeclaration.class), _function);
+      for(final VariableDeclaration vardecl : _filter) {
         String _generate = this.generate(vardecl);
-        _builder.append(_generate, "");
+        _builder.append(_generate);
         _builder.newLineIfNotEmpty();
       }
     }
     {
-      EList<Statement> _statements_1 = gv.getStatements();
-      Iterable<Expression> _filter_2 = Iterables.<Expression>filter(_statements_1, Expression.class);
-      for(final Expression expr : _filter_2) {
+      Iterable<Expression> _filter_1 = Iterables.<Expression>filter(gv.getStatements(), Expression.class);
+      for(final Expression expr : _filter_1) {
         String _generate_1 = this.generate(expr);
-        _builder.append(_generate_1, "");
+        _builder.append(_generate_1);
         _builder.newLineIfNotEmpty();
       }
     }
@@ -219,8 +206,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
   protected String _generate(final Block block) {
     StringConcatenation _builder = new StringConcatenation();
     {
-      EList<Statement> _statements = block.getStatements();
-      int _size = _statements.size();
+      int _size = block.getStatements().size();
       boolean _tripleEquals = (_size == 0);
       if (_tripleEquals) {
         _builder.append("pass");
@@ -228,10 +214,10 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
       }
     }
     {
-      EList<Statement> _statements_1 = block.getStatements();
-      for(final Statement stmt : _statements_1) {
+      EList<Statement> _statements = block.getStatements();
+      for(final Statement stmt : _statements) {
         String _generate = this.generate(stmt);
-        _builder.append(_generate, "");
+        _builder.append(_generate);
         _builder.newLineIfNotEmpty();
       }
     }
@@ -245,9 +231,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
       boolean _tripleNotEquals = (_if != null);
       if (_tripleNotEquals) {
         _builder.append("if ");
-        Expression _if_1 = control.getIf();
-        String _generate = this.generate(_if_1);
-        _builder.append(_generate, "");
+        String _generate = this.generate(control.getIf());
+        _builder.append(_generate);
         _builder.append(":");
         _builder.newLineIfNotEmpty();
         {
@@ -260,8 +245,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
             _builder.newLineIfNotEmpty();
           } else {
             {
-              EList<CodeBlock> _codeblocks = control.getCodeblocks();
-              int _size = _codeblocks.size();
+              int _size = control.getCodeblocks().size();
               boolean _tripleEquals = (_size == 0);
               if (_tripleEquals) {
                 _builder.append("    ");
@@ -270,8 +254,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
               }
             }
             {
-              EList<CodeBlock> _codeblocks_1 = control.getCodeblocks();
-              for(final CodeBlock codeblock : _codeblocks_1) {
+              EList<CodeBlock> _codeblocks = control.getCodeblocks();
+              for(final CodeBlock codeblock : _codeblocks) {
                 _builder.append("    ");
                 String _generate_1 = this.generate(codeblock);
                 _builder.append(_generate_1, "    ");
@@ -285,14 +269,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         boolean _tripleNotEquals_2 = (_while_1 != null);
         if (_tripleNotEquals_2) {
           String _generateControlWhile_1 = this.generateControlWhile(control);
-          _builder.append(_generateControlWhile_1, "");
+          _builder.append(_generateControlWhile_1);
           _builder.newLineIfNotEmpty();
         } else {
           {
-            EList<CodeBlock> _codeblocks_2 = control.getCodeblocks();
-            for(final CodeBlock codeblock_1 : _codeblocks_2) {
+            EList<CodeBlock> _codeblocks_1 = control.getCodeblocks();
+            for(final CodeBlock codeblock_1 : _codeblocks_1) {
               String _generate_2 = this.generate(codeblock_1);
-              _builder.append(_generate_2, "");
+              _builder.append(_generate_2);
               _builder.newLineIfNotEmpty();
             }
           }
@@ -313,9 +297,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
       }
     }
     _builder.append("while (");
-    Expression _while = control.getWhile();
-    String _generate = this.generate(_while);
-    _builder.append(_generate, "");
+    String _generate = this.generate(control.getWhile());
+    _builder.append(_generate);
     _builder.append(")");
     {
       long _timeout_1 = control.getTimeout();
@@ -323,7 +306,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
       if (_tripleNotEquals_1) {
         _builder.append(" and t.getTime() < ");
         long _timeout_2 = control.getTimeout();
-        _builder.append(_timeout_2, "");
+        _builder.append(_timeout_2);
       }
     }
     _builder.append(":");
@@ -332,7 +315,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
       EList<CodeBlock> _codeblocks = control.getCodeblocks();
       for(final CodeBlock codeblock : _codeblocks) {
         String _generate_1 = this.generate(codeblock);
-        _builder.append(_generate_1, "");
+        _builder.append(_generate_1);
         _builder.newLineIfNotEmpty();
       }
     }
@@ -345,11 +328,10 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
   protected String _generate(final VariableDeclaration vd) {
     StringConcatenation _builder = new StringConcatenation();
     String _name = vd.getName();
-    _builder.append(_name, "");
+    _builder.append(_name);
     _builder.append(" = ");
-    Expression _value = vd.getValue();
-    String _generate = this.generate(_value);
-    _builder.append(_generate, "");
+    String _generate = this.generate(vd.getValue());
+    _builder.append(_generate);
     return _builder.toString();
   }
   
@@ -360,7 +342,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
       _matched=true;
       StringConcatenation _builder = new StringConcatenation();
       long _value = ((IntConstant)e).getValue();
-      _builder.append(_value, "");
+      _builder.append(_value);
       _switchResult = _builder.toString();
     }
     if (!_matched) {
@@ -369,7 +351,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("\"");
         String _value = ((StringConstant)e).getValue();
-        _builder.append(_value, "");
+        _builder.append(_value);
         _builder.append("\"");
         _switchResult = _builder.toString();
       }
@@ -378,9 +360,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
       if (e instanceof VariableRef) {
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
-        VariableDeclaration _variable = ((VariableRef)e).getVariable();
-        String _name = _variable.getName();
-        _builder.append(_name, "");
+        String _name = ((VariableRef)e).getVariable().getName();
+        _builder.append(_name);
         _switchResult = _builder.toString();
       }
     }
@@ -389,9 +370,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("not (");
-        Expression _expression = ((Not)e).getExpression();
-        String _generate = this.generate(_expression);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Not)e).getExpression());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -401,16 +381,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         Expression _left = ((Assignment)e).getLeft();
-        VariableDeclaration _variable = ((VariableRef) _left).getVariable();
-        String _name = _variable.getName();
-        _builder.append(_name, "");
+        String _name = ((VariableRef) _left).getVariable().getName();
+        _builder.append(_name);
         _builder.append(" ");
         String _op = ((Assignment)e).getOp();
-        _builder.append(_op, "");
+        _builder.append(_op);
         _builder.append(" ");
-        Expression _right = ((Assignment)e).getRight();
-        String _generate = this.generate(_right);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Assignment)e).getRight());
+        _builder.append(_generate);
         _switchResult = _builder.toString();
       }
     }
@@ -418,17 +396,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
       if (e instanceof Ternary) {
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
-        Expression _exp1 = ((Ternary)e).getExp1();
-        String _generate = this.generate(_exp1);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Ternary)e).getExp1());
+        _builder.append(_generate);
         _builder.append(" if (");
-        Expression _left = ((Ternary)e).getLeft();
-        String _generate_1 = this.generate(_left);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Ternary)e).getLeft());
+        _builder.append(_generate_1);
         _builder.append(") != 0 else ");
-        Expression _exp2 = ((Ternary)e).getExp2();
-        String _generate_2 = this.generate(_exp2);
-        _builder.append(_generate_2, "");
+        String _generate_2 = this.generate(((Ternary)e).getExp2());
+        _builder.append(_generate_2);
         _switchResult = _builder.toString();
       }
     }
@@ -437,13 +412,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Or)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Or)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") != 0 or (");
-        Expression _right = ((Or)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Or)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(") != 0");
         _switchResult = _builder.toString();
       }
@@ -453,13 +426,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((And)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((And)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") != 0 and (");
-        Expression _right = ((And)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((And)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(") != 0");
         _switchResult = _builder.toString();
       }
@@ -469,13 +440,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((BitOr)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((BitOr)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") | (");
-        Expression _right = ((BitOr)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((BitOr)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -485,13 +454,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((BitXor)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((BitXor)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") ^ (");
-        Expression _right = ((BitXor)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((BitXor)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -501,13 +468,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((BitAnd)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((BitAnd)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") & (");
-        Expression _right = ((BitAnd)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((BitAnd)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -517,9 +482,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("~(");
-        Expression _expression = ((BitNot)e).getExpression();
-        String _generate = this.generate(_expression);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((BitNot)e).getExpression());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -529,16 +493,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Equality)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Equality)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") ");
         String _op = ((Equality)e).getOp();
-        _builder.append(_op, "");
+        _builder.append(_op);
         _builder.append(" (");
-        Expression _right = ((Equality)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Equality)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -548,9 +510,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Comparison)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Comparison)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") ");
         {
           String _op = ((Comparison)e).getOp();
@@ -574,9 +535,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
           }
         }
         _builder.append(" (");
-        Expression _right = ((Comparison)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Comparison)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -586,9 +546,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Shift)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Shift)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") ");
         {
           String _op = ((Shift)e).getOp();
@@ -600,9 +559,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
           }
         }
         _builder.append(" (");
-        Expression _right = ((Shift)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Shift)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -612,13 +570,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Plus)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Plus)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") + (");
-        Expression _right = ((Plus)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Plus)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -628,13 +584,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Minus)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Minus)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") - (");
-        Expression _right = ((Minus)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Minus)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -644,13 +598,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Mul)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Mul)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") * (");
-        Expression _right = ((Mul)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Mul)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -660,13 +612,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Div)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Div)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") / (");
-        Expression _right = ((Div)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Div)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -676,13 +626,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("(");
-        Expression _left = ((Rem)e).getLeft();
-        String _generate = this.generate(_left);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Rem)e).getLeft());
+        _builder.append(_generate);
         _builder.append(") % (");
-        Expression _right = ((Rem)e).getRight();
-        String _generate_1 = this.generate(_right);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Rem)e).getRight());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -692,8 +640,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         String _seqname = ((SequenceCall)e).getSeqname();
-        _builder.append(_seqname, "");
-        _builder.append(DsqPythonScriptGenerator.predefinedVars, "");
+        _builder.append(_seqname);
+        _builder.append(DsqPythonScriptGenerator.predefinedVars);
         _switchResult = _builder.toString();
       }
     }
@@ -702,16 +650,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("DS.Query(");
-        Expression _type = ((Query)e).getType();
-        String _generate = this.generate(_type);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Query)e).getType());
+        _builder.append(_generate);
         _builder.append(", \"");
         String _message = ((Query)e).getMessage();
-        _builder.append(_message, "");
+        _builder.append(_message);
         _builder.append("\", ");
-        Expression _default = ((Query)e).getDefault();
-        String _generate_1 = this.generate(_default);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Query)e).getDefault());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -721,14 +667,13 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("DS.Query(");
-        _builder.append(IDsqClient.QUERY_VALUE_TYPE, "");
+        _builder.append(IDsqClient.QUERY_VALUE_TYPE);
         _builder.append(", \"");
         String _message = ((QueryValue)e).getMessage();
-        _builder.append(_message, "");
+        _builder.append(_message);
         _builder.append("\", ");
-        Expression _default = ((QueryValue)e).getDefault();
-        String _generate = this.generate(_default);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((QueryValue)e).getDefault());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -739,7 +684,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("LoadDebugInfo(\"");
         String _path = ((LoadDebugInfo)e).getPath();
-        _builder.append(_path, "");
+        _builder.append(_path);
         _builder.append("\")");
         _switchResult = _builder.toString();
       }
@@ -750,14 +695,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Message(\"");
         String _format = ((Message)e).getFormat();
-        _builder.append(_format, "");
+        _builder.append(_format);
         _builder.append("\"");
         {
           EList<Parameter> _parameters = ((Message)e).getParameters();
           for(final Parameter p : _parameters) {
             _builder.append(", ");
             String _generate = this.generate(p);
-            _builder.append(_generate, "");
+            _builder.append(_generate);
           }
         }
         _builder.append(")");
@@ -769,9 +714,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Read8(");
-        Expression _addr = ((Read8)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Read8)e).getAddr());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -781,9 +725,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Read16(");
-        Expression _addr = ((Read16)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Read16)e).getAddr());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -793,9 +736,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Read32(");
-        Expression _addr = ((Read32)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Read32)e).getAddr());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -805,9 +747,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Read64(");
-        Expression _addr = ((Read64)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Read64)e).getAddr());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -817,9 +758,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("ReadAP(");
-        Expression _addr = ((ReadAP)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((ReadAP)e).getAddr());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -829,9 +769,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("ReadDP(");
-        Expression _addr = ((ReadDP)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((ReadDP)e).getAddr());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -841,13 +780,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Write8(");
-        Expression _addr = ((Write8)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Write8)e).getAddr());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _val = ((Write8)e).getVal();
-        String _generate_1 = this.generate(_val);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Write8)e).getVal());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -857,13 +794,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Write16(");
-        Expression _addr = ((Write16)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Write16)e).getAddr());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _val = ((Write16)e).getVal();
-        String _generate_1 = this.generate(_val);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Write16)e).getVal());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -873,13 +808,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Write32(");
-        Expression _addr = ((Write32)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Write32)e).getAddr());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _val = ((Write32)e).getVal();
-        String _generate_1 = this.generate(_val);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Write32)e).getVal());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -889,13 +822,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("Write64(");
-        Expression _addr = ((Write64)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((Write64)e).getAddr());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _val = ((Write64)e).getVal();
-        String _generate_1 = this.generate(_val);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((Write64)e).getVal());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -905,13 +836,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("WriteAP(");
-        Expression _addr = ((WriteAP)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((WriteAP)e).getAddr());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _val = ((WriteAP)e).getVal();
-        String _generate_1 = this.generate(_val);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((WriteAP)e).getVal());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -921,13 +850,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("WriteDP(");
-        Expression _addr = ((WriteDP)e).getAddr();
-        String _generate = this.generate(_addr);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((WriteDP)e).getAddr());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _val = ((WriteDP)e).getVal();
-        String _generate_1 = this.generate(_val);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((WriteDP)e).getVal());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -937,9 +864,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("DAP_Delay(");
-        Expression _delay = ((DapDelay)e).getDelay();
-        String _generate = this.generate(_delay);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((DapDelay)e).getDelay());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -949,9 +875,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("DAP_WriteABORT(");
-        Expression _value = ((DapWriteABORT)e).getValue();
-        String _generate = this.generate(_value);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((DapWriteABORT)e).getValue());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -961,17 +886,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("DAP_SWJ_Pins(");
-        Expression _pinout = ((DapSwjPins)e).getPinout();
-        String _generate = this.generate(_pinout);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((DapSwjPins)e).getPinout());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _pinselect = ((DapSwjPins)e).getPinselect();
-        String _generate_1 = this.generate(_pinselect);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((DapSwjPins)e).getPinselect());
+        _builder.append(_generate_1);
         _builder.append(", ");
-        Expression _pinwait = ((DapSwjPins)e).getPinwait();
-        String _generate_2 = this.generate(_pinwait);
-        _builder.append(_generate_2, "");
+        String _generate_2 = this.generate(((DapSwjPins)e).getPinwait());
+        _builder.append(_generate_2);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -981,9 +903,8 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("DAP_SWJ_Clock(");
-        Expression _value = ((DapSwjClock)e).getValue();
-        String _generate = this.generate(_value);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((DapSwjClock)e).getValue());
+        _builder.append(_generate);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -993,13 +914,11 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("DAP_SWJ_Sequence(");
-        Expression _cnt = ((DapSwjSequence)e).getCnt();
-        String _generate = this.generate(_cnt);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((DapSwjSequence)e).getCnt());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _val = ((DapSwjSequence)e).getVal();
-        String _generate_1 = this.generate(_val);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((DapSwjSequence)e).getVal());
+        _builder.append(_generate_1);
         _builder.append(")");
         _switchResult = _builder.toString();
       }
@@ -1009,17 +928,14 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
         _matched=true;
         StringConcatenation _builder = new StringConcatenation();
         _builder.append("DAP_JTAG_Sequence(");
-        Expression _cnt = ((DapJtagSequence)e).getCnt();
-        String _generate = this.generate(_cnt);
-        _builder.append(_generate, "");
+        String _generate = this.generate(((DapJtagSequence)e).getCnt());
+        _builder.append(_generate);
         _builder.append(", ");
-        Expression _tms = ((DapJtagSequence)e).getTms();
-        String _generate_1 = this.generate(_tms);
-        _builder.append(_generate_1, "");
+        String _generate_1 = this.generate(((DapJtagSequence)e).getTms());
+        _builder.append(_generate_1);
         _builder.append(", ");
-        Expression _tdi = ((DapJtagSequence)e).getTdi();
-        String _generate_2 = this.generate(_tdi);
-        _builder.append(_generate_2, "");
+        String _generate_2 = this.generate(((DapJtagSequence)e).getTdi());
+        _builder.append(_generate_2);
         _builder.append(")");
         _switchResult = _builder.toString();
       }

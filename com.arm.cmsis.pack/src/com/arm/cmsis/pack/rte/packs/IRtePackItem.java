@@ -14,14 +14,14 @@ package com.arm.cmsis.pack.rte.packs;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.enums.EVersionMatchMode;
-import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.generic.IAttributedItem;
 import com.arm.cmsis.pack.generic.ITreeObject;
 import com.arm.cmsis.pack.info.ICpPackInfo;
 
 /**
  *  Base interface for RTE view on ICpPack and ICpPackInfo and ICpPackFamily  
  */
-public interface IRtePackItem extends ITreeObject {
+public interface IRtePackItem extends ITreeObject, IAttributedItem {
 	
 	/**
 	 * Returns item ID 
@@ -64,6 +64,7 @@ public interface IRtePackItem extends ITreeObject {
 	 * Returns parent IRtePacktem if any 
 	 * @return parent IRtePacktem if any 
 	 */
+	@Override
 	IRtePackItem getParent();	
 
 	/**
@@ -115,12 +116,6 @@ public interface IRtePackItem extends ITreeObject {
 	 */
 	ICpPackInfo getPackInfo();
 	
-	/**
-	 * Returns pack attributes taken either from underlying pack or ICPackItem 
-	 * @returns pack attributes
-	 */
-	IAttributes getAttributes();
-
 	/**
 	 * Returns the first child item 
 	 * @return the first child IRtePackItem

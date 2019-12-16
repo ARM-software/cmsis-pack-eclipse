@@ -13,5 +13,5 @@ package com.arm.cmsis.pack.ui.widgets;
 import com.arm.cmsis.pack.rte.IRteModelController;
 
 public abstract class RteModelWidget extends RteWidget<IRteModelController> {
-
+	 // Convenience synthetic abstract class interface without own methods	
 }

@@ -11,8 +11,8 @@
 
 package com.arm.cmsis.pack.data;
 
-import com.arm.cmsis.pack.build.IMemoryAccess;
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.permissions.IMemoryAccess;
 
 /**
  *  Implementation of ICpMemory interface  

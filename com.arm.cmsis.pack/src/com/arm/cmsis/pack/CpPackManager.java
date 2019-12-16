@@ -470,8 +470,8 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 			return (ICpPack)item;
 		}
 
-		if(pdscParser.getErrorCount() > 0) {
-			List<String> errors = pdscParser.getErrorStrings();
+		if(pdscParser.getSevereErrorCount() > 0) {
+			Collection<String> errors = pdscParser.getErrorStrings();
 			if(errors != null && !errors.isEmpty()) {
 				for(String msg : errors) {
 					if(msg != null && !msg.isEmpty()){
@@ -520,9 +520,9 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 			pack.setTag(file);
 			pack.setPackState(PackState.ERROR);
 			allErrorPacks.addChild(pack);
-			String errorString;
-			if (!pdscParser.getErrorStrings().isEmpty()) {
-				errorString = pdscParser.getErrorStrings().get(0);
+			String errorString = pdscParser.getFirstErrorString();
+			if (!errorString.isEmpty()) {
+				// use the obtained String to output
 			} else if (!CmsisConstants.PACKAGE_TAG.equals(pack.getTag())) {
 				errorString = pack.getFileName() + ": " //$NON-NLS-1$
 						+ CpStrings.CpPackManager_UnrecognizedFileFormatError;
@@ -894,6 +894,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		return true;
 	}
 	
+	@Override
 	public boolean isLocalRepository(ICpPack pack) {
 		return pack.getDir(true).indexOf(getCmsisPackRootDirectory()) < 0;
 	}

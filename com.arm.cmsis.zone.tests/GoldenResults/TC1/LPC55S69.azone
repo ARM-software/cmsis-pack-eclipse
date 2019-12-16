@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<azone xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.1.1" xs:noNamespaceSchemaLocation="azone.xsd">
+  <rzone name="LPC55S69.rzone"/>
+  <partition>
+    <memory fixed="1" info="Secure RAM for DATA section" name="DATA_S" offset="0x0" parent="SRAM_S" size="0x8000"/>
+    <memory access="rx" fixed="1" info="Secure FLASH for CODE execution" name="CODE_S" offset="0x0" parent="FLASH_S" privilege="p" security="s" size="0xFE00"/>
+    <memory access="rx" fixed="1" info="Non-secure callable FLASH for CODE veneer table" name="Veneer" offset="0xFE00" parent="FLASH_S" privilege="p" security="c" size="0x200"/>
+    <memory access="rx" fixed="1" info="Non-secure FLASH for CODE execution" name="CODE_NS" offset="0x10000" parent="FLASH" privilege="u" security="n" size="0x72000"/>
+    <memory access="rw" fixed="1" info="Non-secure RAM for DATA section" name="DATA_NS" offset="0x8000" parent="SRAM" privilege="" security="n" size="0x3C000"/>
+    <peripheral access="rw" group="CTIMER" info="Standard Counter/Timer 2" name="CTIMER2" size="0x0088" start="0x40028000" start_s="0x50028000"/>
+    <peripheral access="prw" info="I/O Pin Configuration" name="IOCON" privilege="" security="s" size="0x0100" start="0x40001000" start_s="0x50001000"/>
+    <peripheral access="rw" group="FLEXCOMM" info="configurable as I2C, I2S, SPI, or USART" name="FLEXCOMM2" size="0x1000" start="0x40088000" start_s="0x50088000"/>
+    <peripheral access="prw" info="True Random Number Generator" name="RNG" size="0x1000" start="0x4003A000" start_s="0x5003A000"/>
+    <peripheral access="rw" group="CTIMER" info="Standard Counter/Timer 0" name="CTIMER0" size="0x0088" start="0x40008000" start_s="0x50008000"/>
+    <peripheral access="rw" group="FLEXCOMM" info="configurable as I2C, I2S, SPI, or USART" name="FLEXCOMM7" size="0x1000" start="0x40098000" start_s="0x50098000"/>
+    <peripheral access="prw" group="FLEXCOMM" info="configurable as I2C, I2S, SPI, or USART" name="FLEXCOMM0" privilege="" security="s" size="0x1000" start="0x40086000" start_s="0x50086000"/>
+    <peripheral access="rw" group="CTIMER" info="Standard Counter/Timer 1" name="CTIMER1" size="0x0088" start="0x40009000" start_s="0x50009000"/>
+    <peripheral access="rw" group="FLEXCOMM" info="configurable as I2C, I2S, SPI, or USART" name="FLEXCOMM1" size="0x1000" start="0x40087000" start_s="0x50087000"/>
+    <peripheral access="rw" group="FLEXCOMM" info="configurable as I2C, I2S, SPI, or USART" name="FLEXCOMM5" size="0x1000" start="0x40096000" start_s="0x50096000"/>
+    <peripheral access="rw" group="FLEXCOMM" info="configurable as I2C, I2S, SPI, or USART" name="FLEXCOMM3" size="0x1000" start="0x40089000" start_s="0x50089000"/>
+    <peripheral access="prw" info="ADC Controller" name="ADC" size="0x1000" start="0x400A0000" start_s="0x500A0000"/>
+    <peripheral access="prw" info="General Purpose I/O" name="GPIO" size="0x2490" start="0x4008C000" start_s="0x5008C000"/>
+    <peripheral access="rw" group="DMA" info="Secure DMA Controller 1" name="DMA1" size="0x05FC" start="0x400A7000" start_s="0x500A7000"/>
+    <peripheral access="rw" group="FLEXCOMM" info="configurable as I2C, I2S, SPI, or USART" name="FLEXCOMM6" size="0x1000" start="0x40097000" start_s="0x50097000"/>
+    <peripheral access="prw" info="USB1 High-speed PHY" name="USBPHY" size="0x0110" start="0x40038000" start_s="0x50038000"/>
+    <peripheral access="rw" group="CTIMER" info="Standard Counter/Timer 4" name="CTIMER4" size="0x0088" start="0x4002A000" start_s="0x5002A000"/>
+    <peripheral access="rw" group="CTIMER" info="Standard Counter/Timer 3" name="CTIMER3" size="0x0088" start="0x40029000" start_s="0x50029000"/>
+    <peripheral access="rw" group="DMA" info="DMA Controller 0" name="DMA0" size="0x05FC" start="0x40082000" start_s="0x50082000"/>
+    <peripheral access="prw" info="Real-Time Clock" name="RTC" size="0x0060" start="0x4002C000" start_s="0x5002C000"/>
+    <peripheral access="prw" info="Syscon" name="SYSCON" privilege="" security="s" size="0x1000" start="0x40000000" start_s="0x50000000"/>
+    <peripheral access="prw" group="GINT" info="Group GPIO Input Interrupt 0" name="GINT0" size="0x0048" start="0x40002000" start_s="0x50002000"/>
+    <peripheral access="prw" group="GINT" info="Group GPIO Input Interrupt 1" name="GINT1" size="0x0048" start="0x40003000" start_s="0x50003000"/>
+    <peripheral access="rw" group="FLEXCOMM" info="configurable as I2C, I2S, SPI, or USART" name="FLEXCOMM4" size="0x1000" start="0x4008A000" start_s="0x5008A000"/>
+    <peripheral access="prw" info="USB1 High-speed Host Controller" name="USBHSH" size="0x0054" start="0x400A3000" start_s="0x500A3000"/>
+  </partition>
+  <zones>
+    <zone Dname="LPC55S69" Pname="cm33_core0" info="" name="hello_world_s" security="s">
+      <assign memory="CODE_S"/>
+      <assign memory="Veneer"/>
+      <assign memory="DATA_S"/>
+      <assign peripheral="IOCON"/>
+      <assign peripheral="SYSCON"/>
+      <assign group="FLEXCOMM" peripheral="FLEXCOMM0"/>
+      <assign peripheral="RNG"/>
+    </zone>
+    <zone Dname="LPC55S69" Pname="cm33_core0" info="" name="hello_world_ns" security="n">
+      <assign memory="CODE_NS"/>
+      <assign memory="DATA_NS"/>
+      <assign peripheral="ADC"/>
+      <assign peripheral="GPIO"/>
+      <assign group="GINT" peripheral="GINT1"/>
+      <assign group="GINT" peripheral="GINT1"/>
+      <assign group="GINT" peripheral="GINT0"/>
+      <assign peripheral="RTC"/>
+      <assign peripheral="USBHSH"/>
+      <assign peripheral="USBPHY"/>
+    </zone>
+  </zones>
+  <configure/>
+</azone>

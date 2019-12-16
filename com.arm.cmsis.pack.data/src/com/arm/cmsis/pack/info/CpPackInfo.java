@@ -38,9 +38,14 @@ public class CpPackInfo extends CpItem implements ICpPackInfo {
 	}
 
 	public CpPackInfo(ICpItem parent, ICpPackInfo packInfo) {
-		super(parent, packInfo.getTag());
-		fPack = packInfo.getPack();
-		attributes().setAttributes(packInfo.attributes());
+		super(parent);
+		if(packInfo != null) {
+			setTag(packInfo.getTag());
+			fPack = packInfo.getPack();
+			attributes().setAttributes(packInfo.attributes());
+		} else {
+			setTag(CmsisConstants.PACKAGE_TAG);
+		}
 	}
 
 	public CpPackInfo(ICpItem parent, IAttributes attributes) {

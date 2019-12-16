@@ -113,7 +113,6 @@ public class DebugSeqUtil {
               _xtrycatchfinallyexpression = Long.valueOf(((String)o));
             } catch (final Throwable _t) {
               if (_t instanceof Exception) {
-                final Exception e = (Exception)_t;
                 _xtrycatchfinallyexpression = Long.valueOf(0L);
               } else {
                 throw Exceptions.sneakyThrow(_t);
@@ -133,8 +132,7 @@ public class DebugSeqUtil {
   }
   
   public static int toInteger(final Long l) {
-    String _string = l.toString();
-    return Integer.parseInt(_string);
+    return Integer.parseInt(l.toString());
   }
   
   /**
@@ -179,8 +177,7 @@ public class DebugSeqUtil {
               _matched=true;
               result.setCharAt(lastIdx, 'd');
               final Object v = parms.get(idx);
-              long _long = DebugSeqUtil.toLong(v);
-              String _binaryString = Long.toBinaryString(_long);
+              String _binaryString = Long.toBinaryString(DebugSeqUtil.toLong(v));
               BigInteger _bigInteger = new BigInteger(_binaryString);
               parms.set(idx, _bigInteger);
             }
@@ -195,14 +192,9 @@ public class DebugSeqUtil {
               boolean _tripleEquals = (_charAt_4 == _charAt_5);
               if (_tripleEquals) {
                 removeIndices.add(Integer.valueOf((lastIdx - 1)));
-                long _long_1 = DebugSeqUtil.toLong(v_1);
-                double _longBitsToDouble = Double.longBitsToDouble(_long_1);
-                parms.set(idx, Double.valueOf(_longBitsToDouble));
+                parms.set(idx, Double.valueOf(Double.longBitsToDouble(DebugSeqUtil.toLong(v_1))));
               } else {
-                long _long_2 = DebugSeqUtil.toLong(v_1);
-                int _integer = DebugSeqUtil.toInteger(Long.valueOf(_long_2));
-                float _intBitsToFloat = Float.intBitsToFloat(_integer);
-                parms.set(idx, Float.valueOf(_intBitsToFloat));
+                parms.set(idx, Float.valueOf(Float.intBitsToFloat(DebugSeqUtil.toInteger(Long.valueOf(DebugSeqUtil.toLong(v_1))))));
               }
             }
           }
@@ -223,9 +215,7 @@ public class DebugSeqUtil {
           modifier++;
         }
       }
-      String _string = result.toString();
-      Object[] _array = parms.toArray();
-      _xblockexpression = String.format(_string, _array);
+      _xblockexpression = String.format(result.toString(), parms.toArray());
     }
     return _xblockexpression;
   }

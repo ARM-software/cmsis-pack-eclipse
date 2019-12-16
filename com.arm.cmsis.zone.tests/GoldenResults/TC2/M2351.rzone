@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<rzone xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="rzone.xsd" schemaVersion="0.2.0">
+  <device Dname="M2351KIAAE" Dvendor="Nuvoton:18" info="ARM , 96 KB RAM, 512 KB ROM">
+    <package info="Nuvoton ARM Cortex-M NuMicro Family Device Support" name="NuMicro_DFP" url="http://www.nuvoton.com/hq/enu/Documents/KEILSoftwarePack" vendor="Nuvoton" version="1.3.4"/>
+    <processor Dclock="64000000" Dcore="Cortex-M23" DcoreVersion="r0p0" Dendian="Configurable" Dfpu="NO_FPU" Dmpu="MPU" Dtz="TZ" Ddsp="DSP" DnumInterrupts="101"  DnumSauRegions="8"/>
+  </device>
+  <resources>
+    <sau_init>
+      <region start="0x50000000" size="0x10000000" security="n" info="Non-Secure Peripherals"/>
+    </sau_init>
+    <memories>
+      <memory access="rx"  name="FLASH_S"  size="0x80000" start="0x00000000" startup="1" security="c" info="Flash (secure)"/>
+      <memory access="rx"  name="FLASH_NS" size="0x80000" start="0x10000000" physical="0x00000000" security="n" info="Flash (non-secure)"/>
+      <memory access="rwx" name="SRAM_S"   size="0x18000" start="0x20000000" security="c" info="SRAM (secure)"/>
+      <memory access="rwx" name="SRAM_NS"  size="0x18000" start="0x30000000" physical="0x20000000" security="n" info="SRAM (non-secure)"/>
+      <mpc name="SCU-&gt;SRAMNSSET" start="0x20000000" type="s" size="0x18000" blk_size="0x2000" info="SRAM Memory Protection Controller" />
+    </memories>
+    <peripherals>
+      <peripheral access="prw" info="ACMP Register Map" name="ACMP01" size="0x10" start_s="0x40045000" start="0x50045000">
+        <setup name="SCU-&gt;PNSSET[2]" value="0x00000020" security="n"/>
+        <interrupt info="ACMP0 and ACMP1 interrupt" irqn="044" name="ACMP01_INT" />
+      </peripheral>
+      <group name="BPWM">
+        <peripheral access="prw" info="BPWM Register Map" name="BPWM0" size="0x8" start_s="0x4005A000" start="0x5005A000">
+          <setup name="SCU-&gt;PNSSET[2]" value="0x04000000" security="n"/>
+          <interrupt name="BPWM0_INT" irqn="078" info="BPWM0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="BPWM Register Map" name="BPWM1" size="0x8" start_s="0x4005B000" start="0x5005B000">
+          <setup name="SCU-&gt;PNSSET[2]" value="0x08000000" security="n"/>
+          <interrupt name="BPWM1_INT" irqn="079" info="BPWM1 interrupt" />
+        </peripheral>
+      </group>
+      <peripheral access="prw" info="CAN Register Map" name="CAN0" size="0x1C" start_s="0x400A0000" start="0x500A0000">
+        <setup name="SCU-&gt;PNSSET[5]" value="0x00000001" security="n"/>
+        <interrupt name="CAN0_INT" irqn="056" info="CAN0 interrupt" />
+      </peripheral>
+      <peripheral access="prw" info="CRC Register Map" name="CRC" size="0x10" start_s="0x40031000" start="0x50031000">
+        <setup name="SCU-&gt;PNSSET[1]" value="0x00020000" security="n"/>
+      </peripheral>
+      <peripheral access="prw" info="CRYPTO Register Map" name="CRYPTO" size="0x3000" start_s="0x40032000" start="0x50032000">
+        <setup name="SCU-&gt;PNSSET[1]" value="0x00040000" security="n"/>
+        <interrupt name="CRYPTO" irqn="071" info="CRYPTO interrupt" />
+      </peripheral>
+      <peripheral access="prw" info="DAC Register Map" name="DAC" size="0x18" start_s="0x40047000" start="0x50047000">
+        <setup name="SCU-&gt;PNSSET[2]" value="0x00000080" security="n"/>
+        <interrupt name="DAC_INT" irqn="041" info="DAC interrupt" />
+      </peripheral>
+      <peripheral access="prw" info="EADC Register Map" name="EADC" size="0x60" start_s="0x40043000" start="0x50043000">
+        <setup name="SCU-&gt;PNSSET[2]" value="0x00000008" security="n"/>
+        <interrupt name="EADC0_INT" irqn="042" info="EADC interrupt source 0" />
+        <interrupt name="EADC1_INT" irqn="043" info="EADC interrupt source 1" />
+        <interrupt name="EADC2_INT" irqn="046" info="EADC interrupt source 2" />
+        <interrupt name="EADC3_INT" irqn="047" info="EADC interrupt source 3" />
+      </peripheral>
+      <peripheral access="prw" info="EBI Register Map" name="EBI" size="0x8" start_s="0x40010000" start="0x50010000">
+        <setup name="SCU-&gt;PNSSET[0]" value="0x00010000" security="n"/>
+      </peripheral>
+      <group name="ECAP">
+        <peripheral access="prw" info="ECAP Register Map" name="ECAP0" size="0x20" start_s="0x400B4000" start="0x500B4000">
+          <setup name="SCU-&gt;PNSSET[5]" value="0x00100000" security="n"/>
+          <interrupt name="ECAP0_INT" irqn="086" info="ECAP0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="ECAP Register Map" name="ECAP1" size="0x20" start_s="0x400B5000" start="0x500B5000">
+          <setup name="SCU-&gt;PNSSET[5]" value="0x00200000" security="n"/>
+          <interrupt name="ECAP1_INT" irqn="087" info="ECAP1 interrupt" />
+        </peripheral>
+      </group>
+      <group name="EPWM">
+        <peripheral access="prw" info="EPWM Register Map" name="EPWM0" size="0x2C" start_s="0x40058000" start="0x50058000">
+          <setup name="SCU-&gt;PNSSET[2]" value="0x01000000" security="n"/>
+          <interrupt name="BRAKE0_INT"   irqn="024" info="EPWM0 brake interrupt" />
+          <interrupt name="EPWM0_P0_INT" irqn="025" info="EPWM0 pair 0 interrupt" />
+          <interrupt name="EPWM0_P1_INT" irqn="026" info="EPWM0 pair 1 interrupt" />
+          <interrupt name="EPWM0_P2_INT" irqn="027" info="EPWM0 pair 2 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="EPWM Register Map" name="EPWM1" size="0x2C" start_s="0x40059000" start="0x50059000">
+          <setup name="SCU-&gt;PNSSET[2]" value="0x02000000" security="n"/>
+          <interrupt name="BRAKE1_INT"   irqn="028" info="EPWM1 brake interrupt" />
+          <interrupt name="EPWM1_P0_INT" irqn="029" info="EPWM1 pair 0 interrupt" />
+          <interrupt name="EPWM1_P1_INT" irqn="030" info="EPWM1 pair 1 interrupt" />
+          <interrupt name="EPWM1_P2_INT" irqn="031" info="EPWM1 pair 2 interrupt" />
+        </peripheral>
+      </group>
+      <group name="GPIO">
+        <peripheral access="prw" info="GPIO Register Map" name="GPIOA" size="0x40" start_s="0x40004800" start="0x50004800">
+          <setup name="SCU-&gt;IONSSET" value="0x00000001" security="n"/>
+          <interrupt name="GPA_INT" irqn="16" info="External interrupt from PA[15:0] pin" />
+          <interrupt name="EINT0" irqn="10" info="External interrupt from PA.6 or PB.5 pins" />
+          <interrupt name="EINT1" irqn="11" info="External interrupt from PA.7 or PB.4 pins" />
+          <interrupt name="EINT3" irqn="13" info="External interrupt from PA.6 or PB.5 pins" />
+          <interrupt name="EINT4" irqn="14" info="External interrupt from PA.8 or PB.6 pins" />
+        </peripheral>
+        <peripheral access="prw" info="GPIO Register Map" name="GPIOB" size="0x40" start_s="0x40004840" start="0x50004840">
+          <setup name="SCU-&gt;IONSSET" value="0x00000002" security="n"/>
+          <interrupt name="GPB_INT" irqn="17" info="External interrupt from PB[15:0] pin" />
+          <interrupt name="EINT0" irqn="10" info="External interrupt from PA.6 or PB.5 pins" />
+          <interrupt name="EINT1" irqn="11" info="External interrupt from PA.7 or PB.4 pins" />
+          <interrupt name="EINT2" irqn="12" info="External interrupt from PB.3 or PC.6 pins" />
+          <interrupt name="EINT4" irqn="14" info="External interrupt from PA.8 or PB.6 pins" />
+          <interrupt name="EINT5" irqn="15" info="External interrupt from PB.7 or PD.12 pins" />
+          <interrupt name="EINT6" irqn="73" info="External interrupt from PB.8 or PD.11 pins" />
+          <interrupt name="EINT7" irqn="89" info="External interrupt from PB.9 or PD.10 pins" />
+        </peripheral>
+        <peripheral access="prw" info="GPIO Register Map" name="GPIOC" size="0x40" start_s="0x40004880" start="0x50004880">
+          <setup name="SCU-&gt;IONSSET" value="0x00000004" security="n"/>
+          <interrupt name="GPC_INT" irqn="18" info="External interrupt from PC[15:0] pin" />
+          <interrupt name="EINT2" irqn="12" info="External interrupt from PB.3 or PC.6 pins" />
+        </peripheral>
+        <peripheral access="prw" info="GPIO Register Map" name="GPIOD" size="0x40" start_s="0x400048C0" start="0x500048C0">
+          <setup name="SCU-&gt;IONSSET" value="0x00000008" security="n"/>
+          <interrupt name="GPD_INT" irqn="19" info="External interrupt from PD[15:0] pin" />
+          <interrupt name="EINT5" irqn="15" info="External interrupt from PB.7 or PD.12 pins" />
+          <interrupt name="EINT6" irqn="73" info="External interrupt from PB.8 or PD.11 pins" />
+          <interrupt name="EINT7" irqn="89" info="External interrupt from PB.9 or PD.10 pins" />
+        </peripheral>
+        <peripheral access="prw" info="GPIO Register Map" name="GPIOE" size="0x40" start_s="0x40004900" start="0x50004900">
+          <setup name="SCU-&gt;IONSSET" value="0x00000010" security="n"/>
+          <interrupt name="GPE_INT" irqn="20" info="External interrupt from PE[15:0] pin" />
+        </peripheral>
+        <peripheral access="prw" info="GPIO Register Map" name="GPIOF" size="0x40" start_s="0x40004940" start="0x50004940">
+          <setup name="SCU-&gt;IONSSET" value="0x00000020" security="n"/>
+          <interrupt name="GPF_INT" irqn="21" info="External interrupt from PF[15:0] pin" />
+        </peripheral>
+        <peripheral access="prw" info="GPIO Register Map" name="GPIOG" size="0x40" start_s="0x40004980" start="0x50004980">
+          <setup name="SCU-&gt;IONSSET" value="0x00000040" security="n"/>
+          <interrupt name="GPG_INT" irqn="72" info="External interrupt from PG[15:0] pin" />
+        </peripheral>
+        <peripheral access="prw" info="GPIO Register Map" name="GPIOH" size="0x40" start_s="0x400049C0" start="0x500049C0">
+          <setup name="SCU-&gt;IONSSET" value="0x00000080" security="n"/>
+          <interrupt name="GPH_INT" irqn="88" info="External interrupt from PH[15:0] pin" />
+        </peripheral>
+      </group>
+      <group name="I2C">
+        <peripheral access="prw" info="I2C Register Map" name="I2C0" size="0x34" start_s="0x40080000" start="0x50080000">
+          <setup name="SCU-&gt;PNSSET[4]" value="0x00000001" security="n"/>
+          <interrupt name="I2C0_INT" irqn="38" info="I2C0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="I2C Register Map" name="I2C1" size="0x34" start_s="0x40081000" start="0x50081000">
+          <setup name="SCU-&gt;PNSSET[4]" value="0x00000002" security="n"/>
+          <interrupt name="I2C1_INT" irqn="39" info="I2C1 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="I2C Register Map" name="I2C2" size="0x34" start_s="0x40082000" start="0x50082000">
+          <setup name="SCU-&gt;PNSSET[4]" value="0x00000004" security="n"/>
+          <interrupt name="I2C2_INT" irqn="82" info="I2C2 interrupt" />
+        </peripheral>
+      </group>
+      <peripheral access="prw" info="I2S Register Map" name="I2S" size="0x18" start_s="0x40048000" start="0x50048000">
+        <setup name="SCU-&gt;PNSSET[2]" value="0x00000100" security="n"/>
+        <interrupt name="I2S0_INT" irqn="68" info="I2S0 interrupt" />
+      </peripheral>
+      <group name="PDMA">
+        <peripheral access="prw" info="PDMA Register Map" security="s" name="PDMA0" size="0xA0" start_s="0x40008000">
+          <interrupt name="PDMA0_INT" irqn="40" info="PDMA0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="PDMA Register Map" name="PDMA1" size="0xA0" start_s="0x40018000" start="0x50018000">
+          <setup name="SCU-&gt;PNSSET[0]" value="0x01000000" security="n"/>
+          <interrupt name="PDMA1_INT" irqn="98" info="PDMA1 interrupt" />
+        </peripheral>
+      </group>
+      <group name="QEI">
+        <peripheral access="prw" info="QEI Register Map" name="QEI0" size="0x10" start_s="0x400B0000" start="0x500B0000">
+          <setup name="SCU-&gt;PNSSET[5]" value="0x00010000" security="n"/>
+          <interrupt name="QEI0_INT" irqn="84" info="QEI0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="QEI Register Map" name="QEI1" size="0x10" start_s="0x400B1000" start="0x500B1000">
+          <setup name="SCU-&gt;PNSSET[5]" value="0x00020000" security="n"/>
+          <interrupt name="QEI1_INT" irqn="85" info="QEI1 interrupt" />
+        </peripheral>
+      </group>
+      <peripheral access="prw" info="QSPI Register Map" name="QSPI0" size="0x18" start_s="0x40060000" start="0x50060000">
+        <setup name="SCU-&gt;PNSSET[3]" value="0x00000001" security="n"/>
+        <interrupt name="QSPI0_INT" irqn="22" info="QSPI0 interrupt" />
+      </peripheral>
+      <peripheral access="prw" info="RTC Register Map" name="RTC" size="0x90" start_s="0x40041000" start="0x50041000">
+        <setup name="SCU-&gt;PNSSET[2]" value="0x00000002" security="n"/>
+        <interrupt name="RTC_INT" irqn="6" info="Real time clock interrupt" />
+      </peripheral>
+      <group name="SC">
+        <peripheral access="prw" info="SC Register Map" name="SC0" size="0x38" start_s="0x40090000" start="0x50090000">
+          <setup name="SCU-&gt;PNSSET[4]" value="0x00010000" security="n"/>
+          <interrupt name="SC0_INT" irqn="58" info="Smart card host 0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="SC Register Map" name="SC1" size="0x38" start_s="0x40091000" start="0x50091000">
+          <setup name="SCU-&gt;PNSSET[4]" value="0x00020000" security="n"/>
+          <interrupt name="SC1_INT" irqn="59" info="Smart card host 1 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="SC Register Map" name="SC2" size="0x38" start_s="0x40092000" start="0x50092000">
+          <setup name="SCU-&gt;PNSSET[4]" value="0x00040000" security="n"/>
+          <interrupt name="SC2_INT" irqn="60" info="Smart card host 2 interrupt" />
+        </peripheral>
+      </group>
+      <peripheral access="prw" info="SDH Register Map" name="SDH0" size="0x80" start_s="0x4000D000" start="0x5000D000">
+        <setup name="SCU-&gt;PNSSET[0]" value="0x00002000" security="n"/>
+        <interrupt name="SDHOST0_INT" irqn="64" info="SD host 0 interrupt" />
+      </peripheral>
+      <group name="SPI">
+        <peripheral access="prw" info="SPI Register Map" name="SPI0" size="0x18" start_s="0x40061000" start="0x50061000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00000002" security="n"/>
+          <interrupt name="SPI0_INT" irqn="23" info="SPI0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="SPI Register Map" name="SPI1" size="0x18" start_s="0x40062000" start="0x50062000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00000004" security="n"/>
+          <interrupt name="SPI1_INT" irqn="51" info="SPI1 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="SPI Register Map" name="SPI2" size="0x18" start_s="0x40063000" start="0x50063000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00000008" security="n"/>
+          <interrupt name="SPI2_INT" irqn="52" info="SPI2 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="SPI Register Map" name="SPI3" size="0x18" start_s="0x40064000" start="0x50064000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00000010" security="n"/>
+          <interrupt name="SPI3_INT" irqn="62" info="SPI3 interrupt" />
+        </peripheral>
+      </group>
+      <group name="TIMER">
+        <peripheral access="prw" info="TIMER Register Map" name="TMR01" security="s" size="0x200" start_s="0x40050000">
+          <interrupt name="TMR0_INT" irqn="32" info="Timer 0 interrupt" />
+          <interrupt name="TMR1_INT" irqn="33" info="Timer 1 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="TIMER Register Map" name="TMR23" size="0x200" start_s="0x40051000" start="0x50051000">
+          <setup name="SCU-&gt;PNSSET[2]" value="0x00020000" security="n"/>
+          <interrupt name="TMR2_INT" irqn="34" info="Timer 2 interrupt" />
+          <interrupt name="TMR3_INT" irqn="35" info="Timer 3 interrupt" />
+        </peripheral>
+      </group>
+      <peripheral access="prw" info="TRNG Register Map" name="TRNG" size="0x8" start_s="0x400B9000" start="0x500B9000">
+        <setup name="SCU-&gt;PNSSET[5]" value="0x02000000" security="n"/>
+        <interrupt name="TRNG_INT" irqn="101" info="TRNG interrupt" />
+      </peripheral>
+      <group name="UART">
+        <peripheral access="prw" info="UART Register Map" name="UART0" size="0x4C" start_s="0x40070000" start="0x50070000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00010000" security="n"/>
+          <interrupt name="UART0_INT" irqn="36" info="UART0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="UART Register Map" name="UART1" size="0x4C" start_s="0x40071000" start="0x50071000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00020000" security="n"/>
+          <interrupt name="UART1_INT" irqn="37" info="UART1 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="UART Register Map" name="UART2" size="0x34" start_s="0x40072000" start="0x50072000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00040000" security="n"/>
+          <interrupt name="UART2_INT" irqn="48" info="UART2 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="UART Register Map" name="UART3" size="0x34" start_s="0x40073000" start="0x50073000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00080000" security="n"/>
+          <interrupt name="UART3_INT" irqn="49" info="UART3 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="UART Register Map" name="UART4" size="0x34" start_s="0x40074000" start="0x50074000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00100000" security="n"/>
+          <interrupt name="UART4_INT" irqn="74" info="UART4 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="UART Register Map" name="UART5" size="0x34" start_s="0x40075000" start="0x50075000">
+          <setup name="SCU-&gt;PNSSET[3]" value="0x00200000" security="n"/>
+          <interrupt name="UART5_INT" irqn="75" info="UART5 interrupt" />
+        </peripheral>
+      </group>
+      <group name="USB">
+        <peripheral access="prw" info="USBD Register Map" name="USBD" size="0x1C" start_s="0x400C0000" start="0x500C0000">
+          <setup name="SCU-&gt;PNSSET[6]" value="0x0000001" security="n"/>
+          <interrupt name="USBD_INT" irqn="53" info="USB device interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="USBH Register Map" name="USBH" size="0x54" start_s="0x40009000" start="0x50009000">
+          <setup name="SCU-&gt;PNSSET[0]" value="0x0000200" security="n"/>
+          <interrupt name="USBH_INT" irqn="54" info="USB host interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="OTG Register Map" name="OTG" size="0x14" start_s="0x4004D000" start="0x5004D000">
+          <setup name="SCU-&gt;PNSSET[2]" value="0x00002000" security="n"/>
+          <interrupt name="USBOTG_INT" irqn="55" info="USB OTG interrupt" />
+        </peripheral>
+      </group>
+      <group name="USCI">
+        <peripheral access="prw" info="USCI Register Map" name="USCI0" size="0x100" start_s="0x400D0000" start="0x500D0000">
+          <setup name="SCU-&gt;PNSSET[6]" value="0x00010000" security="n"/>
+          <interrupt name="USCI0_INT" irqn="76" info="USCI0 interrupt" />
+        </peripheral>
+        <peripheral access="prw" info="USCI Register Map" name="USCI1" size="0x100" start_s="0x400D1000" start="0x500D1000">
+          <setup name="SCU-&gt;PNSSET[6]" value="0x00020000" security="n"/>
+          <interrupt name="USCI1_INT" irqn="77" info="USCI1 interrupt" />
+        </peripheral>
+      </group>
+
+    </peripherals>
+  </resources>
+</rzone>

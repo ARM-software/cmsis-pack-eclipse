@@ -1,0 +1,15 @@
+LR_CODE_S 0x10000000 0xFE00 {
+  ER_CODE_S 0x10000000 0xFE00 {
+  	* (RESET,+FIRST)
+    * (InRoot$$Sections)
+    .ANY (+RO, +XO)
+  }
+  RW_DATA_S 0x30000000 0x8000 {
+    .ANY (+RW +ZI)
+  }
+}
+LR_Veneer 0x1000FE00 0x200 {
+  ER_Veneer 0x1000FE00 0x200 {
+  	*(Veneer$$CMSE)
+  }
+}

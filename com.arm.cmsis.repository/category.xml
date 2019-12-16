@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature id="com.arm.cmsis.pack.feature" version="2.5.0.qualifier">
+      <category name="cmsis-eclipse"/>
+   </feature>
+   <feature id="com.arm.cmsis.pack.feature.source" version="2.5.0.qualifier">
+      <category name="cmsis-eclipse-source"/>
+   </feature>
+   <feature id="com.arm.cmsis.zone.feature" version="1.0.0.qualifier">
+      <category name="cmsis-eclipse"/>
+   </feature>
+   <feature id="com.arm.cmsis.zone.feature.source" version="1.0.0.qualifier">
+      <category name="cmsis-eclipse-source"/>
+   </feature>
+   <category-def name="cmsis-eclipse" label="CMSIS Eclipse plug-ins">
+      <description>
+         Eclipse plug-ins for CMSIS support
+      </description>
+   </category-def>
+   <category-def name="cmsis-eclipse-source" label="CMSIS Eclipse plug-ins (Sources)">
+      <description>
+         Eclipse plug-ins for CMSIS support (Sources)
+      </description>
+   </category-def>
+</site>

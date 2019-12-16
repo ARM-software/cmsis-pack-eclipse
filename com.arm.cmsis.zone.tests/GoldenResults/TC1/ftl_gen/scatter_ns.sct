@@ -1,0 +1,10 @@
+LR_CODE_NS 0x00010000 0x72000 {
+  ER_CODE_NS 0x00010000 0x72000 {
+  	* (RESET,+FIRST)
+    * (InRoot$$Sections)
+    .ANY (+RO, +XO)
+  }
+  RW_DATA_NS 0x20008000 0x3C000 {
+    .ANY (+RW +ZI)
+  }
+}

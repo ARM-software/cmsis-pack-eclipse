@@ -23,9 +23,9 @@ import java.util.Arrays;
 
 @SuppressWarnings("all")
 public class DebugSeqTypeProvider {
-  public final static StringType stringType = new StringType();
+  public static final StringType stringType = new StringType();
   
-  public final static IntType intType = new IntType();
+  public static final IntType intType = new IntType();
   
   protected DebugSeqType _typeFor(final Expression e) {
     DebugSeqType _switchResult = null;
@@ -41,8 +41,7 @@ public class DebugSeqTypeProvider {
   }
   
   protected DebugSeqType _typeFor(final VariableDeclaration variable) {
-    Expression _value = variable.getValue();
-    return this.typeFor(_value);
+    return this.typeFor(variable.getValue());
   }
   
   protected DebugSeqType _typeFor(final VariableRef varRef) {
@@ -51,8 +50,7 @@ public class DebugSeqTypeProvider {
     if (_equals) {
       return null;
     } else {
-      VariableDeclaration _variable_1 = varRef.getVariable();
-      return this.typeFor(_variable_1);
+      return this.typeFor(varRef.getVariable());
     }
   }
   

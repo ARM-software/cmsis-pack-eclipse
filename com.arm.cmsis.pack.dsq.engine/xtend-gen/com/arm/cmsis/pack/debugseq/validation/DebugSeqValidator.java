@@ -18,7 +18,6 @@ import com.arm.cmsis.pack.debugseq.debugSeq.DapSwjSequence;
 import com.arm.cmsis.pack.debugseq.debugSeq.DapWriteABORT;
 import com.arm.cmsis.pack.debugseq.debugSeq.DebugSeqModel;
 import com.arm.cmsis.pack.debugseq.debugSeq.DebugSeqPackage;
-import com.arm.cmsis.pack.debugseq.debugSeq.DebugVars;
 import com.arm.cmsis.pack.debugseq.debugSeq.Div;
 import com.arm.cmsis.pack.debugseq.debugSeq.Equality;
 import com.arm.cmsis.pack.debugseq.debugSeq.Expression;
@@ -39,7 +38,6 @@ import com.arm.cmsis.pack.debugseq.debugSeq.ReadAP;
 import com.arm.cmsis.pack.debugseq.debugSeq.ReadDP;
 import com.arm.cmsis.pack.debugseq.debugSeq.Sequence;
 import com.arm.cmsis.pack.debugseq.debugSeq.SequenceCall;
-import com.arm.cmsis.pack.debugseq.debugSeq.Sequences;
 import com.arm.cmsis.pack.debugseq.debugSeq.Shift;
 import com.arm.cmsis.pack.debugseq.debugSeq.Statement;
 import com.arm.cmsis.pack.debugseq.debugSeq.Ternary;
@@ -59,11 +57,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
-import org.eclipse.emf.common.util.EList;
-import org.eclipse.emf.ecore.EAttribute;
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -89,21 +83,21 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
     }
   }
   
-  public final static String DUPLICATE_ELEMENT = "com.arm.cmsis.pack.dsq.DuplicateElement";
+  public static final String DUPLICATE_ELEMENT = "com.arm.cmsis.pack.dsq.DuplicateElement";
   
-  public final static String SEQUENCE_UNDEFINED = "com.arm.cmsis.pack.dsq.SequenceUndefined";
+  public static final String SEQUENCE_UNDEFINED = "com.arm.cmsis.pack.dsq.SequenceUndefined";
   
-  public final static String ASSIGNMENT_ERROR = "com.arm.cmsis.pack.dsq.AssignmentError";
+  public static final String ASSIGNMENT_ERROR = "com.arm.cmsis.pack.dsq.AssignmentError";
   
-  public final static String WRONG_TYPE = "com.arm.cmsis.pack.dsq.WrongType";
+  public static final String WRONG_TYPE = "com.arm.cmsis.pack.dsq.WrongType";
   
-  public final static String SEQUENCE_CALL_IN_ATOMIC_BLOCK = "com.arm.cmsis.pack.dsq.SequenceCallInAtomicBlock";
+  public static final String SEQUENCE_CALL_IN_ATOMIC_BLOCK = "com.arm.cmsis.pack.dsq.SequenceCallInAtomicBlock";
   
-  public final static String QUERY_CALL_IN_ATOMIC_BLOCK = "com.arm.cmsis.pack.dsq.QueryCallInAtomicBlock";
+  public static final String QUERY_CALL_IN_ATOMIC_BLOCK = "com.arm.cmsis.pack.dsq.QueryCallInAtomicBlock";
   
-  public final static String MUST_IN_ATOMIC_BLOCK = "com.arm.cmsis.pack.dsq.MustInAtomicBlock";
+  public static final String MUST_IN_ATOMIC_BLOCK = "com.arm.cmsis.pack.dsq.MustInAtomicBlock";
   
-  public final static String NESTED_COMMAND_IN_ATOMIC_BLOCK = "com.arm.cmsis.pack.dsq.NestedCommandInAtomicBlock";
+  public static final String NESTED_COMMAND_IN_ATOMIC_BLOCK = "com.arm.cmsis.pack.dsq.NestedCommandInAtomicBlock";
   
   @Inject
   @Extension
@@ -136,16 +130,15 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
   
   private void checkExpectedSame(final DebugSeqType left, final DebugSeqType right) {
     if ((((!Objects.equal(right, null)) && (!Objects.equal(left, null))) && (!Objects.equal(right, left)))) {
-      EAttribute _eIDAttribute = DebugSeqPackage.Literals.EQUALITY.getEIDAttribute();
-      this.error(((("expected the same type, but was " + left) + ", ") + right), _eIDAttribute, 
+      this.error(((("expected the same type, but was " + left) + ", ") + right), 
+        DebugSeqPackage.Literals.EQUALITY.getEIDAttribute(), 
         DebugSeqValidator.WRONG_TYPE);
     }
   }
   
   @Check
   public void checkNot(final Not not) {
-    Expression _expression = not.getExpression();
-    this.checkExpectedInteger(_expression, 
+    this.checkExpectedInteger(not.getExpression(), 
       DebugSeqPackage.Literals.NOT__EXPRESSION);
   }
   
@@ -154,165 +147,133 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
     Expression _left = assign.getLeft();
     boolean _not = (!(_left instanceof VariableRef));
     if (_not) {
-      EReference _assignment_Left = DebugSeqPackage.eINSTANCE.getAssignment_Left();
-      this.error("The left hand side of assignment expression must be a variable", _assignment_Left, 
+      this.error("The left hand side of assignment expression must be a variable", 
+        DebugSeqPackage.eINSTANCE.getAssignment_Left(), 
         DebugSeqValidator.ASSIGNMENT_ERROR);
       return;
     }
     Expression _left_1 = assign.getLeft();
-    VariableDeclaration _variable = ((VariableRef) _left_1).getVariable();
-    final String varname = _variable.getName();
+    final String varname = ((VariableRef) _left_1).getVariable().getName();
     if (((Objects.equal(varname, "__protocol") || 
       Objects.equal(varname, "__connection")) || 
       Objects.equal(varname, "__traceout"))) {
-      EReference _assignment_Left_1 = DebugSeqPackage.eINSTANCE.getAssignment_Left();
-      this.error((("Read-only variable \'" + varname) + "\' cannot be modified"), _assignment_Left_1, 
+      this.error((("Read-only variable \'" + varname) + "\' cannot be modified"), 
+        DebugSeqPackage.eINSTANCE.getAssignment_Left(), 
         DebugSeqValidator.ASSIGNMENT_ERROR);
       return;
     }
-    Expression _right = assign.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(assign.getRight(), 
       DebugSeqPackage.Literals.ASSIGNMENT__RIGHT);
   }
   
   @Check
   public void checkTernary(final Ternary ternary) {
-    Expression _exp1 = ternary.getExp1();
-    DebugSeqType _typeFor = this._debugSeqTypeProvider.typeFor(_exp1);
-    Expression _exp2 = ternary.getExp2();
-    DebugSeqType _typeFor_1 = this._debugSeqTypeProvider.typeFor(_exp2);
-    this.checkExpectedSame(_typeFor, _typeFor_1);
+    this.checkExpectedSame(this._debugSeqTypeProvider.typeFor(ternary.getExp1()), this._debugSeqTypeProvider.typeFor(ternary.getExp2()));
   }
   
   @Check
   public void checkOr(final Or or) {
-    Expression _left = or.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(or.getLeft(), 
       DebugSeqPackage.Literals.OR__LEFT);
-    Expression _right = or.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(or.getRight(), 
       DebugSeqPackage.Literals.OR__RIGHT);
   }
   
   @Check
   public void checkAnd(final And and) {
-    Expression _left = and.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(and.getLeft(), 
       DebugSeqPackage.Literals.AND__LEFT);
-    Expression _right = and.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(and.getRight(), 
       DebugSeqPackage.Literals.AND__RIGHT);
   }
   
   @Check
   public void checkBitOr(final BitOr bitOr) {
-    Expression _left = bitOr.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(bitOr.getLeft(), 
       DebugSeqPackage.Literals.BIT_OR__LEFT);
-    Expression _right = bitOr.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(bitOr.getRight(), 
       DebugSeqPackage.Literals.BIT_OR__RIGHT);
   }
   
   @Check
   public void checkBitXor(final BitXor bitXor) {
-    Expression _left = bitXor.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(bitXor.getLeft(), 
       DebugSeqPackage.Literals.BIT_XOR__LEFT);
-    Expression _right = bitXor.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(bitXor.getRight(), 
       DebugSeqPackage.Literals.BIT_XOR__RIGHT);
   }
   
   @Check
   public void checkBitAnd(final BitAnd bitAnd) {
-    Expression _left = bitAnd.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(bitAnd.getLeft(), 
       DebugSeqPackage.Literals.BIT_AND__LEFT);
-    Expression _right = bitAnd.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(bitAnd.getRight(), 
       DebugSeqPackage.Literals.BIT_AND__RIGHT);
   }
   
   @Check
   public void checkShift(final Shift shift) {
-    Expression _left = shift.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(shift.getLeft(), 
       DebugSeqPackage.Literals.SHIFT__LEFT);
-    Expression _right = shift.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(shift.getRight(), 
       DebugSeqPackage.Literals.SHIFT__RIGHT);
   }
   
   @Check
   public void checkPlus(final Plus plus) {
-    Expression _left = plus.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(plus.getLeft(), 
       DebugSeqPackage.Literals.PLUS__LEFT);
-    Expression _right = plus.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(plus.getRight(), 
       DebugSeqPackage.Literals.PLUS__RIGHT);
   }
   
   @Check
   public void checkMinus(final Minus minus) {
-    Expression _left = minus.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(minus.getLeft(), 
       DebugSeqPackage.Literals.MINUS__LEFT);
-    Expression _right = minus.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(minus.getRight(), 
       DebugSeqPackage.Literals.MINUS__RIGHT);
   }
   
   @Check
   public void checkMultiply(final Mul mul) {
-    Expression _left = mul.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(mul.getLeft(), 
       DebugSeqPackage.Literals.MUL__LEFT);
-    Expression _right = mul.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(mul.getRight(), 
       DebugSeqPackage.Literals.MUL__RIGHT);
   }
   
   @Check
   public void checkDivide(final Div div) {
-    Expression _left = div.getLeft();
-    this.checkExpectedInteger(_left, 
+    this.checkExpectedInteger(div.getLeft(), 
       DebugSeqPackage.Literals.DIV__LEFT);
-    Expression _right = div.getRight();
-    this.checkExpectedInteger(_right, 
+    this.checkExpectedInteger(div.getRight(), 
       DebugSeqPackage.Literals.DIV__RIGHT);
   }
   
   @Check
   public void checkEquality(final Equality equality) {
-    Expression _left = equality.getLeft();
-    final DebugSeqType leftType = this.getTypeAndCheckNotNull(_left, 
+    final DebugSeqType leftType = this.getTypeAndCheckNotNull(equality.getLeft(), 
       DebugSeqPackage.Literals.EQUALITY__LEFT);
-    Expression _right = equality.getRight();
-    final DebugSeqType rightType = this.getTypeAndCheckNotNull(_right, 
+    final DebugSeqType rightType = this.getTypeAndCheckNotNull(equality.getRight(), 
       DebugSeqPackage.Literals.EQUALITY__RIGHT);
     this.checkExpectedSame(leftType, rightType);
   }
   
   @Check
   public void checkComparison(final Comparison comparison) {
-    Expression _left = comparison.getLeft();
-    final DebugSeqType leftType = this.getTypeAndCheckNotNull(_left, 
+    final DebugSeqType leftType = this.getTypeAndCheckNotNull(comparison.getLeft(), 
       DebugSeqPackage.Literals.COMPARISON__LEFT);
-    Expression _right = comparison.getRight();
-    final DebugSeqType rightType = this.getTypeAndCheckNotNull(_right, 
+    final DebugSeqType rightType = this.getTypeAndCheckNotNull(comparison.getRight(), 
       DebugSeqPackage.Literals.COMPARISON__RIGHT);
     this.checkExpectedSame(leftType, rightType);
   }
   
   @Check
   public void checkQuery(final Query query) {
-    Expression _type = query.getType();
-    this.checkExpectedInteger(_type, 
+    this.checkExpectedInteger(query.getType(), 
       DebugSeqPackage.Literals.QUERY__TYPE);
-    Expression _default = query.getDefault();
-    this.checkExpectedInteger(_default, 
+    this.checkExpectedInteger(query.getDefault(), 
       DebugSeqPackage.Literals.QUERY__DEFAULT);
     final Block block = DebugSeqUtil.containingBlock(query);
     long _atomic = block.getAtomic();
@@ -326,8 +287,7 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
   
   @Check
   public void checkQueryValue(final QueryValue query) {
-    Expression _default = query.getDefault();
-    this.checkExpectedInteger(_default, 
+    this.checkExpectedInteger(query.getDefault(), 
       DebugSeqPackage.Literals.QUERY__DEFAULT);
     final Block block = DebugSeqUtil.containingBlock(query);
     long _atomic = block.getAtomic();
@@ -342,210 +302,176 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
   @Check
   public void checkSequenceCall(final SequenceCall seqCall) {
     final String name = seqCall.getSeqname();
-    Sequences _containingSequences = DebugSeqUtil.containingSequences(seqCall);
-    EList<Sequence> _sequences = _containingSequences.getSequences();
     final Function1<Sequence, Boolean> _function = (Sequence it) -> {
       String _name = it.getName();
       return Boolean.valueOf(Objects.equal(_name, name));
     };
-    final Sequence sequence = IterableExtensions.<Sequence>findFirst(_sequences, _function);
+    final Sequence sequence = IterableExtensions.<Sequence>findFirst(DebugSeqUtil.containingSequences(seqCall).getSequences(), _function);
     if ((Objects.equal(sequence, null) && (!DebugSeqUtil.isDefaultSequence(name)))) {
-      EAttribute _sequenceCall_Seqname = DebugSeqPackage.eINSTANCE.getSequenceCall_Seqname();
-      this.error((("Calling an undefined sequence \'" + name) + "\'"), _sequenceCall_Seqname, 
+      this.error((("Calling an undefined sequence \'" + name) + "\'"), 
+        DebugSeqPackage.eINSTANCE.getSequenceCall_Seqname(), 
         DebugSeqValidator.SEQUENCE_UNDEFINED);
     }
     final Block block = DebugSeqUtil.containingBlock(seqCall);
     long _atomic = block.getAtomic();
     boolean _tripleNotEquals = (_atomic != 0);
     if (_tripleNotEquals) {
-      EAttribute _sequenceCall_Seqname_1 = DebugSeqPackage.eINSTANCE.getSequenceCall_Seqname();
-      this.error((("Calling sequence \'" + name) + "\' in an atomic block"), _sequenceCall_Seqname_1, 
+      this.error((("Calling sequence \'" + name) + "\' in an atomic block"), 
+        DebugSeqPackage.eINSTANCE.getSequenceCall_Seqname(), 
         DebugSeqValidator.SEQUENCE_CALL_IN_ATOMIC_BLOCK);
     }
   }
   
   @Check
   public void checkRead8(final Read8 read) {
-    Expression _addr = read.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(read.getAddr(), 
       DebugSeqPackage.Literals.READ8__ADDR);
   }
   
   @Check
   public void checkRead16(final Read16 read) {
-    Expression _addr = read.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(read.getAddr(), 
       DebugSeqPackage.Literals.READ16__ADDR);
   }
   
   @Check
   public void checkRead32(final Read32 read) {
-    Expression _addr = read.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(read.getAddr(), 
       DebugSeqPackage.Literals.READ32__ADDR);
   }
   
   @Check
   public void checkRead64(final Read64 read) {
-    Expression _addr = read.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(read.getAddr(), 
       DebugSeqPackage.Literals.READ64__ADDR);
   }
   
   @Check
   public void checkReadAP(final ReadAP read) {
-    Expression _addr = read.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(read.getAddr(), 
       DebugSeqPackage.Literals.READ_AP__ADDR);
   }
   
   @Check
   public void checkReadDP(final ReadDP read) {
-    Expression _addr = read.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(read.getAddr(), 
       DebugSeqPackage.Literals.READ_DP__ADDR);
   }
   
   @Check
   public void checkWrite8(final Write8 write) {
-    Expression _addr = write.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(write.getAddr(), 
       DebugSeqPackage.Literals.WRITE8__ADDR);
-    Expression _val = write.getVal();
-    this.checkExpectedInteger(_val, 
+    this.checkExpectedInteger(write.getVal(), 
       DebugSeqPackage.Literals.WRITE8__VAL);
   }
   
   @Check
   public void checkWrite16(final Write16 write) {
-    Expression _addr = write.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(write.getAddr(), 
       DebugSeqPackage.Literals.WRITE16__ADDR);
-    Expression _val = write.getVal();
-    this.checkExpectedInteger(_val, 
+    this.checkExpectedInteger(write.getVal(), 
       DebugSeqPackage.Literals.WRITE16__VAL);
   }
   
   @Check
   public void checkWrite32(final Write32 write) {
-    Expression _addr = write.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(write.getAddr(), 
       DebugSeqPackage.Literals.WRITE32__ADDR);
-    Expression _val = write.getVal();
-    this.checkExpectedInteger(_val, 
+    this.checkExpectedInteger(write.getVal(), 
       DebugSeqPackage.Literals.WRITE32__VAL);
   }
   
   @Check
   public void checkWrite64(final Write64 write) {
-    Expression _addr = write.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(write.getAddr(), 
       DebugSeqPackage.Literals.WRITE64__ADDR);
-    Expression _val = write.getVal();
-    this.checkExpectedInteger(_val, 
+    this.checkExpectedInteger(write.getVal(), 
       DebugSeqPackage.Literals.WRITE64__VAL);
   }
   
   @Check
   public void checkWriteAP(final WriteAP write) {
-    Expression _addr = write.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(write.getAddr(), 
       DebugSeqPackage.Literals.WRITE_AP__ADDR);
-    Expression _val = write.getVal();
-    this.checkExpectedInteger(_val, 
+    this.checkExpectedInteger(write.getVal(), 
       DebugSeqPackage.Literals.WRITE_AP__VAL);
   }
   
   @Check
   public void checkWriteDP(final WriteDP write) {
-    Expression _addr = write.getAddr();
-    this.checkExpectedInteger(_addr, 
+    this.checkExpectedInteger(write.getAddr(), 
       DebugSeqPackage.Literals.WRITE_DP__ADDR);
-    Expression _val = write.getVal();
-    this.checkExpectedInteger(_val, 
+    this.checkExpectedInteger(write.getVal(), 
       DebugSeqPackage.Literals.WRITE_DP__VAL);
   }
   
   @Check
   public void checkDapDelay(final DapDelay dap) {
-    Expression _delay = dap.getDelay();
-    this.checkExpectedInteger(_delay, 
+    this.checkExpectedInteger(dap.getDelay(), 
       DebugSeqPackage.Literals.DAP_DELAY__DELAY);
   }
   
   @Check
   public void checkDapWriteABORT(final DapWriteABORT dap) {
-    Expression _value = dap.getValue();
-    this.checkExpectedInteger(_value, 
+    this.checkExpectedInteger(dap.getValue(), 
       DebugSeqPackage.Literals.DAP_WRITE_ABORT__VALUE);
   }
   
   @Check
   public void checkDapSwjPins(final DapSwjPins dap) {
-    Expression _pinout = dap.getPinout();
-    this.checkExpectedInteger(_pinout, 
+    this.checkExpectedInteger(dap.getPinout(), 
       DebugSeqPackage.Literals.DAP_SWJ_PINS__PINOUT);
-    Expression _pinselect = dap.getPinselect();
-    this.checkExpectedInteger(_pinselect, 
+    this.checkExpectedInteger(dap.getPinselect(), 
       DebugSeqPackage.Literals.DAP_SWJ_PINS__PINSELECT);
-    Expression _pinwait = dap.getPinwait();
-    this.checkExpectedInteger(_pinwait, 
+    this.checkExpectedInteger(dap.getPinwait(), 
       DebugSeqPackage.Literals.DAP_SWJ_PINS__PINWAIT);
   }
   
   @Check
   public void checkDapSwjClock(final DapSwjClock dap) {
-    Expression _value = dap.getValue();
-    this.checkExpectedInteger(_value, 
+    this.checkExpectedInteger(dap.getValue(), 
       DebugSeqPackage.Literals.DAP_SWJ_CLOCK__VALUE);
   }
   
   @Check
   public void checkDapSwjSequence(final DapSwjSequence dap) {
-    Expression _cnt = dap.getCnt();
-    this.checkExpectedInteger(_cnt, 
+    this.checkExpectedInteger(dap.getCnt(), 
       DebugSeqPackage.Literals.DAP_SWJ_SEQUENCE__CNT);
-    Expression _val = dap.getVal();
-    this.checkExpectedInteger(_val, 
+    this.checkExpectedInteger(dap.getVal(), 
       DebugSeqPackage.Literals.DAP_SWJ_SEQUENCE__VAL);
     final Block block = DebugSeqUtil.containingBlock(dap);
     long _atomic = block.getAtomic();
     boolean _tripleNotEquals = (_atomic != 1);
     if (_tripleNotEquals) {
-      EClass _dapSwjSequence = DebugSeqPackage.eINSTANCE.getDapSwjSequence();
-      EAttribute _eIDAttribute = _dapSwjSequence.getEIDAttribute();
-      this.error("DAP_SWJ_Sequence commands must be encapsulated in an atomic block to ensure correct execution", _eIDAttribute, 
+      this.error("DAP_SWJ_Sequence commands must be encapsulated in an atomic block to ensure correct execution", 
+        DebugSeqPackage.eINSTANCE.getDapSwjSequence().getEIDAttribute(), 
         DebugSeqValidator.MUST_IN_ATOMIC_BLOCK);
     }
   }
   
   @Check
   public void checkDapJtagSequence(final DapJtagSequence dap) {
-    Expression _cnt = dap.getCnt();
-    this.checkExpectedInteger(_cnt, 
+    this.checkExpectedInteger(dap.getCnt(), 
       DebugSeqPackage.Literals.DAP_JTAG_SEQUENCE__CNT);
-    Expression _tms = dap.getTms();
-    this.checkExpectedInteger(_tms, 
+    this.checkExpectedInteger(dap.getTms(), 
       DebugSeqPackage.Literals.DAP_JTAG_SEQUENCE__TMS);
-    Expression _tdi = dap.getTdi();
-    this.checkExpectedInteger(_tdi, 
+    this.checkExpectedInteger(dap.getTdi(), 
       DebugSeqPackage.Literals.DAP_JTAG_SEQUENCE__TDI);
   }
   
   @Check
   public void checkNoDuplicateSequence(final Sequence seq) {
-    Sequences _containingSequences = DebugSeqUtil.containingSequences(seq);
-    EList<Sequence> _sequences = _containingSequences.getSequences();
     final Function1<Sequence, Boolean> _function = (Sequence it) -> {
       return Boolean.valueOf((((!Objects.equal(it, seq)) && Objects.equal(it.getName(), seq.getName())) && Objects.equal(it.getPname(), seq.getPname())));
     };
-    boolean _exists = IterableExtensions.<Sequence>exists(_sequences, _function);
+    boolean _exists = IterableExtensions.<Sequence>exists(DebugSeqUtil.containingSequences(seq).getSequences(), _function);
     if (_exists) {
       String _name = seq.getName();
       String _plus = ("Duplicate sequence \'" + _name);
       String _plus_1 = (_plus + "\'");
-      EAttribute _sequence_Name = DebugSeqPackage.eINSTANCE.getSequence_Name();
-      this.error(_plus_1, _sequence_Name, 
+      this.error(_plus_1, 
+        DebugSeqPackage.eINSTANCE.getSequence_Name(), 
         DebugSeqValidator.DUPLICATE_ELEMENT);
     }
   }
@@ -553,36 +479,31 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
   @Check
   public void checkNoDuplicateVariableDeclaration(final VariableDeclaration vardecl) {
     final DebugSeqModel dsm = DebugSeqUtil.containingDebugSeqModel(vardecl);
-    DebugVars _debugvars = dsm.getDebugvars();
-    EList<Statement> _statements = _debugvars.getStatements();
-    Iterable<VariableDeclaration> _filter = Iterables.<VariableDeclaration>filter(_statements, VariableDeclaration.class);
     final Function1<VariableDeclaration, Boolean> _function = (VariableDeclaration it) -> {
       return Boolean.valueOf(((!Objects.equal(it, vardecl)) && Objects.equal(it.getName(), vardecl.getName())));
     };
-    final VariableDeclaration globalDeplicate = IterableExtensions.<VariableDeclaration>findFirst(_filter, _function);
+    final VariableDeclaration globalDeplicate = IterableExtensions.<VariableDeclaration>findFirst(Iterables.<VariableDeclaration>filter(dsm.getDebugvars().getStatements(), VariableDeclaration.class), _function);
     boolean _notEquals = (!Objects.equal(globalDeplicate, null));
     if (_notEquals) {
       String _name = vardecl.getName();
       String _plus = ("Duplicate variable declaration \'" + _name);
       String _plus_1 = (_plus + "\'");
-      EAttribute _variableDeclaration_Name = DebugSeqPackage.eINSTANCE.getVariableDeclaration_Name();
-      this.error(_plus_1, _variableDeclaration_Name, 
+      this.error(_plus_1, 
+        DebugSeqPackage.eINSTANCE.getVariableDeclaration_Name(), 
         DebugSeqValidator.DUPLICATE_ELEMENT);
     }
-    Sequence _containingSequence = DebugSeqUtil.containingSequence(vardecl);
-    List<VariableDeclaration> _allContentsOfType = EcoreUtil2.<VariableDeclaration>getAllContentsOfType(_containingSequence, VariableDeclaration.class);
     final Function1<VariableDeclaration, Boolean> _function_1 = (VariableDeclaration it) -> {
       return Boolean.valueOf((((!Objects.equal(it, vardecl)) && Objects.equal(it.getName(), vardecl.getName())) && (Objects.equal(DebugSeqUtil.containingControl(it), null) || 
         EcoreUtil.isAncestor(DebugSeqUtil.containingControl(it), DebugSeqUtil.containingControl(vardecl)))));
     };
-    final VariableDeclaration localDuplicate = IterableExtensions.<VariableDeclaration>findFirst(_allContentsOfType, _function_1);
+    final VariableDeclaration localDuplicate = IterableExtensions.<VariableDeclaration>findFirst(EcoreUtil2.<VariableDeclaration>getAllContentsOfType(DebugSeqUtil.containingSequence(vardecl), VariableDeclaration.class), _function_1);
     boolean _notEquals_1 = (!Objects.equal(localDuplicate, null));
     if (_notEquals_1) {
       String _name_1 = vardecl.getName();
       String _plus_2 = ("Duplicate variable declaration \'" + _name_1);
       String _plus_3 = (_plus_2 + "\'");
-      EAttribute _variableDeclaration_Name_1 = DebugSeqPackage.eINSTANCE.getVariableDeclaration_Name();
-      this.error(_plus_3, _variableDeclaration_Name_1, 
+      this.error(_plus_3, 
+        DebugSeqPackage.eINSTANCE.getVariableDeclaration_Name(), 
         DebugSeqValidator.DUPLICATE_ELEMENT);
     }
   }
@@ -596,17 +517,15 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
       boolean _checkStatement = this.checkStatement(block, helper);
       boolean _not = (!_checkStatement);
       if (_not) {
-        EClass _block = DebugSeqPackage.eINSTANCE.getBlock();
-        EAttribute _eIDAttribute = _block.getEIDAttribute();
-        this.error("Nested command execution is not allowed in an atomic block", _eIDAttribute, 
+        this.error("Nested command execution is not allowed in an atomic block", 
+          DebugSeqPackage.eINSTANCE.getBlock().getEIDAttribute(), 
           DebugSeqValidator.NESTED_COMMAND_IN_ATOMIC_BLOCK);
       }
     }
   }
   
   private boolean checkStatement(final EObject parent, final DebugSeqValidator.HelperStruct helper) {
-    EList<EObject> _eContents = parent.eContents();
-    final Iterable<Statement> statements = Iterables.<Statement>filter(_eContents, Statement.class);
+    final Iterable<Statement> statements = Iterables.<Statement>filter(parent.eContents(), Statement.class);
     if (((statements == null) || IterableExtensions.isEmpty(statements))) {
       return true;
     }
@@ -622,8 +541,7 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
           return Boolean.valueOf(false);
         }
         if ((usedCommands < helper.usedCommands)) {
-          String _name = ((VariableDeclaration)it).getName();
-          helper.varsInAtomicBlock.add(_name);
+          helper.varsInAtomicBlock.add(((VariableDeclaration)it).getName());
         }
         return Boolean.valueOf(true);
       }
@@ -633,8 +551,7 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
           if (((((VariableRef)it).eContainer() instanceof Assignment) && (it == ((Assignment) ((VariableRef)it).eContainer()).getLeft()))) {
             return Boolean.valueOf(true);
           }
-          VariableDeclaration _variable = ((VariableRef)it).getVariable();
-          final String varName = _variable.getName();
+          final String varName = ((VariableRef)it).getVariable().getName();
           boolean _contains = helper.varsInAtomicBlock.contains(varName);
           if (_contains) {
             helper.usedCommands++;
@@ -646,8 +563,7 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
         if (it instanceof Assignment) {
           _matched=true;
           Expression _left = ((Assignment)it).getLeft();
-          VariableDeclaration _variable = ((VariableRef) _left).getVariable();
-          final String varName = _variable.getName();
+          final String varName = ((VariableRef) _left).getVariable().getName();
           final int usedCommands = helper.usedCommands;
           boolean _checkStatement = this.checkStatement(it, helper);
           boolean _not = (!_checkStatement);
@@ -770,11 +686,10 @@ public class DebugSeqValidator extends AbstractDebugSeqValidator {
       }
       return Boolean.valueOf(_switchResult);
     };
-    Iterable<Boolean> _map = IterableExtensions.<Statement, Boolean>map(statements, _function);
     final Function1<Boolean, Boolean> _function_1 = (Boolean it) -> {
       return Boolean.valueOf((it == Boolean.valueOf(false)));
     };
-    final Boolean check = IterableExtensions.<Boolean>findFirst(_map, _function_1);
+    final Boolean check = IterableExtensions.<Boolean>findFirst(IterableExtensions.<Statement, Boolean>map(statements, _function), _function_1);
     boolean _xifexpression = false;
     if ((check == null)) {
       _xifexpression = true;

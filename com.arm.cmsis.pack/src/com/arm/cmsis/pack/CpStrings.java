@@ -7,6 +7,7 @@ public class CpStrings extends NLS {
 	public static String API;
 	public static String Component;
 	public static String Device;
+	public static String ICpPackInstaller_NON_UNICODE_FILES;
 	public static String IsMissing;
 	public static String IsNotAvailableFoCurrentConfiguration;
 	public static String Latest;

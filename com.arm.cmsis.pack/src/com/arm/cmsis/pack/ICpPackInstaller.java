@@ -146,7 +146,7 @@ public interface ICpPackInstaller extends IAdaptable {
 	default boolean unzip(File archiveFile, IPath destPath, IProgressMonitor monitor) throws IOException {
 		if(archiveFile == null || destPath == null)
 			return false;
-		SubMonitor progress = SubMonitor.convert(monitor, Utils.getFilesCount(archiveFile));
+		SubMonitor progress = SubMonitor.convert(monitor, getFilesCount(archiveFile));
 		InputStream archiveStream = new FileInputStream(archiveFile);
 		return unzip(archiveStream, destPath, true, true, progress);
 	}
@@ -237,6 +237,39 @@ public interface ICpPackInstaller extends IAdaptable {
 	}
 	
 
+	/**
+	 * Returns number of files in the archive
+	 * @param archiveFile the zip file
+	 * @return the number of files contained in this zip file
+	 * @throws Exception 
+	 */
+	public static int getFilesCount(File archiveFile) throws IOException {
+		int count = 0;
+		try {
+			ZipInputStream zipInput;
+			zipInput = new ZipInputStream(new FileInputStream(archiveFile));
+			ZipEntry zipEntry = zipInput.getNextEntry();
+			while (zipEntry != null) {
+				if (!zipEntry.isDirectory()) {
+					count++;
+				}
+				zipEntry = zipInput.getNextEntry();
+			}
+			zipInput.closeEntry();
+			zipInput.close();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+			String msg = e.getMessage();
+			msg += "\n" + CpStrings.ICpPackInstaller_NON_UNICODE_FILES; //$NON-NLS-1$
+			throw new IllegalArgumentException(msg, e.getCause());
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+
+		return count;
+	}
+	
 	/**
 	 * The Actions to take after a pack job is finished
 	 * @param jobId the job's ID, could be a pack ID

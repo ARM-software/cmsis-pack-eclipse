@@ -14,12 +14,13 @@ package com.arm.cmsis.pack.item;
 import java.util.Collection;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.error.CmsisErrorCollection;
 import com.arm.cmsis.pack.item.ICmsisVisitor.VisitResult;
 
 /**
  *	Base class for all CMSIS items
  */
-public class CmsisItem implements ICmsisItem {
+public class CmsisItem extends CmsisErrorCollection implements ICmsisItem {
 
 	protected String fTag  = CmsisConstants.EMPTY_STRING;    
 	protected String fText = CmsisConstants.EMPTY_STRING;

@@ -13,13 +13,14 @@ package com.arm.cmsis.pack.item;
 
 import java.util.Collection;
 
+import com.arm.cmsis.pack.error.ICmsisErrorCollection;
 import com.arm.cmsis.pack.generic.ITreeObject;
 import com.arm.cmsis.pack.item.ICmsisVisitor.VisitResult;
 
 /**
  * Base interface for CMSIS items with basic tree structure support
  */
-public interface ICmsisItem extends ITreeObject {
+public interface ICmsisItem extends ITreeObject, ICmsisErrorCollection {
 
 	/**
 	 * Returns item tag
@@ -81,6 +82,11 @@ public interface ICmsisItem extends ITreeObject {
 	 */
 	default void invalidate() { /*default does nothing */ };
 	
+	/**
+	 * Clears all cashed information recursively for all children and grand Children 
+	 */
+	default void invalidateAll() { invalidate(); /*default calls invalidate */ };
+
 	
 	/**
 	 * Returns collection of child items
@@ -95,6 +101,15 @@ public interface ICmsisItem extends ITreeObject {
 	 * @return true if item is exclusive
 	 */
 	boolean isExclusive();
+
+
+	/**
+	 * Items can have IDs constructed out of tag, text and attributes  
+	 * @return element ID
+	 */
+	default String getId() { 
+		return getName();
+	}
 
 
 	/**

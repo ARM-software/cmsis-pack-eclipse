@@ -12,7 +12,6 @@
 package com.arm.cmsis.pack.rte.packs;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.CpAttributes;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.generic.IAttributes;
@@ -25,7 +24,7 @@ public class RtePack extends RtePackItem implements IRtePack {
 
 	protected ICpPack fPack = null;
 	protected ICpPackInfo fPackInfo = null;
-	protected IAttributes fAttributes = new CpAttributes();
+	protected IAttributes fAttributes = null;
 	private boolean fbSelected = false;
 	
 	public RtePack(IRtePackItem parent, ICpItem packItem) {
@@ -42,7 +41,6 @@ public class RtePack extends RtePackItem implements IRtePack {
 	}
 	
 	
-	
 	@Override
 	public boolean purge() {
 		if(isRemoved()) {
@@ -57,20 +55,26 @@ public class RtePack extends RtePackItem implements IRtePack {
 		return !isUsed() && !isInstalled();
 	}
 
-	
+	@Override
+	public IAttributes attributes() {
+		if(fAttributes == null)
+			fAttributes = createAttributes(); 
+		return fAttributes;
+	}
+
 	@Override
 	public void addCpItem(ICpItem item) {
 		if(item instanceof ICpPack) {
 			fPack = (ICpPack)item;
-			fAttributes.setAttribute(CmsisConstants.NAME, fPack.getName());
-			fAttributes.setAttribute(CmsisConstants.URL, fPack.getUrl()); 
-			fAttributes.setAttribute(CmsisConstants.VENDOR, fPack.getVendor());
-			fAttributes.setAttribute(CmsisConstants.VERSION, fPack.getVersion());
+			setAttribute(CmsisConstants.NAME, fPack.getName());
+			setAttribute(CmsisConstants.URL, fPack.getUrl()); 
+			setAttribute(CmsisConstants.VENDOR, fPack.getVendor());
+			setAttribute(CmsisConstants.VERSION, fPack.getVersion());
 			
 		} else if(item instanceof ICpPackInfo) {
 			fPackInfo = (ICpPackInfo)item;
 			if(fPack == null)
-				fAttributes.setAttributes(fPackInfo.attributes());
+				attributes().setAttributes(fPackInfo.attributes());
 		}
 	}
 
@@ -176,10 +180,4 @@ public class RtePack extends RtePackItem implements IRtePack {
 	public int getChildCount() {
 		return 0;
 	}
-
-	@Override
-	public IAttributes getAttributes() {
-		return fAttributes;
-	}
-
 }

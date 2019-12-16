@@ -143,12 +143,14 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 				}
 			} 
 			// always update processor attributes
-			if(!processorName.isEmpty()) {
-				attributes().setAttribute(CmsisConstants.PNAME, processorName);
-			}
-			ICpItem proc = fDevice.getProcessor(processorName);
-			if(proc != null) {
-				attributes().mergeAttributes(proc.attributes());
+			if(isMergeProcessorAttributes()) {
+				if(!processorName.isEmpty()) {
+					attributes().setAttribute(CmsisConstants.PNAME, processorName);
+				}
+				ICpItem proc = fDevice.getProcessor(processorName);
+				if(proc != null) {
+					attributes().mergeAttributes(proc.attributes());
+				}
 			}
 		} else {
 			if(fPackInfo != null) {
@@ -157,6 +159,10 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 		}
 	}
 
+	protected boolean isMergeProcessorAttributes() {
+		return true;
+	}
+	
 
 	@Override
 	public void addChild(ICpItem item) {

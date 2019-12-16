@@ -271,7 +271,6 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		fbComponentSelectionModified = false;
 		fbPackFilterModified = false;
 		fbDeviceModified = false;
-		emitRteEvent(RteEvent.CONFIGURATION_COMMITED, this);
 	}
 	
 	protected void setSavedFlags(Collection<? extends ICpItem> children) {

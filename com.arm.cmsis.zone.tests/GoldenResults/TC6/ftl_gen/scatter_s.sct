@@ -1,0 +1,40 @@
+#! armclang -E --target=arm-arm-none-eabi -mcpu=cortex-m33 -I../ -xc
+
+#include "mem_layout.h"
+
+; *------- <<< Use Configuration Wizard in Context Menu >>> ------------------
+
+;<h> Stack Configuration
+;  <o> Stack Size (in Bytes) <0x0-0xFFFFFFFF:8>
+;</h>
+#define STACK_SIZE 0x400
+
+;<h> Heap Configuration
+;  <o> Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
+;</h>
+#define HEAP_SIZE 0xC00
+
+; *-------------- <<< end of configuration section >>> -----------------------
+LR_CODE_S REGION_CODE_S_START REGION_CODE_S_SIZE {
+  ER_CODE_S REGION_CODE_S_START REGION_CODE_S_SIZE {
+  	* (RESET,+FIRST)
+    * (InRoot$$Sections)
+    .ANY (+RO +XO)
+  }
+  RW_DATA_S REGION_DATA_S_START REGION_DATA_S_SIZE-HEAP_SIZE-STACK_SIZE {
+    .ANY (+RW +ZI)
+  }
+#if HEAP_SIZE>0
+  ARM_LIB_HEAP REGION_DATA_S_START+REGION_DATA_S_SIZE-HEAP_SIZE-STACK_SIZE EMPTY HEAP_SIZE {
+  }
+#endif
+#if STACK_SIZE>0
+  ARM_LIB_STACK REGION_DATA_S_START+REGION_DATA_S_SIZE-STACK_SIZE EMPTY STACK_SIZE {
+  }
+#endif  
+}
+LR_Veneer REGION_VENEER_START REGION_VENEER_SIZE {
+  ER_Veneer REGION_VENEER_START REGION_VENEER_SIZE {
+  	*(Veneer$$CMSE)
+  }
+}

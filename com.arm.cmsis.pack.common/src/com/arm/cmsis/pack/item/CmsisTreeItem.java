@@ -64,14 +64,19 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	public void invalidate() {
 		super.invalidate();
 		fName = null;
+	}
+
+	@Override
+	public void invalidateAll() {
+		invalidate();
 		Collection<? extends T> children = getChildren();
 		if(children == null || children.isEmpty())
 			return;
 		for(T item : children) {
-			item.invalidate();
-		}		
+			item.invalidateAll();
+		}
 	}
-
+	
 	@Override
 	public void destroy() {
 		super.destroy();
@@ -115,7 +120,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	public String getName() {
 		if(fName == null) {
 			fName = constructName();
-			if(fName == null && !fName.isEmpty()) {
+			if(fName == null || fName.isEmpty()) {
 				fName = super.getName();
 			}
 		}
@@ -158,7 +163,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	@Override
 	public void addChild(T item) {
 		if(item != null) {
-			cachedChildArray = null; // invalidate
+			invalidate();
 			children().add(item);
 		}
 	}
@@ -325,7 +330,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 			T child = iterator.next();
 			if(child.equals(childToRemove)) {
 				iterator.remove();
-				cachedChildArray = null;
+				invalidate();
 			}
 		}
 	}
@@ -341,7 +346,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 			for(T child : children) {
 				if(getItemKey(child).equals(key)) {
 					children.remove(child);
-					cachedChildArray = null;
+					invalidate();
 					return child;
 				}
 			}

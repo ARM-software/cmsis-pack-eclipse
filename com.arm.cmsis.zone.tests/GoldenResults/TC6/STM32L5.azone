@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<azone xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" schemaVersion="0.2.0" xs:noNamespaceSchemaLocation="azone.xsd">
+  <rzone name="STM32L5.rzone"/>
+  <partition>
+    <memory access="rx" fixed="1" info="Secure FLASH for CODE execution" name="CODE_S" offset="0x0" parent="Flash_S" privilege="" security="s" size="0x3E000"/>
+    <memory fixed="1" info="Secure FLASH for CODE Veneer table" name="Veneer" offset="0x3E000" parent="Flash_S" size="0x2000"/>
+    <memory info="Non-secure FLASH for CODE execution" name="CODE_NS" offset="0x00040000" parent="Flash_NS" size="0x40000"/>
+    <memory access="rw" info="Non-secure RAM for DATA section" name="DATA_NS" offset="0x00000000" parent="SRAM_NS" privilege="" security="n" size="0x20000"/>
+    <memory access="rw" info="Secure RAM for DATA section" name="DATA_S" offset="0x00020000" parent="SRAM_S" privilege="" security="s" size="0x20000"/>
+    <peripheral access="prw" group="SPI" name="SPI3" size="0x400" start="0x40003C00" start_s="0x50003C00"/>
+    <peripheral access="prw" group="TIM" info="General-purpose-timers" name="TIM2" size="0x400" start="0x40000000" start_s="0x50000000"/>
+    <peripheral access="prw" group="I2C" name="I2C2" size="0x400" start="0x40005800" start_s="0x50005800"/>
+    <peripheral access="prw" group="USART" name="USART2" size="0x400" start="0x40004400" start_s="0x50004400"/>
+    <peripheral access="prw" group="GPIO" info="Port D" name="GPIOD" size="0x400" slot_name="Pins" slot_type="s" start="0x42020C00" start_s="0x52020C00">
+      <slot name="Pin 5" secure="0"/>
+    </peripheral>
+    <peripheral access="prw" group="USART" name="UART4" size="0x400" start="0x40004C00" start_s="0x50004C00"/>
+    <peripheral access="prw" group="TIM" info="General-purpose-timers" name="TIM4" size="0x400" start="0x40000800" start_s="0x50000800"/>
+    <peripheral access="prw" group="I2C" info="Inter-integrated circuit" name="I2C1" size="0x400" start="0x40005400" start_s="0x50005400"/>
+    <peripheral access="prw" group="LPTIM" info="Low power timer" name="LPTIM1" size="0x400" start="0x40007C00" start_s="0x50007C00"/>
+    <peripheral access="prw" group="TIM" info="General-purpose-timers" name="TIM3" size="0x400" start="0x40000400" start_s="0x50000400"/>
+    <peripheral access="prw" group="TIM" info="General purpose timers" name="TIM16" size="0x400" start="0x40014400" start_s="0x50014400"/>
+    <peripheral access="prw" group="GPIO" info="Port F" name="GPIOF" size="0x400" slot_name="Pins" slot_type="s" start="0x42021400" start_s="0x52021400"/>
+    <peripheral access="prw" group="GPIO" info="Port H" name="GPIOH" size="0x400" slot_name="Pins" slot_type="s" start="0x42021C00" start_s="0x52021C00"/>
+    <peripheral access="prw" group="USART" name="UART5" size="0x400" start="0x40005000" start_s="0x50005000"/>
+    <peripheral access="prw" group="GPIO" info="Port A" name="GPIOA" size="0x400" slot_name="Pins" slot_type="s" start="0x42020000" start_s="0x52020000">
+      <slot name="Pin 0" privilege="0" secure="0"/>
+    </peripheral>
+    <peripheral access="prw" group="GPIO" info="Port C" name="GPIOC" size="0x400" slot_name="Pins" slot_type="s" start="0x42020800" start_s="0x52020800"/>
+    <peripheral access="prw" group="TIM" info="General purpose timers" name="TIM15" size="0x400" start="0x40014000" start_s="0x50014000"/>
+    <peripheral access="prw" group="ADC" info="Digital filter for sigma delta modulators" name="DFSDM1" size="0x800" start="0x40016000" start_s="0x50016000"/>
+    <peripheral access="prw" group="TIM" info="General purpose timers" name="TIM17" size="0x400" start="0x40014800" start_s="0x50014800"/>
+    <peripheral access="prw" group="TIM" info="Advanced-timers" name="TIM1" size="0x400" start="0x40012C00" start_s="0x50012C00"/>
+    <peripheral access="prw" group="TIM" name="TIM6" size="0x400" start="0x40001000" start_s="0x50001000"/>
+    <peripheral access="prw" group="I2C" name="I2C3" size="0x400" start="0x40005C00" start_s="0x50005C00"/>
+    <peripheral access="prw" group="OctoSPI" info="OctoSPI" name="OCTOSPI1" size="0x400" start="0x44021000" start_s="0x54021000"/>
+    <peripheral access="prw" group="SPI" name="SPI2" size="0x400" start="0x40003800" start_s="0x50003800"/>
+    <peripheral access="prw" group="USART" name="USART3" size="0x400" start="0x40004800" start_s="0x50004800"/>
+    <peripheral access="prw" group="SPI" info="Serial peripheral interface" name="SPI1" size="0x400" start="0x40013000" start_s="0x50013000"/>
+    <peripheral access="prw" group="LPTIM" name="LPTIM3" size="0x400" start="0x40009400" start_s="0x50009400"/>
+    <peripheral access="prw" group="UCPD" info="USB Power Delivery interface" name="UCPD1" size="0x400" start="0x4000DC00" start_s="0x5000DC00"/>
+    <peripheral access="prw" group="USART" info="Universal synchronous asynchronous receiver transmitter" name="LPUART1" size="0x400" start="0x40008000" start_s="0x50008000"/>
+    <peripheral access="prw" group="TIM" name="TIM7" size="0x400" start="0x40001400" start_s="0x50001400"/>
+    <peripheral access="prw" group="TIM" info="Advanced-timers" name="TIM8" size="0x400" start="0x40013400" start_s="0x50013400"/>
+    <peripheral access="prw" group="TIM" name="TIM5" size="0x400" start="0x40000C00" start_s="0x50000C00"/>
+    <peripheral access="prw" group="USART" info="Universal synchronous asynchronous receiver transmitter" name="USART1" size="0x400" start="0x40013800" start_s="0x50013800"/>
+    <peripheral access="prw" group="GPIO" info="Port E" name="GPIOE" size="0x400" slot_name="Pins" slot_type="s" start="0x42021000" start_s="0x52021000"/>
+    <peripheral access="prw" group="ADC" info="Analog-to-Digital Converter" name="ADC" size="0x400" start="0x42028000" start_s="0x52028000"/>
+    <peripheral access="prw" group="GPIO" info="Port G" name="GPIOG" size="0x400" slot_name="Pins" slot_type="s" start="0x42021800" start_s="0x52021800"/>
+    <peripheral access="prw" group="GPIO" info="Port B" name="GPIOB" size="0x400" slot_name="Pins" slot_type="s" start="0x42020400" start_s="0x52020400"/>
+    <peripheral access="prw" group="I2C" name="I2C4" size="0x400" start="0x40008400" start_s="0x50008400"/>
+    <peripheral access="prw" group="ADC" info="Comparator" name="COMP" size="0x200" start="0x40010200" start_s="0x50010200"/>
+    <peripheral access="prw" group="DMA" info="DMA1 Controller 1" name="DMA1" size="0x400" slot_name="Channels" slot_type="sp" start="0x40020000" start_s="0x50020000">
+      <slot name="Channel 1" privilege="1" secure="1"/>
+      <slot name="Channel 8" privilege="0" secure="1"/>
+    </peripheral>
+    <peripheral access="prw" group="DMA" info="DMA2 Controller 1" name="DMA2" size="0x400" slot_name="Channels" slot_type="sp" start="0x40020400" start_s="0x50020400">
+      <slot name="Channel 1" privilege="1" secure="0"/>
+      <slot name="Channel 2" secure="0"/>
+      <slot name="Channel 3" secure="0"/>
+      <slot name="Channel 4" secure="0"/>
+      <slot name="Channel 5" secure="0"/>
+      <slot name="Channel 6" secure="0"/>
+      <slot name="Channel 7" secure="0"/>
+      <slot name="Channel 8" secure="0"/>
+    </peripheral>
+    <peripheral access="prw" group="SAI" info="Serial audio interface 1" name="SAI1" size="0x400" start="0x40015400" start_s="0x50015400"/>
+    <peripheral access="prw" group="SAI" info="Serial audio interface 2" name="SAI2" size="0x400" start="0x40015800" start_s="0x50015800"/>
+  </partition>
+  <zones>
+    <zone Dname="STM32L552ZETxQ" Pname="" info="" name="blinky_s" security="s">
+      <assign memory="CODE_S"/>
+      <assign memory="Veneer"/>
+      <assign memory="DATA_S"/>
+      <assign group="USART" peripheral="USART1"/>
+      <assign group="TIM" peripheral="TIM1"/>
+      <assign group="GPIO" peripheral="GPIOA"/>
+      <assign group="DMA" peripheral="DMA1"/>
+    </zone>
+    <zone Dname="STM32L552ZETxQ" Pname="" info="" name="blinky_ns" security="n">
+      <assign memory="CODE_NS"/>
+      <assign memory="DATA_NS"/>
+      <assign group="GPIO" peripheral="GPIOB"/>
+      <assign group="ADC" peripheral="ADC"/>
+      <assign group="TIM" peripheral="TIM4"/>
+      <assign group="USART" peripheral="USART2"/>
+    </zone>
+  </zones>
+  <configure/>
+</azone>

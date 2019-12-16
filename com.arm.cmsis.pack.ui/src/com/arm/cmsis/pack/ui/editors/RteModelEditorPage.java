@@ -17,5 +17,5 @@ import com.arm.cmsis.pack.rte.IRteModelController;
  * Base abstract class for RTE Model editor pages
  */
 public abstract class RteModelEditorPage extends RteEditorPage<IRteModelController> {
-
+	 // Convenience synthetic abstract class interface without own methods
 }

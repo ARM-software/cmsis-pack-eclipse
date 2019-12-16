@@ -13,14 +13,14 @@ package com.arm.cmsis.pack.parser;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Collection;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -53,11 +53,14 @@ import org.xml.sax.SAXParseException;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpRootItem;
+import com.arm.cmsis.pack.enums.ESeverity;
+import com.arm.cmsis.pack.error.CmsisError;
+import com.arm.cmsis.pack.error.CmsisErrorCollection;
 
 /**
  * Base class to parse CMSIS pack-related files
  */
-public class CpXmlParser implements ICpXmlParser {
+public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, ErrorHandler {
 
 
 	protected ICpItem rootItem   = null;  // represents top-level item being constructed
@@ -65,18 +68,13 @@ public class CpXmlParser implements ICpXmlParser {
 	protected String xmlString = null;  // current XML string
 
 	protected String xsdFile = null;        // schema file with absolute path
-	protected Set<String> ignoreTags = null; // tags to ignore (partly parsed file)
-	protected Set<String> ignoreWriteTags = null; // tags to ignore when writing to xml file
+	protected Set<String> ignoreTags = null; // tags to ignore during read and write 
 
-	// errors for current file
-	protected List<String> errorStrings = new LinkedList<>();
-	protected int nErrors = 0;
-	protected int nWarnings = 0;
 
 	// DOM
 	private DocumentBuilderFactory docBuilderFactory = null;
 	private DocumentBuilder docBuilder = null;
-	protected XmlErrorHandler errorHandler = null;
+	protected boolean bExplicitRoot = false;
 
 	public CpXmlParser() {
 	}
@@ -87,17 +85,21 @@ public class CpXmlParser implements ICpXmlParser {
 
 	@Override
 	public void clear() {
+		if(!bExplicitRoot) 
+			rootItem 	= null;
 		xmlFile = null;
 		xmlString = null;
-		rootItem 	= null;
-		errorStrings.clear();
-		nErrors   = 0;
-		nWarnings = 0;
+		clearErrors();
 		if (docBuilder != null) {
 			docBuilder.reset();
 		}
 	}
 
+	protected void setExplicitRoot(ICpItem root) {
+		rootItem = root;
+		bExplicitRoot  = root != null;
+	}
+	
 
 	@Override
 	public String getXsdFile() {
@@ -116,21 +118,6 @@ public class CpXmlParser implements ICpXmlParser {
 		return xmlFile;
 	}
 
-	@Override
-	public List<String> getErrorStrings() {
-		return errorStrings;
-	}
-
-	@Override
-	public int getErrorCount() {
-		return nErrors;
-	}
-
-	@Override
-	public int getWarningCount() {
-		return nWarnings;
-	}
-
 
 	@Override
 	public void setIgnoreTags(Set<String> ignoreTags) {
@@ -139,7 +126,7 @@ public class CpXmlParser implements ICpXmlParser {
 
 	@Override
 	public void setWriteIgnoreTags(Set<String> ignoreTags) {
-		ignoreWriteTags = ignoreTags;
+		setIgnoreTags(ignoreTags);
 	}
 
 	/**
@@ -182,47 +169,28 @@ public class CpXmlParser implements ICpXmlParser {
 	}
 
 
-	protected class XmlErrorHandler implements ErrorHandler {
+	// from  ErrorHandler 
+	@Override
+	public void error(SAXParseException arg0) throws SAXException {
 
-		public XmlErrorHandler() {
-			// TODO Auto-generated constructor stub
-		}
+		addError(arg0, CpXmlParserError.X401, ESeverity.Error);  
+	}
 
-		@Override
-		public void error(SAXParseException arg0) throws SAXException {
+	@Override
+	public void fatalError(SAXParseException arg0) throws SAXException {
+		addError(arg0, CpXmlParserError.X801, ESeverity.Error); 
+		throw arg0;
+	}
 
-			addErrorString(arg0, "Error");  //$NON-NLS-1$
-			nErrors++;
-		}
+	@Override
+	public void warning(SAXParseException arg0) throws SAXException {
+		addError(arg0, CpXmlParserError.X201, ESeverity.Warning); 
+	}
 
-		@Override
-		public void fatalError(SAXParseException arg0) throws SAXException {
-			addErrorString(arg0, "Fatal Error"); //$NON-NLS-1$
-			nErrors++;
-			throw arg0;
-		}
-
-		@Override
-		public void warning(SAXParseException arg0) throws SAXException {
-			addErrorString(arg0, "Warning"); //$NON-NLS-1$
-			nWarnings++;
-		}
-
-		protected void addErrorString(SAXParseException arg0,	final String severity) {
-			String err = xmlFile;
-			int line = arg0.getLineNumber();
-			int col = arg0.getColumnNumber();
-			if (line > 0) {
-				err += "("; //$NON-NLS-1$
-				err += line;
-				err += ","; //$NON-NLS-1$
-				err += col;
-				err += ")"; //$NON-NLS-1$
-			}
-			err += ": " + severity + ": "; //$NON-NLS-1$ //$NON-NLS-2$
-			err += arg0.getLocalizedMessage();
-			errorStrings.add(err);
-		}
+	protected void addError(SAXParseException e, String id,  ESeverity severity)
+	{
+		CmsisError err = new CpXmlParserError(xmlFile, id, severity, null, e);
+		addError(err);
 	}
 
 	@Override
@@ -234,32 +202,27 @@ public class CpXmlParser implements ICpXmlParser {
 				docBuilderFactory.setValidating(false);
 				docBuilderFactory.setNamespaceAware(true);
 				if (xsdFile != null && !xsdFile.isEmpty()) {
-					SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-					Schema schema = schemaFactory.newSchema(new Source[] {new StreamSource(xsdFile)});
-					docBuilderFactory.setSchema(schema);
+					File f = new File(xsdFile);
+					if(f.isAbsolute() && f.exists()) {
+						SchemaFactory schemaFactory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+						Schema schema = schemaFactory.newSchema(new Source[] {new StreamSource(xsdFile)});
+						docBuilderFactory.setSchema(schema);
+					}
 				}
 			}
 			if(docBuilder == null){
 				docBuilder = docBuilderFactory.newDocumentBuilder();
-				errorHandler = new XmlErrorHandler();
 			}
-			docBuilder.setErrorHandler(errorHandler);
+			docBuilder.setErrorHandler(this);
 		} catch (ParserConfigurationException e) {
-			String err = "Error initializing XML parser"; //$NON-NLS-1$
-			err += ": "; //$NON-NLS-1$
-			err += e.toString();
-			errorStrings.add(err);
-			nErrors++;
+			CmsisError err = new CpXmlParserError(e);
+			addError(err);
 			docBuilder = null;
 			e.printStackTrace();
 			return false;
 		} catch (SAXException e) {
-			String err = "Error initializing XML schema"; //$NON-NLS-1$
-			err += " " +  xsdFile; //$NON-NLS-1$
-			err += ": "; //$NON-NLS-1$
-			err += e.toString();
-			errorStrings.add(err);
-			nErrors++;
+			CmsisError err = new CpXmlParserError(xsdFile, CpXmlParserError.X803, ESeverity.FatalError, "Error initializing XML schema", e); //$NON-NLS-1$
+			addError(err);
 			docBuilder = null;
 			e.printStackTrace();
 		}
@@ -282,12 +245,8 @@ public class CpXmlParser implements ICpXmlParser {
 		try {
 			domDoc = docBuilder.parse(is);
 		} catch (SAXException | IOException e ) {
-			String err = "Error parsing file"; //$NON-NLS-1$
-			err += " " + xmlFile; //$NON-NLS-1$
-			err += "': "; //$NON-NLS-1$
-			err += e.toString();
-			errorStrings.add(err);
-			nErrors++;
+			CmsisError err = new CpXmlParserError(xmlFile, CpXmlParserError.X402, ESeverity.Error, "Error parsing file", e); //$NON-NLS-1$
+			addError(err);
 		} finally {
 			sr.close();
 		}
@@ -322,12 +281,8 @@ public class CpXmlParser implements ICpXmlParser {
 			sr = new FileInputStream(xmlFile);
 			domDoc = docBuilder.parse(sr);
 		} catch (SAXException | IOException e ) {
-			String err = "Error parsing file"; //$NON-NLS-1$
-			err += " " + xmlFile; //$NON-NLS-1$
-			err += "': "; //$NON-NLS-1$
-			err += e.toString();
-			errorStrings.add(err);
-			nErrors++;
+			CmsisError err = new CpXmlParserError(xmlFile, CpXmlParserError.X402, ESeverity.Error, "Error parsing file", e); //$NON-NLS-1$
+			addError(err);
 		}
 		if(sr != null) {
 			try {
@@ -438,46 +393,46 @@ public class CpXmlParser implements ICpXmlParser {
 	public String adjustAttributeValue(String key, String value) {
 		if(key.equals(CmsisConstants.DFPU)) {
 			switch(value){
-			case "1":				 //$NON-NLS-1$
+			case CmsisConstants.ONE:				
 			case "FPU": //$NON-NLS-1$
 				return CmsisConstants.SP_FPU;
-			case "0": //$NON-NLS-1$
+			case CmsisConstants.ZERO: 
 				return CmsisConstants.NO_FPU;
 			default:
 				return value;
 			}
 		} else if(key.equals(CmsisConstants.DMPU)){
 			switch(value){
-			case "1":	//$NON-NLS-1$
+			case CmsisConstants.ONE:	
 				return CmsisConstants.MPU;
-			case "0":	//$NON-NLS-1$
+			case CmsisConstants.ZERO:	
 				return CmsisConstants.NO_MPU;
 			default:
 				return value;
 			}
 		} else if(key.equals(CmsisConstants.DDSP)){
 			switch(value){
-			case "1":	//$NON-NLS-1$
+			case CmsisConstants.ONE:	
 				return CmsisConstants.DSP;
-			case "0":	//$NON-NLS-1$
+			case CmsisConstants.ZERO:	
 				return CmsisConstants.NO_DSP;
 			default:
 				return value;
 			}
 		} else if(key.equals(CmsisConstants.DTZ)){
 			switch(value){
-			case "1":	//$NON-NLS-1$
+			case CmsisConstants.ONE:	
 				return CmsisConstants.TZ;
-			case "0":	//$NON-NLS-1$
+			case CmsisConstants.ZERO:	
 				return CmsisConstants.NO_TZ;
 			default:
 				return value;
 			}
 		} else if(key.equals(CmsisConstants.DSECURE)){
 			switch(value){
-			case "1":	//$NON-NLS-1$
+			case CmsisConstants.ONE:	
 				return CmsisConstants.SECURE;
-			case "0":	//$NON-NLS-1$
+			case CmsisConstants.ZERO:	
 				return CmsisConstants.NON_SECURE;
 			default:
 				return value;
@@ -519,8 +474,8 @@ public class CpXmlParser implements ICpXmlParser {
 				((ICpRootItem)root).setFileName(file);
 			}
 		} catch (IOException e) {
-			errorStrings.add("Error writting to '" + file + "' file:"); //$NON-NLS-1$ //$NON-NLS-2$
-			errorStrings.add(e.toString());
+			CmsisError err = new CpXmlParserError(file, CpXmlParserError.X403, ESeverity.Error, "Error writting to file", e); //$NON-NLS-1$
+			addError(err);
 			e.printStackTrace();
 			return false;
 		}
@@ -556,10 +511,8 @@ public class CpXmlParser implements ICpXmlParser {
 			xml = buffer.toString();
 
 		} catch ( TransformerFactoryConfigurationError | TransformerException | IOException e) {
-			String error = "Error creating XML"; //$NON-NLS-1$
-			error += ": "; //$NON-NLS-1$
-			error += e.toString();
-			errorStrings.add(error);
+			CmsisError err = new CpXmlParserError(null, CpXmlParserError.X404, ESeverity.Error, "Error creating XML", e); //$NON-NLS-1$
+			addError(err);
 			e.printStackTrace();
 			return null;
 		}
@@ -633,4 +586,27 @@ public class CpXmlParser implements ICpXmlParser {
 		return node;
 	}
 
+	/**
+	 * Saves XML string to file
+	 * @param xml XML string to save
+	 * @param file destination IFile
+	 * @param monitor IProgressMonitor
+	 */
+	public static boolean saveXmlToFile(String xml, String absFileName){	
+		//Write into file
+		File file = new File(absFileName);
+		PrintWriter writer;
+		try {
+			writer = new PrintWriter(file);
+			writer.write(xml);
+			writer.close();
+		} catch (FileNotFoundException e) {			
+			e.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+	
+
+	
 }

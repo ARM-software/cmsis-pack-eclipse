@@ -35,7 +35,7 @@ public interface IAttributes {
 
 	/**
 	 * Returns all attributes of this element as a Map<String,String>  
-	 * @return the attributes as a Map
+	 * @return the attributes as a Map<String,String>
 	 */
 	Map<String, String> getAttributesAsMap();
 	
@@ -77,6 +77,12 @@ public interface IAttributes {
 	 */
 	void mergeAttributes(final IAttributes attributes);
 
+	/**
+	 * Merges attributes from supplied attributes map to this element, does not overwrite existing ones  
+	 * @param attributesMap collection to merge
+	 */
+	void mergeAttributes(Map<String, String> attributesMap);
+	
 	/**
 	 * Merges attributes from supplied attributes to this element considering only attributes with given prefix  
 	 * @param attributes collection to merge
@@ -141,9 +147,10 @@ public interface IAttributes {
 	 * @param key attribute key
 	 * @param value long attribute value
 	 */
-	default void setAttributeHex(String key, long value) {
-		setAttribute(key, longToHexString(value));
+	default void setAttributeHex(String key, Long value) {		
+		setAttribute(key, longToHexString8(value));
 	}
+
 
 	/**
 	 * Updates existing attribute key-value pair or adds one if attribute does not exist  
@@ -152,15 +159,21 @@ public interface IAttributes {
 	 * @return true if value has changes or attribute added
 	 */
 	default boolean updateAttribute(String key, String value) {
-		if(hasAttribute(key)&& getAttribute(key).equals(value)) {
-			return false;
+		if(hasAttribute(key)) {
+			if(value == null || value.isEmpty()) {
+				removeAttribute(key);
+				return true;
+			}
+			if(getAttribute(key).equals(value)) {
+				return false;
+			}
 		}
 		setAttribute(key, value );
 		return true;
 	}
 	
 	/**
-	 * Updates existing attributes with supplied ones, adds attributes if do not exist  
+	 * Updates existing attributes with supplied ones, adds attributes if do not exist, does not remove existing  
 	 * @param attributes IAttributes with new attribute values 
 	 * @return true if a single value has changes or an attribute added
 	 */
@@ -171,7 +184,7 @@ public interface IAttributes {
 	}
 
 	/**
-	 * Updates existing attributes with supplied ones, adds attributes if do not exist  
+	 * Updates existing attributes with supplied ones, adds attributes if do not exist, does not remove existing  
 	 * @param attributes Map<String, String> with new key-value pairs 
 	 * @return true if a single value has changes or an attribute added
 	 */
@@ -227,6 +240,22 @@ public interface IAttributes {
 	 */
 	void mergeAttribute(String key, String value);
 	
+	
+	/**
+	 * Adds attribute key-value pair to this element if it does not exist
+	 * @param key attribute key
+	 * @param value boolean attribute value
+	 */
+	default void mergeAttribute(String key, boolean value) {
+		mergeAttribute(key, value ? CmsisConstants.ONE : CmsisConstants.ZERO);
+	}
+
+	/**
+	 * Checks these attributes equals to supplied ones. 
+	 * @param otherAttributes attributes to compare to
+	 * @return true if equal, false otherwise
+	 */
+	boolean equalsAttributes(final IAttributes otherAttributes);
 	
 	/**
 	 * Checks if all attributes of this element exist in supplied map and their values match. 
@@ -353,8 +382,35 @@ public interface IAttributes {
 	 * @param value long to convert
 	 * @return value as hexadecimal string   
 	 */
-	static String longToHexString(long value) {
-		 return "0x" + Long.toHexString(value).toUpperCase();  //$NON-NLS-1$
+	static String longToHexString(Long value) {
+		 return longToHexString(value, 0);
 	}
+
+	/**
+	 * Returns string representation of supplied long value as hexadecimal string prefixed with "0x", ensures 8 digits   
+	 * @param value long to convert
+	 * @return value as hexadecimal string   
+	 */
+	static String longToHexString8(Long value) {
+		 return longToHexString(value, 8);
+	}
+	
+
+	/**
+	 * Returns string representation of supplied long value as hexadecimal string prefixed with "0x", ensures 8 digits   
+	 * @param value long to convert
+	 * @param digits minimum number of digits without 0x prefix, prepended by zeros if digits = 8 or 16,    
+	 * @return value as hexadecimal string   
+	 */
+	static String longToHexString(Long value, int digits) {
+		if(value == null)
+			return null;
+		 String val = Long.toHexString(value).toUpperCase();
+		 int l = val.length();
+		 if(l >= digits)
+			 return CmsisConstants.ZEROX + val;  
+		 return CmsisConstants.ZEROX16.substring(0, digits + 2 - l) + val;
+	}
+	
 	
 }

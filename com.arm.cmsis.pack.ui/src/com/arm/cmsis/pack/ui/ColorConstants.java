@@ -40,6 +40,8 @@ public class ColorConstants {
     public final static Color BLACK     = Display.getCurrent().getSystemColor(SWT.COLOR_BLACK);
     public final static Color DARK_GRAY = Display.getCurrent().getSystemColor(SWT.COLOR_DARK_GRAY);
 
-	
+	static public final Color PALE_RED  =  new Color(Display.getCurrent(), new RGB(242, 161, 161));
+
+    
 	public final static int ARC_WIDTH_HEIGHT = 8;
 }

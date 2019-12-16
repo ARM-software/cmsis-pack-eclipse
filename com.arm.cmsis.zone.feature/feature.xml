@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="com.arm.cmsis.zone.feature"
+      label="%featureName"
+      version="1.0.0.qualifier"
+      provider-name="%providerName">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseURL">
+      %license
+   </license>
+
+   <includes
+         id="com.arm.cmsis.pack.feature"
+         version="0.0.0"/>
+
+   <requires>
+      <import plugin="com.arm.cmsis.pack.common"/>
+      <import plugin="com.arm.cmsis.pack.data"/>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.core.expressions"/>
+      <import plugin="org.eclipse.core.resources"/>
+      <import plugin="org.eclipse.jface.text"/>
+      <import plugin="org.eclipse.ui.editors"/>
+      <import plugin="org.eclipse.ui.ide"/>
+      <import plugin="com.arm.cmsis.pack"/>
+      <import plugin="com.arm.cmsis.pack.ui"/>
+      <import plugin="com.arm.cmsis.pack.project"/>
+   </requires>
+
+   <plugin
+         id="com.arm.cmsis.zone"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+   <plugin
+         id="com.arm.cmsis.zone.ui"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>

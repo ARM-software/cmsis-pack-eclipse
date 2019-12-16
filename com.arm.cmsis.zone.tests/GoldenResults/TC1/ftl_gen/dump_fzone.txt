@@ -1,0 +1,181 @@
+// Model dump
+
+Memory:                                         access   security
+  name                  start       size        p r w x  s n c
+  FLASH                 0x00000000  0x0009DE00  0 1 0 1  0 0 0
+  FLASH_FFR             0x0009DE00  0x00002000  0 1 0 1  0 0 0
+  ROM                   0x03000000  0x00020000  0 1 0 1  0 0 0
+  SRAMX                 0x04000000  0x00008000  0 1 1 1  0 0 0
+  FLASH_S               0x10000000  0x0009DE00  0 1 0 1  0 0 1
+  FLASH_FFR_S           0x1009DE00  0x00002000  0 1 0 1  0 0 1
+  ROM_S                 0x13000000  0x00020000  0 1 0 1  0 0 1
+  SRAMX_S               0x14000000  0x00008000  0 1 1 1  0 0 1
+  SRAM                  0x20000000  0x00044000  0 1 1 0  0 0 0
+  SRAM_S                0x30000000  0x00044000  0 1 1 0  1 0 0
+  USB_SRAM              0x40100000  0x00004000  0 1 1 0  0 0 0
+  USB_SRAM_S            0x50100000  0x00004000  0 1 1 0  1 0 0
+
+Peripheral:                                                           access   security
+  name                  start       start_s     start_ns    size      p r w x  s n c     group
+  ADC                   0x400A0000  not given   not given   0x1000    1 1 1 0  0 0 0     not given
+  AHB_SECURE_CTRL       0x400AC000  not given   not given   0x1000    0 1 1 0  0 0 0     not given
+  ANACTRL               0x40013000  not given   not given   0x010C    0 1 1 0  0 0 0     not given
+  CASPER                0x400A5000  not given   not given   0x1000    0 1 1 0  0 0 0     not given
+  CRC_ENGINE            0x40095000  not given   not given   0x000C    0 1 1 0  0 0 0     not given
+  CTIMER0               0x40008000  not given   not given   0x0088    0 1 1 0  0 0 0     CTIMER
+  CTIMER1               0x40009000  not given   not given   0x0088    0 1 1 0  0 0 0     CTIMER
+  CTIMER2               0x40028000  not given   not given   0x0088    0 1 1 0  0 0 0     CTIMER
+  CTIMER3               0x40029000  not given   not given   0x0088    0 1 1 0  0 0 0     CTIMER
+  CTIMER4               0x4002A000  not given   not given   0x0088    0 1 1 0  0 0 0     CTIMER
+  DGBMAILBOX            0x4009C000  not given   not given   0x0100    0 1 1 0  0 0 0     not given
+  DMA0                  0x40082000  not given   not given   0x05FC    0 1 1 0  0 0 0     DMA
+  DMA1                  0x400A7000  not given   not given   0x05FC    0 1 1 0  0 0 0     DMA
+  FLASH                 0x40034000  not given   not given   0x1000    0 1 1 0  0 0 0     not given
+  FLEXCOMM0             0x50086000  not given   not given   0x1000    1 1 1 0  1 0 0     FLEXCOMM
+  FLEXCOMM1             0x40087000  not given   not given   0x1000    0 1 1 0  0 0 0     FLEXCOMM
+  FLEXCOMM2             0x40088000  not given   not given   0x1000    0 1 1 0  0 0 0     FLEXCOMM
+  FLEXCOMM3             0x40089000  not given   not given   0x1000    0 1 1 0  0 0 0     FLEXCOMM
+  FLEXCOMM4             0x4008A000  not given   not given   0x1000    0 1 1 0  0 0 0     FLEXCOMM
+  FLEXCOMM5             0x40096000  not given   not given   0x1000    0 1 1 0  0 0 0     FLEXCOMM
+  FLEXCOMM6             0x40097000  not given   not given   0x1000    0 1 1 0  0 0 0     FLEXCOMM
+  FLEXCOMM7             0x40098000  not given   not given   0x1000    0 1 1 0  0 0 0     FLEXCOMM
+  GINT0                 0x40002000  not given   not given   0x0048    1 1 1 0  0 0 0     GINT
+  GINT1                 0x40003000  not given   not given   0x0048    1 1 1 0  0 0 0     GINT
+  GPIO                  0x4008C000  not given   not given   0x2490    1 1 1 0  0 0 0     not given
+  HASH-AES              0x400A4000  not given   not given   0x00A0    0 1 1 0  0 0 0     not given
+  INPUTMUX              0x40006000  not given   not given   0x07B4    0 1 1 0  0 0 0     not given
+  IOCON                 0x50001000  not given   not given   0x0100    1 1 1 0  1 0 0     not given
+  MAILBOX               0x4008B000  not given   not given   0x00FC    0 1 1 0  0 0 0     not given
+  MRT                   0x4000D000  not given   not given   0x00FC    0 1 1 0  0 0 0     not given
+  OSEVTIMER             0x4002D000  not given   not given   0x0020    0 1 1 0  0 0 0     not given
+  PINT                  0x40004000  not given   not given   0x0034    0 1 1 0  0 0 0     not given
+  PLU                   0x4003D000  not given   not given   0x0C20    0 1 1 0  0 0 0     not given
+  PMC                   0x40020000  not given   not given   0x00CC    0 1 1 0  0 0 0     not given
+  POWERQUAD             0x40150000  not given   not given   0x0260    0 1 1 0  0 0 0     not given
+  PRINCE                0x40035000  not given   not given   0x0040    0 1 1 0  0 0 0     not given
+  PUF                   0x4003B000  not given   not given   0x0260    0 1 1 0  0 0 0     not given
+  RNG                   0x4003A000  not given   not given   0x1000    1 1 1 0  0 0 0     not given
+  RTC                   0x4002C000  not given   not given   0x0060    1 1 1 0  0 0 0     not given
+  SCT                   0x40085000  not given   not given   0x0550    0 1 1 0  0 0 0     not given
+  SDMMC                 0x4009B000  not given   not given   0x1000    0 1 1 0  0 0 0     not given
+  SGPIO                 0x400A8000  not given   not given   0x2490    0 1 1 0  0 0 0     not given
+  SPI8                  0x4009F000  not given   not given   0x1000    0 1 1 0  0 0 0     not given
+  SPINT                 0x40005000  not given   not given   0x0034    0 1 1 0  0 0 0     not given
+  SYSCON                0x50000000  not given   not given   0x1000    1 1 1 0  1 0 0     not given
+  SYSCTL                0x40023000  not given   not given   0x1000    0 1 1 0  0 0 0     not given
+  USBFSD                0x40084000  not given   not given   0x0038    0 1 1 0  0 0 0     not given
+  USBFSH                0x400A2000  not given   not given   0x0060    0 1 1 0  0 0 0     not given
+  USBHSD                0x40094000  not given   not given   0x0038    0 1 1 0  0 0 0     not given
+  USBHSH                0x400A3000  not given   not given   0x0054    1 1 1 0  0 0 0     not given
+  USBPHY                0x40038000  not given   not given   0x0110    1 1 1 0  0 0 0     not given
+  UTICK                 0x4000E000  not given   not given   0x0020    0 1 1 0  0 0 0     not given
+  WWDT                  0x4000C000  not given   not given   0x001C    0 1 1 0  0 0 0     not given
+
+Interrupt:                      security
+  name                  number  s n
+  FLASH                 0       0 0
+  WDT                   0       0 0
+  SDMA0                 1       0 0
+  CTIMER0               10      0 0
+  CTIMER1               11      0 0
+  SCT                   12      0 0
+  CTIMER3               13      0 0
+  FLEXCOMM0             14      1 0
+  FLEXCOMM1             15      0 0
+  FLEXCOMM2             16      0 0
+  FLEXCOMM3             17      0 0
+  FLEXCOMM4             18      0 0
+  FLEXCOMM5             19      0 0
+  GINT0                 2       0 1
+  FLEXCOMM6             20      0 0
+  FLEXCOMM7             21      0 0
+  ADC                   22      0 1
+  ACMP                  24      0 0
+  USB0_NEEDCLK          27      0 0
+  USB0                  28      0 0
+  RTC                   29      0 1
+  GINT1                 3       0 1
+  MAILBOX               31      0 0
+  PIN_INT4              32      0 0
+  PIN_INT5              33      0 0
+  PIN_INT6              34      0 0
+  PIN_INT7              35      0 0
+  CTIMER2               36      0 0
+  CTIMER4               37      0 0
+  OSEVTIMER             38      0 0
+  PIN_INT0              4       0 0
+  SDIO                  42      0 0
+  USB1                  47      0 0
+  USB1_NEEDCLK          48      0 0
+  HYPERVISOR            49      0 0
+  PIN_INT1              5       0 0
+  SGPIO_INT0_IRQ0       50      0 0
+  SGPIO_INT0_IRQ1       51      0 0
+  PLU                   52      0 0
+  SEC_VIO               53      0 0
+  HASH                  54      0 0
+  CASPER                55      0 0
+  PUF                   56      0 0
+  POWERQUAD             57      0 0
+  SDMA1                 58      0 0
+  HS_SPI                59      0 0
+  PIN_INT2              6       0 0
+  PIN_INT3              7       0 0
+  UTICK                 8       0 0
+  MRT                   9       0 0
+
+SAU entry:
+  start       end         nsc  info
+  0x00010000  0x00081FE0  0    memory:CODE_NS
+  0x1000FE00  0x1000FFE0  1    memory:Veneer
+  0x20008000  0x20043FE0  0    memory:DATA_NS
+
+MPC entry:
+  name                                                                            s-bits
+  AHB_SECURE_CTRL->SEC_CTRL_FLASH_ROM[0].SEC_CTRL_FLASH_MEM_RULE                  11000000000000000000
+  AHB_SECURE_CTRL->SEC_CTRL_FLASH_ROM[0].SEC_CTRL_ROM_MEM_RULE                    00000000000000000000000000000000
+  AHB_SECURE_CTRL->SEC_CTRL_RAMX[0].MEM_RULE                                      00000000
+  AHB_SECURE_CTRL->SEC_CTRL_RAM0[0].MEM_RULE                                      1111111100000000
+  AHB_SECURE_CTRL->SEC_CTRL_RAM1[0].MEM_RULE                                      0000000000000000
+  AHB_SECURE_CTRL->SEC_CTRL_RAM2[0].MEM_RULE                                      0000000000000000
+  AHB_SECURE_CTRL->SEC_CTRL_RAM3[0].MEM_RULE                                      0000000000000000
+  AHB_SECURE_CTRL->SEC_CTRL_RAM4[0].MEM_RULE                                      0000
+  AHB_SECURE_CTRL->SEC_CTRL_USB_HS[0].MEM_RULE                                    0000
+
+Register Setup:
+  Register                                                                        Value       Peripheral
+  AHB_SECURE_CTRL->SEC_CTRL_AHB0_0_SLAVE_RULE                                     0x02000000  FLEXCOMM0
+  AHB_SECURE_CTRL->SEC_CTRL_APB_BRIDGE[0].SEC_CTRL_APB_BRIDGE0_MEM_CTRL0          0x00000020  IOCON
+                                                                                  0x00000002  SYSCON
+
+Zones:
+  hello_world_s
+  - Dname     : LPC55S69
+  - Pname     : cm33_core0
+  - info      : 
+  - name      : hello_world_s
+  - security  : secure
+  - memory    : CODE_S (0x10000000 : 0xFE00)
+  - memory    : Veneer (0x1000FE00 : 0x200)
+  - memory    : DATA_S (0x30000000 : 0x8000)
+  - peripheral: IOCON (0x50001000 : 0x0100)
+  - peripheral: SYSCON (0x50000000 : 0x1000)
+  - peripheral: FLEXCOMM0 (0x50086000 : 0x1000)
+  - peripheral: RNG (0x5003A000 : 0x1000)
+  hello_world_ns
+  - Dname     : LPC55S69
+  - Pname     : cm33_core0
+  - info      : 
+  - name      : hello_world_ns
+  - security  : non-secure
+  - memory    : CODE_NS (0x00010000 : 0x72000)
+  - memory    : DATA_NS (0x20008000 : 0x3C000)
+  - peripheral: ADC (0x400A0000 : 0x1000)
+  - peripheral: GPIO (0x4008C000 : 0x2490)
+  - peripheral: GINT1 (0x40003000 : 0x0048)
+  - peripheral: GINT1 (0x40003000 : 0x0048)
+  - peripheral: GINT0 (0x40002000 : 0x0048)
+  - peripheral: RTC (0x4002C000 : 0x0060)
+  - peripheral: USBHSH (0x400A3000 : 0x0054)
+  - peripheral: USBPHY (0x40038000 : 0x0110)
+

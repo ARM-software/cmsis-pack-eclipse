@@ -8,7 +8,6 @@ import com.arm.cmsis.pack.debugseq.debugSeq.CodeBlock;
 import com.arm.cmsis.pack.debugseq.debugSeq.Control;
 import com.arm.cmsis.pack.debugseq.debugSeq.DebugSeqModel;
 import com.arm.cmsis.pack.debugseq.debugSeq.DebugSeqPackage;
-import com.arm.cmsis.pack.debugseq.debugSeq.DebugVars;
 import com.arm.cmsis.pack.debugseq.debugSeq.Expression;
 import com.arm.cmsis.pack.debugseq.debugSeq.Sequence;
 import com.arm.cmsis.pack.debugseq.debugSeq.Statement;
@@ -18,7 +17,6 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import java.util.Arrays;
 import java.util.List;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EReference;
 import org.eclipse.xtext.scoping.IScope;
@@ -39,8 +37,7 @@ public class DebugSeqScopeProvider extends AbstractDebugSeqScopeProvider {
   public IScope getScope(final EObject context, final EReference r) {
     IScope _xifexpression = null;
     if (((context instanceof Expression) && Objects.equal(r, DebugSeqPackage.Literals.VARIABLE_REF__VARIABLE))) {
-      EObject _eContainer = context.eContainer();
-      _xifexpression = this.symbolsDefinedBefore(_eContainer, context);
+      _xifexpression = this.symbolsDefinedBefore(context.eContainer(), context);
     } else {
       _xifexpression = super.getScope(context, r);
     }
@@ -48,63 +45,42 @@ public class DebugSeqScopeProvider extends AbstractDebugSeqScopeProvider {
   }
   
   protected IScope _symbolsDefinedBefore(final EObject cont, final EObject o) {
-    EObject _eContainer = cont.eContainer();
-    EObject _eContainer_1 = o.eContainer();
-    return this.symbolsDefinedBefore(_eContainer, _eContainer_1);
+    return this.symbolsDefinedBefore(cont.eContainer(), o.eContainer());
   }
   
   protected IScope _symbolsDefinedBefore(final DebugSeqModel dsm, final EObject o) {
-    DebugVars _debugvars = dsm.getDebugvars();
-    EList<Statement> _statements = _debugvars.getStatements();
-    Iterable<VariableDeclaration> _filter = Iterables.<VariableDeclaration>filter(_statements, VariableDeclaration.class);
-    return Scopes.scopeFor(_filter);
+    return Scopes.scopeFor(
+      Iterables.<VariableDeclaration>filter(dsm.getDebugvars().getStatements(), VariableDeclaration.class));
   }
   
   protected IScope _symbolsDefinedBefore(final Sequence seq, final EObject o) {
-    EList<CodeBlock> _codeblocks = seq.getCodeblocks();
-    Iterable<Block> _blocksDeclaredBefore = this.blocksDeclaredBefore(_codeblocks, o);
     final Function1<Block, Iterable<VariableDeclaration>> _function = (Block it) -> {
-      EList<Statement> _statements = it.getStatements();
-      return Iterables.<VariableDeclaration>filter(_statements, VariableDeclaration.class);
+      return Iterables.<VariableDeclaration>filter(it.getStatements(), VariableDeclaration.class);
     };
-    Iterable<Iterable<VariableDeclaration>> _map = IterableExtensions.<Block, Iterable<VariableDeclaration>>map(_blocksDeclaredBefore, _function);
-    Iterable<VariableDeclaration> _flatten = Iterables.<VariableDeclaration>concat(_map);
-    EObject _eContainer = seq.eContainer();
-    EObject _eContainer_1 = o.eContainer();
-    IScope _symbolsDefinedBefore = this.symbolsDefinedBefore(_eContainer, _eContainer_1);
-    return Scopes.scopeFor(_flatten, _symbolsDefinedBefore);
+    return Scopes.scopeFor(
+      Iterables.<VariableDeclaration>concat(IterableExtensions.<Block, Iterable<VariableDeclaration>>map(this.blocksDeclaredBefore(seq.getCodeblocks(), o), _function)), 
+      this.symbolsDefinedBefore(seq.eContainer(), o.eContainer()));
   }
   
   protected IScope _symbolsDefinedBefore(final Block b, final EObject o) {
-    EList<Statement> _statements = b.getStatements();
-    Iterable<VariableDeclaration> _variablesDeclaredBefore = this.variablesDeclaredBefore(_statements, o);
-    EObject _eContainer = b.eContainer();
-    EObject _eContainer_1 = o.eContainer();
-    IScope _symbolsDefinedBefore = this.symbolsDefinedBefore(_eContainer, _eContainer_1);
-    return Scopes.scopeFor(_variablesDeclaredBefore, _symbolsDefinedBefore);
+    return Scopes.scopeFor(
+      this.variablesDeclaredBefore(b.getStatements(), o), 
+      this.symbolsDefinedBefore(b.eContainer(), o.eContainer()));
   }
   
   protected IScope _symbolsDefinedBefore(final Control c, final EObject o) {
-    EList<CodeBlock> _codeblocks = c.getCodeblocks();
-    Iterable<Block> _blocksDeclaredBefore = this.blocksDeclaredBefore(_codeblocks, o);
     final Function1<Block, Iterable<VariableDeclaration>> _function = (Block it) -> {
-      EList<Statement> _statements = it.getStatements();
-      return Iterables.<VariableDeclaration>filter(_statements, VariableDeclaration.class);
+      return Iterables.<VariableDeclaration>filter(it.getStatements(), VariableDeclaration.class);
     };
-    Iterable<Iterable<VariableDeclaration>> _map = IterableExtensions.<Block, Iterable<VariableDeclaration>>map(_blocksDeclaredBefore, _function);
-    Iterable<VariableDeclaration> _flatten = Iterables.<VariableDeclaration>concat(_map);
-    EObject _eContainer = c.eContainer();
-    EObject _eContainer_1 = o.eContainer();
-    IScope _symbolsDefinedBefore = this.symbolsDefinedBefore(_eContainer, _eContainer_1);
-    return Scopes.scopeFor(_flatten, _symbolsDefinedBefore);
+    return Scopes.scopeFor(
+      Iterables.<VariableDeclaration>concat(IterableExtensions.<Block, Iterable<VariableDeclaration>>map(this.blocksDeclaredBefore(c.getCodeblocks(), o), _function)), 
+      this.symbolsDefinedBefore(c.eContainer(), o.eContainer()));
   }
   
   private Iterable<Block> blocksDeclaredBefore(final List<CodeBlock> list, final EObject o) {
     Iterable<Block> _xifexpression = null;
     if (((o instanceof Block) || (o instanceof Control))) {
-      int _indexOf = list.indexOf(o);
-      List<CodeBlock> _subList = list.subList(0, _indexOf);
-      _xifexpression = Iterables.<Block>filter(_subList, Block.class);
+      _xifexpression = Iterables.<Block>filter(list.subList(0, list.indexOf(o)), Block.class);
     } else {
       _xifexpression = CollectionLiterals.<Block>newArrayList();
     }
@@ -112,9 +88,7 @@ public class DebugSeqScopeProvider extends AbstractDebugSeqScopeProvider {
   }
   
   private Iterable<VariableDeclaration> variablesDeclaredBefore(final List<Statement> list, final EObject o) {
-    int _indexOf = list.indexOf(o);
-    List<Statement> _subList = list.subList(0, _indexOf);
-    return Iterables.<VariableDeclaration>filter(_subList, VariableDeclaration.class);
+    return Iterables.<VariableDeclaration>filter(list.subList(0, list.indexOf(o)), VariableDeclaration.class);
   }
   
   public IScope symbolsDefinedBefore(final EObject b, final EObject o) {

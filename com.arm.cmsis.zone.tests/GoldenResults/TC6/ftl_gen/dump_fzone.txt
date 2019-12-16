@@ -1,0 +1,205 @@
+// Model dump
+
+Memory:                                         access   security
+  name                  start       size        p r w x  s n c
+  Flash_NS              0x08000000  0x00080000  0 1 0 1  0 1 0
+  Flash_S               0x0C000000  0x00080000  0 1 0 1  0 0 1
+  SRAM_NS               0x20000000  0x00040000  0 1 1 1  0 1 0
+  SRAM_S                0x30000000  0x00040000  0 1 1 1  0 0 1
+
+Peripheral:                                                           access   security
+  name                  start       start_s     start_ns    size      p r w x  s n c     group
+  ADC                   0x42028000  not given   not given   0x400     1 1 1 0  0 0 0     ADC
+  COMP                  0x40010200  not given   not given   0x200     1 1 1 0  0 0 0     ADC
+  DFSDM1                0x40016000  not given   not given   0x800     1 1 1 0  0 0 0     ADC
+  DMA1                  0x40020000  not given   not given   0x400     1 1 1 0  0 0 0     DMA
+  DMA2                  0x40020400  not given   not given   0x400     1 1 1 0  0 0 0     DMA
+  FDCAN1                0x4000A400  not given   not given   0xC00     1 1 1 0  0 0 0     not given
+  GPIOA                 0x42020000  not given   not given   0x400     1 1 1 0  0 0 0     GPIO
+  GPIOB                 0x42020400  not given   not given   0x400     1 1 1 0  0 0 0     GPIO
+  GPIOC                 0x42020800  not given   not given   0x400     1 1 1 0  0 0 0     GPIO
+  GPIOD                 0x42020C00  not given   not given   0x400     1 1 1 0  0 0 0     GPIO
+  GPIOE                 0x42021000  not given   not given   0x400     1 1 1 0  0 0 0     GPIO
+  GPIOF                 0x42021400  not given   not given   0x400     1 1 1 0  0 0 0     GPIO
+  GPIOG                 0x42021800  not given   not given   0x400     1 1 1 0  0 0 0     GPIO
+  GPIOH                 0x42021C00  not given   not given   0x400     1 1 1 0  0 0 0     GPIO
+  I2C1                  0x40005400  not given   not given   0x400     1 1 1 0  0 0 0     I2C
+  I2C2                  0x40005800  not given   not given   0x400     1 1 1 0  0 0 0     I2C
+  I2C3                  0x40005C00  not given   not given   0x400     1 1 1 0  0 0 0     I2C
+  I2C4                  0x40008400  not given   not given   0x400     1 1 1 0  0 0 0     I2C
+  LPTIM1                0x40007C00  not given   not given   0x400     1 1 1 0  0 0 0     LPTIM
+  LPTIM3                0x40009400  not given   not given   0x400     1 1 1 0  0 0 0     LPTIM
+  LPUART1               0x40008000  not given   not given   0x400     1 1 1 0  0 0 0     USART
+  OCTOSPI1              0x44021000  not given   not given   0x400     1 1 1 0  0 0 0     OctoSPI
+  SAI1                  0x40015400  not given   not given   0x400     1 1 1 0  0 0 0     SAI
+  SAI2                  0x40015800  not given   not given   0x400     1 1 1 0  0 0 0     SAI
+  SPI1                  0x40013000  not given   not given   0x400     1 1 1 0  0 0 0     SPI
+  SPI2                  0x40003800  not given   not given   0x400     1 1 1 0  0 0 0     SPI
+  SPI3                  0x40003C00  not given   not given   0x400     1 1 1 0  0 0 0     SPI
+  TIM1                  0x40012C00  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM15                 0x40014000  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM16                 0x40014400  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM17                 0x40014800  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM2                  0x40000000  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM3                  0x40000400  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM4                  0x40000800  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM5                  0x40000C00  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM6                  0x40001000  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM7                  0x40001400  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  TIM8                  0x40013400  not given   not given   0x400     1 1 1 0  0 0 0     TIM
+  UART4                 0x40004C00  not given   not given   0x400     1 1 1 0  0 0 0     USART
+  UART5                 0x40005000  not given   not given   0x400     1 1 1 0  0 0 0     USART
+  UCPD1                 0x4000DC00  not given   not given   0x400     1 1 1 0  0 0 0     UCPD
+  USART1                0x40013800  not given   not given   0x400     1 1 1 0  0 0 0     USART
+  USART2                0x40004400  not given   not given   0x400     1 1 1 0  0 0 0     USART
+  USART3                0x40004800  not given   not given   0x400     1 1 1 0  0 0 0     USART
+
+Interrupt:                      security
+  name                  number  s n
+  DMA1_Channel1         029     1 0
+  DMA1_Channel2         030     1 0
+  DMA1_Channel3         031     1 0
+  DMA1_Channel4         032     1 0
+  DMA1_Channel5         033     1 0
+  DMA1_Channel6         034     1 0
+  DMA1_Channel7         035     1 0
+  DMA1_Channel8         036     1 0
+  ADC1_2                037     0 1
+  FDCAN1_IT0            039     0 0
+  FDCAN1_IT1            040     0 0
+  TIM1_BRK              041     1 0
+  TIM1_UP               042     1 0
+  TIM1_TRG_COM          043     1 0
+  TIM1_CC               044     1 0
+  TIM2                  045     0 0
+  TIM3                  046     0 0
+  TIM4                  047     0 1
+  TIM5                  048     0 0
+  TIM6                  049     0 0
+  TIM7                  050     0 0
+  TIM8_BRK              051     0 0
+  TIM8_UP               052     0 0
+  TIM8_TRG_COM          053     0 0
+  TIM8_CC               054     0 0
+  I2C1_EV               055     0 0
+  I2C1_ER               056     0 0
+  I2C2_EV               057     0 0
+  I2C2_ER               058     0 0
+  SPI1                  059     0 0
+  SPI2                  060     0 0
+  USART1                061     1 0
+  USART2                062     0 1
+  USART3                063     0 0
+  UART4                 064     0 0
+  UART5                 065     0 0
+  LPUART1               066     0 0
+  LPTIM1                067     0 0
+  LPTIM2                068     0 0
+  TIM15                 069     0 0
+  TIM16                 070     0 0
+  TIM17                 071     0 0
+  COMP                  072     0 0
+  OCTOSPI1              076     0 0
+  DMA2_CH1              080     0 0
+  DMA2_CH2              081     0 0
+  DMA2_CH3              082     0 0
+  DMA2_CH4              083     0 0
+  DMA2_CH5              084     0 0
+  DMA2_CH6              085     0 0
+  DMA2_CH7              086     0 0
+  DMA2_CH8              087     0 0
+  I2C3_EV               088     0 0
+  I2C3_ER               089     0 0
+  SAI1                  090     0 0
+  SAI2                  091     0 0
+  SPI3                  099     0 0
+  I2C4_ER               100     0 0
+  I2C4_EV               101     0 0
+  DFSDM1_FLT0           102     0 0
+  DFSDM1_FLT1           103     0 0
+  DFSDM1_FLT2           104     0 0
+  DFSDM1_FLT3           105     0 0
+  UCPD1                 106     0 0
+
+SAU entry:
+  start       end         nsc  info
+  0x08040000  0x0807FFE0  0    memory:CODE_NS
+  0x0C03E000  0x0C03FFE0  1    memory:Veneer
+  0x20000000  0x2001FFE0  0    memory:DATA_NS
+  0x40000000  0x4FFFFFE0  0    region
+
+MPC entry:
+  name                                                                            s-bits
+  GTZC_MPCBB1_S                                                                   000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
+  GTZC_MPCBB2_S                                                                   1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111
+
+Register Setup:
+  Register                                                                        Value       Peripheral
+  DMA1_Channel1_S->CCR                                                            0x00020000  DMA1
+                                                                                  0x00100000  DMA1
+  DMA1_Channel2_S->CCR                                                            0x00020000  DMA1
+  DMA1_Channel3_S->CCR                                                            0x00020000  DMA1
+  DMA1_Channel4_S->CCR                                                            0x00020000  DMA1
+  DMA1_Channel5_S->CCR                                                            0x00020000  DMA1
+  DMA1_Channel6_S->CCR                                                            0x00020000  DMA1
+  DMA1_Channel7_S->CCR                                                            0x00020000  DMA1
+  DMA1_Channel8_S->CCR                                                            0x00020000  DMA1
+  GPIOA_S->SECCFGR                                                                0x00000002  GPIOA
+                                                                                  0x00000004  GPIOA
+                                                                                  0x00000008  GPIOA
+                                                                                  0x00000010  GPIOA
+                                                                                  0x00000020  GPIOA
+                                                                                  0x00000040  GPIOA
+                                                                                  0x00000080  GPIOA
+                                                                                  0x00000100  GPIOA
+                                                                                  0x00000200  GPIOA
+                                                                                  0x00000400  GPIOA
+                                                                                  0x00000800  GPIOA
+                                                                                  0x00001000  GPIOA
+                                                                                  0x00002000  GPIOA
+                                                                                  0x00004000  GPIOA
+                                                                                  0x00008000  GPIOA
+  GPIOB_S->SECCFGR                                                                0x00000001  GPIOB
+                                                                                  0x00000002  GPIOB
+                                                                                  0x00000004  GPIOB
+                                                                                  0x00000008  GPIOB
+                                                                                  0x00000010  GPIOB
+                                                                                  0x00000020  GPIOB
+                                                                                  0x00000040  GPIOB
+                                                                                  0x00000080  GPIOB
+                                                                                  0x00000100  GPIOB
+                                                                                  0x00000200  GPIOB
+                                                                                  0x00000400  GPIOB
+                                                                                  0x00000800  GPIOB
+                                                                                  0x00001000  GPIOB
+                                                                                  0x00002000  GPIOB
+                                                                                  0x00004000  GPIOB
+                                                                                  0x00008000  GPIOB
+
+Zones:
+  blinky_s
+  - Dname     : STM32L552ZETxQ
+  - Pname     : 
+  - info      : 
+  - name      : blinky_s
+  - security  : secure
+  - memory    : CODE_S (0x0C000000 : 0x3E000)
+  - memory    : Veneer (0x0C03E000 : 0x2000)
+  - memory    : DATA_S (0x30020000 : 0x20000)
+  - peripheral: USART1 (0x50013800 : 0x400)
+  - peripheral: TIM1 (0x50012C00 : 0x400)
+  - peripheral: GPIOA (0x52020000 : 0x400)
+  - peripheral: DMA1 (0x50020000 : 0x400)
+  blinky_ns
+  - Dname     : STM32L552ZETxQ
+  - Pname     : 
+  - info      : 
+  - name      : blinky_ns
+  - security  : non-secure
+  - memory    : CODE_NS (0x08040000 : 0x40000)
+  - memory    : DATA_NS (0x20000000 : 0x20000)
+  - peripheral: GPIOB (0x42020400 : 0x400)
+  - peripheral: ADC (0x42028000 : 0x400)
+  - peripheral: TIM4 (0x40000800 : 0x400)
+  - peripheral: USART2 (0x40004400 : 0x400)
+

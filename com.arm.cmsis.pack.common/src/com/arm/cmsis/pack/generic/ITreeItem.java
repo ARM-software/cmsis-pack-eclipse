@@ -115,6 +115,24 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 			.map(c -> type.cast(c))
 			.collect(Collectors.toList());
 	}
+	
+	/**
+	 * Returns collection of children of specified type recursively
+	 * @param type type class type to search
+	 * @return collection of sub-items matching given type, empty if none is found
+	 */
+	default <C> Collection<C> getAllChildrenOfType(Collection<C> allChildren, Class<C> type) {
+		if(allChildren == null)
+			allChildren = new LinkedList<>();
+		if(hasChildren()) {
+			allChildren.addAll(getChildrenOfType(type)); // add own
+			for( T c : getChildren()){
+				c.getAllChildrenOfType(allChildren, type);
+			}
+		}
+		return allChildren;
+	}
+
 
 	/**
 	 * Returns list of of child items
@@ -190,6 +208,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 */
 	String getFirstChildText(final String key);
 
+	
 	/**
 	 * Searches child collection for the first item corresponding to the given class type
      * @param type class type to search
@@ -208,7 +227,18 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 		 return null;
 	 }
 
-
+	 /**
+	  * Searches child collection for the first item corresponding to the given class type
+	  * @param type class type to search
+	  * @return child item if found, null otherwise
+	  */
+	 default <C> C getFirstChildOfType(String key, Class<C> type) {
+		 T child = getFirstChild(key);
+		 if(type.isInstance(child))
+			 return type.cast(child);
+		 return null;
+	 }
+	 
 	/**
 	 * Removes child from the collection
 	 * @param childToRemove child to remove

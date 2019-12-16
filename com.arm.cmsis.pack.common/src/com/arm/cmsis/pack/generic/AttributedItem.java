@@ -21,7 +21,7 @@ public class AttributedItem implements IAttributedItem {
 	@Override
 	public IAttributes attributes() {
 		if(fAttributes == null)
-			fAttributes = new Attributes();
+			fAttributes = createAttributes(); 
 		return fAttributes;
 	}
 }

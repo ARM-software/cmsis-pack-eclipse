@@ -34,12 +34,6 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	public static final List<ICpItem> EMPTY_CPITEM_LIST = new LinkedList<ICpItem>();
 	
 	/**
-	 * Items can have IDs constructed out of tag, text and attributes  
-	 * @return element ID
-	 */
-	String getId();
-
-	/**
 	 * Returns root item containing this item as ICpRootItem   
 	 * @return pack item owning the item tree
 	 */
@@ -106,14 +100,6 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 	 */
 	Collection<ICpItem> getChildren(final String tag);
 	
-	/**
-	 * Returns value of an attribute present in this element or in attributes of parent items.
-	 * Search is performed until attribute is found or parent is null or parent implementation stops search
-	 * @param key attribute key to search for
-	 * @return attribute value or null if attribute not found
-	 */
-	String getEffectiveAttribute(final String key);
-
 	/**
 	 * Returns collected attributes from this item and parent items. 
 	 * Search is performed until parent is null or parent implementation stops search
@@ -332,4 +318,66 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 		return null;
 	}
 
+	/**
+	 * Clones this item and adds the clone to new parent, makes deep copy
+	 * @param newParent new parent of the clone 
+	 * @return new ICpItem that is a clone of this one
+	 */
+	default ICpItem copyTo(ICpItem newParent) {
+		return copyTo(newParent, true);
+	}
+
+	/**
+	 * Clones this item and adds the clone to new parent, makes deep copy
+	 * @param newParent new parent of the clone 
+	 * @param copyChildren boolean flag to copy children as well (hierarchically)
+	 * @return new ICpItem that is a clone of this one
+	 */
+	ICpItem copyTo(ICpItem newParent, boolean copyChildren);
+
+	
+	/**
+	 * Clones child blocks to specified parent
+	 * @param newParent new parent of the clone 
+	 */
+	void copyChildrenTo(ICpItem newParent);
+	
+	/**
+	 * Updates this item according to the supplied one by updating attributes and children. Does not change parent.
+	 * @param other  ICpItem to get information from
+	 * @return true if this item is modified
+	 */
+	boolean updateItem(ICpItem other);
+
+	
+	/**
+	 * Creates a simple ICpItem item with all attributes expanded as separate ICpItems with tag as name and text as value. 
+	 * @param parent parent ICpItem for the created item 
+	 * @return created ICpItem
+	 */
+	ICpItem toSimpleTree(ICpItem parent);
+
+	
+	/**
+	 * Creates a simple ICpItem out of attribute values
+	 * @param parent parent ICpItem for the created item 
+	 * @param key attribute key (cannot be null or empty))
+	 * @param value attribute value 
+	 * @return created ICpItem
+	 */
+	ICpItem toSimpleItem(ICpItem parent, String key, String value); 
+
+
+	/**
+	 * Returns "info" attribute value if any
+	 * @return value of "info" attribute or empty string
+	 */
+	default String getInfo() {return getAttribute(CmsisConstants.INFO); }
+
+	/**
+	 * Initializes this item 
+	 */
+	default void initItem() {
+		// default does nothing
+	}
 }

@@ -19,6 +19,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.resources.WorkspaceJob;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
@@ -27,7 +28,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.PlatformObject;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.PlatformUI;
@@ -42,19 +42,19 @@ import com.arm.cmsis.pack.project.Messages;
 import com.arm.cmsis.pack.project.RteProjectNature;
 import com.arm.cmsis.pack.project.utils.CDTUtils;
 import com.arm.cmsis.pack.ui.console.RteConsole;
+import com.arm.cmsis.pack.ui.console.RteConsoleStrategy;
 import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * Base class for project importers 
  *
  */
-public abstract class RteProjectImporter extends PlatformObject implements IRteProjectImporter {
+public abstract class RteProjectImporter extends RteConsoleStrategy implements IRteProjectImporter {
 
     private ICpExample fExample = null; // example to import
     private String fSourceProjectFileName = CmsisConstants.EMPTY_STRING; //Absolute project filename to import
     private String fSourceProjectPath = CmsisConstants.EMPTY_STRING; //  project source path
     private String fDestinationPath; //Destination path (parent for all projects) within workspace or outside
-    private RteConsole fRteConsole = null; //Console to display Rte messages from RteProject
     protected IProject fProject = null; // project being created, a temporary variable if several are created
     protected List<String> fCreatedProjects = new ArrayList<>();
     private boolean fisHeadlessImport = false; //Flag to know headless import mode
@@ -65,7 +65,13 @@ public abstract class RteProjectImporter extends PlatformObject implements IRteP
      */
     public RteProjectImporter() {
     }
-       
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+    	return  Adapters.adapt(this, adapter);
+    }
+
+
     /**
      * Clears supplied and temporary information  
      */
@@ -99,7 +105,7 @@ public abstract class RteProjectImporter extends PlatformObject implements IRteP
             		monitor = new NullProgressMonitor();
             	String taskName = getImportTaskName();
             	monitor.setTaskName(taskName);
-            	getRteConsole().outputInfo(taskName);
+            	getCmsisConsole().outputInfo(taskName);
             	
                 //Creates Rte event and notifies listeners before creating a Rte project
                 CpPlugIn.getDefault().emitRteEvent(RteEvent.PRE_IMPORT, null);
@@ -114,17 +120,17 @@ public abstract class RteProjectImporter extends PlatformObject implements IRteP
                 	
                     String msgCancel = e.getMessage();
                     status = new Status(IStatus.CANCEL, CpProjectPlugIn.PLUGIN_ID, msgCancel, e);
-                    getRteConsole().outputInfo(msgCancel);
+                    getCmsisConsole().outputInfo(msgCancel);
 
                 } catch (CoreException e) {
                     e.printStackTrace();
                     status = new Status(e.getStatus().getSeverity(), CpProjectPlugIn.PLUGIN_ID, e.getMessage(), e);
-                    getRteConsole().outputError(e.getMessage());
+                    getCmsisConsole().outputError(e.getMessage());
                 } 
                 if(status == null) {
                     status = new Status(IStatus.OK, CpProjectPlugIn.PLUGIN_ID, null);
-                    getRteConsole().outputInfo(Messages.RteProjectImporter_Import_Completed);
-                    getRteConsole().outputInfo(CmsisConstants.EMPTY_STRING);
+                    getCmsisConsole().outputInfo(Messages.RteProjectImporter_Import_Completed);
+                    getCmsisConsole().outputInfo(CmsisConstants.EMPTY_STRING);
                 }
                 monitor.done();
                 notifyImportCompleted();
@@ -393,7 +399,7 @@ public abstract class RteProjectImporter extends PlatformObject implements IRteP
 
 	@Override
 	public IAdaptable importExample(ICpExample example) {
-		setRteConsole(RteConsole.openGlobalConsole());
+		setCmsisConsole(RteConsole.openGlobalConsole());
 		setExample(example);
 		importProject(); 
 		return this;
@@ -407,17 +413,7 @@ public abstract class RteProjectImporter extends PlatformObject implements IRteP
 		return fCreatedProjects;
 	}
 
-    /**
-     * Returns the RteConsole 
-     * @return RteConsole
-     */
-    protected RteConsole getRteConsole() {
-    	if(fRteConsole == null)
-    		fRteConsole = RteConsole.openConsole((IProject) null);
-    	return fRteConsole;
-    }
-
-	/**
+ 	/**
 	 * Checks if the import runs in headless mode 
 	 * @return true if headless 
 	 */
@@ -442,15 +438,7 @@ public abstract class RteProjectImporter extends PlatformObject implements IRteP
     }
     
     /***setters***/
-    
-    /**
-     * Sets the RteConsole 
-     * @param rteConsole RteConsole to set
-     */
-    public void setRteConsole(RteConsole rteConsole) {
-    	fRteConsole = rteConsole;
-    }
-        
+      
     /**
 	 * @param fisHeadlessImport the fisHeadlessImport to set
 	 */

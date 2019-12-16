@@ -385,4 +385,9 @@ public interface IColumnAdvisor {
 	boolean isEmpty(Object obj, int columnIndex);
 
 
+	/**
+	 * Returns column under mouse position 
+	 * @return column index or -1 if outside
+	 */
+	int getMouseColumn(); 
 }

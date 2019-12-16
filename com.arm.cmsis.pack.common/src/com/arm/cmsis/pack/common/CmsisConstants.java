@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2015-2019 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,7 @@
 package com.arm.cmsis.pack.common;
 
 /**
- * Utility class providing CMSIS constants: tags, attribute names as well as helper functions
+ * Utility class providing CMSIS constants: tags, attribute names, delimiters, etc. 
  */
 public class CmsisConstants {
 
@@ -21,14 +21,33 @@ public class CmsisConstants {
 	 * Empty string used as "null-object" to avoid using null strings
 	 */
 	static public final String EMPTY_STRING = "";		//$NON-NLS-1$
-
+	static public final String ONE			= "1"; //$NON-NLS-1$
+	static public final String ZERO		= "0"; //$NON-NLS-1$
+	static public final String ZERO8  	= "00000000"; //8 zeros  //$NON-NLS-1$
+	static public final String ZERO16 	= ZERO8 + ZERO8;
+	static public final String ZEROX	= "0x"; //$NON-NLS-1$
+	static public final String ZEROX8	= ZEROX + ZERO8; 
+	static public final String ZEROX16	= ZEROX + ZERO16;
+	
+	static public final String SLASH 	 = "/"; //$NON-NLS-1$
+	static public final String BACKSLASH = "\\"; //$NON-NLS-1$
+	
+	static public final String SPACE 	= " "; //$NON-NLS-1$
+	static public final String SPACES8 	= "        "; //8 spaces //$NON-NLS-1$
+	static public final String SPACES16 = SPACES8 + SPACES8;
+	static public final String SPACES32 = SPACES16 + SPACES16;
+	
 	static public final String COLON		= ":";		//$NON-NLS-1$
 	static public final String DOUBLE_COLON	= "::";		//$NON-NLS-1$
 	static public final String COMMA		= ",";		//$NON-NLS-1$
 	static public final String POINT		= ".";		//$NON-NLS-1$
 	static public final String QUOTE 		= "\"";  	//$NON-NLS-1$
 	public static final String EQUAL 		= "=";  	//$NON-NLS-1$
-    static public final String SPACE 		= " "; 		//$NON-NLS-1$
+	static public final String DOT			= "."; //$NON-NLS-1$
+	static public final String ASTERISK		= "*"; //$NON-NLS-1$
+	static public final String QUESTION		= "?"; //$NON-NLS-1$
+	static public final String UNDERSCORE	= "_"; //$NON-NLS-1$
+	static public final String MINUS		= "-"; //$NON-NLS-1$
 
 	
 	static public final String ARM			= "ARM";	//$NON-NLS-1$
@@ -56,8 +75,7 @@ public class CmsisConstants {
 	static public final String ID			= "id";				//$NON-NLS-1$
 	static public final String DOC			= "doc";			//$NON-NLS-1$
 	static public final String DESCRIPTION	= "description";	//$NON-NLS-1$
-	public static final String FILE_NAME 	= "filename";		//$NON-NLS-1$
-
+	static public final String FILE_NAME 	= "filename";		//$NON-NLS-1$
 
 	// condition expressions
 	static public final String ACCEPT		= "accept";			//$NON-NLS-1$
@@ -103,6 +121,8 @@ public class CmsisConstants {
 	static public final String MVE			= "MVE";			//$NON-NLS-1$
 	static public final String NO_MVE		= "NO_MVE";			//$NON-NLS-1$
 	static public final String FP_MVE		= "FP_MVE";			//$NON-NLS-1$
+	static public final String DnumInterrupts= "DnumInterrupts"; //$NON-NLS-1$
+	static public final String DnumSauRegions= "DnumSauRegions"; //$NON-NLS-1$
 
 	static public final String CATEGORY 	= "category";		//$NON-NLS-1$
 	static public final String ATTR 		= "attr";			//$NON-NLS-1$
@@ -128,9 +148,14 @@ public class CmsisConstants {
 	static public final String DEFINE		= "define";			//$NON-NLS-1$
 	static public final String PDEFINE		= "Pdefine";		//$NON-NLS-1$
 	static public final String SELECT		= "select";			//$NON-NLS-1$
+	static public final String SHOW			= "show";			//$NON-NLS-1$
 	static public final String ACCESS		= "access";			//$NON-NLS-1$
+	static public final String SECURITY		= "security";		//$NON-NLS-1$
+	static public final String PRIVILEGE	= "privilege";		//$NON-NLS-1$
+	static public final String PRIVILEGED	= "privileged";		//$NON-NLS-1$
 
 	static public final String PNAME 		= "Pname";			//$NON-NLS-1$
+	static public final String PREF 		= "Pref";			//$NON-NLS-1$
 	static public final String PUNIT 		= "Punit";			//$NON-NLS-1$
 	static public final String PUNITS 		= "Punits";			//$NON-NLS-1$
 
@@ -146,7 +171,7 @@ public class CmsisConstants {
 	static public final String TECLIPSE		= "Teclipse";		//$NON-NLS-1$
 
 	static public final String HOST			= "host";			//$NON-NLS-1$
-	public static final String ALL 			= "all";			//$NON-NLS-1$
+	static public final String ALL 			= "all";			//$NON-NLS-1$
 	static public final String WIN			= "win";			//$NON-NLS-1$
 	static public final String LINUX		= "linux";			//$NON-NLS-1$
 	static public final String MAC			= "mac";			//$NON-NLS-1$
@@ -194,6 +219,7 @@ public class CmsisConstants {
 	static public final String DSP			= "DSP";				//$NON-NLS-1$
 	static public final String NO_DSP		= "NO_DSP";			//$NON-NLS-1$
 
+	static public final String secure		= "secure";				//$NON-NLS-1$
 	static public final String SECURE		= "Secure";				//$NON-NLS-1$
 	static public final String NON_SECURE	= "Non-secure";			//$NON-NLS-1$
 	static public final String TZ_DISABLED	= "TZ-disabled";		//$NON-NLS-1$
@@ -203,7 +229,6 @@ public class CmsisConstants {
 	static public final String TEMPLATE		= "template";		//$NON-NLS-1$
 	static public final String INTERFACE	= "interface";		//$NON-NLS-1$
 	static public final String pINSTANCEp	= "%Instance%";		//$NON-NLS-1$
-
 
 	// tags
 	static public final String API_TAG			= "api";		//$NON-NLS-1$
@@ -229,6 +254,7 @@ public class CmsisConstants {
 	static public final String EXAMPLES_TAG		= "examples";	 //$NON-NLS-1$
 	static public final String REQUIREMENTS_TAG	= "requirements"; //$NON-NLS-1$	
 
+	static public final String TEXT				= "text"; //$NON-NLS-1$
 
 	static public final String RTE_COMPONENTS_H = "RTE_Components_h"; //$NON-NLS-1$
 	static public final String PRE_INCLUDE_GLOBAL_H = "Pre_Include_Global_h"; //$NON-NLS-1$
@@ -248,8 +274,16 @@ public class CmsisConstants {
 	static public final String Reset_Handler 	= "Reset_Handler";	//$NON-NLS-1$
 	static public final String Vectors 			= "Vectors";	//$NON-NLS-1$
 
+	static public final String DOT_XSD			= ".xsd";		//$NON-NLS-1$
+
 	static public final String DOT_SZONE		= ".szone";		//$NON-NLS-1$
 	static public final String DOT_PZONE		= ".pzone";		//$NON-NLS-1$
+	static public final String DOT_AZONE		= ".azone";		//$NON-NLS-1$
+	static public final String DOT_RZONE		= ".rzone";		//$NON-NLS-1$
+	static public final String DOT_FZONE		= ".fzone";		//$NON-NLS-1$
+	static public final String DOT_FTL			= ".ftl";		//$NON-NLS-1$
+	static public final String FTL				= "ftl";		//$NON-NLS-1$
+	static public final String FTL_GEN			= "ftl_gen";	//$NON-NLS-1$
 
 	// gpdsc-related property tags and attributes
 	static public final String GENERATOR		= "generator";	//$NON-NLS-1$
@@ -311,6 +345,11 @@ public class CmsisConstants {
 	static public final String TIMEOUT			= "timeout";	//$NON-NLS-1$
 
 	static public final String START			= "start";		//$NON-NLS-1$
+	static public final String END				= "end";		//$NON-NLS-1$
+	static public final String START_S			= "start_s";		//$NON-NLS-1$
+	static public final String LOGICAL			= "logical";	//$NON-NLS-1$
+	static public final String PHYSICAL			= "physical";	//$NON-NLS-1$
+
 	static public final String OFFSET			= "offset";		//$NON-NLS-1$
 	static public final String SIZE				= "size";		//$NON-NLS-1$
 	static public final String STARTUP			= "startup";	//$NON-NLS-1$
@@ -323,14 +362,19 @@ public class CmsisConstants {
 	static public final String INFO				= "info";		//$NON-NLS-1$
 	static public final String CLOCK			= "clock";		//$NON-NLS-1$
 	static public final String TYPE				= "type";		//$NON-NLS-1$
+	static public final String KEY				= "key";		//$NON-NLS-1$
 	static public final String ALIAS			= "alias";		//$NON-NLS-1$
-	static public final String AS				= "as";			//$NON-NLS-1$
-
+	static public final String INDEX			= "index";		//$NON-NLS-1$
+	static public final String DMA				= "dma";		//$NON-NLS-1$
+	static public final String EXTERNAL			= "external";	//$NON-NLS-1$
+	static public final String SHARED			= "shared";		//$NON-NLS-1$
+	
 	static public final String RAMSTART			= "RAMstart";	//$NON-NLS-1$
 	static public final String RAMSIZE			= "RAMsize";	//$NON-NLS-1$
 
 	static public final String RAM				= "RAM";		//$NON-NLS-1$
 	static public final String ROM				= "ROM";		//$NON-NLS-1$
+	static public final String ROM_TAG			= "rom";		//$NON-NLS-1$
 
 	static public final String IRAM				= "IRAM";		//$NON-NLS-1$
 	static public final String IRAM1			= "IRAM1";		//$NON-NLS-1$
@@ -399,7 +443,7 @@ public class CmsisConstants {
 	static public final String EXT_SCVD			= ".scvd"; //$NON-NLS-1$
 
 	// repository constants
-	public static final String REPO_PACK_TYPE	= "CMSIS Pack"; //$NON-NLS-1$
+	static public final String REPO_PACK_TYPE	= "CMSIS Pack"; //$NON-NLS-1$
 	static public final String REPO_TYPE		= "type"; //$NON-NLS-1$
 	static public final String REPO_NAME		= "name"; //$NON-NLS-1$
 	static public final String REPO_LIST		= "list"; //$NON-NLS-1$
@@ -412,21 +456,18 @@ public class CmsisConstants {
 	static public final String REPO_KEIL_PINDEX_FILE = "index.pidx"; //$NON-NLS-1$
 	static public final String REPO_KEIL_INDEX_URL = REPO_KEIL_PACK_SERVER + REPO_KEIL_PINDEX_FILE;
 
-	public static final String LOCAL_REPOSITORY_PIDX = "local_repository.pidx"; //$NON-NLS-1$
-	public static final String LOCAL_FILE_URL = "file://localhost/"; //$NON-NLS-1$
-	public static final String TAG = "tag"; //$NON-NLS-1$
-	public static final String REPOSITORY = "repository"; //$NON-NLS-1$
-	public static final String TIMESTAMP = "timestamp"; //$NON-NLS-1$
-	public static final String INDEX = "index"; //$NON-NLS-1$
-	public static final String SCHEMAVERSION = "schemaVersion"; //$NON-NLS-1$
-	public static final String SCHEMAINSTANCE = "http://www.w3.org/2001/XMLSchema-instance"; //$NON-NLS-1$
-	public static final String SCHEMALOCATION = "xs:noNamespaceSchemaLocation"; //$NON-NLS-1$
-	public static final String DATETIMEFORMAT = "yyyy-MM-dd'T'HH:mm:ss"; //$NON-NLS-1$
-	public static final String PDSC = "pdsc"; //$NON-NLS-1$
-	public static final String PINDEX = "pindex"; //$NON-NLS-1$
+	static public final String LOCAL_REPOSITORY_PIDX = "local_repository.pidx"; //$NON-NLS-1$
+	static public final String LOCAL_FILE_URL = "file://localhost/"; //$NON-NLS-1$
+	static public final String TAG = "tag"; //$NON-NLS-1$
+	static public final String REPOSITORY = "repository"; //$NON-NLS-1$
+	static public final String TIMESTAMP = "timestamp"; //$NON-NLS-1$
+	static public final String SCHEMAVERSION = "schemaVersion"; //$NON-NLS-1$
+	static public final String SCHEMAINSTANCE = "http://www.w3.org/2001/XMLSchema-instance"; //$NON-NLS-1$
+	static public final String SCHEMALOCATION = "xs:noNamespaceSchemaLocation"; //$NON-NLS-1$
+	static public final String DATETIMEFORMAT = "yyyy-MM-dd'T'HH:mm:ss"; //$NON-NLS-1$
+	static public final String PDSC = "pdsc"; //$NON-NLS-1$
+	static public final String PINDEX = "pindex"; //$NON-NLS-1$
 
-	static public final String ZERO	= "0"; //$NON-NLS-1$
-	static public final String ONE	= "1"; //$NON-NLS-1$
 	// paths and variables
 
 	static public final String CMSIS_PACK_ROOT = "cmsis_pack_root";   			//$NON-NLS-1$
@@ -442,28 +483,73 @@ public class CmsisConstants {
 
 	static public final String KEIL =  "Keil";									//$NON-NLS-1$
 
-	static public final String SYSTEM_TAG = "system";		 					//$NON-NLS-1$
-	static public final String MEMORY_MAP_TAG = "memory_map"; 					//$NON-NLS-1$
-	static public final String MAP_TAG = 		"map";		 					//$NON-NLS-1$
-	static public final String REGION_TAG = "region";							//$NON-NLS-1$
-	static public final String GROUP_TAG = "group";								//$NON-NLS-1$
-	static public final String RESOURCES_TAG = "resources";						//$NON-NLS-1$
-	static public final String PERIPHERAL_TAG = "peripheral";					//$NON-NLS-1$
-	static public final String PERIPHERALS_TAG = "peripherals";					//$NON-NLS-1$
-	public static final String INTERRUPT_TAG = "interrupt";						//$NON-NLS-1$
+	static public final String MAP        =	"map";		 					//$NON-NLS-1$
+	static public final String MEMORY     = "memory";						//$NON-NLS-1$
+	static public final String Memory     = "Memory";						//$NON-NLS-1$
+	static public final String MEMORIES   = "memories";						//$NON-NLS-1$
+	static public final String PARTITION  = "partition";						//$NON-NLS-1$
 
+	static public final String GROUP 		= "group";								//$NON-NLS-1$
+	static public final String RESOURCES 	= "resources";						//$NON-NLS-1$
+	static public final String PERIPHERAL 	= "peripheral";					//$NON-NLS-1$
+	static public final String PERIPHERALS 	= "peripherals";					//$NON-NLS-1$
+	static public final String Peripherals 	= "Peripherals";					//$NON-NLS-1$
+	static public final String INTERRUPT 	= "interrupt";						//$NON-NLS-1$
+	static public final String SLOT 		= "slot";						//$NON-NLS-1$
+	static public final String SLOT_NAME 	= "slot_name";						//$NON-NLS-1$
+	static public final String SLOT_TYPE	= "slot_type";						//$NON-NLS-1$
+	
+	static public final String PARENT 		= "parent";						//$NON-NLS-1$
 
-	public static final String ZONES_TAG 	 = "zones";							//$NON-NLS-1$
-	public static final String PZONE_TAG 	 = "pzone";							//$NON-NLS-1$
-	public static final String XZONE_TAG 	 = "xzone";							//$NON-NLS-1$
-	public static final String ASSIGN_TAG 	 = "assign";						//$NON-NLS-1$
+	static public final String SYSTEM	 = "system";							//$NON-NLS-1$
+	static public final String ZONES 	 = "zones";							//$NON-NLS-1$
+	static public final String ZONE 	 = "zone";							//$NON-NLS-1$
+	static public final String RZONE 	 = "rzone";							//$NON-NLS-1$
+	static public final String AZONE 	 = "azone";							//$NON-NLS-1$
+	static public final String FZONE 	 = "fzone";							//$NON-NLS-1$
 
-	public static final String LIST		 	 = "list";						//$NON-NLS-1$
-	public static final String TREE		 	 = "tree";						//$NON-NLS-1$
+	static public final String CONFIGURE = "configure";						//$NON-NLS-1$
+	static public final String MODE		 = "mode";							//$NON-NLS-1$
+	static public final String PROJECT	 = "project";						//$NON-NLS-1$
+	
+	static public final String SAU 	 	 = "sau";							//$NON-NLS-1$
+	static public final String SAU_INIT  = "sau_init";						//$NON-NLS-1$
+	static public final String REGION 	 = "region";						//$NON-NLS-1$
+	static public final String SETUP	 = "setup";							//$NON-NLS-1$
+	static public final String TZ_SETUP  = "tz_setup";						//$NON-NLS-1$
+	static public final String REG_SETUP = "reg_setup";						//$NON-NLS-1$
+	static public final String MPU_SETUP = "mpu_setup";						//$NON-NLS-1$
+	static public final String MPC		 = "mpc";							//$NON-NLS-1$
+	static public final String MPC_SETUP = "mpc_setup";						//$NON-NLS-1$
+	static public final String BLK_MAX   = "blk_max";						//$NON-NLS-1$
+	static public final String BLK_CFG   = "blk_cfg";						//$NON-NLS-1$
+	static public final String BLK_LUT   = "blk_lut";						//$NON-NLS-1$
+	static public final String BLK_SIZE  = "blk_size";						//$NON-NLS-1$	
+	static public final String S_bit  	= "S_bit";						//$NON-NLS-1$
+	static public final String P_bit  	= "P_bit";						//$NON-NLS-1$
+	static public final String bit_comment	= "bit_comment";						//$NON-NLS-1$
+	
+	static public final String CREATOR	 = "creator";					//$NON-NLS-1$
+	static public final String TOOL	 	 = "tool";						//$NON-NLS-1$
+	
+	static public final String ASSIGN 	 = "assign";						//$NON-NLS-1$
+	static public final String IRQ 	 	 = "irq";							//$NON-NLS-1$
+	static public final String IRQN	 	 = "irqn";							//$NON-NLS-1$
+	static public final String NSC	 	 = "nsc";							//$NON-NLS-1$
+	static public final String N	 	 = "n";							//$NON-NLS-1$
+	static public final String S	 	 = "s";							//$NON-NLS-1$
+	static public final String C	 	 = "c";							//$NON-NLS-1$
 
-	public static final String REMOVED		 = "removed";					//$NON-NLS-1$
-	public static final String VALID		 = "valid";						//$NON-NLS-1$
+	static public final String LIST		 	 = "list";						//$NON-NLS-1$
+	static public final String TREE		 	 = "tree";						//$NON-NLS-1$
 
+	static public final String REMOVED		 = "removed";					//$NON-NLS-1$
+	static public final String VALID		 = "valid";						//$NON-NLS-1$
+
+	static public final String Info		 	 = "Info";					//$NON-NLS-1$
+	static public final String Warning		 = "Warning";					//$NON-NLS-1$
+	static public final String Error		 = "Error";						//$NON-NLS-1$
+	static public final String FatalError	 = "Fatal Error";				//$NON-NLS-1$
 
 	// variable that is used as markers, all are are expanded to empty string
 	static public final String CMSIS_RTE = "cmsis_rte";		 						//$NON-NLS-1$
@@ -473,6 +559,7 @@ public class CmsisConstants {
 
 	static public final String PACK_IDX = "pack.idx"; //$NON-NLS-1$
 
+	static public final String WORKSPACE_LOC	   = "${workspace_loc}/"; //$NON-NLS-1$
 	static public final String PROJECT_LOCAL_PATH 	= "${workspace_loc:/${ProjName}}/"; //$NON-NLS-1$
 	static public final String PROJECT_NAME			= "${ProjName}/"; //$NON-NLS-1$
 	static public final String PROJECT_ABS_PATH		= "${ProjDirPath}/"; //$NON-NLS-1$
@@ -492,11 +579,19 @@ public class CmsisConstants {
 	static public final String RTE_Pre_Include_ 	= RTEDIR + Pre_Include_;
 	static public final String PROJECT_RTE_Pre_Include_ = PROJECT_RTE_PATH + '/' + Pre_Include_;
 	static public final String CMSIS_device_header = "CMSIS_device_header";  		//$NON-NLS-1$
-    public static final String IMPORT_REPORT_TXT = "ImportReport.txt"; 				//$NON-NLS-1$
-    public static final String IMPORT_TEST_REPORT_TXT = "ImportTestReport.txt"; 				//$NON-NLS-1$
+    static public final String IMPORT_REPORT_TXT = "ImportReport.txt"; 				//$NON-NLS-1$
 	
 
 	static public final String UV = "uv";  											//$NON-NLS-1$
+	
+	
+	static public final String MPU_TYPE_V7M = "v7M"; //$NON-NLS-1$
+	static public final String MPU_TYPE_V8M = "v8M"; //$NON-NLS-1$
+	
+	static public final String size_v7M = "size_v7M";  //$NON-NLS-1$
+	static public final String addr_v7M = "addr_v7M";  //$NON-NLS-1$
+	static public final String srd_v7M  = "srd_v7M";  //$NON-NLS-1$
+	
 
 	// standard key sequences (http://www.keil.com/pack/doc/CMSIS/Pack/html/pdsc_generators_pg.html)
 	static public final String[] STANDARD_KEY_SEQENCES =

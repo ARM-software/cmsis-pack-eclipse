@@ -11,7 +11,6 @@ import com.arm.cmsis.pack.debugseq.DebugSeqStandaloneSetupGenerated;
 @SuppressWarnings("all")
 public class DebugSeqStandaloneSetup extends DebugSeqStandaloneSetupGenerated {
   public static void doSetup() {
-    DebugSeqStandaloneSetup _debugSeqStandaloneSetup = new DebugSeqStandaloneSetup();
-    _debugSeqStandaloneSetup.createInjectorAndDoEMFRegistration();
+    new DebugSeqStandaloneSetup().createInjectorAndDoEMFRegistration();
   }
 }

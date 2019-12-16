@@ -111,10 +111,11 @@ public class RteModelEditor extends RteEditor<IRteModelController> {
 	@Override
 	public void gotoMarker(IMarker marker) {
 		try {
-			IRteDependencyItem depItem = (IRteDependencyItem) marker.getAttribute(CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM);
-			if (depItem == null) {
+			Object o = marker.getAttribute(CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM);
+			if (!(o instanceof IRteDependencyItem)) {
 				return;
 			}
+			IRteDependencyItem depItem = (IRteDependencyItem) o;
 			IRteComponentItem rteComponent = depItem.getComponentItem();
 			if (rteComponent == null) {
 				return;

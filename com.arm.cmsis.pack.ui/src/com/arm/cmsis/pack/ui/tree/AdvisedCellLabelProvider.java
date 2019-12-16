@@ -371,14 +371,13 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 
 		CellControlType cellControlType = columnAdvisor.getCellControlType(element, index);
 		switch (cellControlType) {
-		case TEXT:
-			cell.setImage(columnAdvisor.getImage(element, index));
-			break;
 		case INPLACE_CHECK:
 		case CHECK:			
 			cell.setImage(columnAdvisor.getCheckboxImage(element, index));
 			break;
+		case TEXT:
 		default:
+			cell.setImage(columnAdvisor.getImage(element, index));
 			break;
 		}
 		
@@ -391,7 +390,7 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 		case MENU:
 		case COMBO:
 			String s = columnAdvisor.getString(element, index);
-			if(s != null && !s.isEmpty()) {
+			if(index == 0 && s != null && !s.isEmpty()) {
 			// workaround: append space to the text to avoid last character truncation the cells
 				s += ' ';
 			}
@@ -410,12 +409,10 @@ public class AdvisedCellLabelProvider extends StyledCellLabelProvider implements
 			
 			break;
 		case URL:
-			cell.setImage(columnAdvisor.getImage(element, index));
 			cell.setText(columnAdvisor.getString(element, index));
 			cell.setForeground(columnAdvisor.getFgColor(element, index));
 			break;
 		case BUTTON:
-			cell.setImage(columnAdvisor.getImage(element, index));
 			cell.setText(columnAdvisor.getString(element, index));
 			break;
 		default:
