@@ -282,7 +282,7 @@ public interface IAttributedItem {
 	 * @return true if custom
 	 */
 	default public boolean isCustom() {
-		return getAttributeAsBoolean(CmsisConstants.CUSTOM, true);
+		return getAttributeAsBoolean(CmsisConstants.CUSTOM, false);
 	}
 
 	/**
