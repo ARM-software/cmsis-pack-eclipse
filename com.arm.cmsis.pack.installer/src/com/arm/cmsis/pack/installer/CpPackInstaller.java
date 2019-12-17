@@ -770,8 +770,6 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 			final String pdscVersion = pdsc[2];
 			final String packFamilyId = Utils.extractBaseFileName(pdscName);
 
-			getMonitor().subTask(NLS.bind(Messages.CpPackInstaller_Updating, pdscName, pdscUrl));
-
 			String destFileName = webFolder.append(pdscName).toOSString();
 
 			// if this is not .idx file and we have already higher version, skip
@@ -782,6 +780,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 				continue;
 			}
 			downloadPdscFile(pdscUrl, pdscName, destFileName);
+			getMonitor().worked(1);
 		}
 	}
 	
