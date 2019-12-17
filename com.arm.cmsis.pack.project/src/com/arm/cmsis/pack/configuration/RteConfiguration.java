@@ -800,7 +800,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		if(className != null && !className.isEmpty()) {
 			path += Utils.wildCardsToX(className) + '/'; // escape spaces with underscores
 		}
-		if(fi.isDeviceDependent() && deviceName != null && !deviceName.isEmpty()) {
+		if(deviceName != null && !deviceName.isEmpty() && CmsisConstants.Device.contentEquals(className)) {
 			path += Utils.wildCardsToX(deviceName) + '/';
 		}
 
