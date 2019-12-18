@@ -161,6 +161,11 @@ public class BoardsView extends PackInstallerView {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
 				}
 
+				ICpBoard board = bdItem.getBoard();
+				if(board == null) {
+					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_DEPR);
+				}
+				
 				if (bdItem.getBoard().isDeprecated()) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_DEPR);
 				}
