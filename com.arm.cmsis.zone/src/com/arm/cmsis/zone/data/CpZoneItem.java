@@ -44,6 +44,12 @@ public class CpZoneItem extends CpItem implements ICpZoneItem {
 	}
 
 	@Override
+	public void invalidate() {
+		super.invalidate();
+		fName = null;
+	}
+
+	@Override
 	protected String constructName() {
 		if(hasAttribute(CmsisConstants.NAME)) {
 			return getAttribute(CmsisConstants.NAME);

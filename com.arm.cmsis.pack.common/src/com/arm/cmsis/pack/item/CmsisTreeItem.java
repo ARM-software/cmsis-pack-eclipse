@@ -61,12 +61,6 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	}
 
 	@Override
-	public void invalidate() {
-		super.invalidate();
-		fName = null;
-	}
-
-	@Override
 	public void invalidateAll() {
 		invalidate();
 		Collection<? extends T> children = getChildren();
