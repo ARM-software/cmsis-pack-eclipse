@@ -11,7 +11,8 @@
 
 package com.arm.cmsis.pack.utils;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -31,7 +32,7 @@ import javax.crypto.spec.SecretKeySpec;
 public class Encryptor {
 
 	public static final String DEFAULT_KEY = "OPEN_SOURCE_SECRET_KEY"; //$NON-NLS-1$
-	private static final String CHARSET = "ISO-8859-1"; //$NON-NLS-1$
+	private static final Charset CHARSET = StandardCharsets.ISO_8859_1;
 	private static final String ALGORITHM = "AES"; //$NON-NLS-1$
 
 	private SecretKeySpec secretKeySpec = null;
@@ -63,7 +64,7 @@ public class Encryptor {
 
 		    // Generate the secret key specs.
 		    secretKeySpec = new SecretKeySpec(key, ALGORITHM);
-		} catch (UnsupportedEncodingException | NoSuchAlgorithmException e) {
+		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
 	}
@@ -74,7 +75,7 @@ public class Encryptor {
 		    cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
 			byte[] encrypt = cipher.doFinal(input.getBytes(CHARSET));
 			return new String(encrypt, CHARSET);
-		} catch (InvalidKeyException | UnsupportedEncodingException | NoSuchPaddingException |
+		} catch (InvalidKeyException | NoSuchPaddingException |
 				IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			return input;
@@ -87,7 +88,7 @@ public class Encryptor {
 			cipher.init(Cipher.DECRYPT_MODE, secretKeySpec);
 			byte[] decrypt = cipher.doFinal(input.getBytes(CHARSET));
 			return new String(decrypt, CHARSET);
-		} catch (InvalidKeyException | UnsupportedEncodingException | NoSuchPaddingException |
+		} catch (InvalidKeyException | NoSuchPaddingException |
 				IllegalBlockSizeException | BadPaddingException | NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			return input;

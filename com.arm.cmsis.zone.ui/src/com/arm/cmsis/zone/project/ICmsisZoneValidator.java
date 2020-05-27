@@ -15,7 +15,7 @@ import com.arm.cmsis.pack.error.ICmsisErrorCollection;
 import com.arm.cmsis.zone.data.ICpRootZone;
 
 /**
- *  An  interface to validate CMSIS Zone models  
+ *  An  interface to validate CMSIS-Zone models  
  */
 public interface ICmsisZoneValidator extends ICmsisErrorCollection{
 	

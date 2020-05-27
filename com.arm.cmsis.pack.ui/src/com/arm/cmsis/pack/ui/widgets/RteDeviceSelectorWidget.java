@@ -42,6 +42,8 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.Tree;
 
+import com.arm.cmsis.pack.CpPlugIn;
+import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -72,15 +74,15 @@ public class RteDeviceSelectorWidget extends Composite {
 	Combo comboFpu;
 	Combo comboEndian;
 	Combo comboSecurity;
-	
-	static final String[] SECURITY_VALUES = 
-			new String[] {CmsisConstants.NON_SECURE, CmsisConstants.SECURE, CmsisConstants.TZ_DISABLED}; 
+
+	static final String[] SECURITY_VALUES =
+			new String[] {CmsisConstants.NON_SECURE, CmsisConstants.SECURE, CmsisConstants.TZ_DISABLED};
 
 	IRteDeviceItem fDevices = null;
 	IRteDeviceItem fSelectedItem = null;
 	private ICpDeviceItem fSelectedDevice = null;
 	private ICpDeviceInfo fDeviceInfo = null;
-	
+
 
 	private TreeViewer treeViewer;
 
@@ -99,14 +101,14 @@ public class RteDeviceSelectorWidget extends Composite {
 	String url = CmsisConstants.EMPTY_STRING;
 	private Label lblPack;
 	private Combo comboMve;
-	
+
 	static IRteDeviceItem getDeviceTreeItem(Object obj) {
 		if (obj instanceof IRteDeviceItem) {
 			return (IRteDeviceItem)obj;
 		}
 		return null;
 	}
-	
+
 	public class RteDeviceLabeProvider extends LabelProvider{
 		@Override
 		public Image getImage(Object element) {
@@ -137,9 +139,8 @@ public class RteDeviceSelectorWidget extends Composite {
 		@Override
 		public Object [] getChildren(Object parent) {
 			IRteDeviceItem item = getDeviceTreeItem(parent);
-			if(item != null) {
-				if(item.hasChildren() && !isEndLeaf(item))
-					return super.getChildren(item);
+			if(item != null && item.hasChildren() && !isEndLeaf(item)) {
+				return super.getChildren(item);
 			}
 			return ITreeObject.EMPTY_OBJECT_ARRAY;
 		}
@@ -157,7 +158,7 @@ public class RteDeviceSelectorWidget extends Composite {
 		}
 	}
 
-	
+
 	/**
 	 * Create the composite.
 	 * @param parent
@@ -254,10 +255,10 @@ public class RteDeviceSelectorWidget extends Composite {
 		new Label(this, SWT.NONE);
 		new Label(this, SWT.NONE);
 		new Label(this, SWT.NONE);
-		
+
 		Label lblMve = new Label(this, SWT.NONE);
 		lblMve.setText(CpStringsUI.RteDeviceSelectorWidget_lblNewLabel_text);
-		
+
 		comboMve = new Combo(this, SWT.READ_ONLY);
 		comboMve.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		comboMve.addModifyListener(new ModifyListener() {
@@ -271,7 +272,7 @@ public class RteDeviceSelectorWidget extends Composite {
 			}
 		});
 
-		
+
 		new Label(this, SWT.NONE);
 
 
@@ -329,7 +330,7 @@ public class RteDeviceSelectorWidget extends Composite {
 				}
 				if(element instanceof IRteDeviceItem) {
 					String s = CmsisConstants.EMPTY_STRING;
-					if(!fSearchString.startsWith("*")) { //$NON-NLS-1$ 
+					if(!fSearchString.startsWith("*")) { //$NON-NLS-1$
 						s = "*"; //$NON-NLS-1$
 					}
 					s += fSearchString;
@@ -370,8 +371,8 @@ public class RteDeviceSelectorWidget extends Composite {
 		});
 
 	}
-	
-	
+
+
 	public boolean isShowProcessors() {
 		return fbShowProcessors;
 	}
@@ -380,13 +381,13 @@ public class RteDeviceSelectorWidget extends Composite {
 		fbShowProcessors = bShow;
 	}
 
-	
+
 	boolean setSearchText(String s) {
 		// Search must be a substring of an existing value
 		if(fDevices == null || !fDevices.hasChildren()) {
 			return false;
 		}
-			
+
 		if(fSearchString  !=  s){
 			fSearchString = s;
 			IRteDeviceItem deviceItem = null;
@@ -455,7 +456,6 @@ public class RteDeviceSelectorWidget extends Composite {
 		String cpu = CmsisConstants.EMPTY_STRING;
 		String pack = CmsisConstants.EMPTY_STRING;
 		String mem = CmsisConstants.EMPTY_STRING;
-		String mve = CmsisConstants.EMPTY_STRING;
 		url = CmsisConstants.EMPTY_STRING;
 		String urlText = CmsisConstants.EMPTY_STRING;
 
@@ -481,7 +481,7 @@ public class RteDeviceSelectorWidget extends Composite {
 		if(fDeviceInfo != null) {
 			String clock = fDeviceInfo.getClockSummary();
 			pack = fDeviceInfo.getPackId();
-			cpu = CmsisConstants.ARM + CmsisConstants.SPACE + fDeviceInfo.getAttribute(CmsisConstants.DCORE) + CmsisConstants.SPACE + clock ; 
+			cpu = CmsisConstants.ARM + CmsisConstants.SPACE + fDeviceInfo.getAttribute(CmsisConstants.DCORE) + CmsisConstants.SPACE + clock ;
 			mem = fDeviceInfo.getMemorySummary();
 			// this happens in the import process, when the device is not installed
 			if (deviceName.isEmpty()) {
@@ -490,6 +490,13 @@ public class RteDeviceSelectorWidget extends Composite {
 			if (vendorName.isEmpty()) {
 				vendorName = fDeviceInfo.getVendor();
 			}
+			ICpPackManager pm  = CpPlugIn.getPackManager();
+			if(pm != null && pm.isWebPack(fDeviceInfo.getPack())) {
+				url = fDeviceInfo.getUrl();
+			} else {
+				url = CmsisConstants.EMPTY_STRING;
+			}
+
 			if (url.isEmpty()) {
 				url = fDeviceInfo.getUrl();
 				if (!url.isEmpty()) {
@@ -616,13 +623,13 @@ public class RteDeviceSelectorWidget extends Composite {
 	private void updateMve() {
 		int index = -1;
 		String mve = null;
-		if(fDeviceInfo != null && "ARMV81MML".equals(fDeviceInfo.getAttribute(CmsisConstants.DCORE))){ //$NON-NLS-1$
+		if(fDeviceInfo != null && fDeviceInfo.getCoreArchitecture().isARMv8_1()){
 			mve = fDeviceInfo.getAttribute(CmsisConstants.DMVE);
 			if(fSelectedMve.isEmpty())
 				fSelectedMve = mve;
 			index = mveStringToIndex(fSelectedMve);
 		}
-	   
+
 		if(index < 0) {
 			comboMve.removeAll();
 			comboMve.setEnabled(false);
@@ -636,7 +643,7 @@ public class RteDeviceSelectorWidget extends Composite {
 			comboMve.select(index);
 		}
 	}
-	
+
 	private String[] getFpuStrings(String fpu){
 		if(fpu != null) {
 			switch(fpu){
@@ -745,7 +752,7 @@ public class RteDeviceSelectorWidget extends Composite {
 		}
 		return CmsisConstants.EMPTY_STRING;
 	}
-	
+
 
 	String fpuIndexToString(int index){
 		switch(index){
@@ -804,7 +811,7 @@ public class RteDeviceSelectorWidget extends Composite {
 				endian = CmsisConstants.LITTLENDIAN;
 			}
 			fDeviceInfo.setAttribute(CmsisConstants.DENDIAN, endian);
-			
+
 			index = comboSecurity.getSelectionIndex();
 			if(index >= 0) {
 				String security = securityIndexToString(index);
@@ -812,7 +819,7 @@ public class RteDeviceSelectorWidget extends Composite {
 			} else {
 				fDeviceInfo.removeAttribute(CmsisConstants.DSECURE);
 			}
-			
+
 			index = comboMve.getSelectionIndex();
 			if(index >= 0) {
 				String mve = mveIndexToString(index);
@@ -820,7 +827,7 @@ public class RteDeviceSelectorWidget extends Composite {
 			} else {
 				fDeviceInfo.removeAttribute(CmsisConstants.DMVE);
 			}
-			
+
 		}
 		return fDeviceInfo;
 	}
@@ -858,12 +865,12 @@ public class RteDeviceSelectorWidget extends Composite {
 			treeViewer.setSelection(ts, true);
 		}
 	}
-	
-	
+
+
 	protected boolean isEndLeaf(IRteDeviceItem item) {
 		if(item == null)
 			return false;
-		
+
 		if(item.getLevel() < EDeviceHierarchyLevel.DEVICE.ordinal()) {
 			return false;
 		}

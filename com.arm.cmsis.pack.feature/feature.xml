@@ -2,7 +2,7 @@
 <feature
       id="com.arm.cmsis.pack.feature"
       label="%featureName"
-      version="2.5.0.qualifier"
+      version="2.6.0.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -50,7 +50,9 @@
       <import plugin="org.eclipse.xtext.util"/>
       <import plugin="org.eclipse.xtend.lib"/>
       <import plugin="org.eclipse.emf.common"/>
-      <import plugin="org.antlr.runtime"/>
+      <import plugin="javax.xml.bind"/>
+      <import plugin="org.antlr.runtime" version="3.2.0" match="greaterOrEqual"/>
+      <import plugin="org.apache.log4j"/>
    </requires>
 
    <plugin

@@ -7,7 +7,7 @@
             Description="Provides reference implementation of pack installer functionality"
             class="com.arm.cmsis.pack.installer.CpPackInstaller"
             id="com.arm.cmsis.pack.installer.CpPackInstaller"
-            name="Default CMSIS pack installer ">
+            name="Default CMSIS-Pack installer ">
       </PackInstaller>
    </extension>
 

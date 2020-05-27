@@ -29,7 +29,7 @@ import com.arm.cmsis.zone.ui.handlers.CmsisZoneGenerateAction;
 import com.arm.cmsis.zone.ui.wizards.CmsisZoneWizard;
 
 /**
- * Base editor page for CMSIS Zone 
+ * Base editor page for CMSIS-Zone 
  *
  */
 public abstract class CmsisZonePage extends RteEditorPage<CmsisZoneController> {

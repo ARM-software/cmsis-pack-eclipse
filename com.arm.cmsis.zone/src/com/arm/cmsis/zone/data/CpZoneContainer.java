@@ -17,7 +17,7 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 
 /**
- *  Class containing CMSIS zones
+ *  Class containing CMSIS-Zones
  */
 public class CpZoneContainer extends CpResourceItem implements ICpZoneContainer {
 
@@ -25,7 +25,7 @@ public class CpZoneContainer extends CpResourceItem implements ICpZoneContainer 
 		this(parent, CmsisConstants.ZONES);
 	}
 
-	
+
 	public CpZoneContainer(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
@@ -40,7 +40,7 @@ public class CpZoneContainer extends CpResourceItem implements ICpZoneContainer 
 		}
 		return super.createChildItem(tag);
 	}
-	
+
 
 	@Override
 	public ICpZone getZone(String zoneName) {
@@ -59,10 +59,7 @@ public class CpZoneContainer extends CpResourceItem implements ICpZoneContainer 
 
 	@Override
 	public ICpItem toFtlModel(ICpItem ftlParent) {
-		Collection<ICpZone> zones = getZones();
-		if(zones == null || zones.isEmpty())
-			return null;
-		for(ICpZone z: zones ){
+		for(ICpZone z: getZones() ){
 			ICpItem zoneItem = z.toFtlModel(ftlParent);
 			if(ftlParent != null)
 				ftlParent.addChild(zoneItem);

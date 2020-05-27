@@ -102,7 +102,7 @@ public class FullDeviceName {
 	 * @param pName processor name
 	 * @return full device name or empty string if dName is null or empty
 	 */
-	static public String getFullDeviceName(String dName, String pName) {
+	public static String getFullDeviceName(String dName, String pName) {
 		String fullDeviceName = dName;
 		if(fullDeviceName == null || fullDeviceName.isEmpty())
 			return CmsisConstants.EMPTY_STRING;
@@ -117,7 +117,7 @@ public class FullDeviceName {
 	 * @param attributes attributes to construct full device name  
 	 * @return full device name or empty string if the attributes parameter does not represent device
 	 */
-	static public String getFullDeviceName(IAttributes attributes) {
+	public static String getFullDeviceName(IAttributes attributes) {
 		return getFullDeviceName(getDeviceName(attributes), getProcessorName(attributes));
 	}
 	
@@ -126,7 +126,7 @@ public class FullDeviceName {
 	 * @param attributes attributes to construct full device name  
 	 * @return device name or an empty string if the attributes parameter does not represent device
 	 */
-	static public String getDeviceName(IAttributes attributes) {
+	public static String getDeviceName(IAttributes attributes) {
 		String deviceName = CmsisConstants.EMPTY_STRING;
 		if(attributes.hasAttribute(CmsisConstants.DVARIANT)) {
 			deviceName = attributes.getAttribute(CmsisConstants.DVARIANT);
@@ -141,7 +141,7 @@ public class FullDeviceName {
 	 * @param attributes attributes to extract processor name  
 	 * @return processor name or empty string if "Pname" attribute not found
 	 */
-	static public String getProcessorName(IAttributes attributes) {
+	public static String getProcessorName(IAttributes attributes) {
 		return attributes.getAttribute(CmsisConstants.PNAME, CmsisConstants.EMPTY_STRING);
 	}
 

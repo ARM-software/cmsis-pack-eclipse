@@ -16,16 +16,16 @@ package com.arm.cmsis.pack.data;
  */
 public interface ICpExpression extends ICpItem {
 
-	final static char ACCEPT_EXPRESSION 	= 'a';
-	final static char DENY_EXPRESSION 		= 'd';
-	final static char REQUIRE_EXPRESSION 	= 'r';
+	static final char ACCEPT_EXPRESSION 	= 'a';
+	static final char DENY_EXPRESSION 		= 'd';
+	static final char REQUIRE_EXPRESSION 	= 'r';
 
-	final static char DEVICE_EXPRESSION 	= 'D';
-	final static char TOOLCHAIN_EXPRESSION 	= 'T';
-	final static char COMPONENT_EXPRESSION 	= 'C';
-	final static char REFERENCE_EXPRESSION 	= 'R';
-	final static char ERROR_EXPRESSION 		= 'E';
-	final static char UNKNOWN_EXPRESSION 	= 'U';
+	static final char DEVICE_EXPRESSION 	= 'D';
+	static final char TOOLCHAIN_EXPRESSION 	= 'T';
+	static final char COMPONENT_EXPRESSION 	= 'C';
+	static final char REFERENCE_EXPRESSION 	= 'R';
+	static final char ERROR_EXPRESSION 		= 'E';
+	static final char UNKNOWN_EXPRESSION 	= 'U';
 	
 	/**
 	 * Returns expression domain: 

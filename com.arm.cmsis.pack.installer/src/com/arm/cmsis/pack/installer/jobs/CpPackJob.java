@@ -61,27 +61,30 @@ public abstract class CpPackJob extends Job {
 	public boolean belongsTo(Object family) {
 		return getName().equals(family);
 	}
-	
+
+	/**
+	 * Checks if pack is a local one (does not have a pdsc entry in .web folder)
+	 * @param pack ICpPack to check
+	 * @return true if pack is local
+	 */
 	protected boolean isLocalPack(ICpPack pack) {
-		String webPdscFileName = CpPlugIn.getPackManager().getCmsisPackWebDir() + '/' + pack.getPackFamilyId() + CmsisConstants.EXT_PDSC;
-		File webPdscFile = new File(webPdscFileName);
-		return !webPdscFile.exists();
+		return CpPlugIn.getPackManager().isLocalPack(pack);
 	}
 
 	protected void copyToLocal(ICpPack pack) throws IOException {
-		String pdscFile = pack.getFileName();  
+		String pdscFile = pack.getFileName();
 		String familyId = pack.getPackFamilyId();
-		String existingLocalVersion = null; 
+		String existingLocalVersion = null;
 		IPath localPath = new Path(CpPlugIn.getPackManager().getCmsisPackLocalDir()).append(familyId + CmsisConstants.EXT_PDSC);
 		File localFile = localPath.toFile();
 		if(localFile.exists()) {
 			PdscParser parser = new PdscParser();
 			ICpItem existingLocalPack = parser.parseFile(localFile.toString());
 			if(existingLocalPack != null)
-				existingLocalVersion = existingLocalPack.getVersion(); 
+				existingLocalVersion = existingLocalPack.getVersion();
 		}
-		// check if existing version is lower than the imported one  
-		if(existingLocalVersion == null || 
+		// check if existing version is lower than the imported one
+		if(existingLocalVersion == null ||
 				VersionComparator.versionCompare(existingLocalVersion, pack.getVersion()) < 0) {
 			Utils.copy(new File(pdscFile), localPath.toFile());
 		}

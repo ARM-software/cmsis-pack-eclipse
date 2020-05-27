@@ -27,7 +27,18 @@ import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
 import com.arm.cmsis.pack.utils.VersionComparator;
 
+/**
+ * Utility class to perform operations over IRteModel
+ */
 public class RteModelUtils {
+
+
+	/**
+	 * Private constructor to prevent class instantiation
+	 */
+	private RteModelUtils(){
+		// does nothing
+	}
 
 	/**
 	 * Return a collection of missing pack IDs
@@ -35,7 +46,7 @@ public class RteModelUtils {
 	 * @return a collection of missing pack IDs or an empty collection
 	 */
 	public static Collection<String> getMissingPacks(IRteModel model) {
-		Set<String> missingPacks = new HashSet<String>();
+		Set<String> missingPacks = new HashSet<>();
 		if (model == null) {
 			return missingPacks;
 		}
@@ -53,10 +64,10 @@ public class RteModelUtils {
 		}
 		return missingPacks;
 	}
-	
+
 	/**
 	 * Constructs an effective pack ID from supplied attributes
-	 * @param packAttributes 
+	 * @param packAttributes
 	 * @return effective pack ID
 	 */
 	public static String constructEffectivePackId(IAttributes packAttributes) {
@@ -89,5 +100,5 @@ public class RteModelUtils {
 		}
 		return packId;
 	}
-	
+
 }

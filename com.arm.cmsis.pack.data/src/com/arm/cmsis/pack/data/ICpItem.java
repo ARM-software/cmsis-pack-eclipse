@@ -24,7 +24,7 @@ import com.arm.cmsis.pack.item.ICmsisTreeItem;
 import com.arm.cmsis.pack.utils.FullDeviceName;
 
 /**
- * Base for all items in CMSIS packs 
+ * Base for all items in CMSIS-Packs 
  *   
  */
 public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem<ICpItem> {

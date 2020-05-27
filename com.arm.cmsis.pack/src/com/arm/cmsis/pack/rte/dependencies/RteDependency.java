@@ -29,14 +29,14 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 
 	protected ICpItem fCpItem = null; // component attributes to search for
 	protected int fFlags = 0;         // RTE flags
-	// collection to store candidates to resolve dependency  
+	// collection to store candidates to resolve dependency
 	protected Map<IRteComponent, IRteDependencyItem> fComponentEntries = new LinkedHashMap<IRteComponent, IRteDependencyItem>();
-	
-	// list of component items that stop the search  
+
+	// list of component items that stop the search
 	protected Map<IRteComponentItem, IRteDependencyItem> fStopItems = null;
-	
+
 	boolean fbDeny = false;
-	
+
 	public RteDependency( ICpItem item, boolean bDeny) {
 		fCpItem = item;
 		fbDeny = bDeny;
@@ -46,8 +46,8 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 		this(item, false);
 		fFlags = flags;
 	}
-	
-	
+
+
 	@Override
 	public int getFlags() {
 		return fFlags;
@@ -72,9 +72,9 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 			return true;
 		if(fResult == EEvaluationResult.INCOMPATIBLE)
 			return false;
-		return isDeny();      
+		return isDeny();
 	}
-	
+
 	@Override
 	public Collection<IRteComponent> getComponents() {
 		return fComponentEntries.keySet();
@@ -84,8 +84,8 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 	public ICpItem getCpItem() {
 		return fCpItem;
 	}
-	
-	
+
+
 	@Override
 	public EEvaluationResult getEvaluationResult(IRteComponent component) {
 		IRteDependencyItem entry = fComponentEntries.get(component);
@@ -126,7 +126,7 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 
 	@Override
 	public void addStopItem(IRteComponentItem item, EEvaluationResult result) {
-		if(fStopItems == null) 
+		if(fStopItems == null)
 			fStopItems = new LinkedHashMap<IRteComponentItem, IRteDependencyItem>();
 
 		fStopItems.put(item, new RteDependencyItem(item, result));
@@ -157,9 +157,11 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 		case INSTALLED:
 			return CpStrings.RteDependency_UpdatePackVariantOrBundleSelection;
 		case MISSING:
-			return CpStrings.RteDependency_InstallMissingComponent;
+			return CpStrings.RteMissingComponentResult_NoComponentFoundMatchingDeviceCompiler;
 		case MISSING_API:
 			return CpStrings.RteDependency_MissingAPI;
+		case MISSING_API_VERSION:
+			return CpStrings.RteDependency_MissingAPIVersion;
 		case MISSING_BUNDLE:
 			return CpStrings.RteDependency_MissingBundle;
 		case MISSING_VARIANT:
@@ -174,7 +176,7 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
 			return CpStrings.RteDependency_ComponentNotAvailable;
 		case UNAVAILABLE_PACK:
 			return CpStrings.RteDependency_PackNotSelected;
-		
+
 		case FULFILLED:
 		case UNDEFINED:
 		case ERROR:

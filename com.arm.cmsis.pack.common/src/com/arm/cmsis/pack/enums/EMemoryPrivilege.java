@@ -22,8 +22,8 @@ public enum EMemoryPrivilege{
 	PRIVILEGED,
 	UNPRIVILEGED;
 	
-	static public final String u = "u"; //$NON-NLS-1$
-	static public final String p = "p"; //$NON-NLS-1$
+	public static final String u = "u"; //$NON-NLS-1$
+	public static final String p = "p"; //$NON-NLS-1$
 	
 	@Override
 	public String toString() {
@@ -66,7 +66,8 @@ public enum EMemoryPrivilege{
 		case PRIVILEGED:
 			return 'p';
 		case UNPRIVILEGED:
-			return 'u'; 
+			return 'u';
+		case NOT_SPECIFIED: 
 		default:
 			break;
 		}
@@ -104,6 +105,7 @@ public enum EMemoryPrivilege{
 			return "pu"; // only switch between privileged and unprivileged is allowed  //$NON-NLS-1$
 		case UNPRIVILEGED:
 			return CmsisConstants.EMPTY_STRING; // no change is allowed
+		case NOT_SPECIFIED:
 		default:
 			break;
 		}

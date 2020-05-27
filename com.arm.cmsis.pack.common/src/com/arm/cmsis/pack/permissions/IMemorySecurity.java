@@ -21,10 +21,10 @@ import com.arm.cmsis.pack.generic.IAttributedItem;
 public interface IMemorySecurity extends IAttributedItem {
 	
 	// security flags 
-	final static char SECURE_ACCESS			= 's';
-	final static char NON_SECURE_ACCESS		= 'n';
-	final static char CALLABLE_ACCESS		= 'c';
-	final static String SECURITY_FLAGS = "snc";  //$NON-NLS-1$
+	static final char SECURE_ACCESS			= 's';
+	static final char NON_SECURE_ACCESS		= 'n';
+	static final char CALLABLE_ACCESS		= 'c';
+	static final String SECURITY_FLAGS = "snc";  //$NON-NLS-1$
 	
 
 	/**
@@ -75,7 +75,7 @@ public interface IMemorySecurity extends IAttributedItem {
 	 * @param parent IMemorySecurity to adjust to
 	 * @return true if security is changed
 	 */
-	default public boolean adjustSecurity(IMemorySecurity parent) {
+	default boolean adjustSecurity(IMemorySecurity parent) {
 		if(parent == null)
 			return false;
 		return setSecurity(getSecurity().adjust(parent.getSecurity()));

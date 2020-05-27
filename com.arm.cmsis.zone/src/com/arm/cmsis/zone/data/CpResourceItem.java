@@ -15,7 +15,7 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 
 /**
- *  Resource item 
+ *  Resource item
  */
 public class CpResourceItem extends CpZoneItem implements ICpResourceItem {
 
@@ -30,8 +30,8 @@ public class CpResourceItem extends CpZoneItem implements ICpResourceItem {
 	@Override
 	protected ICpItem createChildItem(String tag) {
 		switch (tag) {
-		case CmsisConstants.MEMORY_TAG: 
-			return new CpMemoryRegion(this, tag);
+		case CmsisConstants.MEMORY_TAG:
+			return new CpMemoryBlock(this, tag);
 		case CmsisConstants.PERIPHERAL:
 			return new CpPeripheral(this, tag);
 		case CmsisConstants.GROUP:
@@ -54,7 +54,7 @@ public class CpResourceItem extends CpZoneItem implements ICpResourceItem {
 		}
 		return new CpResourceItem(this, tag);
 	}
-	
+
 	@Override
 	public String getDescription() {
 		return super.getDescription();

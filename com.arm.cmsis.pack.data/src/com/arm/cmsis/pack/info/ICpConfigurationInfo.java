@@ -15,7 +15,7 @@ import com.arm.cmsis.pack.data.ICpPackFilter;
 import com.arm.cmsis.pack.data.ICpRootItem;
 
 /**
- * Interface representing root element of instantiated CMSIS pack data 
+ * Interface representing root element of instantiated CMSIS-Pack data 
  */
 public interface ICpConfigurationInfo extends ICpRootItem {
 	

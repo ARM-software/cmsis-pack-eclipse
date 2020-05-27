@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.item;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.error.CmsisErrorCollection;
@@ -26,12 +27,6 @@ public class CmsisItem extends CmsisErrorCollection implements ICmsisItem {
 	protected String fText = CmsisConstants.EMPTY_STRING;
 	protected volatile Object[] cachedChildArray = null;
 
-	/**
-	 * Default constructor    
-	 */
-	public CmsisItem() {
-	}
-	
 	@Override
 	public void clear() {
 		cachedChildArray = null;
@@ -109,7 +104,7 @@ public class CmsisItem extends CmsisErrorCollection implements ICmsisItem {
 	@Override
 	public Collection<? extends ICmsisItem> getChildren() {
 		// default has no children
-		return null;
+		 return Collections.emptyList();
 	}
 
 	
@@ -167,6 +162,7 @@ public class CmsisItem extends CmsisErrorCollection implements ICmsisItem {
 			return VisitResult.CONTINUE; // skip children, but parent should continue
 		case  SKIP_LEVEL:
 			return VisitResult.SKIP_CHILDREN; // instruct parent to skip its remaining children
+		case CONTINUE:
 		default:
 			break;
 		}
@@ -193,7 +189,7 @@ public class CmsisItem extends CmsisErrorCollection implements ICmsisItem {
 	protected VisitResult accept(ICmsisVisitor visitor, Collection<? extends ICmsisItem> items) {
 		if(items != null) {
 			for(ICmsisItem item : items){
-				VisitResult result = VisitResult.CONTINUE;
+				VisitResult result;
 				if(item != null) {
 					result = item.accept(visitor);
 				} else {
@@ -205,6 +201,7 @@ public class CmsisItem extends CmsisErrorCollection implements ICmsisItem {
 				case SKIP_CHILDREN: 
 				case SKIP_LEVEL:
 					return  VisitResult.CONTINUE; // skip children, but parent should continue 
+				case CONTINUE:
 				default:
 					break;
 				}

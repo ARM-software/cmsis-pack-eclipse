@@ -2,7 +2,7 @@
 <?NLS TYPE="org.eclipse.help.toc"?>
 
 <toc label="CMSIS C/C++ Development User&apos;s Guide" topic="html/toc.html">
-   <topic href="html/reference/pack_manager.html" label="CMSIS Pack Manager">
+   <topic href="html/reference/pack_manager.html" label="CMSIS-Pack Manager">
       <anchor id="a_pack_manager"/>
    </topic>
    <topic href="html/reference/cmsis_project.html" label="CMSIS C/C++ Project">

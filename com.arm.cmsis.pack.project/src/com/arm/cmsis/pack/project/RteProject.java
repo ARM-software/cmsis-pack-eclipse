@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2015-2020 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,6 +35,7 @@ public class RteProject extends PlatformObject implements IRteProject {
 	protected IRteConfiguration fRteConfiguration = null;
 	protected RteProjectStorage fRteProjectStorage = null;
 	private boolean bUpdateCompleted = false;
+	private boolean fbInstallMissingPacksOnUpdate = false;
 
 	/**
 	 * Constructs RteProject for given project
@@ -42,6 +43,7 @@ public class RteProject extends PlatformObject implements IRteProject {
 	public RteProject(IProject project) {
 		setName(project.getName());
 		fRteProjectStorage = new RteProjectStorage();
+		fbInstallMissingPacksOnUpdate = true; // set initial value to true
 	}
 
 	@Override
@@ -51,14 +53,24 @@ public class RteProject extends PlatformObject implements IRteProject {
 	}
 
 	@Override
-	synchronized public boolean isUpdateCompleted() {
+	public synchronized boolean isUpdateCompleted() {
 		return bUpdateCompleted;
 	}
 
 	@Override
-	synchronized public void setUpdateCompleted(boolean completed) {
+	public synchronized void setUpdateCompleted(boolean completed) {
 		bUpdateCompleted = completed;
+	}
 
+
+	@Override
+	public boolean isInstallMissingPacksOnUpdate() {
+		return fbInstallMissingPacksOnUpdate;
+	}
+
+	@Override
+	public void setInstallMissingPacksOnUpdate(boolean bInstall) {
+		fbInstallMissingPacksOnUpdate = bInstall;
 	}
 
 	@Override
@@ -81,14 +93,9 @@ public class RteProject extends PlatformObject implements IRteProject {
 		fRteProjectStorage.setToolChainAdapterInfo(toolChainAdapterInfo);
 	}
 
-	protected void outputMessage(final String message) {
-		// TODO: implement
-	}
-
 	@Override
 	public IProject getProject() {
-		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(getName());
-		return project;
+		return ResourcesPlugin.getWorkspace().getRoot().getProject(getName());
 	}
 
 	@Override
@@ -126,17 +133,17 @@ public class RteProject extends PlatformObject implements IRteProject {
 	public void load() throws CoreException {
 		setUpdateCompleted(false);
 		processRteStorages(false);
-		update(RteProjectUpdater.LOAD_CONFIGS);
+		update(RteProjectUpdater.LOAD_CONFIGS|RteProjectUpdater.CAUSE_PROJECT_LOAD);
 	}
 
 	@Override
 	public void init() {
-		update(0);
+		update(RteProjectUpdater.CAUSE_PROJECT_CREATED);
 	}
 
 	@Override
 	public void reload() {
-		update(RteProjectUpdater.LOAD_CONFIGS | RteProjectUpdater.UPDATE_TOOLCHAIN);
+		update(RteProjectUpdater.LOAD_CONFIGS | RteProjectUpdater.UPDATE_TOOLCHAIN | RteProjectUpdater.CAUSE_PROJECT_RESET);
 	}
 
 	@Override
@@ -144,6 +151,11 @@ public class RteProject extends PlatformObject implements IRteProject {
 		update(RteProjectUpdater.LOAD_CONFIGS);
 	}
 
+	@Override
+	public void refresh(int cause) {
+		update(RteProjectUpdater.LOAD_CONFIGS | cause);
+	}
+	
 	@Override
 	public void cleanup() {
 		update(RteProjectUpdater.LOAD_CONFIGS | RteProjectUpdater.CLEANUP_RTE_FILES);
@@ -193,7 +205,7 @@ public class RteProject extends PlatformObject implements IRteProject {
 		if (fRteConfiguration == null) {
 			return false;
 		}
-		
+
 		if (fileName.equals(CmsisConstants.RTE_Pre_Include_Global_h)) {
 			Collection<String> globals = fRteConfiguration.getGlobalPreIncludeStrings();
 			return globals != null && !globals.isEmpty();
@@ -205,7 +217,7 @@ public class RteProject extends PlatformObject implements IRteProject {
 				return false;
 			return locals.containsKey(fileName.substring(CmsisConstants.RTEDIR.length()));
 		}
-		
+
 		return fRteConfiguration.getProjectFileInfo(fileName) != null;
 	}
 

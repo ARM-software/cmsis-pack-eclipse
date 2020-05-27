@@ -261,7 +261,7 @@ public interface IAttributedItem {
 	 * Checks if item is valid 
 	 * @return true if valid
 	 */
-	default public boolean isValid() {
+	default boolean isValid() {
 		return getAttributeAsBoolean(CmsisConstants.VALID, true);
 	}
 	
@@ -281,7 +281,7 @@ public interface IAttributedItem {
 	 * Checks if item is a custom one  
 	 * @return true if custom
 	 */
-	default public boolean isCustom() {
+	default boolean isCustom() {
 		return getAttributeAsBoolean(CmsisConstants.CUSTOM, false);
 	}
 

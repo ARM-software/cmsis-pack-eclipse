@@ -263,12 +263,13 @@ public class AlnumComparator implements Comparator<String> {
 			}
         }
         if(count == n)
-        	return true; // pattern only consists of asterisks => true;
+        	return true; // pattern only consists of asterisks => true
         
 		int m = s.length();
         if (count==0 && m != n) {
 			return false;
-		} else if (n - count > m) {
+		} 
+        if (n - count > m) {
 			return false;
 		}
 

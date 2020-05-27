@@ -2,7 +2,7 @@
 <feature
       id="com.arm.cmsis.zone.feature"
       label="%featureName"
-      version="1.0.0.qualifier"
+      version="1.1.0.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -22,8 +22,6 @@
          version="0.0.0"/>
 
    <requires>
-      <import plugin="com.arm.cmsis.pack.common"/>
-      <import plugin="com.arm.cmsis.pack.data"/>
       <import plugin="org.eclipse.ui"/>
       <import plugin="org.eclipse.core.runtime"/>
       <import plugin="org.eclipse.core.expressions"/>
@@ -31,9 +29,13 @@
       <import plugin="org.eclipse.jface.text"/>
       <import plugin="org.eclipse.ui.editors"/>
       <import plugin="org.eclipse.ui.ide"/>
-      <import plugin="com.arm.cmsis.pack"/>
-      <import plugin="com.arm.cmsis.pack.ui"/>
-      <import plugin="com.arm.cmsis.pack.project"/>
+      <import plugin="com.arm.cmsis.pack.common" version="2.6.0" match="greaterOrEqual"/>
+      <import plugin="com.arm.cmsis.pack.data" version="2.6.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.navigator"/>
+      <import plugin="com.arm.cmsis.pack" version="2.6.0" match="greaterOrEqual"/>
+      <import plugin="com.arm.cmsis.pack.ui" version="2.6.0" match="greaterOrEqual"/>
+      <import plugin="com.arm.cmsis.pack.project" version="2.6.0" match="greaterOrEqual"/>
+      <import plugin="com.arm.tpip.freemarker" version="2.3.29" match="greaterOrEqual"/>
    </requires>
 
    <plugin

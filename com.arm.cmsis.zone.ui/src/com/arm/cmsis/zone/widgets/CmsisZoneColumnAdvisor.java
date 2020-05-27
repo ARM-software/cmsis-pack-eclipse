@@ -47,7 +47,7 @@ import com.arm.cmsis.zone.ui.editors.CmsisZoneController;
 public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZoneController> {
 
 	protected CmsisZoneTreeWidget fTreeWidget;
-	protected boolean fbPhysicalAddress; // show physical start/stop addresses   
+	protected boolean fbPhysicalAddress; // show physical start/stop addresses
 
 	/**
 	 * Constructs advisor for a CmsisZoneTreeWidget
@@ -81,11 +81,10 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 	}
 
 
-	
+
 	@Override
 	protected void createPrefixColumnInfos() {
 		addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneColumnAdvisor_Name, ColumnType.COLNAME, 200, false));
-//		addColumnInfo(new CmsisColumnInfo("", ColumnType.COLOP, 40, false));
 		addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneColumnAdvisor_Permissions, ColumnType.COLACCESS, 60, false));
 		addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneColumnAdvisor_Size, ColumnType.COLSIZE, 100, true));
 	}
@@ -139,7 +138,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 		}
 		return -1;
 	}
-	
+
 	public static ICpResourceItem getResourceItem(Object obj){
 		if(obj instanceof ICpResourceItem) {
 			return (ICpResourceItem)obj;
@@ -152,7 +151,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 		}
 		return null;
 	}
-	
+
 	protected ICpProcessorUnit getProcessor(int columnIndex) {
 		if(getTreeWidget() == null)
 			return null;
@@ -168,12 +167,12 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 	protected ICpZoneAssignment getAssignment(ICpMemoryBlock block, int columnIndex) {
 		if(block == null)
 			return null;
-		ICpZone zone = getZone(columnIndex); 
+		ICpZone zone = getZone(columnIndex);
 		if(zone == null)
 			return null;
 		return block.getAssignment(zone.getName());
 	}
-	
+
 	protected ICpMemoryBlock getMemoryBlock(ICpMemory mem, int columnIndex) {
 		if(mem == null)
 			return null;
@@ -185,13 +184,13 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 			return (ICpMemoryBlock)mem;
 		}
 		if(mem instanceof ICpZoneAssignment) {
-			ICpZoneAssignment zoneItem = (ICpZoneAssignment) mem; 
+			ICpZoneAssignment zoneItem = (ICpZoneAssignment) mem;
 			return zoneItem.getAssignedBlock();
 		}
 		return null;
 	}
-	
-	
+
+
 	protected String getPermissionsString(ICpMemory block, int columnIndex) {
 		if(block == null)
 			return CmsisConstants.EMPTY_STRING;
@@ -200,15 +199,15 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 		if(mappedBlock != null) {
 			return mappedBlock.getPermissionsString();
 		}
-		return block.getPermissionsString(); 
+		return block.getPermissionsString();
 	}
-	
+
 
 	protected String getStartString(ICpMemory mem, int columnIndex, boolean bPhysical) {
 		if(mem instanceof ICpPeripheralGroup){
 			return CmsisConstants.EMPTY_STRING;
 		}
-		
+
 		ICpMemoryBlock block = getMemoryBlock(mem, columnIndex);
 		if(block != null) {
 			long start = bPhysical ? block.getAddress() : block.getStart();
@@ -219,7 +218,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 		}
 		return CmsisConstants.EMPTY_STRING;
 	}
-	
+
 
 	protected String getEndString(ICpMemory mem, boolean bPhysical) {
 		if(mem == null ){
@@ -229,7 +228,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 		if(mem instanceof ICpPeripheralGroup){
 			return CmsisConstants.EMPTY_STRING;
 		}
-		
+
 		long end = bPhysical ? mem.getEndAddress() : mem.getStop();
 		if(end < 0)
 			return Messages.CmsisZoneColumnAdvisor_EightQuestionsSymbol;
@@ -254,7 +253,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 		}
 		return super.getFont(obj, columnIndex);
 	}
-	
+
 	protected boolean isStartupBlock(ICpMemoryBlock block) {
 		if(block == null)
 			return false;
@@ -262,14 +261,14 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 			return false;
 		return block.isStartup();
 	}
-	
+
 	protected Font getBoldFont(){
 		FontDescriptor fontDescriptor = FontDescriptor.createFrom(control.getFont());
 		return fontDescriptor.setStyle(SWT.BOLD).createFont(Display.getCurrent());
 	}
 
-	
-	
+
+
 	@Override
 	protected boolean isUseFixedFont(Object obj, int columnIndex) {
 		ColumnType colType = getColumnType(columnIndex);
@@ -291,16 +290,16 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 			break;
 		default:
 			break;
-		
+
 		}
 		return false;
 	}
-	
+
 
 	@Override
 	public Image getImage(Object obj, int columnIndex) {
 		ICpItem item = ICpItem.cast(obj);
-		if (item == null) 
+		if (item == null)
 			return null;
 
 		if (columnIndex == 0) {
@@ -334,7 +333,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 		case CmsisConstants.MEMORIES:
 			baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_MEMORY);
 			break;
-		case CmsisConstants.MEMORY_TAG:			
+		case CmsisConstants.MEMORY_TAG:
 		case CmsisConstants.BLOCK_TAG:
 		{
 			ESeverity severity = item.getSeverity();
@@ -342,7 +341,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 				baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_ERROR);
 			else if(severity.isWarning())
 				baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_WARNING);
-			else 
+			else
 				baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
 		}
 		break;
@@ -353,7 +352,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 				baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_ERROR);
 			else if(severity.isWarning())
 				baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_WARNING);
-			else 
+			else
 				baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_GROUP);
 		}
 			break;
@@ -370,30 +369,30 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 	@Override
 	public String getString(Object obj, int columnIndex) {
 		ICpItem item = ICpItem.cast(obj);
-		if(item == null) 
+		if(item == null)
 			return CmsisConstants.EMPTY_STRING;
-		
+
 		ColumnType colType = getColumnType(columnIndex);
 		if(colType == ColumnType.COLINFO) {
 			if( item instanceof ICpMemoryBlock && item.isRemoved()) {
-				return Messages.CmsisZoneColumnAdvisor_MemoryBlockRemovedOrRenamed; 
+				return Messages.CmsisZoneColumnAdvisor_MemoryBlockRemovedOrRenamed;
 			}
 			return item.getDescription();
-		} 
+		}
 		if(colType == ColumnType.COLOP) {
 			// no operation yet
-			return CmsisConstants.EMPTY_STRING; 
+			return CmsisConstants.EMPTY_STRING;
 		}
-		
+
 		if(colType == ColumnType.COLNAME) {
 			if(item instanceof ICpDeviceUnit && getZone(columnIndex) != null) {
 				return getZone(columnIndex).getFullDeviceName();
 			}
 			return item.getEffectiveName();
-		} 
+		}
 		if(item instanceof ICpPeripheralGroup)
 			return CmsisConstants.EMPTY_STRING;
-		
+
 		if(item instanceof ICpMemory) {
 			ICpMemory mem = (ICpMemory)item;
 			switch(colType) {
@@ -401,15 +400,15 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 				return getPermissionsString(mem, columnIndex);
 			}
 			case COLSIZE: {
-				return Utils.getFormattedMemorySizeString(mem.getSize());  
+				return Utils.getFormattedMemorySizeString(mem.getSize());
 			}
-			case COLADDRESS: 
+			case COLADDRESS:
 				return getStartString(mem, columnIndex, true);
-			case COLSTART: 
+			case COLSTART:
 				return getStartString(mem, columnIndex, isPhysicalAddress());
-			case COLEND: 
+			case COLEND:
 				return getEndString(mem, isPhysicalAddress());
-			case COLOFFSET: 
+			case COLOFFSET:
 				return mem.getOffsetString();
 			default:
 				break;
@@ -418,7 +417,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 		return CmsisConstants.EMPTY_STRING;
 	}
 
-	
+
 	@Override
 	public Color getBgColor(Object obj, int columnIndex) {
 		ColumnType colType = getColumnType(columnIndex);
@@ -432,7 +431,7 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 	}
 
 	/**
-	 * Returns next index to insert a column, default returns index after last column with data item.  
+	 * Returns next index to insert a column, default returns index after last column with data item.
 	 * @return index for the new column
 	 */
 	@Override
@@ -441,5 +440,5 @@ public abstract class CmsisZoneColumnAdvisor extends CmsisColumnAdvisor<CmsisZon
 			return 0;
 		return columnInfos.size() - 1 ; // description is always the last one
 	}
-	
+
 } /// end of CmsisZoneColumnAdvisor

@@ -113,7 +113,7 @@ public class VersionComparator extends AlnumComparator{
 	 * @param versionRange string with version range in the form <code>"min[:max]"</code> 
 	 * @return true if version is larger or equal to maximum and smaller or equal optional maximum
 	 */
-	static public boolean matchVersionRange(final String version, final String versionRange){
+	public static boolean matchVersionRange(final String version, final String versionRange){
 		if(version == null || versionRange == null)
 			return true;
 
@@ -137,9 +137,8 @@ public class VersionComparator extends AlnumComparator{
 			if(verMin.equals(verMax))
 				return res == 0;
 		}
-		if(verMax != null && !verMax.isEmpty()){
-			if(versionCompare(version, verMax) > 0)
-				return false;
+		if(verMax != null && !verMax.isEmpty() && versionCompare(version, verMax) > 0){
+			return false;
 		}
 		return true;  
 	}
@@ -149,7 +148,7 @@ public class VersionComparator extends AlnumComparator{
 	 * @param ver version string
 	 * @return version without meta data 
 	 */
-	static public String removeMetadata(String ver) {
+	public static String removeMetadata(String ver) {
 		if(ver == null)
 			return ver;
 		int pos = ver.indexOf('+');
@@ -161,12 +160,13 @@ public class VersionComparator extends AlnumComparator{
     /**
      * Internal helper class
      */
-	static private class Version implements Comparable<Version> {
+	private static class Version implements Comparable<Version> {
     	private static final String ZERO_STRING = "0"; //$NON-NLS-1$
     	private String[] segments = null; // first three version segments : MAJOR.MINOR.PATCH
-    	private String   release = null;  // remainder (after '-'); 
+    	private String   release = null;  // remainder after '-' 
     	private int fLevel;
-		Version(String ver){
+	
+    	Version(String ver){
 			this(ver, 0);
 		}    	
     	
@@ -224,6 +224,15 @@ public class VersionComparator extends AlnumComparator{
 			return compareTo(that, true);
 		}
 		
+		@Override
+		public boolean equals(Object arg0) {
+			if (arg0 == this)
+				return true;
+			if(arg0 instanceof Version)
+				return compareTo((Version)arg0) == 0;
+			return false;
+		}
+
 		public int compareTo(Version that, boolean cs) {
 			int result = 4;
 			if(that == null)

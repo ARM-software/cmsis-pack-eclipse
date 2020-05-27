@@ -45,6 +45,7 @@ public enum EDataPatchAccessType {
 			return CmsisConstants.DP;
 		case AP:
 			return CmsisConstants.AP;
+		case Mem:
 		default:
 			return CmsisConstants.MEM;
 		}

@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.rte;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -116,20 +117,20 @@ public class RteModel implements IRteModel {
 	public ICpConfigurationInfo getConfigurationInfo() {
 		return fConfigurationInfo;
 	}
-	
+
 	@Override
 	public Map<String, ICpPack> getGeneratedPacks() {
 		return fGeneratedPacks;
 	}
 
-	
+
 	@Override
 	public ICpPack getGeneratedPack(String gpdsc) {
 		if(fGeneratedPacks != null)
 			return fGeneratedPacks.get(gpdsc);
 		return null;
 	}
-	
+
 	@Override
 	public boolean isGeneratedPackUsed(String gpdsc) {
 		if(fGeneratedPacks != null)
@@ -156,7 +157,7 @@ public class RteModel implements IRteModel {
 		update(RteConstants.NONE);
 	}
 
-	
+
 	@Override
 	public void update(int flags){
 		fRteDevices = null;
@@ -183,7 +184,7 @@ public class RteModel implements IRteModel {
 	}
 
 	protected void collectGeneratedPacks() {
-		fGeneratedPacks = new HashMap<String, ICpPack>();
+		fGeneratedPacks = new HashMap<>();
 		Collection<? extends ICpItem> children = fConfigurationInfo.getGrandChildren(CmsisConstants.COMPONENTS_TAG);
 		if(children == null)
 			return;
@@ -194,7 +195,7 @@ public class RteModel implements IRteModel {
 				continue;
 			if(!(item instanceof ICpComponentInfo))
 				continue;
-			ICpComponentInfo ci = (ICpComponentInfo)item; 
+			ICpComponentInfo ci = (ICpComponentInfo)item;
 			if(ci.isGenerated())
 				continue; // consider only bootstrap
 			String gpdsc = ci.getGpdsc();
@@ -207,11 +208,11 @@ public class RteModel implements IRteModel {
 					continue;
 			}
 			ICpPack pack = pm.loadGpdsc(gpdsc);
-			fGeneratedPacks.put(gpdsc, pack);	
+			fGeneratedPacks.put(gpdsc, pack);
 		}
 	}
-	
-	
+
+
 	protected void filterPacks() {
 		fFilteredPacks = null;
 		if(fAllInstalledPacks != null) {
@@ -219,7 +220,7 @@ public class RteModel implements IRteModel {
 			fFilteredPacks = fAllInstalledPacks.getFilteredPacks(fPackFilter);
 		}
 	}
-	
+
 
 	protected boolean resolveFilterPacks() {
 		if(fConfigurationInfo == null) {
@@ -276,7 +277,9 @@ public class RteModel implements IRteModel {
 		if(fAllInstalledPacks == null) {
 			return null;
 		}
-		pack = fAllInstalledPacks.getPack(pi.getId());
+		String id = pi.isVersionFixed() ? pi.getId() : pi.getPackFamilyId();
+		
+		pack = fAllInstalledPacks.getPack(id);
 		if(pack != null) {
 			pi.setPack(pack);
 		}
@@ -326,11 +329,11 @@ public class RteModel implements IRteModel {
 		ICpItem componentInfos = fConfigurationInfo.getComponentsItem();
 		componentInfos.clear();
 
-		fUsedPackInfos = new HashMap<String, ICpPackInfo>();
+		fUsedPackInfos = new HashMap<>();
 		ICpPackInfo devicePackInfo = fDeviceInfo.getPackInfo();
 		addUsedPackInfo(devicePackInfo.getPackInfo());
 
-		Map<ICpComponent, EVersionMatchMode> selectedApis = new HashMap<ICpComponent, EVersionMatchMode>();
+		Map<ICpComponent, EVersionMatchMode> selectedApis = new HashMap<>();
 		Collection<IRteComponent> selectedComponents = getSelectedComponents();
 		for(IRteComponent component : selectedComponents){
 			ICpComponent c = component.getActiveCpComponent();
@@ -355,7 +358,7 @@ public class RteModel implements IRteModel {
 						ci.addChild(gpdscItem);
 						gpdscItem.attributes().setAttribute(CmsisConstants.NAME, gen.getGpdsc());
 					}
-				} else { 
+				} else {
 					ci.setComponent(c);
 					ci.setParent(componentInfos);
 				}
@@ -400,13 +403,13 @@ public class RteModel implements IRteModel {
 			apiInfos.addChild(ai);
 			addUsedPackInfo(ai.getPackInfo());
 		}
-		
+
 		collectGeneratedPacks();
 	}
 
 	protected void addUsedPackInfo(ICpPackInfo packInfo) {
 		if(packInfo.isGenerated())
-			return; // TODO: maybe in future we need to display generated packs as well as used
+			return; // currently we do not display generated packs
 		String packId = packInfo.getId();
 		if(fPackFilter.isFixed(packId)) {
 			packInfo.setVersionMatchMode(EVersionMatchMode.FIXED);
@@ -419,23 +422,23 @@ public class RteModel implements IRteModel {
 		}
 	}
 
-	
+
 	protected void collectFilteredFiles(ICpComponentInfo ci, ICpComponent c){
 		if(c == null) {
 			return;
 		}
-		
+
 		Collection<? extends ICpItem> allFiles = c.getGrandChildren(CmsisConstants.FILES_TAG);
 		Collection<ICpItem> filtered = fComponentFilter.filterItems(allFiles); // filter by device & toolchain
 		filtered = fDependencySolver.filterItems(filtered); // filter by selection
 		ci.removeAllChildren(CmsisConstants.FILE_TAG);
-		
+
 		createFileInfos(ci, filtered, false);
 		// collect generator project file to the bootstrap component
 		if(ci.isGenerated() || !ci.isSaved()) {
 			return;
 		}
-		
+
 		ICpGenerator gen = c.getGenerator();
 		if(gen == null)
 			return;
@@ -448,7 +451,7 @@ public class RteModel implements IRteModel {
 		for(ICpItem item : files) {
 			if(item instanceof ICpFile) {
 				ICpFile f = (ICpFile)item;
-				ICpFileInfo fi = new CpFileInfo(ci, f); 
+				ICpFileInfo fi = new CpFileInfo(ci, f);
 				ci.addChild(fi);
 				if(generated)
 					fi.attributes().setAttribute(CmsisConstants.GENERATED, true);
@@ -461,55 +464,50 @@ public class RteModel implements IRteModel {
 			return;
 		}
 		// resolve components and select them
-		EEvaluationResult result = EEvaluationResult.FULFILLED;
-		EEvaluationResult res = resolveComponents(fConfigurationInfo.getGrandChildren(CmsisConstants.COMPONENTS_TAG), flags);
-		if(res.ordinal() < result.ordinal()) {
-			result = res;
-		}
-		res = resolveComponents(fConfigurationInfo.getGrandChildren(CmsisConstants.APIS_TAG), flags);
-		if(res.ordinal() < result.ordinal()) {
-			result = res;
-		}
+		resolveComponents(fConfigurationInfo.getGrandChildren(CmsisConstants.COMPONENTS_TAG), flags);
+		// resolve APIs
+		resolveComponents(fConfigurationInfo.getGrandChildren(CmsisConstants.APIS_TAG), flags);
 		evaluateComponentDependencies();
 	}
 
-	protected EEvaluationResult resolveComponents(Collection<? extends ICpItem> children, int flags) {
-		EEvaluationResult result = EEvaluationResult.FULFILLED;
+	protected void resolveComponents(Collection<? extends ICpItem> children, int flags) {
 		if(children == null || children.isEmpty()) {
-			return result;
+			return;
 		}
 		for(ICpItem item : children){
-			if(item instanceof ICpComponentInfo) { // skip doc and description items
-				ICpComponentInfo ci = (ICpComponentInfo) item;
-				if(ci.isGenerated())
-					continue; // Component info will be re-created 
-				ci.setComponent(null);
-				ci.setEvaluationResult(EEvaluationResult.UNDEFINED);
-				if(ci.isApi()) {
-					fComponentRoot.addCpItem(ci);
-				} else {
-					fComponentRoot.addComponent(ci, flags);
-				}
-				EEvaluationResult res = ci.getEvaluationResult();
-				if(ci.getComponent() == null) {
-					ICpPackInfo pi = ci.getPackInfo();
-					if(resolvePack(pi) != null ){
-						if(fPackFilter.isExcluded(pi.getId())) {
-							ci.setEvaluationResult(EEvaluationResult.UNAVAILABLE_PACK);
-						} else {
-							ci.setEvaluationResult(EEvaluationResult.UNAVAILABLE);
-						}
-					}
-				}
-				if(res.ordinal() < result.ordinal()) {
-					result = res;
-				}
+			if(!(item instanceof ICpComponentInfo))
+				continue; // skip doc and description items
+			ICpComponentInfo ci = (ICpComponentInfo) item;
+			if(ci.isGenerated())
+				continue; // Component info will be re-created
+			ci.setComponent(null);
+			ci.setEvaluationResult(EEvaluationResult.UNDEFINED);
+			if(ci.isApi()) {
+				fComponentRoot.addCpItem(ci);
+			} else {
+				fComponentRoot.addComponent(ci, flags);
 			}
+			resolveComponentPack(ci);
 		}
-		return result;
 	}
 
+	protected void resolveComponentPack(ICpComponentInfo ci) {
+		if( ci == null || ci.getPackInfo() == null || ci.getComponent() != null) {
+			return;
+		}
+		ICpPackInfo pi = ci.getPackInfo();
+		ICpPack pack = resolvePack(pi);
+		if(pack == null ){
+			return; // entirely missing 
+		}
 
+		if(fPackFilter.isExcluded(pi.getId())) {
+			ci.setEvaluationResult(EEvaluationResult.UNAVAILABLE_PACK);
+		} else {
+			ci.setEvaluationResult(EEvaluationResult.UNAVAILABLE);
+		}
+	}
+	
 
 	@Override
 	public Map<String, ICpPackInfo> getUsedPackInfos() {
@@ -583,8 +581,8 @@ public class RteModel implements IRteModel {
 			if (i >= 0) {
 				deviceName = deviceName.substring(0, i);
 			}
-			
-			fComponentFilter.setAttribute(CmsisConstants.DNAME, deviceName); 
+
+			fComponentFilter.setAttribute(CmsisConstants.DNAME, deviceName);
 			fComponentFilter.removeAttribute(CmsisConstants.URL); // this attribute is not needed for filtering
 		}
 		if(fToolchainInfo != null) {
@@ -594,7 +592,7 @@ public class RteModel implements IRteModel {
 		ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
 		if(ep != null)
 			fComponentFilter.setAttribute(CmsisConstants.TENVIRONMENT, ep.getName());
-		
+
 		fComponentFilter.resetResult();
 	}
 
@@ -610,16 +608,16 @@ public class RteModel implements IRteModel {
 		fComponentRoot.addChild(devClass);
 
 		Collection<? extends ICpItem> children;
-		// process components from generated packs 		
+		// process components from generated packs
 		if(fGeneratedPacks != null && !fGeneratedPacks.isEmpty()) {
 			for(ICpPack pack : fGeneratedPacks.values()){
 				if(pack == null)
-					continue; 
+					continue;
 				children = pack.getGrandChildren(CmsisConstants.COMPONENTS_TAG);
 				collectComponents(children);
 			}
 		}
-		// process regular packs		
+		// process regular packs
 		if(fFilteredPacks == null || fFilteredPacks.isEmpty()) {
 			return;
 		}
@@ -646,14 +644,14 @@ public class RteModel implements IRteModel {
 		if(fGeneratedPacks != null && !fGeneratedPacks.isEmpty()) {
 			for(ICpPack pack : fGeneratedPacks.values()){
 				if(pack == null)
-					continue; 
+					continue;
 				children = pack.getGrandChildren(CmsisConstants.APIS_TAG);
 				collectCpItems(children);
 				children = pack.getGrandChildren(CmsisConstants.TAXONOMY_TAG);
 				collectCpItems(children);
 			}
 		}
-		
+
 		if(devicePack != null) {
 			children = devicePack.getGrandChildren(CmsisConstants.APIS_TAG);
 			collectCpItems(children);
@@ -688,6 +686,10 @@ public class RteModel implements IRteModel {
 		}
 		for(ICpItem item : children){
 			if(item instanceof ICpTaxonomy || item instanceof ICpComponent) { // skip doc and description items
+				EEvaluationResult res = item.evaluate(fComponentFilter);
+				if(res.ordinal() < EEvaluationResult.FULFILLED.ordinal()) {
+					continue; // filtered out
+				}
 				fComponentRoot.addCpItem(item);
 			}
 		}
@@ -721,7 +723,7 @@ public class RteModel implements IRteModel {
 		if(fComponentRoot != null) {
 			return fComponentRoot.getSelectedComponents(new LinkedHashSet<IRteComponent>());
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override
@@ -729,7 +731,7 @@ public class RteModel implements IRteModel {
 		if(fComponentRoot != null) {
 			return fComponentRoot.getUsedComponents(new LinkedHashSet<IRteComponent>());
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 
@@ -767,7 +769,7 @@ public class RteModel implements IRteModel {
 
 	@Override
 	public void selectComponent(IRteComponent component, int nInstances) {
-		if(component == null) 
+		if(component == null)
 			return;
 		component.setSelected(nInstances);
 	}

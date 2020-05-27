@@ -64,7 +64,7 @@ public class CpPackUnpackJob extends CpPackJob {
 
 	/** Source temporary path with consideration of subfolder */
 	protected IPath fSrcTempPath;
-	
+
 	protected boolean fInstallRequiredPacks;
 	int returnCode;
 
@@ -123,7 +123,7 @@ public class CpPackUnpackJob extends CpPackJob {
 
 		if (!sourceFile.exists()) {
 			fResult.setErrorString(sourceFile.toString() + Messages.CpPackUnpackJob_SourceFileCannotBeFound);
-			return true;
+			return false;
 		}
 
 		if (fDestPath.toFile().exists()) {
@@ -155,7 +155,7 @@ public class CpPackUnpackJob extends CpPackJob {
 				return false;
 			}
 			// load pack and check license if any
-			ICpPack pack = parsePdscFile(tempFolder); 
+			ICpPack pack = parsePdscFile(tempFolder);
 			if(pack == null) {
 				return false; // result is already set
 			}
@@ -166,10 +166,10 @@ public class CpPackUnpackJob extends CpPackJob {
 			// copy pack from temporary directory to the destination
 			tempFolder = fSrcTempPath.toFile();
 			Utils.copyDirectory(tempFolder, fDestPath.toFile());
-			
+
 			// copy pdsc to download directory
 			IPath downloadPath = new Path(CpPlugIn.getPackManager().getCmsisPackDownloadDir());
-			String pdscFile = pack.getFileName();  
+			String pdscFile = pack.getFileName();
 			Utils.copy(new File(pdscFile), downloadPath.append(pack.getId() + CmsisConstants.EXT_PDSC).toFile());
 			if (isLocalPack(pack)) {
 				copyToLocal(pack);
@@ -179,7 +179,7 @@ public class CpPackUnpackJob extends CpPackJob {
 			pack.setPackState(PackState.INSTALLED);
 			pdscFile = fDestPath.append(Utils.extractBaseFileName(pdscFile)).toString();
 			pack.setFileName(pdscFile);
-			// set successful result 
+			// set successful result
 			fResult.setPack(pack);
 			fResult.setSuccess(true);
 		} catch (IOException e) {
@@ -200,20 +200,20 @@ public class CpPackUnpackJob extends CpPackJob {
 	 * @return parsed ICpPack or null if not found or an error occurred
 	 */
 	protected ICpPack parsePdscFile(File tempFolder) {
-		// get pdsc file from temporary folder 
+		// get pdsc file from temporary folder
 		Collection<String> pdscFiles = new LinkedList<>();
 		Utils.findPdscFiles(tempFolder, pdscFiles, 1);
 		if (pdscFiles.isEmpty()) {
 			fResult.setErrorString(Messages.CpPackUnpackJob_PdscFileNotFoundInPack
 					+ fDownloadedPackPath.toOSString());
 			return null;
-		} 
+		}
 		if (pdscFiles.size() > 1) {
 			fResult.setErrorString(Messages.CpPackUnpackJob_PdscFileMoreThanOneFoundInPack
 					+ fDownloadedPackPath.toOSString());
 			return null;
-		} 
-		
+		}
+
 		// load pack
 		String pdscFile = pdscFiles.iterator().next();
 		fSrcTempPath = new Path(Utils.extractPath(pdscFile,  true));
@@ -231,17 +231,17 @@ public class CpPackUnpackJob extends CpPackJob {
 	}
 
 	/**
-	 * Checks if pack has license and user accepted it 
+	 * Checks if pack has license and user accepted it
 	 * @param pack ICpPack
-	 * @param progress 
+	 * @param progress
 	 * @return true if user accepted license or pack has no license
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	protected boolean checkLicense(ICpPack pack, IProgressMonitor progress) {
 		ICpItem licItem = pack.getFirstChild(CmsisConstants.LICENSE_TAG);
 		if (licItem == null)
 			return true; // no license item
-		
+
 		String licFile = licItem.getText();
 		if(licFile == null || licFile.isEmpty())
 			return true; // no license file
@@ -265,8 +265,8 @@ public class CpPackUnpackJob extends CpPackJob {
 		} catch (BadLocationException | IOException e) {
 			e.printStackTrace();
 			// ignore that, the user should not be affected if license file does not exist or malformed
-			return true; 
-		} 
+			return true;
+		}
 		if(licenseQuestion(packName, text))
 			return true;
 		return false;
@@ -284,7 +284,7 @@ public class CpPackUnpackJob extends CpPackJob {
 		return runnable.getResult() == Window.OK;
 	}
 
-	
+
 	protected IPath createDownloadFolder() {
 		IPath downloadDir = new Path(CpPlugIn.getPackManager().getCmsisPackDownloadDir());
 		if (!downloadDir.toFile().exists()) {

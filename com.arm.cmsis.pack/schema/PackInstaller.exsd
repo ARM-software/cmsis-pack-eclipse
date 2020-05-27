@@ -3,10 +3,10 @@
 <schema targetNamespace="com.arm.cmsis.pack" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="com.arm.cmsis.pack" id="PackInstaller" name="Pack Installer to install CMSIS packs"/>
+         <meta.schema plugin="com.arm.cmsis.pack" id="PackInstaller" name="Pack Installer to install CMSIS-Packs"/>
       </appinfo>
       <documentation>
-         This exstension point defines a hook to supply an implementation of CMSIS Pack installer
+         This exstension point defines a hook to supply an implementation of CMSIS-Pack installer
       </documentation>
    </annotation>
 
@@ -16,7 +16,7 @@
             <meta.element />
          </appinfo>
          <documentation>
-            Contribute to this extendion point to provide functionality to install CMSIS Packs
+            Contribute to this extendion point to provide functionality to install CMSIS-Packs
          </documentation>
       </annotation>
       <complexType>
@@ -53,7 +53,7 @@
    <element name="PackInstaller">
       <annotation>
          <documentation>
-            PackInstaller is responsible for CMSIS pack installer functionality
+            PackInstaller is responsible for CMSIS-Pack installer functionality
          </documentation>
       </annotation>
       <complexType>

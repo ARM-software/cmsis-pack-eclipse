@@ -19,7 +19,7 @@ public class RteEventListener implements IRteEventListener {
 	protected IRteEventProxy fRteEventProxy = null;
 	
 	@Override
-	public void setRteEventProxy(IRteEventProxy rteEventProxy) { ;
+	public void setRteEventProxy(IRteEventProxy rteEventProxy) {
 		if(rteEventProxy != null) {
 			rteEventProxy.addListener(this);
 		}

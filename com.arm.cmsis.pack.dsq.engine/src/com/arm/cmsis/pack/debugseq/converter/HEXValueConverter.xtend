@@ -18,13 +18,13 @@ import org.eclipse.xtext.util.Strings
 
 class HEXValueConverter extends AbstractLexerBasedConverter<Long> {
 	override protected String toEscapedString(Long value) {
-		return '''0x«value.toString()»'''
+		return '''0xÂ«value.toString()Â»'''
 	}
 
 	override protected void assertValidValue(Long value) {
 		super.assertValidValue(value)
 		if(value < 0)
-			throw new ValueConverterException('''«getRuleName()»-value may not be negative (value: «value»).''',
+			throw new ValueConverterException('''Â«getRuleName()Â»-value may not be negative (value: Â«valueÂ»).''',
 			null, null);
 	}
 
@@ -35,7 +35,7 @@ class HEXValueConverter extends AbstractLexerBasedConverter<Long> {
 			var long longValue = Long.parseUnsignedLong(string.substring(2), 16)
 			return Long.valueOf(longValue)
 		} catch (NumberFormatException e) {
-			throw new ValueConverterException('''Couldn't convert '«string»' to an hex value.''', node, e)
+			throw new ValueConverterException('''Couldn't convert 'Â«stringÂ»' to an hex value.''', node, e)
 		}
 
 	}

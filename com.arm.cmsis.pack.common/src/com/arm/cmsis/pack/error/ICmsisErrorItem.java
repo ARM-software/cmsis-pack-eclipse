@@ -25,6 +25,6 @@ public interface ICmsisErrorItem{
 	 * Sets an error to the item 
 	 * @param error CmsisZoneError to set
 	 */
-	default void setError(CmsisError error) { /* default does nothing */};
+	default void setError(CmsisError error) { /* default does nothing */}
 
 }

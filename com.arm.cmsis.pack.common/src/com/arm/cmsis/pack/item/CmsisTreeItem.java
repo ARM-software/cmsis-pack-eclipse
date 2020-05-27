@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.item;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -137,7 +138,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 	@Override
 	public Object[] getHierachyPath() {
-		List<Object> segments =  new LinkedList<Object>();
+		List<Object> segments =  new LinkedList<>();
 		segments.add(this);
 		for(T item = getParent(); item != null; item = item.getParent()){
 			if(item.getParent() != null) {
@@ -150,7 +151,9 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 	@Override
 	public Collection<? extends T> getChildren() {
-		return fChildren;
+		if(fChildren != null)
+			return fChildren;
+		return Collections.emptyList();
 	}
 
 
@@ -180,7 +183,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	 */
 	protected Collection<T> createCollection(){
 		// default creates linkedList
-		return new LinkedList<T>();
+		return new LinkedList<>();
 	}
 
 
@@ -220,7 +223,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 	@Override
 	public Object[] getEffectiveHierachyPath() {
-		List<Object> segments =  new LinkedList<Object>();
+		List<Object> segments =  new LinkedList<>();
 		for(T item = getEffectiveHierarchyItem(); item != null; item = item.getEffectiveParent()){
 			if(item.getParent() != null) {
 				segments.add(0, item);
@@ -245,7 +248,8 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 		if(children != null) {
 			return children.size();
 		}
-		return 0;	}
+		return 0;	
+	}
 
 	@Override
 	public boolean hasEffectiveChildren() {
@@ -266,10 +270,8 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	@Override
 	public T getFirstChild() {
 		Collection<? extends T> children = getChildren();
-		if(children != null) {
-			for(T child : children) {
-				return child;
-			}
+		if(children != null && !children.isEmpty()) {
+			return children.iterator().next();
 		}
 		return null;
 	}
@@ -277,13 +279,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 	@Override
 	public String getFirstChildKey() {
-		Collection<? extends T> children = getChildren();
-		if(children != null) {
-			for(T child : children) {
-				return getItemKey(child);
-			}
-		}
-		return null;
+		return getItemKey(getFirstChild());
 	}
 
 

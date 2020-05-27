@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.configuration;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.runtime.IAdaptable;
@@ -246,5 +247,17 @@ public interface IRteConfiguration extends IAdaptable, IEvaluationResult {
 	default void setMemorySettings(IMemorySettings memorySettings) {
 		// default does nothing
 	}
-		
+
+	/**
+	 * Return collection of used generated pack names   
+	 * @return collection of absolute filenames 
+	 */
+	default Collection<String> getGeneratedPackNames(){
+		IRteModel model = getRteModel();
+		if(model != null) {
+			return model.getGeneratedPackNames();
+		}
+		return Collections.emptySet();
+	}
+
 }

@@ -40,12 +40,6 @@ public class CpBoard extends CpItem implements ICpBoard {
 		    id += CmsisConstants.DOUBLE_COLON;
 		    id += name;
 		  }
-		  // TODO: commented out for easy filtering of examples
-		  //String rev = getAttribute(CmsisConstants.REVISION);
-		  //if(rev != null && !rev.isEmpty()) {
-		  //  id += CmsisConstants.DOBLE_COLON;
-		  //  id += rev;
-		  //}
 		  return id;
 	}
 
@@ -61,16 +55,14 @@ public class CpBoard extends CpItem implements ICpBoard {
 			case CmsisConstants.MOUNTED_DEVICE_TAG:
 			case CmsisConstants.COMPATIBLE_DEVICE_TAG:
 				String dName = item.getAttribute(CmsisConstants.DNAME);
-				if(!dName.isEmpty()) {
-					if(deviceAttributes.containsValue(dName)) { // covers Dvariant
-						return true;
-					}
+				if(!dName.isEmpty() && deviceAttributes.containsValue(dName)) { // covers Dvariant
+					return true;
 				} 
-				if(!dName.isEmpty() || item.hasAttribute(CmsisConstants.DFAMILY) || item.hasAttribute(CmsisConstants.DSUBFAMILY)) {
-					if(item.attributes().matchAttributes(deviceAttributes, CmsisConstants.D_ATTRIBUTE_PREFIX))
+				if(!dName.isEmpty() || item.hasAttribute(CmsisConstants.DFAMILY) || item.hasAttribute(CmsisConstants.DSUBFAMILY) &&
+					(item.attributes().matchAttributes(deviceAttributes, CmsisConstants.D_ATTRIBUTE_PREFIX))) {
 						return true;
 				}
-					
+				break;
 			default:
 				break;
 			}

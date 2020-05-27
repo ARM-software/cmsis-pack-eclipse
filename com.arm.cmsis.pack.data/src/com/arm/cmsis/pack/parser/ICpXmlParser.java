@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.parser;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -20,7 +21,7 @@ import com.arm.cmsis.pack.data.ICpItemFactory;
 import com.arm.cmsis.pack.error.ICmsisErrorCollection;
 
 /**
- * Interface to CMSIS pack description file (*.pdsc) parser
+ * Interface to CMSIS-Pack description file (*.pdsc) parser
  */
 public interface ICpXmlParser extends ICpItemFactory, ICmsisErrorCollection {
 
@@ -61,9 +62,7 @@ public interface ICpXmlParser extends ICpItemFactory, ICmsisErrorCollection {
 	default void setIgnoreTagsFromArray(String[] ignoreTags) {
 		Set<String> tagSet = new HashSet<>();
 		if(ignoreTags != null && ignoreTags.length > 0)
-			for (String tag : ignoreTags) {
-				tagSet.add(tag);
-			}
+			Collections.addAll(tagSet, ignoreTags);
 		setIgnoreTags(tagSet);
 	}
 

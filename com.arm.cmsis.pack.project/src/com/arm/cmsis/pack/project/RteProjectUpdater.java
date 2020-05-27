@@ -28,9 +28,11 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.ui.PlatformUI;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
+import com.arm.cmsis.pack.ICpPackInstaller;
 import com.arm.cmsis.pack.build.IBuildSettings;
 import com.arm.cmsis.pack.build.IMemorySettings;
 import com.arm.cmsis.pack.build.settings.ILinkerScriptGenerator;
@@ -50,8 +52,11 @@ import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
 import com.arm.cmsis.pack.parser.CpConfigParser;
+import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
 import com.arm.cmsis.pack.project.ui.RteProjectDecorator;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
+import com.arm.cmsis.pack.rte.IRteModel;
+import com.arm.cmsis.pack.rte.RteModelUtils;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
@@ -66,6 +71,15 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 	public static final int UPDATE_TOOLCHAIN = 0x02; // forces update of all relevant toolchain settings
 	public static final int CLEANUP_RTE_FILES = 0x04; // delete excluded RTE config files
 	public static final int SUPRESS_INFO_MESSAGES = 0x08; // suppresses info messages (useful when called during import)
+
+	// cause flags
+	public static final int CAUSE_PROJECT_CREATED	= 0x10;
+	public static final int CAUSE_PROJECT_LOAD		= 0x20;
+	public static final int CAUSE_PROJECT_RESET		= 0x40;	
+	public static final int CAUSE_CONFIG_CHANGED	= 0x80;
+	public static final int CAUSE_PACKS_CHANGED		= 0x100;
+	public static final int CAUSE_GPDSC_CHANGED		= 0x200;
+	public static final int CAUSE_IMPORT_COMPLETED  = 0x400;
 	
 	protected IRteProject rteProject;
 	protected IProject project;
@@ -78,12 +92,12 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 	protected boolean bDeleteConfigFiles = false;
 	protected boolean bSuppressInfoMessages = false;
 	protected ICmsisConsole fCmsisConsole = null;
-	
-	protected RteProjectStorage projectStorage = null; 
+
+	protected RteProjectStorage projectStorage = null;
 	protected IRteToolChainAdapter toolChainAdapter = null;
 	protected IAttributes rteOptionsFromToolchain = null;
 	IManagedBuildInfo buildInfo = null;
-	
+
 
 	public RteProjectUpdater(IRteProject rteProject, int updateFlags) {
 		super("RTE Project Updater"); //$NON-NLS-1$
@@ -98,7 +112,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 		setRule(workspace.getRoot()); // ensures synch update
 	}
 
-	
+
 
 	@Override
 	public ICmsisConsole getCmsisConsole() {
@@ -115,7 +129,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 	}
 
 	/**
-     * Returns the RteConsole, creates if not yet initialized 
+     * Returns the RteConsole, creates if not yet initialized
      * @return RteConsole
      */
     @Override
@@ -123,25 +137,19 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
     	return RteConsole.openConsole(project);
     }
 
-   
+
 	@Override
 	public IStatus runInWorkspace(IProgressMonitor monitor) {
 		if (project == null || rteProject == null) {
-			Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID,
-					Messages.RteProjectUpdater_ErrorProjectIsNull);
-			return status;
+			return new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, Messages.RteProjectUpdater_ErrorProjectIsNull);
 		}
-		
+
 		this.monitor = monitor;
 		bSaveProject = false;
 		Status status = null;
 		EEvaluationResult res = EEvaluationResult.FULFILLED;
 		try {
-			if(!bSuppressInfoMessages){
-				String timestamp = Utils.getCurrentTimeStamp();
-				String msg = timestamp + " **** " + Messages.RteProjectUpdater_UpdatingProject + " " + project.getName(); //$NON-NLS-1$ //$NON-NLS-2$
-				getCmsisConsole().outputInfo(msg);
-			}
+			outputStartUpdateMessage();
 
 			String packRoot = CpVariableResolver.getCmsisPackRoot();
 			if(packRoot == null || packRoot.isEmpty()){
@@ -160,25 +168,22 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 
 			projectStorage = rteProject.getProjectStorage();
 			if (projectStorage != null) {
-				// obtain toolchain adaper its RTE options from active configuration 
+				// obtain toolchain adaper its RTE options from active configuration
 				toolChainAdapter = projectStorage.getToolChainAdapter();
 				if(toolChainAdapter != null) {
 					IConfiguration activeConfig = ProjectUtils.getDefaultConfiguration(project);
 					rteOptionsFromToolchain = toolChainAdapter.getRteOptions(activeConfig);
 				}
 			}
-			
+
 			if (bLoadConfigs) {
-				//	getCmsisConsole().outputInfo(Messages.RteProjectUpdater_LoadingRteConfiguration);
 				res = loadConfigFile();
 			}
-			// getCmsisConsole().outputInfo(Messages.RteProjectUpdater_UpdatingResources);
 			addResources();
 			removeResources();
 
 			updateGeneratedHeaders();
 
-			//getCmsisConsole().outputInfo(Messages.RteProjectUpdater_UpdatingBuildSettings);
 			updateBuildSettings(bForceUpdateToolchain);
 
 			if (bSaveProject) {
@@ -202,7 +207,13 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 		if (res.ordinal() < EEvaluationResult.INSTALLED.ordinal() || status != null) {
 			getCmsisConsole().outputError(Messages.RteProjectUpdater_Fail);
 			if(status != null) {
-				getCmsisConsole().outputInfo(status.getMessage());
+				String msg = status.getMessage();
+				Throwable e = status.getException();
+				if(e != null && e.getMessage() != null) {
+					msg += ": " + e.getLocalizedMessage();  //$NON-NLS-1$
+				}
+				
+				getCmsisConsole().outputInfo(msg);
 				IStatus[] statusArray = status.getChildren();
 				if (statusArray != null && statusArray.length > 0) {
 					for (IStatus s : statusArray) {
@@ -210,10 +221,10 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 					}
 				}
 			}
-		} else if(!bSuppressInfoMessages){			
+		} else if(!bSuppressInfoMessages){
 			getCmsisConsole().outputInfo(Messages.RteProjectUpdater_Success);
-			
-		} 
+
+		}
 		if(!bSuppressInfoMessages){
 			getCmsisConsole().output(CmsisConstants.EMPTY_STRING);
 		}
@@ -227,6 +238,52 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 
 		return status;
 	}
+
+	protected void outputStartUpdateMessage() {
+		if(bSuppressInfoMessages){
+			return;
+		}
+		String timestamp = Utils.getCurrentTimeStamp();
+		StringBuilder sb = new StringBuilder();
+		sb.append(timestamp).append(" **** "); //$NON-NLS-1$ 
+		sb.append(Messages.RteProjectUpdater_UpdatingProject).append(CmsisConstants.SPACE).append(project.getName());
+		sb.append(": ").append(getCauseMessage());  //$NON-NLS-1$
+		getCmsisConsole().outputInfo(sb.toString());
+	}
+
+	protected String getCauseMessage() {
+		if((updateFlags & CAUSE_PROJECT_LOAD) == CAUSE_PROJECT_LOAD) {
+			return Messages.RteProjectUpdater_InitialProjectLoad;
+		}
+		if((updateFlags & CAUSE_PROJECT_RESET) == CAUSE_PROJECT_RESET) {
+			return Messages.RteProjectUpdater_ProjectReset;
+		}
+		if((updateFlags & CAUSE_PROJECT_CREATED) == CAUSE_PROJECT_CREATED) {
+			return Messages.RteProjectUpdater_ProjectCreated;
+		}
+		
+		if((updateFlags & CAUSE_CONFIG_CHANGED) == CAUSE_CONFIG_CHANGED) {
+			return Messages.RteProjectUpdater_ConfigChanged + " [" + rteProject.getRteConfigurationName() + "] "   + Messages.RteProjectUpdater_isSaved; //$NON-NLS-1$ //$NON-NLS-2$ 
+		}
+		if((updateFlags & CAUSE_PACKS_CHANGED) == CAUSE_PACKS_CHANGED) {
+			return Messages.RteProjectUpdater_PacksInstalled;
+		}
+		if((updateFlags & CAUSE_IMPORT_COMPLETED) == CAUSE_IMPORT_COMPLETED) {
+			return Messages.RteProjectUpdater_ImportCompleted;
+		}
+		
+		if((updateFlags & CAUSE_GPDSC_CHANGED) == CAUSE_GPDSC_CHANGED) {
+			Collection<String> gpdscFiles = rteProject.getRteConfiguration().getGeneratedPackNames();
+			if(!gpdscFiles.isEmpty()) {
+				// it is most probable that only one file is used, however output all in the collection  
+				return Messages.RteProjectUpdater_GpdscChanged  + CmsisConstants.SPACE + gpdscFiles.toString() + CmsisConstants.SPACE + Messages.RteProjectUpdater_isChanged;
+			}
+		}
+		
+		return Messages.RteProjectUpdater_ProjectRefresh;
+		
+	}
+	
 
 	protected void collectErrors(Collection<? extends IRteDependencyItem> errors) throws CoreException {
 		IFile rteFile = rteProject.getProject().getFile(rteProject.getName() + CmsisConstants.DOT_RTECONFIG);
@@ -284,11 +341,42 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 			msg += System.lineSeparator() + s;
 		}
 
+		installMissingPacks(rteConf.getRteModel());
+
 		if(res.ordinal() > EEvaluationResult.FAILED.ordinal()){
 			return res;
 		}
 		Status status = new Status(IStatus.WARNING, CpPlugInUI.PLUGIN_ID, msg);
 		throw new CoreException(status);
+	}
+
+	/**
+	 * Triggers installation of missing packs
+	 * @param rteModel IRteModel to query for missing packs
+	 */
+	protected void installMissingPacks(IRteModel rteModel) {
+		if(!PlatformUI.isWorkbenchRunning()){
+			return; // no implicit pack install in headless mode
+		}
+
+		if(!CpPreferenceInitializer.isAutoInstallMissingPacks())
+			return;
+
+		if(rteProject == null || !rteProject.isInstallMissingPacksOnUpdate()) {
+			return;
+		}
+		if(rteModel == null)
+			return;
+		ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+		if(packInstaller == null)
+			return;
+
+		rteProject.setInstallMissingPacksOnUpdate(false); //only once
+
+		Collection<String> missingPacks = RteModelUtils.getMissingPacks(rteModel);
+		for(String packId : missingPacks) {
+			packInstaller.installPack(packId);
+		}
 	}
 
 	protected IRteConfiguration loadRteConfiguration(String savedRteConfigName) throws CoreException {
@@ -361,31 +449,39 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 		}
 		int type = res.getType();
 		if (type == IResource.FILE) {
-			IPath path = res.getProjectRelativePath();
-			String dstFile = path.toString();
-			if (!isFileUsed(res)) {
-				if (res.isLinked()) {
-					res.delete(IResource.FORCE, monitor);
-				} else if (bDeleteConfigFiles) {
-					res.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
-				} else {
-					ProjectUtils.setExcludeFromBuild(project, dstFile, true);
-				}
-			} else if (ProjectUtils.isExcludedFromBuild(project, dstFile)) {
-				ProjectUtils.setExcludeFromBuild(project, dstFile, false);
-			}
+			removeFileResource((IFile)res);
 		} else if (res.getType() == IResource.FOLDER) {
-			IFolder f = (IFolder) res;
-			IResource[] members = f.members();
-			for (IResource r : members) {
-				removeResources(r);
-			}
-			f.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-			if (!f.getName().equals(CmsisConstants.RTE) && f.members().length == 0) {
-				f.delete(true, true, null);
-			}
+			removeFolderResource((IFolder) res);
 		}
 	}
+
+	protected void removeFileResource(IFile res) throws CoreException {
+		IPath path = res.getProjectRelativePath();
+		String dstFile = path.toString();
+		if (!isFileUsed(res)) {
+			if (res.isLinked()) {
+				res.delete(IResource.FORCE, monitor);
+			} else if (bDeleteConfigFiles) {
+				res.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
+			} else {
+				ProjectUtils.setExcludeFromBuild(project, dstFile, true);
+			}
+		} else if (ProjectUtils.isExcludedFromBuild(project, dstFile)) {
+			ProjectUtils.setExcludeFromBuild(project, dstFile, false);
+		}
+	}
+
+	protected void removeFolderResource(IFolder folder) throws CoreException {
+		IResource[] members = folder.members();
+		for (IResource r : members) {
+			removeResources(r);
+		}
+		folder.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+		if (!folder.getName().equals(CmsisConstants.RTE) && folder.members().length == 0) {
+			folder.delete(true, true, null);
+		}
+	}
+
 
 	protected boolean isFileUsed(IResource res) {
 		IPath path = res.getProjectRelativePath();
@@ -475,7 +571,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 			srcFile = CpVariableResolver.insertCmsisRootVariable(srcFile);
 			if (srcFile != null) {
 				if (srcFile.startsWith(CmsisConstants.CMSIS_RTE_VAR)){
-					// remove prefix variable since resulted URL cannot be created in case of an absolute path  
+					// remove prefix variable since resulted URL cannot be created in case of an absolute path
 					srcFile = srcFile.substring(CmsisConstants.CMSIS_RTE_VAR.length());
 				}
 				ProjectUtils.createLink(project, srcFile, dstFile, monitor);
@@ -512,7 +608,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 			updateRteHeaderFile(entry.getKey(), Arrays.asList(entry.getValue()));
 		}
 	}
-	
+
 	protected void updateRteComponentsH() throws CoreException {
 		IRteConfiguration rteConf = rteProject.getRteConfiguration();
 		if (rteConf == null) {
@@ -536,7 +632,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 		}
 		updateRteHeaderFile(CmsisConstants.RTE_Components_h, content);
 	}
-	
+
 	protected void updateRteHeaderFile(String headerName, Collection<String> code) throws CoreException {
 		if(code == null || code.isEmpty())
 			return;
@@ -554,10 +650,10 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 			pw.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
-		}		
+		}
 	}
 
-	
+
 	protected void writeRteComponentsHbody(PrintWriter pw, Collection<String> code) {
 		if ( code == null || code.isEmpty()) {
 			return;
@@ -621,7 +717,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 				}
 			}
 		}
-		
+
 		if (buildInfo == null) {
 			return;
 		}
@@ -643,8 +739,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 	protected String getLinkerScriptFile(ILinkerScriptGenerator lsGen) {
 		IRteConfiguration rteConfiguration = rteProject.getRteConfiguration();
 		String deviceName = rteConfiguration.getDeviceInfo().getFullDeviceName();
-		String fileName = Utils.wildCardsToX(deviceName) + "." + lsGen.getFileExtension(); //$NON-NLS-1$
-		return fileName;
+		return CmsisConstants.CMSIS_RTE + CmsisConstants.UNDERSCORE + Utils.wildCardsToX(deviceName) + CmsisConstants.DOT + lsGen.getFileExtension();
 	}
 
 	protected void writeLinkerScriptFile(String fileName, String script) {

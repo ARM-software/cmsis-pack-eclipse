@@ -67,7 +67,7 @@ public class CmsisZoneWizardPage extends CmsisZoneAbstractWizardPage<ICpZone> {
 	 * Create the wizard.
 	 */
 	public CmsisZoneWizardPage(CmsisZoneController controller, ICpZone fExistingItem) {
-		super("CMSIS Zone", controller, fExistingItem); //$NON-NLS-1$
+		super("CMSIS-Zone", controller, fExistingItem); //$NON-NLS-1$
 		setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_CMSIS_ZONE_48));
 		if(fExistingItem == null) {
 			setTitle(Messages.CmsisZoneWizardPage_NewCmsisZone + controller.getZoneLabel());

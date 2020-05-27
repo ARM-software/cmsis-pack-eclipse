@@ -21,9 +21,9 @@ import com.arm.cmsis.pack.generic.IAttributedItem;
 public interface IMemoryPriviledge extends IAttributedItem {
 	
 	// security flags 
-	final static char UNPRIVILEGED_ACCESS	= 'u';
-	final static char PRIVILEGED_ACCESS	    = 'p';
-	final static String PRIVILEGE_FLAGS = "pu";  //$NON-NLS-1$
+	static final char UNPRIVILEGED_ACCESS	= 'u';
+	static final char PRIVILEGED_ACCESS	    = 'p';
+	static final String PRIVILEGE_FLAGS = "pu";  //$NON-NLS-1$
 	
 
 	/**
@@ -74,7 +74,7 @@ public interface IMemoryPriviledge extends IAttributedItem {
 	 * @param parent IMemoryPriviledge to adjust to
 	 * @return true if changed
 	 */
-	default public boolean adjustPrivilege(IMemoryPriviledge parent) {
+	default boolean adjustPrivilege(IMemoryPriviledge parent) {
 		if(parent == null)
 			return false;
 		return setPrivilige(getPrivilege().adjust(parent.getPrivilege()));

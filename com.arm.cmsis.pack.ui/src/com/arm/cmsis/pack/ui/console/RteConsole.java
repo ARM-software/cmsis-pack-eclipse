@@ -268,7 +268,7 @@ public class RteConsole extends MessageConsole implements ICmsisConsole, IProper
 	 * @param consoleName name of console to open console for
 	 * @return RteConsole
 	 */
-	synchronized protected static RteConsole openConsole(String consoleName, IProject project) 	{
+	protected static synchronized RteConsole openConsole(String consoleName, IProject project) 	{
 		if(!PlatformUI.isWorkbenchRunning()) {
 			return new RteConsole(BASE_NAME, project); // will output to stdout
 		}
@@ -310,11 +310,11 @@ public class RteConsole extends MessageConsole implements ICmsisConsole, IProper
 		return rteConsole;
 	}
 
-	synchronized public static RteConsole openGlobalConsole() {
+	public static synchronized RteConsole openGlobalConsole() {
 		return openConsole(GLOBAL_NAME, null);
 	}
 
-	synchronized public static void showConsole(final RteConsole console) {
+	public static synchronized void showConsole(final RteConsole console) {
 		asyncExec(() -> ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console));
 	}
 

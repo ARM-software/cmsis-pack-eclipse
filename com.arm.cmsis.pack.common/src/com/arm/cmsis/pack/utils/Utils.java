@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2015 - 2020 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,11 +38,20 @@ import com.arm.cmsis.pack.common.CmsisConstants;
  */
 public class Utils {
 
-	static public final String QUOTE = "\"";  //$NON-NLS-1$
-	static private String host = null;  	  // name of a running host OS : win, mac, or linux
+	public static final String QUOTE = "\"";  //$NON-NLS-1$
+	private static String host = null;  	  // name of a running host OS : win, mac, or linux
 
-	static public final char[] NUMERIC_SUFFIXES = new char[]{ 'K', 'M', 'G'};
-	static public final int[] NUMERIC_SHIFTS = new int[]{10, 20, 30};
+	private static final char[] NUMERIC_SUFFIXES = new char[]{ 'K', 'M', 'G'};
+	private static final int[] NUMERIC_SHIFTS = new int[]{10, 20, 30};
+
+
+	/**
+	 * Private constructor to prevent instantiating the utility class
+	 */
+	private Utils() {
+		throw new IllegalStateException("Utility class"); //$NON-NLS-1$
+	}
+
 	/**
 	 * Find files recursively from given directory (hidden files are exculed)
 	 * @param dir directory to start search
@@ -51,9 +60,9 @@ public class Utils {
 	 * @param depth number of sub-directory levels to search for: 0 - search current directory only
 	 * @return list of found files
 	 */
-	static public Collection<String> findFiles(File dir, String ext, Collection<String> files, int depth){
+	public static Collection<String> findFiles(File dir, String ext, Collection<String> files, int depth){
 		if( files == null) {
-			files = new LinkedList<String>();
+			files = new LinkedList<>();
 		}
 
 		File[] list = dir.listFiles();
@@ -61,7 +70,7 @@ public class Utils {
 			return  files;
 		}
 
-		// search dir for pdsc files
+		// search directory for files with given extension
 		for ( File f : list ) {
 			if( !f.isFile() || f.isHidden()) {
 				continue;
@@ -82,7 +91,6 @@ public class Utils {
 			return files;
 		}
 		// search sub-directories
-		// search dir for pdsc files
 		for ( File f : list ) {
 			if( f.isDirectory() && !f.isHidden() && !f.getName().startsWith(".")) { //$NON-NLS-1$
 				findFiles(f,  ext, files, depth-1);
@@ -98,7 +106,7 @@ public class Utils {
 	 * @param depth number of sub-directory levels to search for: 0 - search current directory only
 	 * @return list of found pdsc files
 	 */
-	static public Collection<String> findPdscFiles(File dir, Collection<String> files, int depth){
+	public static Collection<String> findPdscFiles(File dir, Collection<String> files, int depth){
 		return findFiles(dir, CmsisConstants.PDSC, files, depth);
 	}
 
@@ -107,7 +115,7 @@ public class Utils {
 	 * @param s source string
 	 * @return the resulting string
 	 */
-	static public String wildCardsToX(String s)	{
+	public static String wildCardsToX(String s)	{
 		if(s == null || s.isEmpty()) {
 			return s;
 		}
@@ -133,7 +141,7 @@ public class Utils {
 	 * @param s source string
 	 * @return the resulting string
 	 */
-	static public String nonAlnumToUndersore(String s)	{
+	public static String nonAlnumToUndersore(String s)	{
 		if(s == null || s.isEmpty()) {
 			return s;
 		}
@@ -149,20 +157,20 @@ public class Utils {
 		}
 		return res.toString();
 	}
-	
+
 	/**
 	 * Adds trailing slash to path
 	 * @param path path to add slash
 	 * @return the result string
 	 */
-	static public String addTrailingSlash(String path) {
+	public static String addTrailingSlash(String path) {
 		if(path == null || path.isEmpty() || path.endsWith("/")) { //$NON-NLS-1$
 			return path;
 		}
 		if(path.endsWith(File.separator)) {
 			path = removeTrailingSlash(path);
 		}
-		return path + CmsisConstants.SLASH; 
+		return path + CmsisConstants.SLASH;
 	}
 
 	/**
@@ -170,7 +178,7 @@ public class Utils {
 	 * @param path path to remove slash
 	 * @return the result string
 	 */
-	static public String removeTrailingSlash(String path) {
+	public static String removeTrailingSlash(String path) {
 		if(path == null || path.isEmpty()) {
 			return path;
 		}
@@ -186,7 +194,7 @@ public class Utils {
 	 * @param path absolute or relative path with forward slashes as delimiters
 	 * @return the result filename
 	 */
-	static public String extractFileName(String path) {
+	public static String extractFileName(String path) {
 		if(path == null || path.isEmpty()) {
 			return path;
 		}
@@ -207,7 +215,7 @@ public class Utils {
 	 * @param path absolute or relative path with forward slashes as delimiters
 	 * @return the result filename
 	 */
-	static public String extractBaseFileName(String path) {
+	public static String extractBaseFileName(String path) {
 		if(path == null || path.isEmpty()) {
 			return path;
 		}
@@ -222,10 +230,10 @@ public class Utils {
 
 	/**
 	 * Extracts absolute base filename portion (without extension) out of supplied pathname
-	 * @param path absolute or relative path 
+	 * @param path absolute or relative path
 	 * @return the result filename
 	 */
-	static public String removeFileExtension(String path) {
+	public static String removeFileExtension(String path) {
 		if(path == null || path.isEmpty()) {
 			return path;
 		}
@@ -236,13 +244,13 @@ public class Utils {
 		return path;
 	}
 
-	
+
 	/**
 	 * Extracts file extension (leaves last segment only)
 	 * @param filename absolute or relative filename
-	 * @return file extension or null if file has no dot (file. will return an empty string) 
+	 * @return file extension or null if file has no dot (file. will return an empty string)
 	 */
-	static public String extractFileExtension(String filename) {
+	public static String extractFileExtension(String filename) {
 		if(filename == null || filename.isEmpty()) {
 			return filename;
 		}
@@ -255,26 +263,26 @@ public class Utils {
 	}
 
 	/**
-	 * Replaces file extension with the new one 
+	 * Replaces file extension with the new one
 	 * @param path absolute or relative filename
 	 * @param newExtension new file extension
 	 * @return the result filename
 	 */
-	static public String changeFileExtension(String path, String newExtension) {
+	public static String changeFileExtension(String path, String newExtension) {
 		String newfileName = removeFileExtension(path);
 		if(newfileName != null && newExtension != null)
 			return newfileName + '.' + newExtension;
 		return path;
 	}
-	
-	
+
+
 	/**
 	 * Extracts path portion out of supplied pathname (removes section out last slash)
 	 * @param path absolute or relative path with forward slashes as delimiters
 	 * @param keepSlash flag if to keep or remove trailing slash
 	 * @return the result path
 	 */
-	static public String extractPath(String path, boolean keepSlash) {
+	public static String extractPath(String path, boolean keepSlash) {
 		if(path == null || path.isEmpty()) {
 			return path;
 		}
@@ -291,13 +299,43 @@ public class Utils {
 		return path;
 	}
 
+	/**
+	 * Returns number of path segments in the path
+	 * @param path absolute or relative path with forward slashes as delimiters
+	 * @return number of segments
+	 */
+	public static int getSegmentCount(String path) {
+		if(path == null || path.isEmpty())
+			return 0;
+		path = path.replace('\\', '/');
+		int count = 1;
+		for(int pos = path.indexOf('/'); pos >= 0; pos = path.indexOf('/',  pos+1)) {
+			count++;
+		}
+		return count;
+	}
+
+
+	/**
+	 * Removes last path segments
+	 * @param path absolute or relative path with forward slashes as delimiters
+	 * @param nSegments number of segments to remove
+	 * @return the result path
+	 */
+	public static String removeTrailingPathSegments(String path, int nSegments) {
+		for(int i = 0; i < nSegments; i++) {
+			path = extractPath(path, false);
+		}
+		return path;
+	}
+
 
 	/**
 	 * Check if a URL string is valid
 	 * @param urlStr the URL string
 	 * @return true if the URL is valid
 	 */
-	static public boolean isValidURL(String urlStr) {
+	public static boolean isValidURL(String urlStr) {
 		if (urlStr == null) {
 			return false;
 		}
@@ -314,7 +352,7 @@ public class Utils {
 	 * @param path path to surround with quotes
 	 * @return quoted string
 	 */
-	static public String addQuotes(String path) {
+	public static String addQuotes(String path) {
 		if(path == null || path.isEmpty()) {
 			return path;
 		}
@@ -338,7 +376,7 @@ public class Utils {
 	 * @param str string to search for
 	 * @return index of the string if found, otherwise -1
 	 */
-	static public int indexOf(Collection<String> stringCollection, String str) {
+	public static int indexOf(Collection<String> stringCollection, String str) {
 		if (str != null && stringCollection != null) {
 			int i = 0;
 			for(String s : stringCollection) {
@@ -357,7 +395,7 @@ public class Utils {
 	 * @param str string to search for
 	 * @return index of the string if found, otherwise -1
 	 */
-	static public int indexOf(String[] stringArray, String str) {
+	public static int indexOf(String[] stringArray, String str) {
 		if (str != null && stringArray != null) {
 			int i = 0;
 			for(String s : stringArray) {
@@ -376,7 +414,7 @@ public class Utils {
 	 * @param dclock String representing decimal clock frequency
 	 * @return scaled string
 	 */
-	static public String getScaledClockFrequency(String dclock)
+	public static String getScaledClockFrequency(String dclock)
 	{
 		if (dclock == null || dclock.isEmpty()) {
 			return CmsisConstants.EMPTY_STRING;
@@ -398,7 +436,7 @@ public class Utils {
 	 * @param size memory size in bytes
 	 * @return readable memory size string
 	 */
-	static public String getMemorySizeString(long size)
+	public static String getMemorySizeString(long size)
 	{
 		if (size == 0) {
 			return CmsisConstants.EMPTY_STRING;
@@ -417,18 +455,18 @@ public class Utils {
 		size >>= 10; // Scale to MByte
 		return Long.toString(size) + " MB"; //$NON-NLS-1$
 	}
-	
+
 	/**
 	 * Returns readable representation of memory size
 	 * @param size memory size in bytes
 	 * @return readable memory size string
 	 */
-	static public String getFormattedMemorySizeString(Long size)
+	public static String getFormattedMemorySizeString(Long size)
 	{
 		if (size == null ) {
 			return "??????"; //$NON-NLS-1$
 		}
-		
+
 		if (size == 0) {
 			return CmsisConstants.EMPTY_STRING;
 		}
@@ -436,8 +474,8 @@ public class Utils {
 		if (size < 1024 || (size % 1024) != 0) {
 			return String.format("   %4d B", size); //$NON-NLS-1$
 		}
-		
-		size >>= 10; // Scale to kByte		
+
+		size >>= 10; // Scale to kByte
 		if (size < 1024 || (size % 1024) != 0) {
 			return String.format("   %4d KB", size); //$NON-NLS-1$
 		}
@@ -452,23 +490,23 @@ public class Utils {
 	 * @return Long value if successful, otherwise null
 	 * @see getFormattedMemorySizeString
 	 */
-	static public Long stringToLong(String value)
+	public static Long stringToLong(String value)
 	{
 		if(value == null || value.isEmpty())
 			return null;
-		
+
 		int shift = 0;
 		value = value.trim().trim().toUpperCase();
 		// find suffixes
 		for(int i = 0; i < NUMERIC_SUFFIXES.length; i++){
 			int pos = value.indexOf(NUMERIC_SUFFIXES[i]);
-			if(pos < 0)
-				continue;
-			shift = NUMERIC_SHIFTS[i];
-			value = value.substring(0, pos).trim();
-			break;
+			if(pos >= 0) {
+				shift = NUMERIC_SHIFTS[i];
+				value = value.substring(0, pos).trim();
+				break;
+			}
 		}
-		// for all other suffixes just extract numeric before space; 
+		// for all other suffixes just extract numeric before space
 		int delimiter = value.indexOf(' ');
 		if(delimiter >=0 ) {
 			value = value.substring(0, delimiter);
@@ -485,7 +523,7 @@ public class Utils {
 		return result;
 	}
 
-	
+
 	/**
 	 * Copy from one directory to another overwriting existing entries
 	 * @param sourceLocation source directory
@@ -501,7 +539,7 @@ public class Utils {
 	 *
 	 * @param sourceLocation source directory
 	 * @param destLocation destination directory
-	 * @param overwrite boolean flag specifies if to overwrite existing entries 
+	 * @param overwrite boolean flag specifies if to overwrite existing entries
 	 * @throws IOException
 	 */
 	public static void copyDirectory(File sourceLocation, File destLocation, boolean overwrite) throws IOException {
@@ -524,8 +562,8 @@ public class Utils {
 		}
 	}
 
-	
-	
+
+
 	/**
 	 * Get the String of current date in the format of "dd-mm-yyyy"
 	 * @return String of current date in the format of "dd-mm-yyyy"
@@ -554,42 +592,38 @@ public class Utils {
 	 *
 	 * @param source source file
 	 * @param dest destination file
- 	 * @param overwrite boolean flag specifies if to overwrite the existing file 
+ 	 * @param overwrite boolean flag specifies if to overwrite the existing file
 	 */
 	public static void copy(File source, File dest, boolean overwrite) throws IOException {
-		InputStream input = null;
-		OutputStream output = null;
+
 		if (!dest.getParentFile().exists()) {
 			dest.getParentFile().mkdirs();
-		}
-		try {
-			if (dest.exists()) {
-				if(!overwrite)
-					return; // keep existing file
-				if(dest.equals(source))
-					return; // do not copy to itself
-				dest.delete();
+		} else 	if (dest.exists()) {
+			if(!overwrite)
+				return; // keep existing file
+			if(dest.equals(source))
+				return; // do not copy to itself
+			if(!dest.delete()) {
+				return; // cannot overwrite
 			}
-			input = new FileInputStream(source);
-			output = new FileOutputStream(dest);
+		}
+
+		try (
+				InputStream input = new FileInputStream(source);
+				OutputStream output = new FileOutputStream(dest);
+			)
+		{
 			byte[] buf = new byte[4096]; // 4096 is a common NTFS block size
 			int bytesRead;
 			while ((bytesRead = input.read(buf)) > 0) {
 				output.write(buf, 0, bytesRead);
 			}
-			dest.setWritable(true, true);
-		} finally {
-			if (input != null) {
-				input.close();
-			}
-			if (output != null) {
-				output.close();
-			}
 		}
+		dest.setWritable(true, true);
 	}
 
 
-	
+
 	/**
 	 * Delete the folder recursively: first file, then folder
 	 *
@@ -747,8 +781,8 @@ public class Utils {
 		}
 		return host;
 	}
-	
-	
+
+
 	/**
 	 * Returns current time as string
 	 * @return time stamp string

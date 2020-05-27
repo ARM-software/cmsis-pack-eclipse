@@ -23,22 +23,19 @@ import com.arm.cmsis.pack.error.CmsisError;
  */
 public class CpXmlParserError extends CmsisError {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
 	// parser error IDs 'X' is for Xml
-	static public final String X201 = "X201"; // Warning //$NON-NLS-1$ 
+	public static final String X201 = "X201"; // Warning //$NON-NLS-1$ 
 	
-	static public final String X401 = "X401"; // Error //$NON-NLS-1$ 
-	static public final String X402 = "X402"; //$NON-NLS-1$
-	static public final String X403 = "X403"; //$NON-NLS-1$
-	static public final String X404 = "X404"; //$NON-NLS-1$
+	public static final String X401 = "X401"; // Error //$NON-NLS-1$ 
+	public static final String X402 = "X402"; //$NON-NLS-1$
+	public static final String X403 = "X403"; //$NON-NLS-1$
+	public static final String X404 = "X404"; //$NON-NLS-1$
 	
-	static public final String X801 = "X801"; // Fatal //$NON-NLS-1$ 
-	static public final String X802 = "X802"; // Fatal //$NON-NLS-1$ 
-	static public final String X803 = "X803"; // Fatal //$NON-NLS-1$ 
+	public static final String X801 = "X801"; // Fatal //$NON-NLS-1$ 
+	public static final String X802 = "X802"; // Fatal //$NON-NLS-1$ 
+	public static final String X803 = "X803"; // Fatal //$NON-NLS-1$ 
 	
 	/**
 	 * Default constructor

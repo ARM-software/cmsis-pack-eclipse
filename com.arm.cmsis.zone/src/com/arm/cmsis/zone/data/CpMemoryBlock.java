@@ -23,34 +23,64 @@ import com.arm.cmsis.pack.enums.EMemorySecurity;
 import com.arm.cmsis.pack.generic.Attributes;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.permissions.IMemoryPermissions;
+import com.arm.cmsis.pack.permissions.MemoryPermissions;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 import com.arm.cmsis.zone.error.CmsisZoneError;
 
 /**
- *  An abstract class representing memory or peripheral   
+ *  Class representing a memory region or a peripheral
  */
 public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 
-	protected Map<String, ICpZoneAssignment> fAssignments = null; // assignments of the block 
-	
+	protected Map<String, ICpZoneAssignment> fAssignments = null; // assignments of the block
+	protected IMemoryPermissions fOriginalAttributesAndPermissions = null; // Note: IMemoryPermissions is derived from attributed item
+	protected PhysicalMemoryRegion fPhysicalRegion = null;
+
+	// cached values
 	protected Long fOffset = null;
 	protected Long fSize = null;
 	protected Long fStart = null;
-	
+
 	/**
 	 * Default constructor
 	 */
-	protected CpMemoryBlock() {
-		this(null, CmsisConstants.BLOCK_TAG);
+	public CpMemoryBlock() {
+		this(null, CmsisConstants.MEMORY_TAG);
 	}
-	
-	protected CpMemoryBlock(ICpItem parent, String tag) {
+
+	/**
+	 * XML constructor
+	 * @param parent parent ICpItem
+	 * @param tag element tag
+	 */
+	public CpMemoryBlock(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
-	
+
+	/**
+	 * Copy constructor
+	 * @param realBlock block to copy
+	 */
 	public CpMemoryBlock(ICpMemoryBlock realBlock) {
 		this(realBlock.getParent(), realBlock.getTag());
 		attributes().addAttributes(realBlock.attributes());
+	}
+
+	/**
+	 * Constructs block from ICpMemory device property
+	 * @param parent parent ICpItem
+	 * @param memory ICpMemory to get information from
+	 */
+	public CpMemoryBlock(ICpItem parent, ICpMemory memory) {
+		super(parent, CmsisConstants.MEMORY_TAG);
+		setMemory(memory);
+		initItem();
+	}
+
+
+	@Override
+	public void initItem() {
+		getOriginalAttributes(); // ensures we get initial attributes
 	}
 
 	@Override
@@ -66,14 +96,14 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		fSize = null;
 		fOffset = null;
 	}
-	
-	
+
+
 	@Override
 	public boolean purge() {
 		if(super.purge()) // children first
 			return true;
 
-		if(isValid()) 
+		if(isValid())
 			return false;
 
 		if(hasSubBlocks()) {
@@ -81,17 +111,15 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		}
 		if(!isPeripheral() && getParentBlock() != null)
 			return false;
-		
+
 		if(isAssigned()) {
 			return false;
 		}
 		// check if exists
-		if(!resourceExists())
-			return true;
-		return false;
+		return !resourceExists();
 	}
 
-	
+
 	@Override
 	public boolean resourceExists() {
 		if(hasError(CmsisZoneError.Z2_MASK))
@@ -101,8 +129,8 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 			return parent.resourceExists();
 		return true;
 	}
-	
-	
+
+
 	@Override
 	public boolean isValid() {
 		if(!super.isValid())
@@ -113,14 +141,13 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		return true;
 	}
 
-	
+
 	@Override
 	public String constructId() {
 		return ICpMemoryBlock.constructBlockId(getTag(), getName(), getGroupName());
-	};	
+	}
 
-	
-	
+
 	@Override
 	public String getPeripheralName() {
 		return null;
@@ -130,20 +157,20 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 	public String getGroupName() {
 		return null;
 	}
-	
-	
+
+
 	@Override
-	public ICpMemoryBlock clone() {
-		ICpMemoryBlock cloned = (ICpMemoryBlock)super.clone();
+	public ICpMemoryBlock cloneBlock() {
+		ICpMemoryBlock cloned = (ICpMemoryBlock)cloneItem();
 		if(cloned.hasExplicitStart()) {
 			cloned.removeAttribute(CmsisConstants.FIXED);
 		}
-		return cloned; 
+		return cloned;
 	}
 
 	@Override
 	public ICpMemoryBlock copyBlockTo(ICpItem parent) {
-		ICpMemoryBlock block = clone();
+		ICpMemoryBlock block = cloneBlock();
 		block.setParent(parent);
 		if(parent != null) {
 			parent.addChild(block);
@@ -162,7 +189,7 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 			newb.setAttribute(CmsisConstants.PARENT, parentRegionName);
 		}
 	}
-	
+
 	@Override
 	public ICpMemoryBlock getSubBlock(String name) {
 		Collection<ICpMemoryBlock> blocks = getSubBlocks();
@@ -174,7 +201,7 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 				return b;
 		}
 		return null;
-	}	
+	}
 
 
 	@Override
@@ -184,7 +211,7 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 
 	@Override
 	public long getStartAddress(boolean bPhysical) {
-		//return physical start		
+		//return physical start
 		long effectiveStart = 0L;
 		if (bPhysical && hasAttribute(CmsisConstants.PHYSICAL)) {
 			effectiveStart = attributes().getAttributeAsLong(CmsisConstants.PHYSICAL, 0L);
@@ -199,17 +226,17 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		long offset = getOffset();
 		if(offset < 0)
 			return -1L;
-		
+
 		effectiveStart += offset;
 		return effectiveStart ;
 	}
-	
-	
+
+
 	@Override
 	public long getAddress() {
 		return getStartAddress(true); // return physical
 	}
-	
+
 	@Override
 	public long getStart() {
 		if(fStart == null) {
@@ -245,30 +272,24 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		}
 		return fOffset;
 	}
-	
+
 
 	@Override
 	public void setOffset(Long offset) {
 		if( offset < 0) {
 			fOffset = 0L;
-		} else { 
+		} else {
 			fOffset = offset;
 		}
 		fStart = null; //reset cache
 		attributes().setAttributeHex(CmsisConstants.OFFSET, fOffset);
 	}
-	
-	
-	@Override
-	public IMemoryPermissions getParentPermissions() {
-		return getParentBlock();
-	}
 
-	
+
 	@Override
 	public Long getFreeSize() {
 		if(isPeripheralAccess())
-			return 0L; // peripherals are fully allocated 
+			return 0L; // peripherals are fully allocated
 		return getFreeSize(this);
 	}
 
@@ -277,7 +298,7 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		if(permissions == null)
 			permissions = this;
 		if(permissions.isPeripheralAccess())
-			return 0L; // peripherals are fully allocated 
+			return 0L; // peripherals are fully allocated
 		Long regionSize = getSize();
 		// ensure it is a multiple of 32 byte
 		regionSize -= regionSize%32;
@@ -289,9 +310,9 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		}
 		return regionSize;
 	}
-	
-	
-	
+
+
+
 	@Override
 	public boolean isVisibleToProcessor(String pname) {
 		if(!hasAttribute(CmsisConstants.PNAME))
@@ -301,7 +322,7 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 
 		return pname.equals(getAttribute(CmsisConstants.PNAME));
 	}
-	
+
 	@Override
 	public Map<String, ICpZoneAssignment> getAssignments() {
 		if(fAssignments == null) {
@@ -309,12 +330,12 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		}
 		return fAssignments;
 	}
-	
+
 	@Override
 	public ICpZoneAssignment getAssignment(String zoneName) {
 		return getAssignments().get(zoneName);
 	}
-	
+
 	@Override
 	public int getAssignmentCount() {
 		return getAssignments().size();
@@ -323,23 +344,23 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 	@Override
 	public boolean isShared() {
 		if(getAttributeAsBoolean(CmsisConstants.SHARED, false))
-			return true; // inherited from parent zone 
+			return true; // inherited from parent zone
 		return getAssignmentCount() > 1;
 	}
-	
+
 	@Override
 	public boolean isAssigned() {
 		return !getAssignments().isEmpty();
 	}
 
-	
+
 	@Override
 	public boolean isAssigned(String zoneName) {
 		return getAssignments().containsKey(zoneName);
 	}
 
 
-	
+
 	@Override
 	public boolean isAssigned(ICpProcessorUnit processor) {
 		if(processor == null)
@@ -356,7 +377,7 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		}
 		return false;
 	}
-	
+
 	@Override
 	public boolean isAssigned(EMemorySecurity security) {
 		if(security == null)
@@ -369,9 +390,9 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 				return true;
 			}
 		}
-		return false;	
+		return false;
 	}
-	
+
 
 	@Override
 	public boolean isAssigned(EMemoryPrivilege privilege) {
@@ -385,9 +406,9 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 				return true;
 			}
 		}
-		return false;	
+		return false;
 	}
-	
+
 	@Override
 	public String getAssignedSecurity() {
 		String s = getSecurityString();
@@ -404,13 +425,15 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		return s;
 	}
 
-	
+
 	protected void collectAssignments() {
 		fAssignments = new TreeMap<>(new AlnumComparator(false));
 		ICpRootZone system = getRootZone();
+		if(system == null)
+			return;
 		ICpZoneContainer zoneContainer = system.getZoneContainer();
 		if(zoneContainer == null || !zoneContainer.hasChildren())
-			return; 
+			return;
 		String blockId = getId();
 		for(ICpItem item : zoneContainer.getChildren()) {
 			if(!(item instanceof ICpZone))
@@ -447,7 +470,7 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 			return;
 		fAssignments.remove(zoneName);
 	}
-	
+
 	@Override
 	public String getType() {
 		return getAttribute(CmsisConstants.TYPE);
@@ -462,14 +485,14 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 			zoneItem.getParent().invalidate();
 		}
 		// if this block has child blocks remove their assignments too
-		Collection<ICpMemoryBlock> childBlocks = getSubBlocks(); 
+		Collection<ICpMemoryBlock> childBlocks = getSubBlocks();
 		if(childBlocks == null || childBlocks.isEmpty())
 			return;
 		for(ICpMemoryBlock block : childBlocks) {
 			block.removeAssignments();
 		}
 	}
-	
+
 	@Override
 	public void renameAssignments() {
 		Map<String, ICpZoneAssignment> assignments = getAssignments();
@@ -490,8 +513,8 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		return bChanged;
 	}
 
-	
-	
+
+
 	@Override
 	public boolean isAttributeModifiable(String key) {
 		if(key == null || key.isEmpty()) {
@@ -505,20 +528,20 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		case CmsisConstants.DMA:
 		case CmsisConstants.STARTUP:
 			return true;
-		
+
 		case CmsisConstants.NAME:
 		case CmsisConstants.INFO:
 		case CmsisConstants.OFFSET:
 		case CmsisConstants.SIZE:
-		case CmsisConstants.FIXED:			
-			return !isPeripheral() && getParentBlock() != null; 
-			
+		case CmsisConstants.FIXED:
+			return !isPeripheral() && getParentBlock() != null;
+
 		case CmsisConstants.PARENT:
 		case CmsisConstants.PHYSICAL:
 		case CmsisConstants.START:
-		case CmsisConstants.TYPE:			
+		case CmsisConstants.TYPE:
 		case CmsisConstants.GROUP:
-		case CmsisConstants.EXTERNAL:			
+		case CmsisConstants.EXTERNAL:
 		case CmsisConstants.PNAME:
 		case CmsisConstants.SHARED:
 		default:
@@ -535,14 +558,14 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 			return false;
 		return getParentBlock() != null;
 	}
-	
-	
+
+
 	protected void setMemory(ICpMemory memory) {
 		if(memory == null)
 			return;
 		String name = memory.getName();
 		setName(name);
-		
+
 		String start = memory.getStartString();
 		if(!start.isEmpty()){
 			setAttribute(CmsisConstants.START, start);
@@ -552,24 +575,24 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 		if(!size.isEmpty()){
 			setAttribute(CmsisConstants.SIZE, size);
 		}
-		
+
 		String access = memory.getAccessString();
 		if(!access.isEmpty()){
 			setAttribute(CmsisConstants.ACCESS, access);
 		}
-		
+
 		String info = memory.getDescription();
 		if(!info.isEmpty()) {
 			setAttribute(CmsisConstants.INFO, info);
 		}
-		
+
 		if(memory.isStartup()) {
 			setAttribute(CmsisConstants.STARTUP, true);
 		}
 		if(memory.isDefault()) {
 			setAttribute(CmsisConstants.DEFAULT, true);
 		}
-		
+
         if(memory.isNoInit()) {
             setAttribute(CmsisConstants.UNINIT, true);
         }
@@ -592,33 +615,100 @@ public class CpMemoryBlock extends CpResourceItem implements ICpMemoryBlock {
 
 	@Override
 	public ICpItem getEffectiveParent() {
-		return getParentBlock(); // will affect getEffectiveAttributes() 
+		return getParentBlock(); // will affect getEffectiveAttributes()
 	}
-	
+
 	@Override
 	public Map<String, String> getEffectiveAttributes(Map<String, String> m) {
 		m = super.getEffectiveAttributes(m);
-		// ensure start attribute 
+		// ensure start attribute
 		if(hasAttribute(CmsisConstants.OFFSET) || !hasAttribute(CmsisConstants.START)) {
-			long start = getStart();  
+			long start = getStart();
 			long address= getAddress();
 			if(address != start) {
 				m.put(CmsisConstants.PHYSICAL, IAttributes.longToHexString8(address));
 			}
 			m.put(CmsisConstants.START, IAttributes.longToHexString8(start));
 			m.remove(CmsisConstants.OFFSET); // not used since START is set
-		} 
+		}
 		if(isShared()) {
 			m.put(CmsisConstants.SHARED, CmsisConstants.ONE);
 		}
 		return m;
-	}	
+	}
+
+	@Override
+	public boolean isPeripheral() {
+		return false;
+	}
+
+	@Override
+	public boolean isPeripheralAccess() {
+		return false;
+	}
+
+
+	@Override
+	public IMemoryPermissions getParentPermissions() {
+		ICpMemoryBlock parent = getParentBlock();
+		if(parent != null)
+			return parent;
+		if(fOriginalAttributesAndPermissions == null) {
+			getOriginalAttributes(); // ensure we create the stored ones
+		}
+		return fOriginalAttributesAndPermissions;
+	}
+
+
+	@Override
+	public IAttributes getOriginalAttributes() {
+		if(fOriginalAttributesAndPermissions == null) {
+			fOriginalAttributesAndPermissions = new MemoryPermissions(this); // make a copy
+			fOriginalAttributesAndPermissions.updateAttributes(this);
+		}
+		return fOriginalAttributesAndPermissions.attributes();
+	}
+
+
+
+
+	@Override
+	public boolean updatePermissions(IMemoryPermissions other) {
+		if(!ICpMemoryBlock.super.updatePermissions(other))
+			return false;
+		Collection<ICpMemoryBlock> subBlocks = getSubBlocks();
+		if(subBlocks != null) {
+			for( ICpMemoryBlock block : getSubBlocks()) {
+				block.adjustPermissions(this);
+			}
+		}
+		return true;
+	}
+
+	@Override
+	public void arrangeBlocks() {
+		PhysicalMemoryRegion pr = getPhysicalRegion();
+		if(pr != null)
+			pr.arrangeBlocks();
+	}
+
 
 	@Override
 	public PhysicalMemoryRegion getPhysicalRegion() {
-		ICpMemoryRegion r = getRegion();
-		if(r != null && r != this) 
-			return r.getPhysicalRegion();
-		return null;
+		ICpMemoryBlock parent = getParentBlock();
+		if(parent != null) {
+			return parent.getPhysicalRegion();
+		}
+
+		if(fPhysicalRegion == null) {
+			ICpRootZone rootZone = getRootZone();
+			if(rootZone == null)
+				return null;
+			fPhysicalRegion = rootZone.getResources().getPhysicalRegion(getAddress());
+		}
+		return fPhysicalRegion;
 	}
+
+
+
 }

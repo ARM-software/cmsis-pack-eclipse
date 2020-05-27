@@ -90,15 +90,15 @@ public class CpRepositoryList {
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
 		for (int i = 0; i < repoList.size(); i++) {
 			ICpRepository repo = repoList.get(i);
-			String key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
+			String key = CpPreferenceInitializer.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
 			preferences.put(key, repo.toString());
 		}
 		int i = repoList.size();
-		String key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
+		String key = CpPreferenceInitializer.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
 		while (!preferences.get(key, CmsisConstants.EMPTY_STRING).isEmpty()) {
 			preferences.remove(key);
 			i++;
-			key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
+			key = CpPreferenceInitializer.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
 		}
 	}
 

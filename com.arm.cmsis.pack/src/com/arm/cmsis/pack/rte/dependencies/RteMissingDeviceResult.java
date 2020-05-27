@@ -41,7 +41,7 @@ public class RteMissingDeviceResult extends RteDependencyResult {
 			state = CpStrings.IsMissing;
 			break;
 		case UNAVAILABLE_PACK:
-			state = CpStrings.IsNotAvailableFoCurrentConfiguration;
+			state = CpStrings.IsNotAvailableForCurrentConfiguration;
 			break;
 		default:
 			return super.getDescription();

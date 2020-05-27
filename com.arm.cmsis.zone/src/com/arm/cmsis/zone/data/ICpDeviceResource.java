@@ -17,10 +17,10 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.enums.ECoreArchitecture;
 
 /**
- *  An interface describing system device resource 
+ *  An interface describing system device resource
  */
 public interface ICpDeviceResource extends ICpZoneItem {
-	
+
 	/**
 	 * Return map of processor resources
 	 * @return map of processors sorted by name
@@ -28,11 +28,11 @@ public interface ICpDeviceResource extends ICpZoneItem {
 	Map<String, ICpProcessorUnit> getProcessorUnits();
 
 	/**
-	 * Returns number of processor descriptions in the device 
-	 * @return number of ICpProcessorUnit 
+	 * Returns number of processor descriptions in the device
+	 * @return number of ICpProcessorUnit
 	 */
 	int getProcessorCount();
-	
+
 	/**
 	 * Returns processor resource for given name
 	 * @param pname processor name (Pname attribute) or null to get the single processor
@@ -40,32 +40,32 @@ public interface ICpDeviceResource extends ICpZoneItem {
 	 */
 	ICpProcessorUnit getProcessorUnit(String pname);
 
-	
+
 	/**
 	 * Return system processor architecture
-	 * @return ECoreArchitecture enum value  
+	 * @return ECoreArchitecture enum value
 	 */
 	ECoreArchitecture getArchitecture();
-	
-	
+
+
 	/**
 	 * Checks if device has at least one processor with secure extension (Dtz="TZ")
-	 * @return true if system has a secure processor 
+	 * @return true if system has a secure processor
 	 */
 	boolean hasSecureCore();
 
-	
+
 	/**
-	 * Checks if device has exactly one processor and that processor has MPU 
-	 * @return true if device has MPU  
+	 * Checks if device has exactly one processor and that processor has MPU
+	 * @return true if device has MPU
 	 */
 	default boolean hasMPU() {
 		ICpProcessorUnit processor = getProcessorUnit(null); // returns single processor
 		if(processor == null)
 			return false;
-		String dmpuValue = processor.getAttribute(CmsisConstants.DMPU);		
+		String dmpuValue = processor.getAttribute(CmsisConstants.DMPU);
 		return (dmpuValue.equals(CmsisConstants.MPU) || dmpuValue.equals(CmsisConstants.ONE));
-	};
+	}
 
-	
+
 }

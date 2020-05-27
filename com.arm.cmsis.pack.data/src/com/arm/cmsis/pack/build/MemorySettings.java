@@ -23,7 +23,7 @@ import com.arm.cmsis.pack.data.ICpMemory;
  */
 public class MemorySettings implements IMemorySettings {
 
-	protected Map<String, ICpMemory> fRegions = null;;
+	protected Map<String, ICpMemory> fRegions = null;
 	protected String fStartupId = CmsisConstants.EMPTY_STRING;
 
 	public MemorySettings() {

@@ -12,8 +12,8 @@
 package com.arm.cmsis.pack.generic;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
-import java.util.stream.Collectors;
 
 
 /**
@@ -109,11 +109,15 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 */
 	default <C> Collection<C> getChildrenOfType(Class<C> type) {
 		if(!hasChildren())
-			return new LinkedList<C>();
-		return getChildren().stream()
-			.filter(c -> type.isInstance(c))
-			.map(c -> type.cast(c))
-			.collect(Collectors.toList());
+			return Collections.emptyList();
+		
+		LinkedList<C> typedChildren = new LinkedList<>();
+		for( T child : getChildren()) {
+			if(type.isInstance(child)) {
+				typedChildren.add(type.cast(child));
+			}
+		}
+		return typedChildren;
 	}
 	
 	/**

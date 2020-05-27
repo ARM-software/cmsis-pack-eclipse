@@ -152,7 +152,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		return ids;
 	}
 	
-	static protected void collectComponentKeys(Set<String> ids, Collection<? extends ICpItem> children) {
+	protected static void collectComponentKeys(Set<String> ids, Collection<? extends ICpItem> children) {
 		if(children == null || children.isEmpty()) {
 			return;
 		}

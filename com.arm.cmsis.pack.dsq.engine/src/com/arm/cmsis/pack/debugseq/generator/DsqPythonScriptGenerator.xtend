@@ -77,7 +77,7 @@ class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqScriptGe
 	
 	var generateFile = false
 	static val predefinedVars =
-		'''(«IDsqContext::PROTOCOL», «IDsqContext::CONNECTION», «IDsqContext::DP», «IDsqContext::AP», «IDsqContext::TRACEOUT», «IDsqContext::ERRORCONTROL»)'''
+		'''(Â«IDsqContext::PROTOCOLÂ», Â«IDsqContext::CONNECTIONÂ», Â«IDsqContext::DPÂ», Â«IDsqContext::APÂ», Â«IDsqContext::TRACEOUTÂ», Â«IDsqContext::ERRORCONTROLÂ»)'''
 
 	override getDescription() {
 		return "Generates Python script to run on Debug Server"
@@ -104,133 +104,133 @@ class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqScriptGe
 	
 	override generate(DebugSeqModel dsqModel, String header) {
 		'''
-		«header»
+		Â«headerÂ»
 		
-		«FOR sequence : dsqModel.sequences.sequences»
-			«sequence.generate»
+		Â«FOR sequence : dsqModel.sequences.sequencesÂ»
+			Â«sequence.generateÂ»
 			
-		«ENDFOR»
+		Â«ENDFORÂ»
 		'''
 	}
 	
 	def dispatch String generate(Sequence seq) {
 		'''
-		def «seq.name»«predefinedVars»:
-		    «seq.containingDebugSeqModel.debugvars.generate»
-		    «FOR codeblock : seq.codeblocks»
-		    	«codeblock.generate»
-		    «ENDFOR»
+		def Â«seq.nameÂ»Â«predefinedVarsÂ»:
+		    Â«seq.containingDebugSeqModel.debugvars.generateÂ»
+		    Â«FOR codeblock : seq.codeblocksÂ»
+		    	Â«codeblock.generateÂ»
+		    Â«ENDFORÂ»
 		'''
 	}
 	
 	def dispatch String generate(DebugVars gv) { // global variables
 		'''
-		«FOR vardecl : gv.statements.filter(typeof(VariableDeclaration)).filter[!name.isPredefinedVariable]»
-			«vardecl.generate»
-		«ENDFOR»
-		«FOR expr : gv.statements.filter(typeof(Expression))»
-			«expr.generate»
-		«ENDFOR»
+		Â«FOR vardecl : gv.statements.filter(typeof(VariableDeclaration)).filter[!name.isPredefinedVariable]Â»
+			Â«vardecl.generateÂ»
+		Â«ENDFORÂ»
+		Â«FOR expr : gv.statements.filter(typeof(Expression))Â»
+			Â«expr.generateÂ»
+		Â«ENDFORÂ»
 		'''
 	}
 	
 	def dispatch String generate(Block block) {
 		'''
-		«IF block.statements.size === 0»
+		Â«IF block.statements.size === 0Â»
 			pass
-		«ENDIF»
-		«FOR stmt : block.statements»
-			«stmt.generate»
-		«ENDFOR»
+		Â«ENDIFÂ»
+		Â«FOR stmt : block.statementsÂ»
+			Â«stmt.generateÂ»
+		Â«ENDFORÂ»
 		'''
 	}
 	
 	def dispatch String generate(Control control) {
 		'''
-		«IF control.^if !== null»
-		if «control.^if.generate»:
-		    «IF control.^while !== null»
-		    	«control.generateControlWhile»
-		    «ELSE»
-		    «IF control.codeblocks.size === 0»
+		Â«IF control.^if !== nullÂ»
+		if Â«control.^if.generateÂ»:
+		    Â«IF control.^while !== nullÂ»
+		    	Â«control.generateControlWhileÂ»
+		    Â«ELSEÂ»
+		    Â«IF control.codeblocks.size === 0Â»
 		        pass
-		    «ENDIF»
-		    «FOR codeblock : control.codeblocks»
-		    	«codeblock.generate»
-		    «ENDFOR»
-		    «ENDIF»
-		«ELSEIF control.^while !== null»
-			«control.generateControlWhile»
-		«ELSE»
-		«FOR codeblock: control.codeblocks»
-			«codeblock.generate»
-		«ENDFOR»
-		«ENDIF»
+		    Â«ENDIFÂ»
+		    Â«FOR codeblock : control.codeblocksÂ»
+		    	Â«codeblock.generateÂ»
+		    Â«ENDFORÂ»
+		    Â«ENDIFÂ»
+		Â«ELSEIF control.^while !== nullÂ»
+			Â«control.generateControlWhileÂ»
+		Â«ELSEÂ»
+		Â«FOR codeblock: control.codeblocksÂ»
+			Â«codeblock.generateÂ»
+		Â«ENDFORÂ»
+		Â«ENDIFÂ»
 		'''
 	}
 	
 	def private String generateControlWhile(Control control) {
 		'''
-		«IF control.timeout !== 0»
+		Â«IF control.timeout !== 0Â»
 			t = Timer()
-		«ENDIF»
-		while («control.^while.generate»)«IF control.timeout !== 0» and t.getTime() < «control.timeout»«ENDIF»:
-		    «FOR codeblock: control.codeblocks»
-				«codeblock.generate»
-		    «ENDFOR»
+		Â«ENDIFÂ»
+		while (Â«control.^while.generateÂ»)Â«IF control.timeout !== 0Â» and t.getTime() < Â«control.timeoutÂ»Â«ENDIFÂ»:
+		    Â«FOR codeblock: control.codeblocksÂ»
+				Â«codeblock.generateÂ»
+		    Â«ENDFORÂ»
 		    continue
 		'''
 	}
 	
 	def dispatch String generate(VariableDeclaration vd) {
-		'''«vd.name» = «vd.value.generate»'''
+		'''Â«vd.nameÂ» = Â«vd.value.generateÂ»'''
 	}
 	
 	def dispatch String generate(Expression e) {
 		switch (e) {
-			IntConstant: '''«e.value»'''
-			StringConstant: '''"«e.value»"'''
-			VariableRef: '''«e.variable.name»'''
-			Not: '''not («e.expression.generate»)'''
-			Assignment: '''«(e.left as VariableRef).variable.name» «e.op» «e.right.generate»'''
-			Ternary: '''«e.exp1.generate» if («e.left.generate») != 0 else «e.exp2.generate»'''
-			Or: '''(«e.left.generate») != 0 or («e.right.generate») != 0'''
-			And: '''(«e.left.generate») != 0 and («e.right.generate») != 0'''
-			BitOr: '''(«e.left.generate») | («e.right.generate»)'''
-			BitXor: '''(«e.left.generate») ^ («e.right.generate»)'''
-			BitAnd: '''(«e.left.generate») & («e.right.generate»)'''
-			BitNot: '''~(«e.expression.generate»)'''
-			Equality: '''(«e.left.generate») «e.op» («e.right.generate»)'''
-			Comparison: '''(«e.left.generate») «IF e.op == "&lt;"» < «ELSEIF e.op == "&gt;"» > «ELSEIF e.op == "&lt;="» <= «ELSE» >= «ENDIF» («e.right.generate»)'''
-			Shift: '''(«e.left.generate») «IF e.op == "&lt;&lt;"» << «ELSE» >> «ENDIF» («e.right.generate»)'''
-			Plus: '''(«e.left.generate») + («e.right.generate»)'''
-			Minus: '''(«e.left.generate») - («e.right.generate»)'''
-			Mul: '''(«e.left.generate») * («e.right.generate»)'''
-			Div: '''(«e.left.generate») / («e.right.generate»)'''
-			Rem: '''(«e.left.generate») % («e.right.generate»)'''
-			SequenceCall: '''«e.seqname»«predefinedVars»'''
-			Query: '''DS.Query(«e.type.generate», "«e.message»", «e.^default.generate»)'''
-			QueryValue: '''DS.Query(«IDsqClient::QUERY_VALUE_TYPE», "«e.message»", «e.^default.generate»)'''
-			LoadDebugInfo: '''LoadDebugInfo("«e.path»")'''
-			Message: '''Message("«e.format»"«FOR p : e.parameters», «p.generate»«ENDFOR»)'''
-			Read8: '''Read8(«e.addr.generate»)'''
-			Read16: '''Read16(«e.addr.generate»)'''
-			Read32: '''Read32(«e.addr.generate»)'''
-			Read64: '''Read64(«e.addr.generate»)'''
-			ReadAP: '''ReadAP(«e.addr.generate»)'''
-			ReadDP: '''ReadDP(«e.addr.generate»)'''
-			Write8: '''Write8(«e.addr.generate», «e.^val.generate»)'''
-			Write16: '''Write16(«e.addr.generate», «e.^val.generate»)'''
-			Write32: '''Write32(«e.addr.generate», «e.^val.generate»)'''
-			Write64: '''Write64(«e.addr.generate», «e.^val.generate»)'''
-			WriteAP: '''WriteAP(«e.addr.generate», «e.^val.generate»)'''
-			WriteDP: '''WriteDP(«e.addr.generate», «e.^val.generate»)'''
-			DapDelay: '''DAP_Delay(«e.delay.generate»)'''
-			DapWriteABORT: '''DAP_WriteABORT(«e.value.generate»)'''
-			DapSwjPins: '''DAP_SWJ_Pins(«e.pinout.generate», «e.pinselect.generate», «e.pinwait.generate»)'''
-			DapSwjClock: '''DAP_SWJ_Clock(«e.value.generate»)'''
-			DapSwjSequence: '''DAP_SWJ_Sequence(«e.cnt.generate», «e.^val.generate»)'''
-			DapJtagSequence: '''DAP_JTAG_Sequence(«e.cnt.generate», «e.tms.generate», «e.tdi.generate»)'''
+			IntConstant: '''Â«e.valueÂ»'''
+			StringConstant: '''"Â«e.valueÂ»"'''
+			VariableRef: '''Â«e.variable.nameÂ»'''
+			Not: '''not (Â«e.expression.generateÂ»)'''
+			Assignment: '''Â«(e.left as VariableRef).variable.nameÂ» Â«e.opÂ» Â«e.right.generateÂ»'''
+			Ternary: '''Â«e.exp1.generateÂ» if (Â«e.left.generateÂ») != 0 else Â«e.exp2.generateÂ»'''
+			Or: '''(Â«e.left.generateÂ») != 0 or (Â«e.right.generateÂ») != 0'''
+			And: '''(Â«e.left.generateÂ») != 0 and (Â«e.right.generateÂ») != 0'''
+			BitOr: '''(Â«e.left.generateÂ») | (Â«e.right.generateÂ»)'''
+			BitXor: '''(Â«e.left.generateÂ») ^ (Â«e.right.generateÂ»)'''
+			BitAnd: '''(Â«e.left.generateÂ») & (Â«e.right.generateÂ»)'''
+			BitNot: '''~(Â«e.expression.generateÂ»)'''
+			Equality: '''(Â«e.left.generateÂ») Â«e.opÂ» (Â«e.right.generateÂ»)'''
+			Comparison: '''(Â«e.left.generateÂ») Â«IF e.op == "&lt;"Â» < Â«ELSEIF e.op == "&gt;"Â» > Â«ELSEIF e.op == "&lt;="Â» <= Â«ELSEÂ» >= Â«ENDIFÂ» (Â«e.right.generateÂ»)'''
+			Shift: '''(Â«e.left.generateÂ») Â«IF e.op == "&lt;&lt;"Â» << Â«ELSEÂ» >> Â«ENDIFÂ» (Â«e.right.generateÂ»)'''
+			Plus: '''(Â«e.left.generateÂ») + (Â«e.right.generateÂ»)'''
+			Minus: '''(Â«e.left.generateÂ») - (Â«e.right.generateÂ»)'''
+			Mul: '''(Â«e.left.generateÂ») * (Â«e.right.generateÂ»)'''
+			Div: '''(Â«e.left.generateÂ») / (Â«e.right.generateÂ»)'''
+			Rem: '''(Â«e.left.generateÂ») % (Â«e.right.generateÂ»)'''
+			SequenceCall: '''Â«e.seqnameÂ»Â«predefinedVarsÂ»'''
+			Query: '''DS.Query(Â«e.type.generateÂ», "Â«e.messageÂ»", Â«e.^default.generateÂ»)'''
+			QueryValue: '''DS.Query(Â«IDsqClient::QUERY_VALUE_TYPEÂ», "Â«e.messageÂ»", Â«e.^default.generateÂ»)'''
+			LoadDebugInfo: '''LoadDebugInfo("Â«e.pathÂ»")'''
+			Message: '''Message("Â«e.formatÂ»"Â«FOR p : e.parametersÂ», Â«p.generateÂ»Â«ENDFORÂ»)'''
+			Read8: '''Read8(Â«e.addr.generateÂ»)'''
+			Read16: '''Read16(Â«e.addr.generateÂ»)'''
+			Read32: '''Read32(Â«e.addr.generateÂ»)'''
+			Read64: '''Read64(Â«e.addr.generateÂ»)'''
+			ReadAP: '''ReadAP(Â«e.addr.generateÂ»)'''
+			ReadDP: '''ReadDP(Â«e.addr.generateÂ»)'''
+			Write8: '''Write8(Â«e.addr.generateÂ», Â«e.^val.generateÂ»)'''
+			Write16: '''Write16(Â«e.addr.generateÂ», Â«e.^val.generateÂ»)'''
+			Write32: '''Write32(Â«e.addr.generateÂ», Â«e.^val.generateÂ»)'''
+			Write64: '''Write64(Â«e.addr.generateÂ», Â«e.^val.generateÂ»)'''
+			WriteAP: '''WriteAP(Â«e.addr.generateÂ», Â«e.^val.generateÂ»)'''
+			WriteDP: '''WriteDP(Â«e.addr.generateÂ», Â«e.^val.generateÂ»)'''
+			DapDelay: '''DAP_Delay(Â«e.delay.generateÂ»)'''
+			DapWriteABORT: '''DAP_WriteABORT(Â«e.value.generateÂ»)'''
+			DapSwjPins: '''DAP_SWJ_Pins(Â«e.pinout.generateÂ», Â«e.pinselect.generateÂ», Â«e.pinwait.generateÂ»)'''
+			DapSwjClock: '''DAP_SWJ_Clock(Â«e.value.generateÂ»)'''
+			DapSwjSequence: '''DAP_SWJ_Sequence(Â«e.cnt.generateÂ», Â«e.^val.generateÂ»)'''
+			DapJtagSequence: '''DAP_JTAG_Sequence(Â«e.cnt.generateÂ», Â«e.tms.generateÂ», Â«e.tdi.generateÂ»)'''
 		}
 	}
 	

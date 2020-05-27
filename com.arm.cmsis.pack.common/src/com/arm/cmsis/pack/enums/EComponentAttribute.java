@@ -81,6 +81,12 @@ public enum EComponentAttribute{
 			return DeviceVendor.match(pattern,  attributeValue);
 		case CNONE:
 			return true;
+		case CBUNDLE:
+		case CCLASS:
+		case CCONDITION:
+		case CGROUP:
+		case CSUB:
+		case CVARIANT:
 		default:
 			break;
 		}

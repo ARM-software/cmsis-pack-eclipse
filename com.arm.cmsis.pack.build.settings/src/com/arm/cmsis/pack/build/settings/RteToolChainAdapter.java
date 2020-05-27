@@ -392,12 +392,20 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	 */
 	protected boolean canSetOption(int oType, IBuildObject configuration, IHoldsOptions tool, IOption option,	IBuildSettings buildSettings) throws BuildException {
 		switch(oType) {
-		case IBuildSettings.RTE_LINKER_SCRIPT: 	// set the option only on initial update or if the option is empty 
-			if(!bInitialUpdate) {
+		case IBuildSettings.RTE_LINKER_SCRIPT:
+			if(option.getBasicValueType() == IOption.STRING) {   
+				// set the option only if the option is empty or default 
 				String val = getCurrentStringValue(option);
-				if(val != null && !val.isEmpty())
+				if(val != null && !val.isEmpty() && !val.startsWith(CmsisConstants.PROJECT_LOCAL_PATH_CMSIS_RTE)) {
 					return false; // do not override user value
+				}
+				String value = getRteOptionValue(oType, buildSettings, option);
+				if(value == null || value.isEmpty()) {
+					return false; // cannot set empty linker script
+				}
 			}
+			// scatter file can only be set on project (configuration) level 
+			return (configuration instanceof IConfiguration);
 		case IBuildSettings.RTE_DEFINES:
 		case IBuildSettings.RTE_INCLUDE_PATH:
 		case IBuildSettings.RTE_ASMMISC:
@@ -458,7 +466,7 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	 * @return string list or null if there is no value for this option
 	 * @throws BuildException
 	 */
-	static public List<String> getCurrentStringListValue(IOption option) throws BuildException {
+	public static List<String> getCurrentStringListValue(IOption option) throws BuildException {
 	       
 		int basicType = option.getBasicValueType();
 		if(basicType != IOption.STRING_LIST)
@@ -522,7 +530,7 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	 * @param truncateFrom
 	 * @return updated list
 	 */
-	static public List<String> truncateStringList(List<String> strings, String truncateFrom) {
+	public static List<String> truncateStringList(List<String> strings, String truncateFrom) {
 		if(strings == null) {
 			return null;
 		}
@@ -538,7 +546,7 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
 	 * @param paths list of paths/files to process
 	 * @return updated list
 	 */
-	static public List<String> removeRtePathEntries(List<String> paths) {
+	public static List<String> removeRtePathEntries(List<String> paths) {
 		for (Iterator<String> iterator = paths.iterator(); iterator.hasNext();) {
 			String s = iterator.next();
 			if(s.startsWith(CmsisConstants.PROJECT_RTE_PATH, 1) ||

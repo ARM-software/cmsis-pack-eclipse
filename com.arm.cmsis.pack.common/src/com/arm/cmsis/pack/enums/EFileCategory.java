@@ -103,6 +103,19 @@ public enum EFileCategory {
 		case SOURCE_C:
 		case SOURCE_CPP:
 			return true;
+		case DOC:
+		case HEADER:
+		case IMAGE:
+		case INCLUDE:
+		case LIBRARY:
+		case LINKER_SCRIPT:
+		case OBJECT:
+		case OTHER:
+		case PRE_INCLUDE_GLOBAL:
+		case PRE_INCLUDE_LOCAL:
+		case SRC:
+		case SVD:
+		case UTILITY:
 		default:
 			break;
 			

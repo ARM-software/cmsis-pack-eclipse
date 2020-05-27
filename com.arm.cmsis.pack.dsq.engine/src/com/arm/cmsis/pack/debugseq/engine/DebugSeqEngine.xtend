@@ -218,13 +218,13 @@ class DebugSeqEngine implements IDsqEngine {
 		val initialBody = if (dv === null) '' else dv.text
 		val sb = new StringBuilder( '<debugvars' + attributes + '>' + '\n')
 		sb.append('''
-		    «initialBody»
-			__var «IDsqContext::AP» = 0;
-			__var «IDsqContext::DP» = 0;
-			__var «IDsqContext::PROTOCOL» = 0;
-			__var «IDsqContext::CONNECTION» = 0;
-			__var «IDsqContext::TRACEOUT» = 0;
-			__var «IDsqContext::ERRORCONTROL» = 0;
+		    Â«initialBodyÂ»
+			__var Â«IDsqContext::APÂ» = 0;
+			__var Â«IDsqContext::DPÂ» = 0;
+			__var Â«IDsqContext::PROTOCOLÂ» = 0;
+			__var Â«IDsqContext::CONNECTIONÂ» = 0;
+			__var Â«IDsqContext::TRACEOUTÂ» = 0;
+			__var Â«IDsqContext::ERRORCONTROLÂ» = 0;
 		''')
 		if (dv !== null) {
 			val dgbConfFileName = deviceInfo.dgbConfFileName; 
@@ -329,10 +329,10 @@ class DebugSeqEngine implements IDsqEngine {
 		initDebugVariables
 		val sequences = if(deviceInfo.debugConfiguration === null) null else deviceInfo.debugConfiguration.sequences
 		val modelString = '''
-			«debugVars»
+			Â«debugVarsÂ»
 			<sequences>
-			«getSequencesAsString(sequences)»
-			«addDefaultSeqs(sequences)»
+			Â«getSequencesAsString(sequences)Â»
+			Â«addDefaultSeqs(sequences)Â»
 			</sequences>
 		'''
 		

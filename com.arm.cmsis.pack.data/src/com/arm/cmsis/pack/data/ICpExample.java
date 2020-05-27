@@ -56,6 +56,6 @@ public interface ICpExample extends ICpItem {
 	 */
 	default String getProjectFolder(String environmentName) {
 		return null;
-	};
+	}
 
 }

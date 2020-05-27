@@ -30,14 +30,14 @@ import org.eclipse.jface.text.rules.Token;
  * Used as the lexer for config files
  */
 public class ConfigWizardScanner extends RuleBasedScanner {
-	public final static String CONFIG_BLOCK_COMMENT_START = "__config_block_comment_start"; //$NON-NLS-1$
-	public final static String CONFIG_BLOCK_COMMENT_END = "__config_block_comment_end"; //$NON-NLS-1$
-	public final static String CONFIG_COMMENT = "__config_comment"; //$NON-NLS-1$
-	public final static String CONFIG_TAG = "__config_tag"; //$NON-NLS-1$
-	public final static String CONFIG_MARK = "__config_mark"; //$NON-NLS-1$
-	public final static String CONFIG_NUMBER = "__config_number"; //$NON-NLS-1$
-	public final static String CONFIG_STRING = "__config_string"; //$NON-NLS-1$
-	public final static String CONFIG_DEFAULT = "__config_default"; //$NON-NLS-1$
+	public static final String CONFIG_BLOCK_COMMENT_START = "__config_block_comment_start"; //$NON-NLS-1$
+	public static final String CONFIG_BLOCK_COMMENT_END = "__config_block_comment_end"; //$NON-NLS-1$
+	public static final String CONFIG_COMMENT = "__config_comment"; //$NON-NLS-1$
+	public static final String CONFIG_TAG = "__config_tag"; //$NON-NLS-1$
+	public static final String CONFIG_MARK = "__config_mark"; //$NON-NLS-1$
+	public static final String CONFIG_NUMBER = "__config_number"; //$NON-NLS-1$
+	public static final String CONFIG_STRING = "__config_string"; //$NON-NLS-1$
+	public static final String CONFIG_DEFAULT = "__config_default"; //$NON-NLS-1$
 
 	private static final Pattern idModPattern = Pattern.compile("([_a-zA-Z][_a-zA-Z0-9]*)="); //$NON-NLS-1$
 	

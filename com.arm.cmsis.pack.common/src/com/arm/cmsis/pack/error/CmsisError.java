@@ -188,7 +188,7 @@ public class CmsisError extends Error implements ICmsisError {
 	}
 	
 
-	static public String nullToEmpty(String s) {
+	public static String nullToEmpty(String s) {
 		if(s == null)
 			return CmsisConstants.EMPTY_STRING;
 		return s;

@@ -16,14 +16,14 @@ import java.util.Collection;
 /**
  * Base interface to peripherals and peripheral groups
  */
-public interface ICpPeripheralItem extends ICpMemoryRegion {
+public interface ICpPeripheralItem extends ICpMemoryBlock {
 
 	/**
-	 * Returns collection of register setup elements associated with peripheral  
+	 * Returns collection of register setup elements associated with peripheral
 	 * @return Collection<ICpPeripheralSetup>
 	 */
 	default Collection<ICpPeripheralSetup> getPeripheralSetups() {
 		return getChildrenOfType(ICpPeripheralSetup.class);
 	}
-	
+
 }

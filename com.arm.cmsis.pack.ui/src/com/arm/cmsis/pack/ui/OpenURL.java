@@ -38,7 +38,7 @@ public class OpenURL implements IOpenURL{
 	 * @param url URL to open
 	 * @param parent parent shell to display error message, can be null 
 	 */
-	static public void open(String url, Shell shell){
+	public static void open(String url, Shell shell){
 		if (url == null || url.isEmpty()) {
 			return;
 		}
@@ -57,7 +57,7 @@ public class OpenURL implements IOpenURL{
 	 * @param url URL to open
 	 * @return null if successfully opened, otherwise reason why operation failed
 	 */
-	static public String open(String url){
+	public static String open(String url){
 		IOpenURL openURL = null;
 		ICpEnvironmentProvider provider = CpPlugIn.getEnvironmentProvider();
 		if(provider != null) {

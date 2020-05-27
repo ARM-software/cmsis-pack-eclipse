@@ -12,7 +12,7 @@
             class="com.arm.cmsis.pack.refclient.ui.PackView"
             icon="icons/packages.png"
             id="com.arm.cmsis.pack.refclient.ui.PackView"
-            name="Installed CMSIS Packs (Sample view)">
+            name="Installed CMSIS-Packs (Sample view)">
       </view>
       <view
             category="com.arm.cmsis.pack.refclient.category"

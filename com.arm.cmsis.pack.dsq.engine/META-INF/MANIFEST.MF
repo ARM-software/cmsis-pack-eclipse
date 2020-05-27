@@ -2,8 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: com.arm.cmsis.pack.dsq
 Bundle-Vendor: ARM
-Bundle-Version: 2.5.0.qualifier
+Bundle-Version: 2.6.0.qualifier
 Bundle-SymbolicName: com.arm.cmsis.pack.dsq.engine;singleton:=true
+Automatic-Module-Name: com.arm.cmsis.pack.dsq.engine
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtext.xbase,
@@ -14,22 +15,27 @@ Require-Bundle: org.eclipse.xtext,
  org.eclipse.xtend.lib,
  org.eclipse.emf.common,
  org.eclipse.core.runtime,
- org.antlr.runtime,
+ org.antlr.runtime;bundle-version="3.2.0",
  com.arm.cmsis.pack.common,
  com.arm.cmsis.pack.data,
  com.arm.cmsis.pack,
  org.apache.log4j
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.arm.cmsis.pack.debugseq,
+ com.arm.cmsis.pack.debugseq.converter,
  com.arm.cmsis.pack.debugseq.debugSeq,
  com.arm.cmsis.pack.debugseq.debugSeq.impl,
  com.arm.cmsis.pack.debugseq.debugSeq.util,
  com.arm.cmsis.pack.debugseq.engine,
+ com.arm.cmsis.pack.debugseq.factory,
  com.arm.cmsis.pack.debugseq.generator,
+ com.arm.cmsis.pack.debugseq.lexer,
  com.arm.cmsis.pack.debugseq.parser.antlr,
  com.arm.cmsis.pack.debugseq.parser.antlr.internal,
  com.arm.cmsis.pack.debugseq.scoping,
  com.arm.cmsis.pack.debugseq.serializer,
  com.arm.cmsis.pack.debugseq.services,
+ com.arm.cmsis.pack.debugseq.typing,
  com.arm.cmsis.pack.debugseq.util,
  com.arm.cmsis.pack.debugseq.validation
+Import-Package: org.apache.log4j

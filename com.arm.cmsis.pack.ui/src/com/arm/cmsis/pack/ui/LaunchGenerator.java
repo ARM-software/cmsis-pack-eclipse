@@ -54,7 +54,7 @@ public class LaunchGenerator {
 	}
 
 
-	static protected LaunchGenerator getInstance(ICpGenerator generator, ICpConfigurationInfo configInfo) {
+	protected static LaunchGenerator getInstance(ICpGenerator generator, ICpConfigurationInfo configInfo) {
 		LaunchGenerator launchGenerator = null;
 		ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
 		if (ep != null) {
@@ -73,7 +73,7 @@ public class LaunchGenerator {
 	 * @param generator {@link ICpGenerator} to launch
 	 * @param configInfo {@link ICpConfigurationInfo} to expand argument strings 
 	 */
-	static public void launch(ICpGenerator generator, ICpConfigurationInfo configInfo) {
+	public static void launch(ICpGenerator generator, ICpConfigurationInfo configInfo) {
 		launch(generator, configInfo, null);
 	}
 
@@ -83,7 +83,7 @@ public class LaunchGenerator {
 	 * @param type one of eclipse, exe or web
 	 * @param configInfo {@link ICpConfigurationInfo} to expand argument strings 
 	 */
-	static public void launch(ICpGenerator generator, ICpConfigurationInfo configInfo, String type) {
+	public static void launch(ICpGenerator generator, ICpConfigurationInfo configInfo, String type) {
 		LaunchGenerator launchGenerator = getInstance(generator, configInfo);
 		launchGenerator.launch(type);
 	}

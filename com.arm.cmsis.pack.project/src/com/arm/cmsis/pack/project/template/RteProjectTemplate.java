@@ -33,7 +33,7 @@ public class RteProjectTemplate implements IPagesAfterTemplateSelectionProvider 
 
 	protected List<IWizardDataPage> fPages = null;
 
-	static protected ICpDeviceInfo selectedDeviceInfo = null;
+	protected static ICpDeviceInfo selectedDeviceInfo = null;
 
 	@Override
 	public IWizardDataPage[] createAdditionalPages(IWorkbenchWizard wizard, IWorkbench workbench,

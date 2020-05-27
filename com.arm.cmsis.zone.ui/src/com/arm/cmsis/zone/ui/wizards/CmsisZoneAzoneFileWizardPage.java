@@ -47,7 +47,7 @@ public class CmsisZoneAzoneFileWizardPage extends WizardPage {
 	private Text rZoneFileText;
 	private Text aZoneFileText;
 	private ISelection selection;
-	final static private String[] rzoneFileExtensions = new String[] {"*" + CmsisConstants.DOT_RZONE}; //$NON-NLS-1$
+	private static final String[] rzoneFileExtensions = new String[] {"*" + CmsisConstants.DOT_RZONE}; //$NON-NLS-1$
 	private String azoneFile;
 	private String rzoneFile;
 	private Label lblresourceFilePath;

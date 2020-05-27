@@ -18,7 +18,7 @@ import java.util.List;
  */
 public interface IDsqClient extends IDsqApiVersion {
 
-	final static long QUERY_VALUE_TYPE = 0x10000; // used as the starting value for QueryValue's type
+	static final long QUERY_VALUE_TYPE = 0x10000; // used as the starting value for QueryValue's type
 
 	/**
 	 * Execute an atomic block with a list of commands.

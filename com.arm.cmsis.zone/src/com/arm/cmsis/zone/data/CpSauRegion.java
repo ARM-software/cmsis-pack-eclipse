@@ -23,11 +23,11 @@ import com.arm.cmsis.pack.generic.IAttributes;
  */
 public class CpSauRegion extends CpZoneItem implements ICpSauRegion {
 
-	
+
 	public CpSauRegion(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
-	
+
 
 	public CpSauRegion(ICpMemory memory) {
 		super(null, CmsisConstants.SAU);
@@ -36,7 +36,7 @@ public class CpSauRegion extends CpZoneItem implements ICpSauRegion {
 
 	@Override
 	public boolean appendSauRegion(ICpSauRegion region) {
-		if(region == null) 
+		if(region == null)
 			return false;
 		if(!hasAttribute(CmsisConstants.NSC)) {
 			setMemory(region);
@@ -47,7 +47,7 @@ public class CpSauRegion extends CpZoneItem implements ICpSauRegion {
 		long start = region.getStart();
 		if(start < 0)
 			return false;
-		
+
 		long thisStop = getStop();
 		if(thisStop + 1 != start)
 			return false;
@@ -66,7 +66,7 @@ public class CpSauRegion extends CpZoneItem implements ICpSauRegion {
 
 
 	private void setMemory(ICpMemory memory) {
-		if(memory == null) 
+		if(memory == null)
 			return;
 		attributes().setAttributeHex(CmsisConstants.START, memory.getStart());
 		attributes().setAttributeHex(CmsisConstants.SIZE, memory.getSize());
@@ -92,12 +92,11 @@ public class CpSauRegion extends CpZoneItem implements ICpSauRegion {
 		IAttributes ftlAttributes = super.getAttributesForFtlModel();
 		// in fzone file we use "start" and "end", not "start" and "size"
 		Long stop = getStop();
-		stop &= ~0x1FL; //32 bytes alignment as required by SAU
 		ftlAttributes.setAttributeHex(CmsisConstants.END, stop);
 		ftlAttributes.removeAttribute(CmsisConstants.SIZE);
 		return ftlAttributes;
 	}
-	
-	
+
+
 }
 

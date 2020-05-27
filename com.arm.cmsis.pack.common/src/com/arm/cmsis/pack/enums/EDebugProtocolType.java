@@ -45,6 +45,7 @@ public enum EDebugProtocolType {
 			return CmsisConstants.JTAG;
 		case CJTAG:
 			return CmsisConstants.CJTAG;
+		case SWD:
 		default:
 			return CmsisConstants.SWD;
 		}

@@ -80,12 +80,12 @@ public interface ICmsisItem extends ITreeObject, ICmsisErrorCollection {
 	/**
 	 * Clears all cashed information if any 
 	 */
-	default void invalidate() { /*default does nothing */ };
+	default void invalidate() { /*default does nothing */ }
 	
 	/**
 	 * Clears all cashed information recursively for all children and grand Children 
 	 */
-	default void invalidateAll() { invalidate(); /*default calls invalidate */ };
+	default void invalidateAll() { invalidate(); /*default calls invalidate */ }
 
 	
 	/**

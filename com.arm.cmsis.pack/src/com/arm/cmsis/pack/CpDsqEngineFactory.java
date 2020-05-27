@@ -61,7 +61,7 @@ public class CpDsqEngineFactory extends CpAbstractExtensionFactory<IDsqEngineFac
 		return null;
 	}
 
-	static public IDsqEngine create(ICpDeviceInfo di, IDsqClient ta, IDsqLogger log) {
+	public static IDsqEngine create(ICpDeviceInfo di, IDsqClient ta, IDsqLogger log) {
 		IDsqEngineFactory factory = getInstance().getExtender();
 		if(factory == null) {
 			return null;

@@ -26,10 +26,10 @@ public enum EMemorySecurity{
 	COMBINED;
 	
 	
-	static public final String s = "s"; //$NON-NLS-1$
-	static public final String c = "c"; //$NON-NLS-1$
-	static public final String n = "n"; //$NON-NLS-1$
-	static public final String sn = "sn"; //$NON-NLS-1$
+	public static final String s = "s"; //$NON-NLS-1$
+	public static final String c = "c"; //$NON-NLS-1$
+	public static final String n = "n"; //$NON-NLS-1$
+	public static final String sn = "sn"; //$NON-NLS-1$
 
 	
 	@Override
@@ -52,6 +52,7 @@ public enum EMemorySecurity{
 			return s;
 		case COMBINED:
 			return sn;
+		case NOT_SPECIFIED:
 		default:
 			break;
 		}
@@ -80,6 +81,7 @@ public enum EMemorySecurity{
 		case SECURE:
 			return 's';
 		case COMBINED:
+		case NOT_SPECIFIED:
 		default:
 			break;
 		}
@@ -121,7 +123,7 @@ public enum EMemorySecurity{
 		case NON_SECURE:
 			if(bAllowCallable)
 				return "ncs"; // can use all but undefined //$NON-NLS-1$
-			// else fall through
+			//$FALL-THROUGH$  else fall through
 		case COMBINED:
 			return "ns"; // can use either secure or non-secure //$NON-NLS-1$
 		case CALLABLE:
@@ -200,6 +202,8 @@ public enum EMemorySecurity{
 			return true;
 		case NON_SECURE:
 		case NOT_SPECIFIED:
+		default:
+			break;
 		}
 		return false;
 	}
@@ -217,6 +221,8 @@ public enum EMemorySecurity{
 		case COMBINED:
 			return true;
 		case SECURE:
+		default:
+			break;
 		}
 		return false;
 	}

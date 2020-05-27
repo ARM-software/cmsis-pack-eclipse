@@ -33,11 +33,11 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 	private ICpProcessorUnit fProcessor = null;
 	private ICpDeviceUnit fDevice = null;
 
-	
+
 	public CmsisZoneAssignWidget(ICpZone zone) {
 		fZone = zone;
 	}
-	
+
 	@Override
 	public void destroy(){
 		fZone = null;
@@ -45,7 +45,7 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 		fDevice = null;
 		super.destroy();
 	}
-	
+
 	@Override
 	public ICpProcessorUnit getTargetProcessor() {
 		if(getZone() == null)
@@ -63,7 +63,7 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 		return fDevice;
 	}
 
-	
+
 	@Override
 	public ICpZone getZone() {
 		return fZone;
@@ -76,7 +76,7 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 			refresh();
 		}
 	}
-	
+
 	/**
 	 * Column label provider for RteComponentTreeWidget
 	 */
@@ -89,7 +89,7 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 			super(treeWidget);
 		}
 
-		
+
 		@Override
 		protected void createPrefixColumnInfos() {
 			addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneAssignWidget_Name, ColumnType.COLNAME, 200, false));
@@ -98,19 +98,31 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 			addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneAssignWidget_Size, ColumnType.COLSIZE, 100, true));
 		}
 
-		
+
 		@Override
 		public Color getBgColor(Object obj, int columnIndex) {
 			if(getColumnType(columnIndex) != ColumnType.COLOP)
 				return null;
-			ICpMemoryBlock block = getMemoryBlock(obj);
-			if(block == null) 
+
+			if(obj instanceof ICpDeviceUnit) {
+				ICpZone zone = getZone(columnIndex);
+				if(zone != null) {
+					if(zone.hasWarning())
+						return ColorConstants.YELLOW;
+					if(zone.hasSevereErrors())
+						return ColorConstants.RED;
+				}
 				return null;
-			
+			}
+
+			ICpMemoryBlock block = getMemoryBlock(obj);
+			if(block == null)
+				return null;
+
 			if( block.isRemoved() || !block.isValid()) {
 				return ColorConstants.PALE_RED;
 			}
-			
+
 			int numAssigned = block.getAssignmentCount();
 			if(numAssigned <= 0)
 				return null;
@@ -129,7 +141,7 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 			if(item == null) {
 				return CellControlType.NONE;
 			}
-			
+
 			ICpMemoryBlock block = getMemoryBlock(obj);
 			if(block == null) {
 				return CellControlType.TEXT;
@@ -148,7 +160,7 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 			}
 			return CellControlType.TEXT;
 		}
-		
+
 		@Override
 		public boolean getCheck(Object obj, int columnIndex) {
 			if(getColumnType(columnIndex) != ColumnType.COLOP)
@@ -178,7 +190,7 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 			else
 				getModelController().assignBlock(block, fZone.getName(), newVal);
 		}
-		
+
 		@Override
 		public boolean canEdit(Object obj, int columnIndex) {
 			ColumnType colType = getColumnType(columnIndex);
@@ -188,16 +200,16 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 			ICpMemoryBlock block = getMemoryBlock(obj);
 			if(block == null || getMemoryBlock(block, columnIndex) == null) {
 				return false;
-			}	
+			}
 			ICpZone zone = getZone(columnIndex);
-			
+
 			return zone != null && zone.canAssign(block);
 		}
-		
+
 		@Override
 		public ICpZone getZone(int columnUndex) {
 			return fZone;
-			
+
 		}
 	} /// end of CmsisZoneAssignmentColumnAdvisor
 
@@ -205,6 +217,6 @@ public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
 	protected CmsisZoneColumnAdvisor createColumnAdvisor() {
 		return new CmsisZoneAssignmentColumnAdvisor(this);
 	}
-	
+
 
 }

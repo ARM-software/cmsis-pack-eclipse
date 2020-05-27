@@ -18,7 +18,7 @@ import com.arm.cmsis.pack.utils.AlnumComparator;
 
 /**
  * Comparator that sorts collection of include or library paths<br>
- * Project - local includes are preceding those from CMSIS pack root folder on the top<br>
+ * Project - local includes are preceding those from CMSIS-Pack root folder on the top<br>
  * Newer versions are preceding the older ones   
  */
 public class RtePathComparator implements Comparator<String> {

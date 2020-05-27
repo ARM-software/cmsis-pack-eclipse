@@ -33,11 +33,31 @@ public class CpDenyExpresion extends CpExpression {
 		case FULFILLED:
 			if(getExpressionDomain() != ICpExpression.COMPONENT_EXPRESSION)
 				return EEvaluationResult.INCOMPATIBLE;
+			return result;
 		case UNDEFINED:
 		case ERROR:
 		case IGNORED:
 		case INCOMPATIBLE:
 			return result;
+		case CONFLICT:
+		case FAILED:
+		case INACTIVE:
+		case INCOMPATIBLE_API:
+		case INCOMPATIBLE_BUNDLE:
+		case INCOMPATIBLE_VARIANT:
+		case INCOMPATIBLE_VENDOR:
+		case INCOMPATIBLE_VERSION:
+		case INSTALLED:
+		case MISSING:
+		case MISSING_API:
+		case MISSING_BUNDLE:
+		case MISSING_GPDSC:
+		case MISSING_VARIANT:
+		case MISSING_VENDOR:
+		case MISSING_VERSION:
+		case SELECTABLE:
+		case UNAVAILABLE:
+		case UNAVAILABLE_PACK:
 		default:
 			break;
 		}

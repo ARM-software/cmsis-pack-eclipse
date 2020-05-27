@@ -22,7 +22,7 @@ public interface IRteEventListener extends IGenericListener<RteEvent> {
 	 * Sets IRteEventProxy to be used by this object to fire notifications
 	 * @param rteEventProxy IRteEventProxy object
 	 */
-	default void setRteEventProxy(IRteEventProxy rteEventProxy) { ;
+	default void setRteEventProxy(IRteEventProxy rteEventProxy) { 
 		if(rteEventProxy != null) {
 			rteEventProxy.addListener(this);
 		}

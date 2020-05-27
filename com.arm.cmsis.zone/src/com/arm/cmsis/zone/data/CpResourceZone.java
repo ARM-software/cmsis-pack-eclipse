@@ -25,11 +25,11 @@ import com.arm.cmsis.zone.parser.MemoryRegionCollector;
 import com.arm.cmsis.zone.svd.ISvdInterrupt;
 import com.arm.cmsis.zone.svd.ISvdPeripheral;
 
-/* 
- * Resource Zone 
+/*
+ * Resource Zone
  */
 public class CpResourceZone extends CpRootZone implements ICpResourceZone {
-	
+
 	/**
 	 * XML constructor
 	 * @param parent parent ICpItem
@@ -48,22 +48,22 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 	public CpResourceZone(ICpItem parent, ICpDeviceInfo deviceInfo, String tool) {
 		super(parent, CmsisConstants.RZONE);
 		ICpZoneCreator creator = new CpZoneCreator(this, CmsisConstants.CREATOR);
-		creator.setTool(tool); 
+		creator.setTool(tool);
 		addChild(creator);
 		ICpDeviceItem device = deviceInfo.getDevice();
-		ICpDeviceUnit du = new CpDeviceUnit(parent, device); 
+		ICpDeviceUnit du = new CpDeviceUnit(parent, device);
 		addChild(du);
 		addResources(device);
 	}
-		
-	
+
+
 	/**
 	 *  Adds resources from device
 	 */
 	protected void addResources(ICpDeviceItem device) {
 		if(device == null)
 			return;
-		Map<String, ICpItem> processors = device.getProcessors();  
+		Map<String, ICpItem> processors = device.getProcessors();
 		if(processors.size() > 1) {
 			// first add processor-independent resources
 			addResources(device, CmsisConstants.EMPTY_STRING);
@@ -73,7 +73,7 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 			addResources(device, pname);
 		}
 	}
-	
+
 	protected void addResources(ICpDeviceItem device, String processorName) {
 		ICpResourceGroup memoryContainer = ensureMemoryContainer();
 		ICpResourceGroup peripheralContainer = ensurePeripheralContainer();
@@ -81,17 +81,17 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 		MemoryRegionCollector collector = new MemoryRegionCollector();
 		collector.collectMemoryFromPdsc(device, processorName);
 		// first insert peripherals
-		for(Entry<String, Map<String, ISvdPeripheral>> entry : collector.svdPeripherals.entrySet()) {
+		for(Entry<String, Map<String, ISvdPeripheral>> entry : collector.getSvdPeripherals().entrySet()) {
 			String groupName = entry.getKey();
 			Map<String, ISvdPeripheral> group = entry.getValue();
-			ICpItem parent = peripheralContainer; 
+			ICpItem parent = peripheralContainer;
 			if(!groupName.isEmpty() && group.size() > 1 ) {
 				parent = new CpPeripheralGroup(peripheralContainer, CmsisConstants.GROUP);
 				parent.setAttribute(CmsisConstants.NAME, groupName);
 				peripheralContainer.addChild(parent);
 			}
 			for( Entry<String, ISvdPeripheral> pe : group.entrySet()) {
-				String name = pe.getKey(); 
+				String name = pe.getKey();
 				ISvdPeripheral svdPeripheral = pe.getValue();
 				ICpItem p = createPeripheral(parent, name, svdPeripheral, processorName);
 				// add interrupts if any
@@ -100,27 +100,27 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 					ICpInterrupt cpInterrupt = new CpInterrupt(p, CmsisConstants.INTERRUPT);
 					p.addChild(cpInterrupt);
 					cpInterrupt.setAttribute(CmsisConstants.NAME, i.getName());
-					cpInterrupt.setAttribute(CmsisConstants.IRQN, i.getValueString());				
+					cpInterrupt.setAttribute(CmsisConstants.IRQN, i.getValueString());
 					cpInterrupt.setAttribute(CmsisConstants.INFO, i.getDescription());
 				}
 			}
 		}
-		
+
 		// add memories
 		// insert memory regions
-		for( Entry<String, ICpMemory> me : collector.regions.entrySet()) {
+		for( Entry<String, ICpMemory> me : collector.getRegions().entrySet()) {
 			String regionName = me.getKey();
 			ICpMemory mem = me.getValue();
 			if(mem.isPeripheralAccess()) {
 				createPeripheral(peripheralContainer, regionName, mem, processorName);
 				continue;
 			}
-			ICpMemoryRegion r = new CpMemoryRegion(memoryContainer, mem);
+			ICpMemoryBlock r = new CpMemoryBlock(memoryContainer, mem);
 			memoryContainer.addChild(r);
 			r.setAttribute(CmsisConstants.NAME, regionName);
 			if(processorName != null && !processorName.isEmpty())
 				r.setAttribute(CmsisConstants.PNAME, processorName);
-			
+
 			String alias = mem.getAttribute(CmsisConstants.ALIAS);
 			if(!alias.isEmpty()){
 				String physical = collector.getPhysicalAddress(mem, null);
@@ -130,13 +130,13 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 			}
 		}
 	}
-	
+
 	private ICpItem createPeripheral(ICpItem parent,  String name, ICpMemory memory, String processorName) {
 		ICpItem p = parent.getFirstItem(name);
 		if(p != null) {
 			// already inserted => no new entry
-			return p; // actually an error 
-		} 
+			return p; // actually an error
+		}
 		p = new CpPeripheral(parent, memory);
 		parent.addChild(p);
 		p.setAttribute(CmsisConstants.NAME, name);
@@ -144,7 +144,7 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 			p.setAttribute(CmsisConstants.PNAME, processorName);
 		return p;
 	}
-	
+
 	@Override
 	public boolean updateResources(ICpZone zone, String tool) {
 		boolean bChanged = false;
@@ -162,10 +162,10 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 		creator.setSecurity(zone.getSecurity());
 		creator.setPrivilige(zone.getPrivilege());
 		creator.setAttribute(CmsisConstants.INFO,  zone.getInfo());
-		
+
 		ICpDeviceUnit d = getDeviceUnit();
 		if(d == null) {
-			d = new CpDeviceUnit(this, CmsisConstants.DEVICE_TAG); 
+			d = new CpDeviceUnit(this, CmsisConstants.DEVICE_TAG);
 			addChild(d);
 			bChanged = true;
 		}
@@ -175,11 +175,11 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 		if(updateMemoryResources(zone)) {
 			bChanged = true;
 		}
-		
+
 		if(updateMpcItems(zone)) {
 			bChanged = true;
 		}
-		
+
 		if(updateSauInit(zone)) {
 			bChanged = true;
 		}
@@ -187,15 +187,15 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 	}
 
 	protected boolean updateSauInit(ICpZone zone) {
-		//add sau_init TODO : check if equal 
+		//add sau_init TODO : check if equal
 		ICpRootZone thatRootZone = zone.getRootZone();
 		ICpResourceContainer thatResources = thatRootZone.getResourceContainer();
 		ICpSauInit thatSauInit = (thatResources != null) ? thatResources.getSauInit() : null;
-		
-		
+
+
 		ICpResourceContainer resources = ensureResourceContainer();
 		ICpSauInit thisSauInit = resources.getSauInit();
-		
+
 		if(thisSauInit == null) {
 			if(thatSauInit == null) {
 				return false;
@@ -203,26 +203,26 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 			thatSauInit.copyTo(resources);
 			return true;
 		}
-		
+
 		if(thatSauInit == null) {
 			resources.removeChild(thisSauInit);
 			return true;
 		}
-		
+
 		return thisSauInit.updateItem(thatSauInit);
 	}
 
 
 	protected boolean updateMpcItems(ICpZone zone) {
-		//add mpc elements TODO : check if equal 
+		//add mpc elements TODO : check if equal
 		ICpRootZone thatRootZone = zone.getRootZone();
 		ICpResourceGroup memoryContainer = ensureMemoryContainer();
-		
+
 		Collection<ICpMpc> mpcItems = memoryContainer.getChildrenOfType(ICpMpc.class);
 		for(ICpMpc mpc : mpcItems) {
 			memoryContainer.removeChild(mpc);
 		}
-		
+
 		ICpResourceGroup thatMemoryContainer = thatRootZone.getMemoryGroup();
 		mpcItems = thatMemoryContainer.getChildrenOfType(ICpMpc.class);
 		for(ICpMpc mpc : mpcItems) {
@@ -231,7 +231,7 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 		return true;
 	}
 
-	
+
 	/**
 	 * Adds resources assigned to the supplied project Zone
 	 * @param zone ICpZone to get assignments from
@@ -266,7 +266,7 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 							parentContainer.setAttribute(CmsisConstants.NAME, groupName);
 							peripheralContainer.addChild(parentContainer);
 							ICpPeripheralGroup thatPeripheralGroup = block.getParentPeripheralGroup();
-							Collection<ICpPeripheralSetup> setups = thatPeripheralGroup.getPeripheralSetups(); 
+							Collection<ICpPeripheralSetup> setups = thatPeripheralGroup.getPeripheralSetups();
 							for(ICpPeripheralSetup setup : setups) {
 								setup.copyTo(parentContainer);
 							}
@@ -274,7 +274,7 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 					}
 					region = (ICpMemoryBlock) block.copyTo(parentContainer);
 				} else {
-					region = new CpMemoryRegion(memoryContainer, CmsisConstants.MEMORY_TAG);
+					region = new CpMemoryBlock(memoryContainer, CmsisConstants.MEMORY_TAG);
 					memoryContainer.addChild(region);
 					region.setAttributes(block);
 				}
@@ -285,8 +285,8 @@ public class CpResourceZone extends CpRootZone implements ICpResourceZone {
 				bChanged = true;
 			}
 		}
-		
+
 		return bChanged;
-	}	
+	}
 
 }

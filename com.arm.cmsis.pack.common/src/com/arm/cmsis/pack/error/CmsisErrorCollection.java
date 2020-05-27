@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.error;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,18 +24,11 @@ import com.arm.cmsis.pack.utils.WildCards;
 /**
  * 
  */
-public class CmsisErrorCollection extends CmsisConsoleStrategy implements ICmsisErrorCollection, ICmsisConsoleStrategy {
+public class CmsisErrorCollection extends CmsisConsoleStrategy implements ICmsisErrorCollection {
 
 	// errors for current file
 	protected List<CmsisError> fErrors = null;
-	static final private List<CmsisError> sEmptyErrors = new LinkedList<>();
 		
-	/**
-	 * default constructor
-	 */
-	public CmsisErrorCollection() {
-	}
-
 
 	@Override
 	public void clearErrors() {
@@ -96,13 +90,13 @@ public class CmsisErrorCollection extends CmsisConsoleStrategy implements ICmsis
 	public Collection<CmsisError> getErrors() {
 		if(fErrors != null)
 			return fErrors;
-		return sEmptyErrors;
+		return Collections.emptyList();
 	}
 
 	@Override
 	public CmsisError getFirstError() {
-		for(CmsisError e : getErrors()) { // implicit iterator
-			return e;
+		if(!getErrors().isEmpty()) {
+			return getErrors().iterator().next();
 		}
 		return null;
 	}

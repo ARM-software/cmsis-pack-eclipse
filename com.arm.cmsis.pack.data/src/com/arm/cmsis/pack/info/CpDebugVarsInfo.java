@@ -12,7 +12,6 @@
 package com.arm.cmsis.pack.info;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.CpFile;
 import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.enums.EFileCategory;
@@ -22,17 +21,14 @@ import com.arm.cmsis.pack.enums.EFileRole;
  * ICpFileInfo interface for CpDebugVars
  * 
  * @see ICpFileInfo
- * @see CpFile
+ * @see ICpFile
  */
 public class CpDebugVarsInfo extends CpFileInfo {
 
-	ICpFile fFile = null;
-	int fVersionDiff = 0;
 
 	public CpDebugVarsInfo(ICpItem parent, ICpFile file) {
-		super(parent, file.getTag());
+		super(parent, file);
 		setFile(file);
-		updateInfo();
 	}
 
 	public CpDebugVarsInfo(ICpItem parent, String tag) {

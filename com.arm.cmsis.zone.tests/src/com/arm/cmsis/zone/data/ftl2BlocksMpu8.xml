@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?> 
+<!DOCTYPE xml>
+<fzone xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="fzone.xsd">
+  <mpu_setup>
+    <region>
+      <start>0x00000000</start>
+      <end>0x00000FFF</end>
+      <access>
+        <p>0</p>
+        <r>1</r>
+        <w>1</w>
+        <x>1</x>
+      </access>
+      <privileged>0</privileged>
+      <shared>0</shared>
+      <dma>0</dma>
+      <rom>0</rom>
+      <info>Mem1</info>
+    </region>
+    <region>
+      <start>0x00002000</start>
+      <end>0x00002FFF</end>
+      <access>
+        <p>0</p>
+        <r>1</r>
+        <w>1</w>
+        <x>1</x>
+      </access>
+      <privileged>0</privileged>
+      <shared>0</shared>
+      <dma>0</dma>
+      <rom>0</rom>
+      <info>Mem2</info>
+    </region>
+  </mpu_setup>
+</fzone>

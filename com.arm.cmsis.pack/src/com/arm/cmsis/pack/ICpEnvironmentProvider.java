@@ -37,7 +37,7 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
 
 
 	/**
-	 * Returns environment name as it is used it CMSIS packs, e.g. <code>"uv"</code>, <code>"ds5"</code>, etc.
+	 * Returns environment name as it is used it CMSIS-Packs, e.g. <code>"uv"</code>, <code>"ds5"</code>, etc.
 	 * @return environment name
 	 */
 	String getName();
@@ -54,7 +54,7 @@ public interface ICpEnvironmentProvider extends IRteEventListener, IAdaptable {
 
 
 	/**
-	 * Returns environment-specific provider of  CMSIS Pack root directory
+	 * Returns environment-specific provider of  CMSIS-Pack root directory
 	 * @return ICpPackRootProvider or null (default) to use the default one
 	 */
 	default ICpPackRootProvider getCmsisRootProvider() {return null ;}

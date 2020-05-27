@@ -85,7 +85,7 @@ public class CpZonePluginUI extends AbstractUIPlugin {
 	
 
 	/**
-	 * Sets CMSIS zone markers to the resources specified by CMSIS Zone errors errors
+	 * Sets CMSIS-Zone markers to the resources specified by CMSIS-Zone errors errors
 	 * @param errors ICmsisErrorCollection
 	 */
 	public static void setCmsisZoneMarkers( ICmsisErrorCollection errors) {
@@ -128,7 +128,7 @@ public class CpZonePluginUI extends AbstractUIPlugin {
 
 	
 	/**
-	 * Removes CMSIS zone markers for the supplied resource
+	 * Removes CMSIS-Zone markers for the supplied resource
 	 * @param resource FILE,  FOLDER or PROJECT to update
 	 */
 	public static void removeCmsisZoneMarkers(IResource resource) {

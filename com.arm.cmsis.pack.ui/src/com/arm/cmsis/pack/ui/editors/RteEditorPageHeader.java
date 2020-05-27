@@ -46,7 +46,7 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
  */
 public class RteEditorPageHeader extends Composite {
 
-	static public final String STAR = "*"; //$NON-NLS-1$
+	public static final String STAR = "*"; //$NON-NLS-1$
 	private Label label;
 	private Label imageLabel;
 	private Map<Integer, ManagedToolBar> toolBars = new HashMap<Integer, ManagedToolBar>();

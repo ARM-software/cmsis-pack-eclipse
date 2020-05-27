@@ -31,7 +31,7 @@ public class OverlayImage extends CompositeImageDescriptor {
     protected void drawCompositeImage(int arg0, int arg1) {
 
     	// Draw the base image
-        drawImage(baseImage.getImageData(), 0, 0);
+        drawImage(createCachedImageDataProvider(baseImage), 0, 0);
 
         // draw overlay image
         Point pos = new Point(0,0);
@@ -56,7 +56,7 @@ public class OverlayImage extends CompositeImageDescriptor {
         		break;
         }
         
-        drawImage(this.overlayImage.getImageData(), pos.x, pos.y);	// draw overlay image at position
+        drawImage(createCachedImageDataProvider(overlayImage), pos.x, pos.y);	// draw overlay image at position
 
     }
 

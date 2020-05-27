@@ -51,7 +51,7 @@ public class Attributes implements IAttributes {
 	
 
 	@Override
-	synchronized public void clear() {
+	public synchronized void clear() {
 		if(fAttributes != null) {
 			fAttributes.clear();
 		}
@@ -59,12 +59,12 @@ public class Attributes implements IAttributes {
 
 
 	@Override
-	synchronized public boolean hasAttribute(String key) {
+	public synchronized boolean hasAttribute(String key) {
 		return fAttributes != null && fAttributes.containsKey(key);
 	}
 
 	@Override
-	synchronized public String getAttribute(String key) {
+	public synchronized String getAttribute(String key) {
 		if(fAttributes != null) {
 			return fAttributes.get(key);
 		}
@@ -72,7 +72,7 @@ public class Attributes implements IAttributes {
 	}
 
 	@Override
-	synchronized public String getAttribute(String key, String defaultValue) {
+	public synchronized String getAttribute(String key, String defaultValue) {
 		String value = getAttribute(key);
 		if(value != null) {
 			return value;
@@ -104,27 +104,24 @@ public class Attributes implements IAttributes {
 	@Override
 	public boolean getAttributeAsBoolean(String key, boolean bDefault) {
 		String value = getAttribute(key);
-		if(value != null && !value.isEmpty()) {
-			if(value.equals("1") || value.toLowerCase().equals("true")) { //$NON-NLS-1$ //$NON-NLS-2$
-				return true;
-			}
-			return false;
+		if(value == null || value.isEmpty()) {
+			return bDefault;
 		}
-		return bDefault;
+		return value.equals("1") || value.equalsIgnoreCase("true"); //$NON-NLS-1$ //$NON-NLS-2$
 	}
 
 
 	@Override
-	synchronized public void setAttribute(String key, String value) {
+	public synchronized void setAttribute(String key, String value) {
 		if(key == null) {
 			return;
 		}
 		if(fAttributes == null) {
-			fAttributes = new TreeMap<String, String>(); // use natural sorting to get consistent string representation
+			fAttributes = new TreeMap<>(); // use natural sorting to get consistent string representation
 		}
 		if(value != null) {
 			fAttributes.put(key, value);
-		} else if(fAttributes != null) {
+		} else {
 			fAttributes.remove(key);
 		}
 	}
@@ -141,14 +138,14 @@ public class Attributes implements IAttributes {
 	}
 
 	@Override
-	synchronized public void removeAttribute(String key) {
+	public synchronized void removeAttribute(String key) {
 		if(fAttributes != null ) {
 			fAttributes.remove(key);
 		}
 	}
 
 	@Override
-	synchronized public void mergeAttribute(String key, String value) {
+	public synchronized void mergeAttribute(String key, String value) {
 		if(!hasAttribute(key)) {
 			setAttribute(key, value);
 		}
@@ -156,28 +153,28 @@ public class Attributes implements IAttributes {
 
 
 	@Override
-	synchronized public boolean hasAttributes() {
+	public synchronized boolean hasAttributes() {
 		return fAttributes != null && !fAttributes.isEmpty();
 	}
 
 	@Override
-	synchronized public Map<String, String> getAttributesAsMap() {
+	public synchronized Map<String, String> getAttributesAsMap() {
 		return fAttributes;
 	}
 
 	@Override
-	synchronized public void setAttributes(Map<String, String> attributes) {
+	public synchronized void setAttributes(Map<String, String> attributes) {
 		if(attributes == null) {
 			fAttributes = null;
 		} else {
 			// make copy
-			fAttributes = new TreeMap<String, String>();
+			fAttributes = new TreeMap<>();
 			fAttributes.putAll(attributes);
 		}
 	}
 
 	@Override
-	synchronized public void addAttributes(Map<String, String> attributes) {
+	public synchronized void addAttributes(Map<String, String> attributes) {
 		if(attributes != null && !attributes.isEmpty()) {
 			// make copy
 			if(fAttributes == null) {
@@ -195,7 +192,7 @@ public class Attributes implements IAttributes {
 
 
 	@Override
-	synchronized public void setAttributes(IAttributes attributes) {
+	public synchronized void setAttributes(IAttributes attributes) {
 		if(attributes != null && attributes.hasAttributes()) {
 			setAttributes(attributes.getAttributesAsMap());
 		} else {
@@ -204,7 +201,7 @@ public class Attributes implements IAttributes {
 	}
 
 	@Override
-	synchronized public void addAttributes(IAttributes attributes) {
+	public synchronized void addAttributes(IAttributes attributes) {
 		if(attributes != null && attributes.hasAttributes()) {
 			addAttributes(attributes.getAttributesAsMap());
 		} 
@@ -212,7 +209,7 @@ public class Attributes implements IAttributes {
 
 	
 	@Override
-	synchronized public void mergeAttributes(final IAttributes attributes) {
+	public synchronized void mergeAttributes(final IAttributes attributes) {
 		if(attributes == null || !attributes.hasAttributes()) {
 			return; // nothing to merge
 		}
@@ -220,7 +217,7 @@ public class Attributes implements IAttributes {
 	}
 
 	@Override
-	synchronized public void mergeAttributes(Map<String, String> attributesMap) {
+	public synchronized void mergeAttributes(Map<String, String> attributesMap) {
 		if(attributesMap == null || attributesMap.isEmpty()) {
 			return; // nothing to merge
 		}
@@ -234,7 +231,7 @@ public class Attributes implements IAttributes {
 	
 	
 	@Override
-	synchronized public void mergeAttributes(final IAttributes attributes, final String prefix) {
+	public synchronized void mergeAttributes(final IAttributes attributes, final String prefix) {
 		if(attributes == null || !attributes.hasAttributes()) {
 			return; // nothing to merge
 		}
@@ -249,7 +246,7 @@ public class Attributes implements IAttributes {
 
 
 	@Override
-	synchronized public boolean containsAttribute(String pattern) {
+	public synchronized boolean containsAttribute(String pattern) {
 		if(fAttributes == null) {
 			return false;
 		}
@@ -299,16 +296,16 @@ public class Attributes implements IAttributes {
 	 * @param bCommon match mode: true - compare only attributes found in both maps, false - match all
 	 * @return true if matches, false otherwise
 	 */
-	protected boolean matchAttributes(final IAttributes attributes, String prefix, boolean bCommon){
-		if(attributes == null) {
-			return fAttributes == null || fAttributes.isEmpty();
+	public boolean matchAttributes(final IAttributes attributes, String prefix, boolean bCommon){
+		if(fAttributes == null || fAttributes.isEmpty())
+			return true; 
+		if(attributes == null || !attributes.hasAttributes()) {
+			return false;
 		}
 		for(Entry<String, String> e : fAttributes.entrySet()){
 			String key = e.getKey();
-			if(prefix != null && !prefix.isEmpty()) {
-				if(!key.startsWith(prefix)) {
-					continue;
-				}
+			if(prefix != null && !prefix.isEmpty() && !key.startsWith(prefix)) {
+				continue;
 			}
 			String val = e.getValue();
 			String pattern = attributes.getAttribute(key);
@@ -393,7 +390,7 @@ public class Attributes implements IAttributes {
      * @param attributesString string to split, e.g in format  <code>key1="value1", key2="vaule2", ...</code> 
 	 * @return  Map of key-value String pairs  
 	 */
-	static public Map<String, String> splitString(String attributesString) {
+	public static Map<String, String> splitString(String attributesString) {
 		if (attributesString == null || attributesString.isEmpty()) {
 			return null;
 		}
@@ -401,7 +398,7 @@ public class Attributes implements IAttributes {
 		if (pairs == null || pairs.length == 0) {
 			return null;
 		}
-		Map<String, String> attributes = new TreeMap<String, String>();
+		Map<String, String> attributes = new TreeMap<>();
 		for (String p : pairs) {
 			String[] pair = p.split("=\\\""); //$NON-NLS-1$
 			if (pair == null || pair.length != 2) {

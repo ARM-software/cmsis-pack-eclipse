@@ -193,37 +193,20 @@ public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguratio
 			if(tag.equals(CmsisConstants.DEBUGCONFIG_TAG)) {
 				attributes().mergeAttributes(item.attributes());
 				sdfFileName = item.getAbsolutePath(item.getAttribute(CmsisConstants.SDF));
-				continue;
-			}
-
-			if(tag.equals(CmsisConstants.SEQUENCES_TAG)) {
+			} else if(tag.equals(CmsisConstants.SEQUENCES_TAG)) {
 				addSequences(item);
-				continue;
-			}
-			
-			if(item instanceof ICpDebugPort) {
+			} else if(item instanceof ICpDebugPort) {
 				ICpDebugPort debugPort = (ICpDebugPort)item;
 				debugPorts.put(debugPort.getDP(), debugPort);
-				continue;
-			}
-			if(item instanceof ICpDebug) {
+			} else if(item instanceof ICpDebug) {
 				ICpDebug dbgItem = (ICpDebug)item;
 				int punitIndex = dbgItem.getPunitIndex();
 				debugItems.put(punitIndex, dbgItem);
-				continue;
-			}
-
-			if(item instanceof ICpTrace) {
+			} else if(item instanceof ICpTrace) {
 				traceItem = (ICpTrace)item;
-				continue;
-			}
-			
-			if(item instanceof ICpDebugVars) {
+			} else if(item instanceof ICpDebugVars) {
 				debugVars  = (ICpDebugVars)item;
-				continue;
-			}
-
-			if(item instanceof ICpMemory) {
+			} else if(item instanceof ICpMemory) {
 				ICpMemory mem = (ICpMemory)item;
 				String id = mem.getId();
 				if(memoryItems.containsKey(id))
@@ -233,15 +216,11 @@ public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguratio
 					defaultMemory = mem;
 				if(startupMemory == null && mem.isStartup())
 					startupMemory = mem;
-				continue;
-			}
-
-			if(item instanceof ICpAlgorithm) {
+			} else if(item instanceof ICpAlgorithm) {
 				ICpAlgorithm a = (ICpAlgorithm)item;
 				String fileName = a.getAlgorithmFile();
 				if(!algorithms.containsKey(fileName))
 					algorithms.put(fileName, a);
-				continue;
 			}
 		}
 	}

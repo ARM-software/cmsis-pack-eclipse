@@ -73,7 +73,7 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 		return getCmsisPackRoot() + argument;
 	}
 	
-	static public String getDfpPath(IProject project) {
+	public static String getDfpPath(IProject project) {
 		if(project == null)
 			return null;
 		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
@@ -87,10 +87,10 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 	}
 	
 	/**
-	 * Returns CMSIS pack root folder (the value of <code>${cmsis_pack_root}</code> variable)
-	 * @return CMSIS pack root folder as string
+	 * Returns CMSIS-Pack root folder (the value of <code>${cmsis_pack_root}</code> variable)
+	 * @return CMSIS-Pack root folder as string
 	 */
-	static public String getCmsisPackRoot() {
+	public static String getCmsisPackRoot() {
 		ICpPackManager pm  = CpPlugIn.getPackManager();
 		if(pm != null) { 
 			return pm.getCmsisPackRootDirectory();
@@ -99,10 +99,10 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 	}
 
 	/**
-	 * Returns CMSIS pack root folder (the value of <code>${cmsis_pack_root}</code> variable)
-	 * @return CMSIS pack root folder as string with OS directory separators
+	 * Returns CMSIS-Pack root folder (the value of <code>${cmsis_pack_root}</code> variable)
+	 * @return CMSIS-Pack root folder as string with OS directory separators
 	 */
-	static public String getCmsisPackRootOS() {
+	public static String getCmsisPackRootOS() {
 		String root = getCmsisPackRoot();
 		if(root != null && File.separatorChar != '/') { 
 			return root.replace('/', File.separatorChar);
@@ -112,10 +112,10 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 
 	
 	/**
-	 * Returns CMSIS pack root folder (the value of <code>${cmsis_pack_root}</code> variable) as URI
-	 * @return CMSIS pack root folder as URI
+	 * Returns CMSIS-Pack root folder (the value of <code>${cmsis_pack_root}</code> variable) as URI
+	 * @return CMSIS-Pack root folder as URI
 	 */
-	static public URI getCmsisPackRootURI() {
+	public static URI getCmsisPackRootURI() {
 		ICpPackManager pm  = CpPlugIn.getPackManager();
 		if(pm != null) { 
 			return pm.getCmsisPackRootURI();
@@ -128,7 +128,7 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 	 * @param path source path to substitute
 	 * @return the resulting string
 	 */
-	static public String expandCmsisRootVariable(String path) {
+	public static String expandCmsisRootVariable(String path) {
 		if(path == null || path.isEmpty())
 			return path;
 
@@ -147,7 +147,7 @@ public class CpVariableResolver extends PathVariableResolver implements IDynamic
 	 * @param path source path to substitute
 	 * @return the resulting string
 	 */
-	static public String insertCmsisRootVariable(String path) {
+	public static String insertCmsisRootVariable(String path) {
 		if(path == null || path.isEmpty())
 			return path;
 		String root = getCmsisPackRoot();

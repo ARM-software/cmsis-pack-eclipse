@@ -24,9 +24,9 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Display;
 
 import com.arm.cmsis.pack.ICpPackInstaller;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.installer.CpPackInstaller;
 import com.arm.cmsis.pack.installer.Messages;
-import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * Job of installing a pack from Internet
@@ -45,10 +45,11 @@ public class CpPackInstallJob extends CpPackUnpackJob {
 	 * @param packId pack's ID
 	 * @param url pack's download URL
 	 */
-	public CpPackInstallJob(String name, ICpPackInstaller packInstaller, String packId, String url, boolean installRequiredPacks, String extension) {
+	public CpPackInstallJob(String name, ICpPackInstaller packInstaller, String packId, String url, boolean installRequiredPacks) {
 		super(name, packInstaller, packId, installRequiredPacks);
-		fPackDestFile = packId + extension;
-		fPackUrl = Utils.addTrailingSlash(url) + fPackDestFile;
+		fPackDestFile = packId + CmsisConstants.EXT_PACK;
+		fDownloadedPackPath = createDownloadFolder().append(fPackDestFile);
+		fPackUrl = url;
 	}
 
 	@Override

@@ -24,10 +24,10 @@ import com.arm.cmsis.pack.utils.AlnumComparator;
  * Base SVD item
  */
 public class SvdPeripheral extends SvdItem implements ISvdPeripheral {
-	static public final String BASE_ADDRESS = "baseAddress"; //$NON-NLS-1$
-	static public final String ADDRESS_BLOCK = "addressBlock"; //$NON-NLS-1$
-	static public final String GROUP_NAME = "groupName"; //$NON-NLS-1$
-	static public final String DERIVED_FROM = "derivedFrom"; //$NON-NLS-1$
+	public static final String BASE_ADDRESS = "baseAddress"; //$NON-NLS-1$
+	public static final String ADDRESS_BLOCK = "addressBlock"; //$NON-NLS-1$
+	public static final String GROUP_NAME = "groupName"; //$NON-NLS-1$
+	public static final String DERIVED_FROM = "derivedFrom"; //$NON-NLS-1$
 
 	private String fAccess = null;
 	private Map<String, ISvdInterrupt> fInterrupts = null;

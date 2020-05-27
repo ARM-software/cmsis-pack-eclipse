@@ -2,11 +2,13 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Apache FreeMarker
 Bundle-SymbolicName: com.arm.tpip.freemarker;singleton:=true
+Automatic-Module-Name: com.arm.tpip.freemarker
 Bundle-Version: 2.3.29.qualifier
-Bundle-Vendor: ARM Limited
+Bundle-Vendor: ARM
 Bundle-ClassPath: lib/freemarker.jar
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Export-Package: freemarker.cache,
+Export-Package: freemarker,
+ freemarker.cache,
  freemarker.core,
  freemarker.debug,
  freemarker.debug.impl,

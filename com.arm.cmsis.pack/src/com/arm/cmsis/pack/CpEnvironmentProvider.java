@@ -307,6 +307,8 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 			return CmsisConstants.OUTPUT_PATH;
 		case "#L": //$NON-NLS-1$
 			return CmsisConstants.OUTPUT_ABS_FILE;
+		default:
+			break;
 		}
 		return key; // do not expand, can be another variable
 	}

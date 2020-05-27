@@ -27,7 +27,7 @@ public class CmsisZoneProjectRzoneFilePage extends WizardPage {
 	
 	protected FileFieldEditor fileEditor = null; //File field editor widget to search a .rzone file
 	protected Composite fileEditorComposite = null; //Container for field editor widget	
-	final static private String[] cmsisZoneFileExtensions = new String[] { '*' + CmsisConstants.DOT_RZONE}; //Set a filter for .rzone files in the file field fileEditor widget
+	private static final String[] cmsisZoneFileExtensions = new String[] { '*' + CmsisConstants.DOT_RZONE}; //Set a filter for .rzone files in the file field fileEditor widget
 	private Group resourceSourceArea = null;
 	protected CmsisZoneProjectCreator cmsisZoneProjectCreator =  null;
 	protected boolean bDeviceSelected = true;

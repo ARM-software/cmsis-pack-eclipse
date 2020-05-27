@@ -16,7 +16,7 @@
             <meta.element />
          </appinfo>
          <documentation>
-            Contribute to this extendion point to provide CMSIS Pack plug-in binding to specific development environment
+            Contribute to this extendion point to provide CMSIS-Pack plug-in binding to specific development environment
          </documentation>
       </annotation>
       <complexType>

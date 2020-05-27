@@ -119,7 +119,7 @@ public class CpDirectoryFieldEditor extends DirectoryFieldEditor {
 	 * @param path initial path
 	 * @return an existing path or null
 	 */
-	static public File getExistingPath(File path) {
+	public static File getExistingPath(File path) {
 		if(path == null)
 			return null; 
 		if(path.exists() && path.isDirectory())

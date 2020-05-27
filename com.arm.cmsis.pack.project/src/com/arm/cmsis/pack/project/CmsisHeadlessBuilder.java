@@ -47,11 +47,15 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
 	public static final String cmsisRootArg = "-cmsisRoot"; //$NON-NLS-1$
 	public static final String helpArg  = "-help"; //$NON-NLS-1$;
 	protected Stage processingStage = Stage.INIT; // processing stage 
-	protected String cmsisPackRoot = null; // CMSIS Pack root directory supplied via command line
+	protected String cmsisPackRoot = null; // CMSIS-Pack root directory supplied via command line
 	protected Object totalResult = EXIT_OK;
 	protected boolean bSavedAutoBuildFlag = false; // preserve workspace flag in init(), restore it in cleanup 
 	
-	String[] fArgs = null;
+	protected String[] fArgs = null;
+	protected static final String[] helpArgs = new String[] {helpArg};
+	protected static final String[] emptyArgs = new String[0];
+	protected boolean fbHelpRequested = false;
+	protected boolean fbPacksLoaded = false;
 	
 	/**
 	 *  Default constructor
@@ -86,7 +90,7 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
 				runStage(Stage.CLEANUP, context); // ensure cleanup stage is run
 			}
 		}
-		return totalResult;
+		return fbHelpRequested ? EXIT_OK : totalResult;
 	}
 
 	/**
@@ -136,9 +140,7 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
 			return EXIT_ERROR;
 		}
 		
-		if(!loadPacks()){
-			return EXIT_WARNING;
-		}
+		fbPacksLoaded = loadPacks();
 		return EXIT_OK;	
 
 	}
@@ -172,8 +174,7 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
 		if(bSavedAutoBuildFlag) {
 			setAutoBuild(true);
 		}
-		refreshWorkspace();
-		// make full workspace refresh
+		refreshWorkspace(); // make full workspace refresh
 		return EXIT_OK;
 	}
 
@@ -228,6 +229,7 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
 			for (int i = 0; i < args.length; i++) {
 				String a = args[i];
 				if(helpArg.equals(a)){
+					fbHelpRequested = true;
 					printUsage();
 					return false;
 				}
@@ -271,7 +273,11 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
 	 * @param args arguments passed to the application
 	 */
 	protected void printUsage() {
-		super.getArguments(new String[0]); // will cause 'no arguments' processing => usage	
+		if(fbHelpRequested) {
+			super.getArguments(helpArgs); // will cause 'Error: Help requested'  + usage
+		} else {
+			super.getArguments(emptyArgs); // will cause 'no arguments' + usage
+		}
 		printAdditionalArguments();
 	}
 

@@ -35,7 +35,7 @@ import com.arm.cmsis.pack.ui.OpenURL;
 import com.arm.cmsis.pack.ui.console.RteConsole;
 import com.arm.cmsis.pack.utils.FullDeviceName;
 import com.arm.cmsis.pack.utils.Utils;
-import com.arm.cmsis.zone.data.CpMemoryRegion;
+import com.arm.cmsis.zone.data.CpMemoryBlock;
 import com.arm.cmsis.zone.data.CpZoneAssignment;
 import com.arm.cmsis.zone.data.ICpMemoryBlock;
 import com.arm.cmsis.zone.data.ICpPeripheralGroup;
@@ -52,27 +52,27 @@ import com.arm.cmsis.zone.ui.CpZonePluginUI;
 import com.arm.cmsis.zone.ui.Messages;
 
 /**
- * Controller to back CMSIS Zone editor  
- *    
+ * Controller to back CMSIS-Zone editor
+ *
  */
 public class CmsisZoneController extends RteEventProxy implements IRteController {
-	
+
 	public static final String ZONE = "com.arm.cmsis.zone."; //$NON-NLS-1$
-	
+
 	public static final String ZONE_ADDED = ZONE + "new"; //$NON-NLS-1$
 	public static final String ZONE_MODIFIED = ZONE + "modified"; //$NON-NLS-1$
 	public static final String ZONE_DELETED  = ZONE + "deleted"; //$NON-NLS-1$
 	public static final String ZONE_BLOCK_ASSIGNED = ZONE + "block.assigned"; //$NON-NLS-1$
 	public static final String ZONE_ITEM_SHOW = ZONE + "item.show"; //$NON-NLS-1$
 
-	
+
 	private ICpRootZone fRootZone = null;
 	private boolean fbModified = false;
-	
+
 	CmsisZoneController() {
 		super();
 	}
-	
+
 	@Override
 	public void commit() {
 		fRootZone.purge();
@@ -81,7 +81,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		check(true);
 		fbModified = false;
 	}
-	
+
 	public String getZoneLabel() {
 		return Messages.CmsisZoneController_Zone;
 	}
@@ -99,7 +99,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 	public void emitShowEvent(ICpZoneItem item) {
 		emitRteEvent(ZONE_ITEM_SHOW, item);
 	}
-	
+
 	@Override
 	public String openUrl(String url) {
 		return OpenURL.open(url);
@@ -114,7 +114,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		return fRootZone;
 	}
 
-	
+
 	@Override
 	public void setDataInfo(ICpItem info) {
 		if(info instanceof ICpRootZone)
@@ -125,12 +125,12 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 			fRootZone.init();
 			check(true);
 		}
-		emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this); 
+		emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this);
 	}
 
 	@Override
 	public void updateDataInfo() {
-				
+
 	}
 
 	public ICpResourceContainer getResources() {
@@ -141,27 +141,27 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 	}
 
 	/**
-	 * Assigns a memory block to specified zone or removes the assignment  
-	 * @param block memory block to assign 
+	 * Assigns a memory block to specified zone or removes the assignment
+	 * @param block memory block to assign
 	 * @param zoneName zone name to assign to
-	 * @param bAssign true to assign, false to remove an the existing assignment 
+	 * @param bAssign true to assign, false to remove an the existing assignment
 	 */
 	public void assignBlock(ICpMemoryBlock block, String zoneName, boolean bAssign) {
 		if(block == null || zoneName == null || zoneName.isEmpty())
 			return;
 		assignBlocks(Collections.singletonList(block), zoneName, bAssign);
 	}
-	
+
 	/**
-	 * Assigns memory blocks to specified zone or removes the assignment  
-	 * @param blocks collection of memory blocks to assign 
+	 * Assigns memory blocks to specified zone or removes the assignment
+	 * @param blocks collection of memory blocks to assign
 	 * @param zoneName zone name to assign to
-	 * @param bAssign true to assign, false to remove an the existing assignment 
+	 * @param bAssign true to assign, false to remove an the existing assignment
 	 */
 	public void assignBlocks(Collection<ICpMemoryBlock> blocks, String zoneName, boolean bAssign) {
 		if(blocks == null || blocks.isEmpty() || zoneName == null || zoneName.isEmpty())
 			return;
-		
+
 		ICpZone zone = fRootZone.getZone(zoneName);
 		if(assignBlocks(blocks, zone, bAssign)) {
 			fbModified = true;
@@ -170,11 +170,11 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 	}
 
 	/**
-	 * Assigns memory blocks to specified zone or removes the assignment  
-	 * @param blocks collection of memory blocks to assign 
+	 * Assigns memory blocks to specified zone or removes the assignment
+	 * @param blocks collection of memory blocks to assign
 	 * @param zone zone to assign to
 	 * @param bAssign true to assign, false to remove an the existing assignment
-	 * @return true if assignments have changed  
+	 * @return true if assignments have changed
 	 */
 	protected boolean assignBlocks(Collection<ICpMemoryBlock> blocks, ICpZone zone, boolean bAssign) {
 		if(blocks == null || blocks.isEmpty() || zone == null)
@@ -183,7 +183,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		String zoneName = zone.getName();
 		for(ICpMemoryBlock block : blocks) {
 			ICpZoneAssignment zoneItem = zone.getZoneAssignment(block.getId());
-			if(bAssign == false) {
+			if(!bAssign) {
 				block.removeAssignment(zoneName);
 				if(zoneItem != null) {
 					zoneItem.setRemoved(true);
@@ -196,22 +196,23 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 				}
 				zoneItem.setRemoved(false);
 				zoneItem.assign(block);
-				block.addAssignment(zoneName, zoneItem);				
+				block.addAssignment(zoneName, zoneItem);
 			}
 		}
+		zone.createMpuSetup();
 		return true;
 	}
-	
+
 	/**
-	 * Assigns blocks to a newly created zone respecting "select" configure flags 
+	 * Assigns blocks to a newly created zone respecting "select" configure flags
 	 * @param zone ICpZone to assign to
-	 * @return true if assigned 
+	 * @return true if assigned
 	 */
 	protected boolean assignBlocksToNewZone(ICpZone zone) {
 		if(zone == null)
 			return false;
 
-		// get "select" flags 
+		// get "select" flags
 		boolean bSelPeripheral = fRootZone.getZoneOption(CmsisConstants.PERIPHERAL, CmsisConstants.SELECT);
 		boolean bSelROM = fRootZone.getZoneOption(CmsisConstants.ROM, CmsisConstants.SELECT);
 		boolean bSelRAM = fRootZone.getZoneOption(CmsisConstants.RAM, CmsisConstants.SELECT);
@@ -229,11 +230,10 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 				continue;
 			blocks.add(block);
 		}
-		boolean bModified = assignBlocks(blocks, zone, true);
-		return bModified;
+		return assignBlocks(blocks, zone, true);
 	}
 
-	
+
 	public Collection<ICpMemoryBlock> getAssignedBlocks(ICpZone zone) {
 		List<ICpMemoryBlock> assignedBlocks = new LinkedList<>();
 		if(fRootZone == null) {
@@ -243,7 +243,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 			if(item instanceof ICpMemoryBlock) {
 				ICpMemoryBlock block = (ICpMemoryBlock)item;
 				if(block.getAssignmentCount() > 0) {
-					if( zone == null || block.isAssigned(zone.getName())){ 
+					if( zone == null || block.isAssigned(zone.getName())){
 						assignedBlocks.add(block);
 					}
 				}
@@ -263,11 +263,11 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		emitRteEvent(ZONE_DELETED, zone); // to delete widget
 		emitRteEvent(ZONE_MODIFIED, zone); // to update other widgets
 	}
-	
+
 	public void updateZone(ICpZone zone, String name, String fullDeviceName, String security, String privilege, String info) {
 		boolean bModified = false;
 		boolean bNewZone = false;
-		
+
 		if(zone == null) {
 			ICpRootZone system = getRootZone();
 			zone = system.addZone(name);
@@ -275,7 +275,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 			bNewZone = true;
 		}
 
-		String processorName = FullDeviceName.extractProcessoreName(fullDeviceName);		
+		String processorName = FullDeviceName.extractProcessoreName(fullDeviceName);
 		if(zone.updateAttribute(CmsisConstants.NAME, name)){
 			bModified = true;
 		}
@@ -294,7 +294,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 			bModified = true;
 		}
 
-		
+
 		if(bModified){
 			if(bNewZone) {
 				//Assign memories and peripherals to the new zone
@@ -306,29 +306,27 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 			if(bNewZone) {
 				emitRteEvent(ZONE_ADDED, zone); //adds page
 			}
-			emitRteEvent(ZONE_MODIFIED, zone);	// refreshes other widgets		
+			emitRteEvent(ZONE_MODIFIED, zone);	// refreshes other widgets
 		}
 	}
 
 	protected boolean deleteMemoryBlock(ICpMemoryBlock block) {
 		if(block == null )
 			return false;
-		
+
 		PhysicalMemoryRegion pr = block.getPhysicalRegion();
 		block.removeAssignments();
 		block.setParent(null);
 		if(pr != null) {
-			if(pr.arrangeBlocks()) {
-				fbModified = true; // this is just to set a breakpoint here
-			}
+			pr.arrangeBlocks();
 		}
-		
+
 		return true;
 	}
 
 	/**
 	 * Deletes memory blocks
-	 * @param blocks collection of blocks to remove 
+	 * @param blocks collection of blocks to remove
 	 */
 	public void deleteMemoryBlocks(Collection<ICpMemoryBlock> blocks) {
 		if(blocks == null || blocks.isEmpty())
@@ -341,15 +339,16 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		if(bModified) {
 			fbModified = true;
 			getRootZone().invalidateAll(); //ensures all objects using the block clear caches
+			getRootZone().createMpuSetup();
 			check(false);
-			emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this); 
+			emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this);
 		}
 	}
 
 	/**
 	 * Moves the block from one region to another
 	 * @param parent new parent
-	 * @param block ICpMemoryBlock to move 
+	 * @param block ICpMemoryBlock to move
 	 * @return true if moved
 	 */
 	public boolean moveBlock(ICpMemoryBlock parent, ICpMemoryBlock block) {
@@ -362,20 +361,20 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		parent.addChild(block);
 		return true;
 	}
-	
+
 	public void updateMemoryBlock(ICpMemoryBlock parent, ICpMemoryBlock block, Map<String, String> newAttributes, IMemoryPermissions permissions) {
 		boolean bModified = false;
-		
+
 		if(block == null) {
-			block = new CpMemoryRegion(parent, CmsisConstants.MEMORY_TAG);
+			block = new CpMemoryBlock(parent, CmsisConstants.MEMORY_TAG);
 			parent.addChild(block);
 			bModified = true;
 		} else if(block.getParentBlock() != parent) {
-			bModified = moveBlock(parent, block); // moves the block if the parent is different 
+			bModified = moveBlock(parent, block); // moves the block if the parent is different
 		}
-		
+
 		String previousName = block.getName();
-		
+
 		if(block.updateAttributes(newAttributes)) {
 			bModified = true;
 		}
@@ -384,36 +383,40 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 			block.updatePermissions(permissions);
 			bModified = true;
 		}
-		
-			
-		if(bModified){
-			String newName = block.getName();
-			if(!previousName.equals(newName)) {
-				Map<String, ICpZoneAssignment> assignments = block.getAssignments();
-				// rename assignments
-				if(assignments != null) {
-					for(ICpZoneAssignment a : assignments.values()) {
-						a.assign(block);
-					}
-				}
-				getRootZone().invalidateAll();
-			} else if(parent != null){
-				parent.invalidate();
-				block.invalidate();
-			} else {
-				getRootZone().invalidateAll();
-			}
-			PhysicalMemoryRegion pr = block.getPhysicalRegion();
-			if(pr != null) {
-				if(pr.arrangeBlocks()) {
-					fbModified = true; // this is just to set a breakpoint here
-				}
-			}
-			check(false); // do not update console on every change
-			fbModified = true;
-			emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this); 
+
+		if(!bModified){
+			return;
 		}
+
+		ICpRootZone rootZone = getRootZone();
+
+		String newName = block.getName();
+		if(!previousName.equals(newName)) {
+			Map<String, ICpZoneAssignment> assignments = block.getAssignments();
+			// rename assignments
+			if(assignments != null) {
+				for(ICpZoneAssignment a : assignments.values()) {
+					a.assign(block);
+				}
+			}
+			rootZone.invalidateAll();
+		} else if(parent != null){
+			parent.invalidate();
+			block.invalidate();
+		} else {
+			rootZone.invalidateAll();
+
+		}
+		PhysicalMemoryRegion pr = block.getPhysicalRegion();
+		if(pr != null) {
+			pr.arrangeBlocks();
+			rootZone.createMpuSetup();
+		}
+		check(false); // do not update console on every change
+		fbModified = true;
+		emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this);
 	}
+
 
 	public void arrangeBlocks() {
 		ICpRootZone root = getRootZone();
@@ -423,10 +426,11 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 			return;
 		}
 		boolean bModified = rc.arrangeBlocks();
-		
+
 		if(bModified){
 			fbModified = true;
-			emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this); 
+			root.createMpuSetup();
+			emitRteEvent(RteEvent.CONFIGURATION_MODIFIED, this);
 		}
 	}
 
@@ -437,7 +441,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		String absFileName = rootZone.getRootFileName();
 		IFile zoneFile = CpPlugInUI.getFileForLocation(absFileName);
 		if(zoneFile == null)
-			return; 
+			return;
 		ICmsisZoneValidator validator = new CmsisZoneValidator();
 		RteConsole rteConsole = null;
 		if(outputToConsole) {
@@ -454,11 +458,11 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 			return;
 		if(success)
 			rteConsole.outputInfo(Messages.CmsisZoneController_ValidationCompleted);
-		else 
+		else
 			rteConsole.outputError(Messages.CmsisZoneController_ValidationFailed);
-		
+
 	}
-	
+
 	public void generate(IFile zoneFile, IProgressMonitor monitor){
 		IProject project = zoneFile.getProject();
 		FmGenerator generator = new FmGenerator();
@@ -480,7 +484,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		}
 		if(success)
 			rteConsole.outputInfo(Messages.CmsisZoneController_GenerationCompleted);
-		else 
+		else
 			rteConsole.outputError(Messages.CmsisZoneController_GenerationFailed);
 		rteConsole.output(CmsisConstants.EMPTY_STRING);
 	}
@@ -498,10 +502,10 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
 		ICpRootZone rootZone = getRootZone();
 		if(rootZone == null)
 			return;
-		
+
 		if(rootZone.setZoneOption(type, key, value)) {
 			setModified(true);
 		}
 	}
-	
+
 }

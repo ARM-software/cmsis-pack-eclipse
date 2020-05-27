@@ -24,7 +24,7 @@ package com.arm.cmsis.pack.utils;
  * 
  * Both stings can be wild card patterns, for example "a*d" and "a*"  
  * 
- * The main purpose of this class is to support condition evaluation in CMSIS packs.
+ * The main purpose of this class is to support condition evaluation in CMSIS-Packs.
  * It is optimized for small strings, primary for device names like <b>"STM32F4[23]9??</b>".  
  * <p/>
  * The method has some limitations:
@@ -36,6 +36,15 @@ package com.arm.cmsis.pack.utils;
  * </ul> 
  */
 public class WildCards {
+	
+	
+	/**
+	 * Private constructor to prevent instantiating the utility class
+	 */
+	private WildCards() {
+		throw new IllegalStateException("WildCards is a utility class"); //$NON-NLS-1$
+	}
+
 	
 	/**
 	 * Match two strings containing wild cards (case sensitive)  
@@ -67,9 +76,7 @@ public class WildCards {
 	public static boolean match(final String str1, final String str2, boolean cs) {
 		// check for empty and null strings
 		if (str1 == null || str1.isEmpty()) {
-			if (str2 == null || str2.isEmpty())
-				return true;
-			return false;
+			return (str2 == null || str2.isEmpty());
 		} else if (str2 == null || str2.isEmpty()) {
 			return false;
 		}
@@ -86,11 +93,10 @@ public class WildCards {
 
 		// we need a symmetric comparison in case both strings contain '*' : 
 		// a*d and a*cd should be treated as equal
-		if (!result & ws1.containsAsterisk() && ws2.containsAsterisk()) {
+		if (!result && ws1.containsAsterisk() && ws2.containsAsterisk()) {
 			ws1.init();
 			ws2.init();
-			if (wildCardMatch(ws2, ws1))
-				return true;
+			return wildCardMatch(ws2, ws1);
 		}
 		return result;
 	}
@@ -127,7 +133,7 @@ public class WildCards {
 		return ws1.isEnd() && ws2.isEnd();
 	}
 
-	static private class WildcardState {
+	private static class WildcardState {
 		private String s;
 		private boolean cs = true;
 		private int index = 0;

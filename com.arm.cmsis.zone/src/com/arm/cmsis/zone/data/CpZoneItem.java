@@ -21,11 +21,11 @@ import com.arm.cmsis.pack.error.CmsisError;
 import com.arm.cmsis.pack.generic.Attributes;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.permissions.IMemoryAccess;
-import com.arm.cmsis.pack.permissions.IMemoryPermissions;
 import com.arm.cmsis.pack.permissions.IMemoryPriviledge;
+import com.arm.cmsis.pack.permissions.IMemorySecurity;
 
 /* 
- * Base class for CMSIS Zone elements 
+ * Base class for CMSIS-Zone elements 
  */
 public class CpZoneItem extends CpItem implements ICpZoneItem {
 	
@@ -93,9 +93,9 @@ public class CpZoneItem extends CpItem implements ICpZoneItem {
 	public ICpItem toFtlModel(ICpItem ftlParent, String key, String value) {
 		switch(key) {
 		case CmsisConstants.ACCESS:
-			return createFtlFlagsElement(ftlParent, key, value, IMemoryPermissions.ACCESS_FLAGS);
+			return createFtlFlagsElement(ftlParent, key, value, IMemoryAccess.ACCESS_FLAGS);
 		case CmsisConstants.SECURITY:
-			return createFtlFlagsElement(ftlParent, key, value, IMemoryPermissions.SECURITY_FLAGS);
+			return createFtlFlagsElement(ftlParent, key, value, IMemorySecurity.SECURITY_FLAGS);
 		case CmsisConstants.PRIVILEGE:
 			return createFtlFlagsElement(ftlParent, key, value, IMemoryPriviledge.PRIVILEGE_FLAGS);
 			default:

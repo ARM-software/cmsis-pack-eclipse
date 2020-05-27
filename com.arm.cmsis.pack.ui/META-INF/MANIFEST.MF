@@ -1,8 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: CMSIS Pack UI
+Bundle-Name: CMSIS-Pack UI
 Bundle-SymbolicName: com.arm.cmsis.pack.ui;singleton:=true
-Bundle-Version: 2.5.0.qualifier
+Automatic-Module-Name: com.arm.cmsis.pack.ui
+Bundle-Version: 2.6.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.ui.CpPlugInUI
 Bundle-Vendor: ARM
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

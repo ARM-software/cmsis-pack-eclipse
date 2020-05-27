@@ -23,11 +23,14 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.FileTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
 
 
 /**
@@ -49,6 +52,7 @@ public abstract class FileChangeWatcher  {
     protected WatchingThread thread;
     protected WatchEvent.Kind<?>[] watchEventKinds;
 
+    protected Map<String, ActionTask> fScheduledTasks; 
     protected boolean containsWildcards = false; // flag indicating that filesToWatch contains entries with wildcards 
     
 
@@ -60,6 +64,22 @@ public abstract class FileChangeWatcher  {
     }
 
 
+    class ActionTask extends TimerTask  { 	// Class to make a delayed (1 sec) processing of change event to allow file system to complete 
+    	String fFile;
+    	int fKind;
+    	ActionTask(String file, int kind) {
+    		fFile = file;
+    		fKind = kind;
+    	}
+    	
+    	@Override
+		public void run() {
+    		removeScheduledTask(fFile); // first remove task from the collection allowing to reschedule new change
+    		action(fFile, fKind); // then proceed with action 
+		}
+    }
+
+    
 	/**
 	 * Default constructor, registers for all events
 	 * @throws IOException
@@ -78,6 +98,7 @@ public abstract class FileChangeWatcher  {
 		filesToWatch = new HashMap<>();
 		watchFlags = flags;
 		watchEventKinds = getEventKinds();
+		fScheduledTasks = Collections.synchronizedMap(new HashMap<>());
 		thread = null;
 
 		try {
@@ -87,19 +108,6 @@ public abstract class FileChangeWatcher  {
 			watcher = null;
 		}
 	}
-
-	/**
-	 * Single file constructor: cannot be used if an extender redefines registerFile() or startWatch()
-	 * @param file file to watch
-	 * @param flags a combination of CREATE, MODIFY and DELETE flags. if 0 the behavior is undefined
-	 * @throws IOException
-	 */
-	protected FileChangeWatcher(String file, int flags) {
-		this(flags);
-		registerFile(file);
-		startWatch();
-	}
-
 
 	/**
 	 *  Stops watch and clears all keys
@@ -150,7 +158,7 @@ public abstract class FileChangeWatcher  {
 		if(filesToWatch.containsKey(file)) {
 			return;
 		}
-		if(file.indexOf('*') > 0 || file.indexOf('&') > 0 )
+		if(file.indexOf('*') >= 0 || file.indexOf('&') >= 0 )
 			containsWildcards = true;
 		
 		File f = new File(file);
@@ -158,11 +166,13 @@ public abstract class FileChangeWatcher  {
 		if(f.exists()) {
 			modified = f.lastModified();
 		}
+		
 		filesToWatch.put(file, modified);
-
-		String dir = Utils.extractPath(file, false);
-		Path path =  Paths.get(dir);
-		registerDir(path);
+		File parentDir = f.getParentFile();
+		if(!parentDir.exists()) {
+			parentDir.mkdirs();
+		}
+		registerDir(Paths.get(parentDir.getAbsolutePath()));
 	}
 
 	/**
@@ -171,13 +181,13 @@ public abstract class FileChangeWatcher  {
 	 * @throws IOException
 	 */
 	public synchronized void removeFile(String file) {
-		if(filesToWatch.containsKey(file)) {
+		if(!filesToWatch.containsKey(file)) {
 			return;
 		}
 		filesToWatch.remove(file);
 		containsWildcards = false;
 		for(String f : filesToWatch.keySet()) {
-			if(f.indexOf('*') > 0 || f.indexOf('&') > 0 ) {
+			if(f.indexOf('*') >= 0 || f.indexOf('&') >= 0 ) {
 				containsWildcards = true;
 				break;
 			}
@@ -245,7 +255,7 @@ public abstract class FileChangeWatcher  {
 		return eventList.toArray(new WatchEvent.Kind<?>[0]);
 	}
 
-	static public int eventKindToInt(Kind<?> kind) {
+	public static int eventKindToInt(Kind<?> kind) {
 		if(kind == StandardWatchEventKinds.ENTRY_CREATE) {
 			return CREATE;
 		} else if(kind == StandardWatchEventKinds.ENTRY_MODIFY) {
@@ -298,6 +308,7 @@ public abstract class FileChangeWatcher  {
             try {
                 key = watcher.take();
             } catch (InterruptedException x) {
+            	Thread.currentThread().interrupt();
                 return;
             }
 
@@ -332,13 +343,16 @@ public abstract class FileChangeWatcher  {
                 	if(kind != DELETE) {
                 		lastModified = f.lastModified();
                 	}
-                	diff = lastModified - filesToWatch.get(file);
-                    filesToWatch.put(file, lastModified); // anyway update the entry
+                	if(lastModified > 0) {
+                    	// check if modification time is changed, only diff > 100 usec is processed
+                		diff = lastModified - filesToWatch.get(file); 
+                		filesToWatch.put(file, lastModified); // anyway update the entry
+                	}
                 }
-                boolean changed = kind != MODIFY || diff != 0 || watched < 0;
+                boolean changed = kind != MODIFY || diff > 100L || watched < 0; 
 
                 if(changed && key.isValid()) {
-					action(file, kind);
+                	scheduleTask(file, kind);
 				}
             }
 
@@ -354,12 +368,40 @@ public abstract class FileChangeWatcher  {
         }
 	}
 
+	protected void scheduleTask(String file, int kind) {
+    	ActionTask task = getScheduledTask(file);
+    	if(task != null) {
+    		task.cancel();
+    	} 
+    	task = new ActionTask(file, kind);
+		synchronized(fScheduledTasks) {
+			fScheduledTasks.put(file, task);
+		}
+		Timer timer = new Timer();
+		timer.schedule(task, 1000);  // schedule update with 1 second delay to allow file system to complete write
+	}
+
+	protected ActionTask getScheduledTask(String file) {
+		ActionTask t = null;
+		synchronized(fScheduledTasks) {
+			t = fScheduledTasks.get(file);
+		}
+		return t;
+	}
+
+	protected void removeScheduledTask(String file) {
+		synchronized(fScheduledTasks) {
+			fScheduledTasks.remove(file);
+		}
+	}
+
+	
 	/**
 	 * Executes an action on file change
 	 * @param file absolute filename
 	 * @param kind one of CREATE, MODIFIED or DELETE values
 	 */
-	abstract protected void action(String file, int kind);
+	protected abstract void action(String file, int kind);
 
 	/**
 	 * Sets file' last modified time to the current system tyme

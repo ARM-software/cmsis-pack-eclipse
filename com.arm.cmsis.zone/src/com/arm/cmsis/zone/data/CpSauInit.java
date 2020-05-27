@@ -17,7 +17,7 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 
 /**
- *  Class containing SAUI regions 
+ *  Class containing SAUI regions
  */
 public class CpSauInit extends CpZoneItem implements ICpSauInit {
 
@@ -25,22 +25,19 @@ public class CpSauInit extends CpZoneItem implements ICpSauInit {
 		this(parent, CmsisConstants.SAU_INIT);
 	}
 
-	
+
 	public CpSauInit(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
 
 	@Override
 	protected ICpItem createChildItem(String tag) {
-		switch (tag) {
-		case CmsisConstants.REGION:
+		if (CmsisConstants.REGION.equals(tag)) {
 			return new CpSauRegion(this, tag);
-		default:
-			break;
 		}
 		return super.createChildItem(tag);
 	}
-	
+
 
 	@Override
 	public ICpSauRegion getSauRegion(String name) {
@@ -59,15 +56,11 @@ public class CpSauInit extends CpZoneItem implements ICpSauInit {
 
 	@Override
 	public ICpItem toFtlModel(ICpItem ftlParent) {
-		Collection<ICpSauRegion> sauRegions = getSauRegions();
-		if(sauRegions == null || sauRegions.isEmpty())
-			return null;
-		for(ICpSauRegion sr: sauRegions ){
+		for(ICpSauRegion sr: getSauRegions() ){
 			ICpItem sauItem = sr.toFtlModel(ftlParent);
 			if(ftlParent != null)
 				ftlParent.addChild(sauItem);
 		}
-
 		return null; //  does not include itself
 	}
 }

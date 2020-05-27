@@ -15,6 +15,7 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
+import com.arm.cmsis.pack.enums.ECoreArchitecture;
 import com.arm.cmsis.pack.enums.IEvaluationResult;
 
 /**
@@ -76,4 +77,14 @@ public interface ICpDeviceInfo extends ICpItemInfo, IEvaluationResult {
 	 * @return absolute dbgconf filename or empty string if no file is available
 	 */
 	default String getDgbConfFileName() { return CmsisConstants.EMPTY_STRING;}
+	
+	
+	/**
+	 * Return processor architecture
+	 * @return ECoreArchitecture enum value
+	 */
+	default ECoreArchitecture getCoreArchitecture() {
+		return ECoreArchitecture.fromString(getAttribute(CmsisConstants.DCORE));
+	}
+	
 }

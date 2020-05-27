@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -19,22 +20,22 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 /**
- * Class filtering packs 
+ * Class filtering packs
  */
 public class CpPackFilter implements ICpPackFilter {
 
 	protected boolean fbUseAllLatestPacks = true;
-	protected Map<String, Set<String> > fPackVersions = null; // filtered pack IDs (common id , set of versions)   
+	protected Map<String, Set<String> > fPackVersions = null; // filtered pack IDs (common id , set of versions)
 	protected Set<String> fLatestPackIDs = null;
-	
+
 	/**
-	 * Default empty constructor 
+	 * Default empty constructor
 	 */
 	public CpPackFilter() {
-		fPackVersions = new HashMap<String, Set<String>>();
+		fPackVersions = new HashMap<>();
 	}
 
-	
+
 	/**
 	 * Copy constructor
 	 * @param filter ICpPackFilter to copy from
@@ -50,13 +51,13 @@ public class CpPackFilter implements ICpPackFilter {
 			for(Entry<String, Set<String> > e : packVersions.entrySet()){
 				Set<String> versions = e.getValue();
 				if(versions != null)
-					versions= new HashSet<String>( versions); // make copy
-				fPackVersions.put(e.getKey(), versions); 
+					versions= new HashSet<>( versions); // make copy
+				fPackVersions.put(e.getKey(), versions);
 			}
 		}
 	}
-	
-	
+
+
 	@Override
 	public Map<String, Set<String>> getFilterdPackVersions() {
 		return fPackVersions;
@@ -78,13 +79,13 @@ public class CpPackFilter implements ICpPackFilter {
 				return true;
 			return isLatest(packId);
 		}
-		
+
 		if(!fPackVersions.containsKey(familyId))
 			return false;
-		
+
 		if(familyId.equals(packId))
 			return true;
-			
+
 		Set<String> versions = fPackVersions.get(familyId);
 		if(versions == null || versions.isEmpty())
 			return isLatest(packId);
@@ -96,9 +97,9 @@ public class CpPackFilter implements ICpPackFilter {
 	public Set<String> getLatestPackIDs() {
 		return fLatestPackIDs;
 	}
-	
+
 	public String getLatestPackId(String familyId){
-		if(fLatestPackIDs != null) {	
+		if(fLatestPackIDs != null) {
 			for(String id : fLatestPackIDs) {
 				if(id.startsWith(familyId))
 					return id;
@@ -106,22 +107,22 @@ public class CpPackFilter implements ICpPackFilter {
 		}
 		return null;
 	}
-	
+
 	@Override
 	public void setLatestPackIDs(Set<String> latestPackIDs) {
 		fLatestPackIDs = latestPackIDs;
 	}
-	
+
 	public boolean isLatest(final String packId) {
 		if(fLatestPackIDs != null)
 			return fLatestPackIDs.contains(packId);
 		return false;
 	}
-	
+
 
 	@Override
 	public Collection<ICpPack> filter(final Collection<ICpPack> packs) {
-		Collection<ICpPack> filtered = new HashSet<ICpPack>(); 
+		Collection<ICpPack> filtered = new HashSet<>();
 		if(packs != null) {
 			for(ICpPack pack : packs){
 				if(passes(pack))
@@ -136,7 +137,7 @@ public class CpPackFilter implements ICpPackFilter {
 		return fbUseAllLatestPacks;
 	}
 
-	
+
 	@Override
 	public void setUseAllLatestPacks(boolean bUseLatest) {
 		fbUseAllLatestPacks = bUseLatest;
@@ -186,23 +187,23 @@ public class CpPackFilter implements ICpPackFilter {
 		Set<String> versions = getVersions(packId);
 		if(versions == null || versions.isEmpty())
 			return false;
-		
+
 		String version  = CpPack.versionFromId(packId);
-		if(version.isEmpty()) 
+		if(version.isEmpty())
 			return true; // family Id is supplied => check for latest is wanted
-		return versions.contains(version);		
+		return versions.contains(version);
 	}
 
 	@Override
 	public void setFixed(String packId, boolean fixed) {
 		String version = CpPack.versionFromId(packId);
 		if(version.isEmpty()) {
-			if(fixed == false) {
+			if(!fixed) {
 				setUseLatest(packId);
 				return;
 			}
 			String id = getLatestPackId(packId);
-			if(id == null) 
+			if(id == null)
 				return;
 			version = CpPack.versionFromId(id);
 			if(version.isEmpty())
@@ -212,7 +213,7 @@ public class CpPackFilter implements ICpPackFilter {
 		Set<String> versions = getVersions(packId);
 		if(fixed) {
 			if(versions == null) {
-				versions = new HashSet<String>();
+				versions = new HashSet<>();
 				fPackVersions.put(CpPack.familyFromId(packId), versions);
 			}
 			versions.add(version);
@@ -220,11 +221,11 @@ public class CpPackFilter implements ICpPackFilter {
 			versions.remove(version);
 		}
 	}
-	
+
 	@Override
 	public Set<String> getVersions(final String packId) {
 		if(fPackVersions.isEmpty())
-			return null;
+			return null; // we need to return null, not empty collection to indicate that the collection needs to be created!
 		String familyId = CpPack.familyFromId(packId);
 		return fPackVersions.get(familyId);
 	}
@@ -234,28 +235,27 @@ public class CpPackFilter implements ICpPackFilter {
 	public boolean equals(Object other) {
 		if(other == this)
 			return true;
-		
+
 		if(!(other instanceof ICpPackFilter))
 			return false;
-		
+
 		ICpPackFilter filter = (ICpPackFilter)other;
 		if(filter.isUseAllLatestPacks() != fbUseAllLatestPacks)
 			return false;
 		if(fbUseAllLatestPacks)
 			return true; // only this flag makes sense to compare if enabled
-		
+
 		if(fPackVersions.size() != filter.getFilterdPackVersions().size())
 			return false;
-		
+
 		for(Entry<String, Set<String> > e : fPackVersions.entrySet()){
 			Set<String > versions=  e.getValue();
 			Set<String > otherVersions = filter.getVersions(e.getKey());
 			if(versions != null && otherVersions != null) {
 				if(!versions.equals(otherVersions))
 					return false;
-			} else {
-				if(versions != otherVersions)
-					return false;
+			} else if(versions != otherVersions) {
+				return false;
 			}
 		}
 		return true;
@@ -264,7 +264,7 @@ public class CpPackFilter implements ICpPackFilter {
 	@Override
 	public int hashCode() {
 		// just to make Find Bugs happy, we do rely on the Object.hashCode()
-		return super.hashCode();  
+		return super.hashCode();
 	}
-	
+
 }

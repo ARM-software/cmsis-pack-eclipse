@@ -43,9 +43,9 @@ public interface ICpPack extends ICpRootItem {
 		GENERATED,
 		UNKNOWN,
 		ERROR;
-		
+
 		public boolean isInstalledOrLocal() {
-			return this == INSTALLED || this == LOCAL;  
+			return this == INSTALLED || this == LOCAL;
 		}
 	}
 
@@ -99,23 +99,23 @@ public interface ICpPack extends ICpRootItem {
 
 	/**
 	 * Checks if pack contains device descriptions
-	 * @return true if pack contains at least one device item 
+	 * @return true if pack contains at least one device item
 	 */
 	default boolean hasDevices() {
 		Collection<? extends ICpItem> devices = getGrandChildren(CmsisConstants.DEVICES_TAG);
 		return devices != null && !devices.isEmpty();
 	}
-			
+
 	/**
 	 * Checks if pack contains board descriptions
-	 * @return true if pack contains at least one board item 
+	 * @return true if pack contains at least one board item
 	 */
 	default boolean hasBoards() {
 		Collection<? extends ICpItem> boards = getGrandChildren(CmsisConstants.BOARDS_TAG);
 		return boards != null && !boards.isEmpty();
 	}
 
-	
+
 	/**
 	 * Check if this pack is generic or not
 	 * @return true if this pack is generic
@@ -127,7 +127,7 @@ public interface ICpPack extends ICpRootItem {
 	 */
 	boolean isLatest();
 
-	
+
 	/**
 	 * Returns collection of Pack releases (from latest to oldest)
 	 * @return collection of ICpItem representing pack releases
@@ -135,15 +135,63 @@ public interface ICpPack extends ICpRootItem {
 	Collection<? extends ICpItem> getReleases();
 
 	/**
+	 * Returns release item corresponding this pack version
+	 * @return version corresponding this pack version if any
+	 */
+	default ICpItem getThisRelease() {
+		String thisVersion = getVersion();
+		for(ICpItem release : getReleases()) {
+			if(thisVersion.equals(release.getVersion())) {
+				return release;
+			}
+		}
+		return null;
+	}
+
+	/**
 	 * Returns collection of required packs of this pack
 	 * @return collection of required packs of this pack
 	 */
 	Collection<? extends ICpItem> getRequiredPacks();
-	
+
 	/**
-	 * Return the download url of the selected release if specified,
-	 * otherwise return EMPTY_STRING
-	 * @return
+	 * Returns the download URL of the specified release if specified,
+	 * otherwise returns EMPTY_STRING
+	 * @return pack URL
 	 */
 	String getReleaseUrl(String version);
+
+
+	/**
+	 * Return the download URL for the specified version of the: this can be the main URL or an alternative one from the release
+	 * @param version required pack version 
+	 * @return pack URL
+	 */
+	default String getDownloadUrl(String version) {
+		String url = getReleaseUrl(version);
+		if(!url.isEmpty())
+			return url;
+		return getUrl();
+	}
+
+	/**
+	 * Return the download URL for this pack: this can be the main URL or an alternative one from the release
+	 * @return pack URL
+	 */
+	default String getDownloadUrl() {
+		return getDownloadUrl(getVersion());
+	}
+
+	/**
+	 * Returns repository URL if specified by "repository" element in pack description 
+	 * @return repository URL or empty String
+	 */
+	default String getRepositoryUrl() {
+		ICpItem repo = getFirstChild(CmsisConstants.REPOSITORY);
+		if(repo != null)
+			return repo.getText();
+		return CmsisConstants.EMPTY_STRING;
+	}
+
+
 }

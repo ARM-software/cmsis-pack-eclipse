@@ -23,7 +23,8 @@ package com.arm.cmsis.pack.enums;
  *  <dt>MISSING_VARIANT</dt> 	  <dd> no component of specified variant is installed
  *  <dt>MISSING_VENDOR</dt>  	  <dd> no component from specified vendor is installed
  *	<dt>MISSING_VERSION</dt> 	  <dd> no component of specified version is installed
- *  <dt>MISSING_API</dt>          <dd> no api of required version is installed
+ *  <dt>MISSING_API</dt>          <dd> no required api is installed
+ *  <dt>MISSING_API_VERSION</dt>  <dd> no api of required version is installed
  *  <dt>UNAVAILABLE</dt>          <dd> component is installed but filtered out
  *  <dt>UNAVAILABLE_PACK</dt>     <dd> component is installed but pack is not selected
  *	<dt>INCOMPATIBLE</dt>         <dd> incompatible component is selected (result of deny expression)
@@ -80,9 +81,13 @@ public enum EEvaluationResult {
 	 */
 	MISSING_VERSION,
 	/**
-	 *  no api of required version is installed
+	 *  no required api is installed
 	 */
 	MISSING_API,
+	/**
+	 *  no api of required version is installed
+	 */
+	MISSING_API_VERSION,
 	/**
 	 *  component is installed, but filtered out
 	 */
@@ -171,10 +176,9 @@ public enum EEvaluationResult {
 			case CBUNDLE:
 				if(base.equals(MISSING)) {
 					return MISSING_BUNDLE;
-				} else if(base.equals(INCOMPATIBLE)) {
-					return INCOMPATIBLE_BUNDLE;
 				}
-				break;
+				// base is INCOMPATIBLE
+				return INCOMPATIBLE_BUNDLE;
 			case CCONDITION:
 			case CNONE:
 				return UNDEFINED;
@@ -182,11 +186,10 @@ public enum EEvaluationResult {
 			case CVENDOR:
 			case CVERSION:
 			case CAPIVERSION:
+			{
 				int n = componentAttribute.ordinal() - EComponentAttribute.CVARIANT.ordinal() + 1;
-				if(base.equals(MISSING) || base.equals(INCOMPATIBLE)) {
-					return valueOf( base.ordinal() + n);
-				}
-				break;
+				return valueOf( base.ordinal() + n);
+			}
 			case CCLASS:
 			case CGROUP:
 			case CSUB:
@@ -205,5 +208,21 @@ public enum EEvaluationResult {
 	public boolean isFulfilled() {
 		return this == FULFILLED || this == IGNORED;
 	}
-	
+
+	/**
+	 * Returns if result is UNDEFINED
+	 * @return true if result == UNDEFINED
+	 */
+	public boolean isUndefined() {
+		return this == UNDEFINED;
+	}
+
+	/**
+	 * Returns true if result is missing API or API version
+	 * @return true if results is MISSING_API or MISSING_API_VERSION;
+	 */
+	public boolean isMissingApi() {
+		return this == MISSING_API || this == MISSING_API_VERSION;
+	}
+
 }

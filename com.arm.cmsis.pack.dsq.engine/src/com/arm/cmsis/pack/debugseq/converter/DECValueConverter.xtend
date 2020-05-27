@@ -18,13 +18,13 @@ import org.eclipse.xtext.util.Strings
 
 class DECValueConverter extends AbstractLexerBasedConverter<Long> {
 	override protected String toEscapedString(Long value) {
-		return '''«value.toString()»'''
+		return '''Â«value.toString()Â»'''
 	}
 
 	override protected void assertValidValue(Long value) {
 		super.assertValidValue(value)
 		if(value < 0)
-			throw new ValueConverterException('''«getRuleName()»-value may not be negative (value: «value»).''',
+			throw new ValueConverterException('''Â«getRuleName()Â»-value may not be negative (value: Â«valueÂ»).''',
 			null, null);
 	}
 
@@ -35,7 +35,7 @@ class DECValueConverter extends AbstractLexerBasedConverter<Long> {
 			var long longValue = Long.parseUnsignedLong(string, 10)
 			return Long.valueOf(longValue)
 		} catch (NumberFormatException e) {
-			throw new ValueConverterException('''Couldn't convert '«string»' to an decimal value.''', node, e)
+			throw new ValueConverterException('''Couldn't convert 'Â«stringÂ»' to an decimal value.''', node, e)
 		}
 
 	}

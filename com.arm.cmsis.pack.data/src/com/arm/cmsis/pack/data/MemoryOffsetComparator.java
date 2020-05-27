@@ -26,7 +26,7 @@ public class MemoryOffsetComparator extends MemorySizeComparator {
 		return super.compare(o1, o2);
 	}
 
-	static public int compareByOffset(ICpMemory o1, ICpMemory o2) {
+	public static int compareByOffset(ICpMemory o1, ICpMemory o2) {
 		if(o1 == null && o2 == null )
 			return 0;
 		if(o1 == null)

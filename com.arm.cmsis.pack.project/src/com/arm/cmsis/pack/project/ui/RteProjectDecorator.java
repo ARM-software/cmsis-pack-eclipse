@@ -40,7 +40,7 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
  */
 public class RteProjectDecorator implements ILightweightLabelDecorator {
 
-	static public final String ID = "com.arm.cmsis.pack.project.decorators.RteProjectDecorator"; //$NON-NLS-1$
+	public static final String ID = "com.arm.cmsis.pack.project.decorators.RteProjectDecorator"; //$NON-NLS-1$
 
 	@Override
 	public void decorate(Object element, IDecoration decoration) {
@@ -156,7 +156,7 @@ public class RteProjectDecorator implements ILightweightLabelDecorator {
 	/**
 	 * Refreshes decoration of all RTE resources
 	 */
-	static public void refresh() {
+	public static void refresh() {
 		// Decorate using current UI thread
 		Display.getDefault().asyncExec(new Runnable() {
 			@Override

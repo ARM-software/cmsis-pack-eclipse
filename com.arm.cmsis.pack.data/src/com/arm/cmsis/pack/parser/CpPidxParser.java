@@ -14,6 +14,7 @@ package com.arm.cmsis.pack.parser;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,8 +31,8 @@ import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Using CpXmlParser this class implements utilities to read files based on pidx schema, e.g. index.pidx, local_repository.pidx.
- *  
- * In addition some routines are available to handle specific functionalities related to use cases.  
+ *
+ * In addition some routines are available to handle specific functionalities related to use cases.
  * @author ducngu01
  *
  */
@@ -41,29 +42,33 @@ public class CpPidxParser {
 	public static final int VENDOR = 2;
 	public static final int VERSION = 3;
 	public static final String[] PACK_IGNORE_TAGS = new String[] {
-		CmsisConstants.DEVICES_TAG, 
-		CmsisConstants.COMPONENTS_TAG, 
-		CmsisConstants.BOARDS_TAG, 
-		CmsisConstants.CONDITIONS_TAG 
+		CmsisConstants.DEVICES_TAG,
+		CmsisConstants.COMPONENTS_TAG,
+		CmsisConstants.BOARDS_TAG,
+		CmsisConstants.CONDITIONS_TAG
 	};
-	
-	public CpPidxParser() {
+
+
+
+	/**
+	 * Private constructor to prevent instantiating the utility class
+	 */
+	private CpPidxParser() {
+		throw new IllegalStateException("CpPidxParser is a utility class"); //$NON-NLS-1$
 	}
 
 	/**
 	 * Partly parsing a pdsc file to retrieve only the pack id.
 	 * @param pdscFile
 	 * 		name of pdsc file
-	 * @return pack id specified in the pdsc file 
+	 * @return pack id specified in the pdsc file
 	 */
 	public static String parsePdsc(String pdscFile) {
 		PdscParser pdscParser = new PdscParser();
 		Set<String> tagSet = new HashSet<>();
-		for (String tag:PACK_IGNORE_TAGS) {
-			tagSet.add(tag);
-		}
+		Collections.addAll(tagSet, PACK_IGNORE_TAGS);
 		pdscParser.setIgnoreTags(tagSet);
-		
+
 		ICpItem root = pdscParser.parseFile(pdscFile);
 		if (!(root instanceof ICpPack)) {
 			return null;
@@ -73,14 +78,14 @@ public class CpPidxParser {
 	}
 
 	/**
-	 * Read file based on pidx schema, e.g. local_repository.pidx  
+	 * Read file based on pidx schema, e.g. local_repository.pidx
 	 * @param pidxFile
 	 *            pidx file
 	 * @return a list with pack id mapped to folder where a pack is installed
 	 */
 	public static Map<String, String> parsePidx(String pidxFile) {
 		CpXmlParser parser = new CpXmlParser();
-		
+
 		ICpItem rootItem = parser.parseFile(pidxFile);
 		Map<String, String> map = new HashMap<>();
 		if (rootItem == null) {
@@ -105,12 +110,12 @@ public class CpPidxParser {
 		}
 		return map;
 	}
-	
+
 	/**
-	 * Parsers index.pidx file and puts information into the list 
+	 * Parsers index.pidx file and puts information into the list
 	 * @param pidxFile index.pidx file
 	 * @param indexList	if successful list of vendor, name and version of packs
-	 * @return number of pdsc files 
+	 * @return number of pdsc files
 	 */
 	public static int parsePidx(String pidxFile, List<String[]> indexList) {
 
@@ -120,9 +125,7 @@ public class CpPidxParser {
 			return 0;
 		}
 
-		// Check time stamp and url of the index.pidx
-		String url = rootItem.getFirstChildText(CmsisConstants.URL);
-		
+		String url;
 		// fill indexList
 		int count = 0;
 		Collection<ICpItem> pidx = rootItem.getChildren(CmsisConstants.PINDEX);
@@ -137,23 +140,19 @@ public class CpPidxParser {
 						name += CmsisConstants.EXT_PDSC;
 					}
 					name = vendor + '.' + name;
-					String replacement = entry.getAttribute(CmsisConstants.REPLACEMENT);
-					if (!replacement.isEmpty()) {
-						name = replacement + CmsisConstants.EXT_PDSC;
-					}
 					String version = entry.getAttribute(CmsisConstants.VERSION);
 					indexList.add(new String[] { url, name, version });
 					count++;
 				}
 			}
 		}
-	
+
 		return count;
 	}
 
 
 	/**
-	 * 
+	 *
 	 * @param item
 	 * 	a pair of pack id as key and folder as value
 	 * @return
@@ -164,7 +163,7 @@ public class CpPidxParser {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param item
 	 * 		a pair of pack id as key and folder as value
 	 * @return
@@ -174,25 +173,25 @@ public class CpPidxParser {
 		String fileName = item.getValue();
 		String packId = item.getKey();
 		int second = packId.indexOf('.', packId.indexOf('.') +1);
-		fileName += packId.substring(0, second) + CmsisConstants.EXT_PDSC; 
+		fileName += packId.substring(0, second) + CmsisConstants.EXT_PDSC;
 		if (fileName.startsWith(CmsisConstants.LOCAL_FILE_URL)) {
 			fileName = fileName.substring(CmsisConstants.LOCAL_FILE_URL.length());
 		}
 		return fileName;
 	}
-	
+
 	/**
 	 * Look for local repositories specified in .local\local_repository.pidx
 	 * @param localDir
 	 * 		.local folder of the current rte
 	 * @return
-	 * 	a list of pdsc files (locating in local repositories) 
+	 * 	a list of pdsc files (locating in local repositories)
 	 */
 	public static Collection<String> getLocalRepositoryFileNames(String localDir) {
-		Collection<String> fileNames = new LinkedList<String>();
+		Collection<String> fileNames = new LinkedList<>();
 		localDir += '/' + CmsisConstants.LOCAL_REPOSITORY_PIDX;
-		Map<String, String> map = parsePidx(localDir); 
-		
+		Map<String, String> map = parsePidx(localDir);
+
 		if (map != null) {
 			for (Entry<String, String> entry :map.entrySet()) {
 				String key = entry.getKey();
@@ -202,10 +201,10 @@ public class CpPidxParser {
 				fileNames.add(fileName);
 			}
 		}
-		
+
 		return fileNames;
 	}
-	
+
 	/**
 	 * Create a new local repository file overwriting the previous one.
 	 * @param xmlFile
@@ -218,12 +217,12 @@ public class CpPidxParser {
 	public static void createPidxFile(String xmlFile, Map<String, String> map, String url) {
 
 		CpXmlParser parser = new CpXmlParser();
-		
+
 		// setup tag index
 		ICpItem rootItem = parser.createItem(null, CmsisConstants.INDEX);
-		rootItem.setAttribute(CmsisConstants.SCHEMAVERSION, "1.1.0"); //$NON-NLS-1$
-		rootItem.setAttribute("xmlns:xsi", CmsisConstants.SCHEMAINSTANCE); //$NON-NLS-1$
-		rootItem.setAttribute(CmsisConstants.SCHEMALOCATION, "PackIndex.xsd"); //$NON-NLS-1$
+		rootItem.setAttribute(CpXmlParser.SCHEMAVERSION, "1.1.0"); //$NON-NLS-1$
+		rootItem.setAttribute("xmlns:xsi", CpXmlParser.SCHEMAINSTANCE); //$NON-NLS-1$
+		rootItem.setAttribute(CpXmlParser.SCHEMALOCATION, "PackIndex.xsd"); //$NON-NLS-1$
 
 		// setup tag vendor
 		ICpItem item = parser.createItem(rootItem, CmsisConstants.VENDOR);
@@ -237,7 +236,7 @@ public class CpPidxParser {
 
 		// setup tag timestamp
 		Date today = Calendar.getInstance().getTime();
-		SimpleDateFormat timestamp = new SimpleDateFormat(CmsisConstants.DATETIMEFORMAT);
+		SimpleDateFormat timestamp = new SimpleDateFormat(CpXmlParser.DATETIMEFORMAT);
 		item = parser.createItem(rootItem, CmsisConstants.TIMESTAMP);
 		item.setText(timestamp.format(today));
 		rootItem.addChild(item);
@@ -245,7 +244,7 @@ public class CpPidxParser {
 		// setup tag pindex
 		ICpItem pindex = parser.createItem(rootItem, CmsisConstants.PINDEX);
 		rootItem.addChild(pindex);
-		
+
 		if (map != null) {
 			for (Entry<String, String> entry : map.entrySet()) {
 				item = parser.createItem(pindex, CmsisConstants.PDSC);
@@ -259,7 +258,7 @@ public class CpPidxParser {
 				item.setAttribute(CmsisConstants.VERSION, packId.substring(second+1, packId.length()));
 			}
 		}
-		
+
 		parser.writeToXmlFile(rootItem, xmlFile);
 	}
 }

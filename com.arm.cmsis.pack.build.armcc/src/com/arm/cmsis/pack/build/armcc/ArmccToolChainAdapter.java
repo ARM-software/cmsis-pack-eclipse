@@ -36,131 +36,131 @@ import com.arm.cmsis.pack.generic.IAttributes;
  */
 public class ArmccToolChainAdapter extends RteToolChainAdapter {
 	
-	static public final int ARMCC5_ASMDEFINES_OPTION = IBuildSettings.RTE_USER_OPTION + 1;
-	static public final int ARMCC_ENABLE_TOOL_SPECIFIC_OPTION = IBuildSettings.TOOLCHAIN_USER_OPTION + 1;
-	static public final int ARMCC_USE_MICROLIB 		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 2;
-	static public final int CPU_FPU_OPTION 			 = IBuildSettings.TOOLCHAIN_USER_OPTION + 5;
-	static public final int C5_LANGUAGE_MODE		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 6;
-	static public final int CPP5_LANGUAGE_MODE		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 7;
-	static public final int C6_LANGUAGE_MODE		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 8;
-	static public final int CPP6_LANGUAGE_MODE		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 9;
+	public static final int ARMCC5_ASMDEFINES_OPTION = IBuildSettings.RTE_USER_OPTION + 1;
+	public static final int ARMCC_ENABLE_TOOL_SPECIFIC_OPTION = IBuildSettings.TOOLCHAIN_USER_OPTION + 1;
+	public static final int ARMCC_USE_MICROLIB 		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 2;
+	public static final int CPU_FPU_OPTION 			 = IBuildSettings.TOOLCHAIN_USER_OPTION + 5;
+	public static final int C5_LANGUAGE_MODE		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 6;
+	public static final int CPP5_LANGUAGE_MODE		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 7;
+	public static final int C6_LANGUAGE_MODE		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 8;
+	public static final int CPP6_LANGUAGE_MODE		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 9;
 	
-	static public final int ARMCC5_OPTLEVEL		     = IBuildSettings.TOOLCHAIN_USER_OPTION + 10;
-	static public final int ARMCC_LINKER_ENTRY	     = IBuildSettings.TOOLCHAIN_USER_OPTION + 11;
-	static public final int A6_FORCE_PREPROC 		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 12;
-	static public final int A6_MASM 		 		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 13;
+	public static final int ARMCC5_OPTLEVEL		     = IBuildSettings.TOOLCHAIN_USER_OPTION + 10;
+	public static final int ARMCC_LINKER_ENTRY	     = IBuildSettings.TOOLCHAIN_USER_OPTION + 11;
+	public static final int A6_FORCE_PREPROC 		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 12;
+	public static final int A6_MASM 		 		 = IBuildSettings.TOOLCHAIN_USER_OPTION + 13;
 	
-	static public final int C6_FLOAT_ABI 		 	 = IBuildSettings.TOOLCHAIN_USER_OPTION + 14;
+	public static final int C6_FLOAT_ABI 		 	 = IBuildSettings.TOOLCHAIN_USER_OPTION + 14;
 
-	static public final int C6_SHORT_ENUMS 		 	 = IBuildSettings.TOOLCHAIN_USER_OPTION + 20;
+	public static final int C6_SHORT_ENUMS 		 	 = IBuildSettings.TOOLCHAIN_USER_OPTION + 20;
 	
-	static public final String CORTEX = "Cortex";  //$NON-NLS-1$
-	static public final String CORTEX_A = "Cortex-A";  //$NON-NLS-1$
-	static public final String CORTEX_M = "Cortex-M";  //$NON-NLS-1$
-	static public final String GENERIC = "Generic";  //$NON-NLS-1$
-	static public final String GENERIC_ARMV8M_BASE = GENERIC + ".ARMv8-M.Base";  //$NON-NLS-1$
-	static public final String GENERIC_ARMV8M_MAIN = GENERIC + ".ARMv8-M.Main";  //$NON-NLS-1$
-	static public final String GENERIC_ARMV81M_MAIN = GENERIC + ".ARMv8.1-M.Main";  //$NON-NLS-1$
+	public static final String CORTEX = "Cortex";  //$NON-NLS-1$
+	public static final String CORTEX_A = "Cortex-A";  //$NON-NLS-1$
+	public static final String CORTEX_M = "Cortex-M";  //$NON-NLS-1$
+	public static final String GENERIC = "Generic";  //$NON-NLS-1$
+	public static final String GENERIC_ARMV8M_BASE = GENERIC + ".ARMv8-M.Base";  //$NON-NLS-1$
+	public static final String GENERIC_ARMV8M_MAIN = GENERIC + ".ARMv8-M.Main";  //$NON-NLS-1$
+	public static final String GENERIC_ARMV81M_MAIN = GENERIC + ".ARMv8.1-M.Main";  //$NON-NLS-1$
 	
-	static public final String NoFPU = "NoFPU";  //$NON-NLS-1$
-	static public final String NoDSP_NoFPU = "NoDSP.NoFPU";  //$NON-NLS-1$
+	public static final String NoFPU = "NoFPU";  //$NON-NLS-1$
+	public static final String NoDSP_NoFPU = "NoDSP.NoFPU";  //$NON-NLS-1$
 	
-	static public final String SETA = " SETA ";  //$NON-NLS-1$
+	public static final String SETA = " SETA ";  //$NON-NLS-1$
 
-	static public final String AUTO = "auto"; //$NON-NLS-1$
-	static public final String LITTLE = "little"; //$NON-NLS-1$
-	static public final String BIG = "big"; //$NON-NLS-1$
+	public static final String AUTO = "auto"; //$NON-NLS-1$
+	public static final String LITTLE = "little"; //$NON-NLS-1$
+	public static final String BIG = "big"; //$NON-NLS-1$
 	
-	static public final String TOOLCHAIN_PREFIX_5 = "com.arm.toolchain.ac5.option."; //$NON-NLS-1$
+	public static final String TOOLCHAIN_PREFIX_5 = "com.arm.toolchain.ac5.option."; //$NON-NLS-1$
 	
-	static public final String COPT_PREFIX_5 	= "com.arm.tool.c.compiler.option."; //$NON-NLS-1$
-	static public final String COPT_PREFIX_6 	= "com.arm.tool.c.compiler.v6.base.option."; //$NON-NLS-1$	
+	public static final String COPT_PREFIX_5 	= "com.arm.tool.c.compiler.option."; //$NON-NLS-1$
+	public static final String COPT_PREFIX_6 	= "com.arm.tool.c.compiler.v6.base.option."; //$NON-NLS-1$	
 	 
-	static public final String CPPOPT_PREFIX_5 	= "com.arm.tool.cpp.compiler.option."; //$NON-NLS-1$
-	static public final String CPPOPT_PREFIX_6 	= "com.arm.tool.cpp.compiler.v6.base.option."; //$NON-NLS-1$
+	public static final String CPPOPT_PREFIX_5 	= "com.arm.tool.cpp.compiler.option."; //$NON-NLS-1$
+	public static final String CPPOPT_PREFIX_6 	= "com.arm.tool.cpp.compiler.v6.base.option."; //$NON-NLS-1$
 
 	
-	static public final String ENDIAN_PREFICS_5	= COPT_PREFIX_5 + "endian."; //$NON-NLS-1$
-	static public final String ENDIAN_PREFICS_6	= COPT_PREFIX_6 + "endian."; //$NON-NLS-1$
+	public static final String ENDIAN_PREFICS_5	= COPT_PREFIX_5 + "endian."; //$NON-NLS-1$
+	public static final String ENDIAN_PREFICS_6	= COPT_PREFIX_6 + "endian."; //$NON-NLS-1$
 	
-	static public final String C5_C_MODE	= "com.arm.tool.c.compile.option.lang"; //$NON-NLS-1$
-	static public final String C5_AUTO		= "com.arm.tool.c.compile.option.lang.auto"; //$NON-NLS-1$
-	static public final String C5_C90 		= "com.arm.tool.c.compile.option.lang.c90"; //$NON-NLS-1$
-	static public final String C5_C99 		= "com.arm.tool.c.compile.option.lang.c99"; //$NON-NLS-1$
-	static public final String C5_CPP		= "com.arm.tool.c.compile.option.lang.cpp"; //$NON-NLS-1$
-	static public final String C5_CPP11		= "com.arm.tool.c.compile.option.lang.cpp11"; //$NON-NLS-1$
+	public static final String C5_C_MODE	= "com.arm.tool.c.compile.option.lang"; //$NON-NLS-1$
+	public static final String C5_AUTO		= "com.arm.tool.c.compile.option.lang.auto"; //$NON-NLS-1$
+	public static final String C5_C90 		= "com.arm.tool.c.compile.option.lang.c90"; //$NON-NLS-1$
+	public static final String C5_C99 		= "com.arm.tool.c.compile.option.lang.c99"; //$NON-NLS-1$
+	public static final String C5_CPP		= "com.arm.tool.c.compile.option.lang.cpp"; //$NON-NLS-1$
+	public static final String C5_CPP11		= "com.arm.tool.c.compile.option.lang.cpp11"; //$NON-NLS-1$
 	
-	static public final String C5_CPP_MODE = "com.arm.tool.cpp.compiler.option.lang"; //$NON-NLS-1$
-	static public final String CPP5_AUTO	= "com.arm.tool.cpp.compiler.option.lang.auto"; //$NON-NLS-1$
-	static public final String CPP5_C90 	= "com.arm.tool.cpp.compiler.option.lang.c90"; //$NON-NLS-1$
-	static public final String CPP5_C99 	= "com.arm.tool.cpp.compiler.option.lang.c99"; //$NON-NLS-1$
-	static public final String CPP5_CPP		= "com.arm.tool.cpp.compiler.option.lang.cpp"; //$NON-NLS-1$
-	static public final String CPP5_CPP11	= "com.arm.tool.cpp.compiler.option.lang.cpp11"; //$NON-NLS-1$
+	public static final String C5_CPP_MODE = "com.arm.tool.cpp.compiler.option.lang"; //$NON-NLS-1$
+	public static final String CPP5_AUTO	= "com.arm.tool.cpp.compiler.option.lang.auto"; //$NON-NLS-1$
+	public static final String CPP5_C90 	= "com.arm.tool.cpp.compiler.option.lang.c90"; //$NON-NLS-1$
+	public static final String CPP5_C99 	= "com.arm.tool.cpp.compiler.option.lang.c99"; //$NON-NLS-1$
+	public static final String CPP5_CPP		= "com.arm.tool.cpp.compiler.option.lang.cpp"; //$NON-NLS-1$
+	public static final String CPP5_CPP11	= "com.arm.tool.cpp.compiler.option.lang.cpp11"; //$NON-NLS-1$
 	
 
-	static public final String C6_C_MODE	= "com.arm.tool.c.compiler.v6.base.option.lang"; //$NON-NLS-1$	
-	static public final String C6_GNU11	= "com.arm.tool.c.compiler.v6.base.option.lang.gnu11";	 //$NON-NLS-1$
-	static public final String C6_C90     = "com.arm.tool.c.compiler.v6.baseoption.lang.c90";	 //$NON-NLS-1$
-	static public final String C6_GNU90   = "com.arm.tool.c.compiler.v6.baseoption.lang.gnu90";	 //$NON-NLS-1$
-	static public final String C6_C99 		= "com.arm.tool.c.compiler.v6.base.option.lang.c99"; //$NON-NLS-1$	
-	static public final String C6_GNU99 = "com.arm.tool.c.compiler.v6.base.option.lang.gnu99";	 //$NON-NLS-1$
-	static public final String C6_C11	= "com.arm.tool.c.compiler.v6.base.option.lang.c11"; //$NON-NLS-1$
+	public static final String C6_C_MODE	= "com.arm.tool.c.compiler.v6.base.option.lang"; //$NON-NLS-1$	
+	public static final String C6_GNU11	= "com.arm.tool.c.compiler.v6.base.option.lang.gnu11";	 //$NON-NLS-1$
+	public static final String C6_C90     = "com.arm.tool.c.compiler.v6.baseoption.lang.c90";	 //$NON-NLS-1$
+	public static final String C6_GNU90   = "com.arm.tool.c.compiler.v6.baseoption.lang.gnu90";	 //$NON-NLS-1$
+	public static final String C6_C99 		= "com.arm.tool.c.compiler.v6.base.option.lang.c99"; //$NON-NLS-1$	
+	public static final String C6_GNU99 = "com.arm.tool.c.compiler.v6.base.option.lang.gnu99";	 //$NON-NLS-1$
+	public static final String C6_C11	= "com.arm.tool.c.compiler.v6.base.option.lang.c11"; //$NON-NLS-1$
 	
-	static public final String C6_CPP_LANGUAGE_MODE	= "com.arm.tool.cpp.compiler.v6.base.option.lang"; //$NON-NLS-1$
-	static public final String CPP6_C99 			= "com.arm.tool.cpp.compiler.v6.base.option.lang.c99"; //$NON-NLS-1$
-	static public final String CPP6_CPP11			= "com.arm.tool.cpp.compiler.v6.base.option.lang.c11"; //$NON-NLS-1$
+	public static final String C6_CPP_LANGUAGE_MODE	= "com.arm.tool.cpp.compiler.v6.base.option.lang"; //$NON-NLS-1$
+	public static final String CPP6_C99 			= "com.arm.tool.cpp.compiler.v6.base.option.lang.c99"; //$NON-NLS-1$
+	public static final String CPP6_CPP11			= "com.arm.tool.cpp.compiler.v6.base.option.lang.c11"; //$NON-NLS-1$
 		
-	static public final String C99 			= "--C99"; //$NON-NLS-1$
-	static public final String c99 			= "--c99"; //$NON-NLS-1$
+	public static final String C99 			= "--C99"; //$NON-NLS-1$
+	public static final String c99 			= "--c99"; //$NON-NLS-1$
 
-	static public final String AC5 			= "AC5"; //$NON-NLS-1$
-	static public final String AC6 			= "AC6"; //$NON-NLS-1$
-	static public final String AC6LTO 		= "AC6LTO"; //$NON-NLS-1$
+	public static final String AC5 			= "AC5"; //$NON-NLS-1$
+	public static final String AC6 			= "AC6"; //$NON-NLS-1$
+	public static final String AC6LTO 		= "AC6LTO"; //$NON-NLS-1$
 	
 	
-	static public final String STRICT        = COPT_PREFIX_5 + "strict"; //$NON-NLS-1$
-	static public final String STRICT_AUTO   = COPT_PREFIX_5 + "strict.auto"; //$NON-NLS-1$
-	static public final String STRICT_NONE   = COPT_PREFIX_5 + "strict.none"; //$NON-NLS-1$
-	static public final String STRICT_ERROR  = COPT_PREFIX_5 + "strict.error"; //$NON-NLS-1$
-	static public final String STRICT_WARN   = COPT_PREFIX_5 + "strict.warn"; //$NON-NLS-1$
-	static public final String OPT_FOR   	 = COPT_PREFIX_5 + "optfor"; //$NON-NLS-1$
+	public static final String STRICT        = COPT_PREFIX_5 + "strict"; //$NON-NLS-1$
+	public static final String STRICT_AUTO   = COPT_PREFIX_5 + "strict.auto"; //$NON-NLS-1$
+	public static final String STRICT_NONE   = COPT_PREFIX_5 + "strict.none"; //$NON-NLS-1$
+	public static final String STRICT_ERROR  = COPT_PREFIX_5 + "strict.error"; //$NON-NLS-1$
+	public static final String STRICT_WARN   = COPT_PREFIX_5 + "strict.warn"; //$NON-NLS-1$
+	public static final String OPT_FOR   	 = COPT_PREFIX_5 + "optfor"; //$NON-NLS-1$
 	
-	static public final String OPT_FOR_AUTO   = OPT_FOR + ".auto"; //$NON-NLS-1$
-	static public final String OPT_FOR_SIZE   = OPT_FOR + ".size"; //$NON-NLS-1$
-	static public final String OPT_FOR_TIME   = OPT_FOR + ".time"; //$NON-NLS-1$
+	public static final String OPT_FOR_AUTO   = OPT_FOR + ".auto"; //$NON-NLS-1$
+	public static final String OPT_FOR_SIZE   = OPT_FOR + ".size"; //$NON-NLS-1$
+	public static final String OPT_FOR_TIME   = OPT_FOR + ".time"; //$NON-NLS-1$
 
 	// compiler and toolchain options for enum
-	static public final String OPT_ENUM 	 = "enum"; //$NON-NLS-1$
-	static public final String C5_ENUM_INT 	 = COPT_PREFIX_5 + OPT_ENUM; 
-	static public final String T5_ENUM_INT   = TOOLCHAIN_PREFIX_5 + OPT_ENUM;
+	public static final String OPT_ENUM 	 = "enum"; //$NON-NLS-1$
+	public static final String C5_ENUM_INT 	 = COPT_PREFIX_5 + OPT_ENUM; 
+	public static final String T5_ENUM_INT   = TOOLCHAIN_PREFIX_5 + OPT_ENUM;
 
-	static public final String WARNINGS_INTO_ERRORS		  = COPT_PREFIX_6 + "warnaserr"; //$NON-NLS-1$
+	public static final String WARNINGS_INTO_ERRORS		  = COPT_PREFIX_6 + "warnaserr"; //$NON-NLS-1$
 	
-	static public final String A_NO_WARNINGS	  = "com.arm.tool.assembler.v6.base.option.suppresswarn"; //$NON-NLS-1$
+	public static final String A_NO_WARNINGS	  = "com.arm.tool.assembler.v6.base.option.suppresswarn"; //$NON-NLS-1$
 	
 	
-	static public final String C5_L_SCATTER_FILE = "com.arm.tool.c.linker.option.scatter";  //$NON-NLS-1$
-	static public final String C5_L_RO_BASE = "com.arm.tool.c.linker.option.robase"; //$NON-NLS-1$
-	static public final String C5_L_RW_BASERW = "com.arm.tool.c.linker.option.rwbase"; //$NON-NLS-1$
-	static public final String C5_L_ENTRY = "com.arm.tool.c.linker.option.entry"; //$NON-NLS-1$
-	static public final String C5_L_DISABLE_WARNINGS = "com.arm.tool.c.link.option.suppress"; //$NON-NLS-1$
+	public static final String C5_L_SCATTER_FILE = "com.arm.tool.c.linker.option.scatter";  //$NON-NLS-1$
+	public static final String C5_L_RO_BASE = "com.arm.tool.c.linker.option.robase"; //$NON-NLS-1$
+	public static final String C5_L_RW_BASERW = "com.arm.tool.c.linker.option.rwbase"; //$NON-NLS-1$
+	public static final String C5_L_ENTRY = "com.arm.tool.c.linker.option.entry"; //$NON-NLS-1$
+	public static final String C5_L_DISABLE_WARNINGS = "com.arm.tool.c.link.option.suppress"; //$NON-NLS-1$
 
-	static public final String C6_L_DISABLE_WARNINGS = "com.arm.tool.linker.v6.option.suppress"; //$NON-NLS-1$
+	public static final String C6_L_DISABLE_WARNINGS = "com.arm.tool.linker.v6.option.suppress"; //$NON-NLS-1$
 	
 	
-	static public final String C5_ARMCC_USE_MICROLIB = "com.arm.toolchain.ac5.options.libs.useMicroLib"; //$NON-NLS-1$
-	static public final String C6_ARMCC_USE_MICROLIB = "com.arm.toolchain.v6.base.options.libs.useMicroLib"; //$NON-NLS-1$
+	public static final String C5_ARMCC_USE_MICROLIB = "com.arm.toolchain.ac5.options.libs.useMicroLib"; //$NON-NLS-1$
+	public static final String C6_ARMCC_USE_MICROLIB = "com.arm.toolchain.v6.base.options.libs.useMicroLib"; //$NON-NLS-1$
 
-	static public final String A6_MASM_DEFAULT  = "masm.val.default"; //$NON-NLS-1$
-	static public final String A6_MASM_AUTO = "masm.val.auto"; //$NON-NLS-1$
-	static public final String A6_MASM_GNU  = "masm.val.gnu"; //$NON-NLS-1$
-	static public final String A6_MASM_ARMASM = "masm.val.armasm"; //$NON-NLS-1$
+	public static final String A6_MASM_DEFAULT  = "masm.val.default"; //$NON-NLS-1$
+	public static final String A6_MASM_AUTO = "masm.val.auto"; //$NON-NLS-1$
+	public static final String A6_MASM_GNU  = "masm.val.gnu"; //$NON-NLS-1$
+	public static final String A6_MASM_ARMASM = "masm.val.armasm"; //$NON-NLS-1$
 
-	static public final String A5_CPREPROC = "--cpreproc"; //$NON-NLS-1$
-	static public final String A5_CPREPROC_OPTS = "--cpreproc_opts"; //$NON-NLS-1$
+	public static final String A5_CPREPROC = "--cpreproc"; //$NON-NLS-1$
+	public static final String A5_CPREPROC_OPTS = "--cpreproc_opts"; //$NON-NLS-1$
 	
-	static public final String C6_FLOAT_ABI_ID = "com.arm.toolchain.v6.base.options.floatabi"; //$NON-NLS-1$
-	static public final String C6_FLOAT_ABI_HARD = "com.arm.tool.c.compiler.v6.base.option.floatabi.hard"; //$NON-NLS-1$
+	public static final String C6_FLOAT_ABI_ID = "com.arm.toolchain.v6.base.options.floatabi"; //$NON-NLS-1$
+	public static final String C6_FLOAT_ABI_HARD = "com.arm.tool.c.compiler.v6.base.option.floatabi.hard"; //$NON-NLS-1$
 	
 	protected int majorCompilerVersion = 5; // major compiler version : 5 or 6
 	protected String toolchainVersion; // full toolchain version 
@@ -636,7 +636,8 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 		case "com.arm.tool.assembler.v6.base.option.implicit.incpath":			//$NON-NLS-1$
 			return IBuildSettings.RTE_INCLUDE_PATH;
 
-		case "com.arm.tool.c.compiler.option.preinc":							//$NON-NLS-1$			
+		case "com.arm.tool.c.compiler.option.preinc":							//$NON-NLS-1$	
+		case "com.arm.tool.c.compiler.v6.base.option.preinc":                   //$NON-NLS-1$
 		case "com.arm.tool.assembler.v6.base.option.preinc":					//$NON-NLS-1$
 			return IBuildSettings.RTE_PRE_INCLUDES;
 			
@@ -746,33 +747,39 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 	 * @return CPU prefix string
 	 */
 	protected String getCpuPrefix(String cpu, String mve) {
-		if(cpu.equals("Cortex-M0+")) { //$NON-NLS-1$
+		String prefix = cpu;
+		boolean bMve = false;
+		switch(cpu) {
+		case "Cortex-M0+":           //$NON-NLS-1$
 			return "Cortex-M0.Plus"; //$NON-NLS-1$
+		case "ARMV8MBL":           //$NON-NLS-1$
+			return GENERIC_ARMV8M_BASE; //$NON-NLS-1$
+		case "ARMV8MML":           //$NON-NLS-1$
+			return GENERIC_ARMV8M_MAIN; //$NON-NLS-1$
+		case "ARMV81MML":           //$NON-NLS-1$
+			prefix = GENERIC_ARMV81M_MAIN; //$NON-NLS-1$
+			bMve = true;
+			break;
+		case "Cortex-M55":           //$NON-NLS-1$
+			bMve = true;
+			break;
+		default:
+			break;
 		}
-		if(cpu.equals("ARMV8MBL")){ //$NON-NLS-1$
-			return GENERIC_ARMV8M_BASE;
-		}
-		if(cpu.equals("ARMV8MML")){ //$NON-NLS-1$
-			return  GENERIC_ARMV8M_MAIN;
-		}
-		
-		if(cpu.equals("ARMV81MML")){ //$NON-NLS-1$
-			String prefix = GENERIC_ARMV81M_MAIN; 
+		if(bMve){
 			switch(mve){
 			case CmsisConstants.MVE:
-				prefix += ".MVEI";
+				prefix += ".MVEI"; //$NON-NLS-1$
 				break;
 			case CmsisConstants.FP_MVE:
-				prefix += ".MVEF";
+				prefix += ".MVEF"; //$NON-NLS-1$
 				break;
 			case CmsisConstants.NO_MVE:
 			default:
 				break;
 			}
-			
-			return prefix;
-		}
-		return cpu;
+		}			
+		return prefix;
 	}
 	
 	/**
@@ -846,6 +853,8 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
 			return "FPv5_D16"; 	//$NON-NLS-1$
 		case "ARMV81MML": 	//$NON-NLS-1$
 			return dp ? "FP16.FP32.FP64" : "FP16.FP32"; 	//$NON-NLS-1$ //$NON-NLS-2$
+		case "Cortex-M55": 	//$NON-NLS-1$			
+			return "FP16.FP32.FP64"; //$NON-NLS-2$
 
 		case "Cortex-M35P": //$NON-NLS-1$
 		case "Cortex-M33": 	//$NON-NLS-1$

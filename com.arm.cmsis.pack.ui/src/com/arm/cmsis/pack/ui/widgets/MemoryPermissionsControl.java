@@ -22,6 +22,8 @@ import com.arm.cmsis.pack.enums.EMemoryPrivilege;
 import com.arm.cmsis.pack.enums.EMemorySecurity;
 import com.arm.cmsis.pack.permissions.IMemoryAccess;
 import com.arm.cmsis.pack.permissions.IMemoryPermissions;
+import com.arm.cmsis.pack.permissions.IMemoryPriviledge;
+import com.arm.cmsis.pack.permissions.IMemorySecurity;
 import com.arm.cmsis.pack.permissions.MemoryPermissions;
 import com.arm.cmsis.pack.ui.CpStringsUI;
 
@@ -159,39 +161,39 @@ public class MemoryPermissionsControl extends Composite {
 		btnPeripheral.addSelectionListener(selectionAdapter);
 		btnPeripheral.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnPeripheral.setText(CpStringsUI.MemoryPermissionsControl_Peripheral);
-		fAccessButtons.addButton(btnPeripheral, IMemoryPermissions.PERIPHERAL_ACCESS);
+		fAccessButtons.addButton(btnPeripheral, IMemoryAccess.PERIPHERAL_ACCESS);
 		
 		Label lblR = new Label(grpAccess, SWT.NONE);
 		lblR.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));		
-		lblR.setText(IMemoryAccess.r);
+		lblR.setText(IMemoryAccess.R);
 		
 		btnRead = new Button(grpAccess, SWT.CHECK);
 		btnRead.setEnabled(false);
 		btnRead.addSelectionListener(selectionAdapter);
 		btnRead.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnRead.setText(CpStringsUI.MemoryPermissionsControl_Read);
-		fAccessButtons.addButton(btnRead, IMemoryPermissions.READ_ACCESS);
+		fAccessButtons.addButton(btnRead, IMemoryAccess.READ_ACCESS);
 		
 		Label lblW = new Label(grpAccess, SWT.NONE);
 		lblW.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
-		lblW.setText(IMemoryAccess.w);
+		lblW.setText(IMemoryAccess.W);
 		
 		btnWrite = new Button(grpAccess, SWT.CHECK);
 		btnWrite.setEnabled(false);
 		btnWrite.addSelectionListener(selectionAdapter);
 		btnWrite.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnWrite.setText(CpStringsUI.MemoryPermissionsControl_Write);
-		fAccessButtons.addButton(btnWrite, IMemoryPermissions.WRITE_ACCESS);
+		fAccessButtons.addButton(btnWrite, IMemoryAccess.WRITE_ACCESS);
 		
 		Label lblX = new Label(grpAccess, SWT.NONE);
 		lblX.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));		
-		lblX.setText(IMemoryAccess.x);
+		lblX.setText(IMemoryAccess.X);
 		
 		btnExecute = new Button(grpAccess, SWT.CHECK);
 		btnExecute.setEnabled(false);
 		btnExecute.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnExecute.setText(CpStringsUI.MemoryPermissionsControl_Execute);
-		fAccessButtons.addButton(btnExecute, IMemoryPermissions.EXECUTE_ACCESS);
+		fAccessButtons.addButton(btnExecute, IMemoryAccess.EXECUTE_ACCESS);
 		
 		grpPrivilege = new Group(grpPermissions, SWT.NONE);
 		grpPrivilege.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
@@ -220,7 +222,7 @@ public class MemoryPermissionsControl extends Composite {
 		btnPrivileged.addSelectionListener(selectionAdapter);
 		btnPrivileged.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnPrivileged.setText(CpStringsUI.MemoryPermissionsControl_Privileged);
-		fPrivilegeButtons.addButton(btnPrivileged, IMemoryPermissions.PRIVILEGED_ACCESS);
+		fPrivilegeButtons.addButton(btnPrivileged, IMemoryPriviledge.PRIVILEGED_ACCESS);
 		
 		Label lblU = new Label(grpPrivilege, SWT.NONE);
 		lblU.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));		
@@ -230,7 +232,7 @@ public class MemoryPermissionsControl extends Composite {
 		btnUnprivileged.addSelectionListener(selectionAdapter);
 		btnUnprivileged.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnUnprivileged.setText(CpStringsUI.MemoryPermissionsControl_Unprivileged);
-		fPrivilegeButtons.addButton(btnUnprivileged, IMemoryPermissions.UNPRIVILEGED_ACCESS);
+		fPrivilegeButtons.addButton(btnUnprivileged, IMemoryPriviledge.UNPRIVILEGED_ACCESS);
 		
 		grpSecure = new Group(grpPermissions, SWT.NONE);
 		grpSecure.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
@@ -258,7 +260,7 @@ public class MemoryPermissionsControl extends Composite {
 		btnNonsecure = new Button(grpSecure, SWT.RADIO);
 		btnNonsecure.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnNonsecure.setText(CpStringsUI.MemoryPermissionsControl_NonSecure);
-		fSecurityButtons.addButton(btnNonsecure, IMemoryPermissions.NON_SECURE_ACCESS);
+		fSecurityButtons.addButton(btnNonsecure, IMemorySecurity.NON_SECURE_ACCESS);
 		
 		lblC = new Label(grpSecure, SWT.NONE);
 		lblC.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));	
@@ -267,7 +269,7 @@ public class MemoryPermissionsControl extends Composite {
 		btnCallable = new Button(grpSecure, SWT.RADIO);
 		btnCallable.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnCallable.setText(CpStringsUI.MemoryPermissionsControl_NonSecureCallable);
-		fSecurityButtons.addButton(btnCallable, IMemoryPermissions.CALLABLE_ACCESS);
+		fSecurityButtons.addButton(btnCallable, IMemorySecurity.CALLABLE_ACCESS);
 
 		lblS = new Label(grpSecure, SWT.NONE);
 		lblS.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false, false, 1, 1));
@@ -276,7 +278,7 @@ public class MemoryPermissionsControl extends Composite {
 		btnSecure = new Button(grpSecure, SWT.RADIO);
 		btnSecure.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, true, false, 1, 1));
 		btnSecure.setText(CpStringsUI.MemoryPermissionsControl_Secure);
-		fSecurityButtons.addButton(btnSecure, IMemoryPermissions.SECURE_ACCESS);
+		fSecurityButtons.addButton(btnSecure, IMemorySecurity.SECURE_ACCESS);
 
 		enableButtons();
 	}
@@ -359,7 +361,7 @@ public class MemoryPermissionsControl extends Composite {
 			privilegeMask = fParentPermissions.getPrivilegeMask();
 			secureMask = fParentPermissions.getSecurityMask();
 		} else if(fPermissions.isPeripheralAccess()){
-			accessMask = IMemoryAccess.rw;
+			accessMask = IMemoryAccess.RW;
 		}
 		fAccessButtons.enableButtons(accessMask);
 		fPrivilegeButtons.enableButtons(privilegeMask);
@@ -400,7 +402,7 @@ public class MemoryPermissionsControl extends Composite {
 		return fPermissions; 
 	}
 	
-	static public String getDispalyString(EMemorySecurity security) {
+	public static String getDispalyString(EMemorySecurity security) {
 		switch(security) {
 		case CALLABLE:
 			return CpStringsUI.MemoryPermissionsControl_NoSecureCallable; 
@@ -416,7 +418,7 @@ public class MemoryPermissionsControl extends Composite {
 	}
 	
 	
-	static public String getDispalyString(EMemoryPrivilege privilege) {
+	public static String getDispalyString(EMemoryPrivilege privilege) {
 		switch(privilege) {
 		case PRIVILEGED:
 			return CpStringsUI.MemoryPermissionsControl_Privileged; 

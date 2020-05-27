@@ -46,7 +46,7 @@ import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
  * Tree widget to select pack versions
  */
 public class RtePackSelectorWidget extends RteModelTreeWidget {
-	protected final static String[] VERSION_MODES = new String[]{CpStrings.Latest, CpStrings.Fixed, CpStrings.Excluded};
+	protected static final String[] VERSION_MODES = new String[]{CpStrings.Latest, CpStrings.Fixed, CpStrings.Excluded};
 
 
 	static final String[] PACK_ICONS = new String[]{CpPlugInUI.ICON_PACKAGE,

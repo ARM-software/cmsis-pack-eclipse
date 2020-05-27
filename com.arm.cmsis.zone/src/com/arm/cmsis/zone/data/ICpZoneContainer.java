@@ -14,7 +14,7 @@ package com.arm.cmsis.zone.data;
 import java.util.Collection;
 
 /**
- *  Top-level container of CMSIS zone objects
+ *  Top-level container of CMSIS-Zone objects
  */
 public interface ICpZoneContainer extends ICpZoneItem {
 	

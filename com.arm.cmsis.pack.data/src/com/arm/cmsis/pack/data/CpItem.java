@@ -239,7 +239,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	
 	@Override
 	public Collection<ICpItem> getChildren(String tag) {
-		List<ICpItem> tagChildren = new LinkedList<ICpItem>();
+		List<ICpItem> tagChildren = new LinkedList<>();
 		Collection<? extends ICpItem> children = getChildren();
 		if(children != null) {
 			for(ICpItem item: children) {
@@ -252,8 +252,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	}
 
 	
-	@Override
-	public ICpItem clone() {
+	protected ICpItem cloneItem() {
 		ICpItem clonedItem = createItem();
 		if(clonedItem != null && attributes().hasAttributes()) {
 			clonedItem.attributes().setAttributes(attributes());
@@ -262,7 +261,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	}
 
 	/**
-	 * Creates a an item of the same class as this one, called by clone()  
+	 * Creates a an item of the same class as this one, called by cloneItem()  
 	 * @return new ICpItem 
 	 */
 	protected ICpItem createItem() {
@@ -275,7 +274,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	
 	@Override
 	public ICpItem copyTo(ICpItem parent, boolean copyChildren) {
-		ICpItem clonedItem = clone();
+		ICpItem clonedItem = cloneItem();
 		clonedItem.setParent(parent);
 		if(parent != null) {
 			parent.addChild(clonedItem);
@@ -429,7 +428,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	@Override
 	public Map<String, String> getEffectiveAttributes(Map<String, String> m) {
 		if(m == null) {
-			m = new HashMap<String, String>();
+			m = new HashMap<>();
 		}
 		
 		Map<String, String> attributesMap = attributes().getAttributesAsMap();
@@ -526,7 +525,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 			vendor = getAttribute(CmsisConstants.DVENDOR);
 		} else if(hasAttribute(CmsisConstants.VENDOR)) {
 			return getAttribute(CmsisConstants.VENDOR);
-		} else if(hasAttribute(CmsisConstants.VENDOR)) {
+		} else if(hasAttribute(CmsisConstants.CVENDOR)) {
 			return getAttribute(CmsisConstants.CVENDOR);
 		}	
 		if(vendor != null && !vendor.isEmpty()) {
@@ -636,7 +635,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 * @param attributes attributes to extract Punit
 	 * @return processor unit index (0 is default) 
 	 */
-	static public int getPunitIndex(IAttributes attributes) {
+	public static int getPunitIndex(IAttributes attributes) {
 		return attributes.getAttributeAsInt(CmsisConstants.PUNIT, 0);
 	}
 
@@ -645,7 +644,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 	 * @param attributes attributes to extract "Punits"
 	 * @return processor unit count (1 is default) 
 	 */
-	static public int getPunitsCount(IAttributes attributes) {
+	public static int getPunitsCount(IAttributes attributes) {
 		return attributes.getAttributeAsInt(CmsisConstants.PUNITS, 1);
 	}
 	

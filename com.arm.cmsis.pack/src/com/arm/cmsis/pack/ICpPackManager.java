@@ -39,20 +39,6 @@ import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
 public interface ICpPackManager extends IRteEventListener {
 
 	/**
-	 * Sets IRteEventProxy to be used by this manger to fire notifications
-	 * @param rteEventProxy IRteEventProxy object
-	 */
-	void setRteEventProxy(IRteEventProxy rteEventProxy);
-
-	/**
-	 * Returns IRteEventProxy object set by setRteEventProxy()
-	 * @return IRteEventProxy object or null if none has been set
-	 * @see #setRteEventProxy(IRteEventProxy)
-	 */
-	IRteEventProxy getRteEventProxy();
-
-
-	/**
 	 * Sets ICpPackInstaller to be used by this manger to install packs
 	 * @param packInstaller ICpPackInstaller object
 	 */
@@ -148,12 +134,12 @@ public interface ICpPackManager extends IRteEventListener {
 	Map<String, ICpBoard> getBoards();
 
 	/**
-	 * Returns ICpBoard for supplied board ID  
+	 * Returns ICpBoard for supplied board ID
 	 * @param boardId board ID string
 	 * @return ICpBoard object or null if not found
 	 */
 	ICpBoard getBoard(String boardId);
-	
+
 	/**
 	 * Returns collection of all items, which contains
 	 * all mounted and compatible devices
@@ -290,31 +276,54 @@ public interface ICpPackManager extends IRteEventListener {
 	 *  Triggers reload of the pack descriptions
 	 */
 	void reload();
-	
+
 	/**
 	 * Check if all packs required by supplied pack are installed
 	 * @return true if all required packs are installed
 	 */
 	boolean isRequiredPacksInstalled(ICpPack pack);
-	
+
 	/**
 	 * Check if pack is a local repository. Local repository means that
 	 * pack is installed outside RTE root path.
 	 * @return true if pack is a local repository
 	 */
 	boolean isLocalRepository(ICpPack pack);
-	
+
 	/**
-	 * Checks if search for pack updates is pending 
+	 * Checks if search for pack updates is pending
 	 * @return true if search for pack updates is pending
 	 */
 	boolean isCheckForUpdates();
-	
+
 	/**
-	 * Sets flag to schedule check for updates  
+	 * Sets flag to schedule check for updates
 	 * @param bCheck flag if to check for updates
 	 */
-	void setCheckForUpdates(boolean bCheck); 
+	void setCheckForUpdates(boolean bCheck);
 
-	
+
+	/**
+	 * Checks if pack is published on the web (does have a pdsc entry in .web folder)
+	 * @param pack ICpPack to check
+	 * @return true if pack is on web
+	 */
+	default boolean isWebPack(ICpPack pack) {
+		if(pack == null)
+			return false;
+		String webPdscFileName = getCmsisPackWebDir() + '/' + pack.getPackFamilyId() + CmsisConstants.EXT_PDSC;
+		File webPdscFile = new File(webPdscFileName);
+		return webPdscFile.exists();
+	}
+
+	/**
+	 * Checks if pack is a local one (does not have a pdsc entry in .web folder)
+	 * @param pack ICpPack to check
+	 * @return true if pack is local
+	 */
+	default boolean isLocalPack(ICpPack pack) {
+		return pack != null && !isWebPack(pack);
+	}
+
+
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2015 - 2020 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,7 +38,6 @@ import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.data.ICpPackFamily;
-import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventListener;
 import com.arm.cmsis.pack.generic.IAttributes;
@@ -64,27 +63,26 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class CpPackManager extends RteEventListener implements ICpPackManager {
 
-	protected ICpPackCollection allPacks = null; // global pack collection
-	protected ICpPackCollection allInstalledPacks = null; // all installed pack collection
-	protected ICpPackCollection allGenericPacks = null; // generic pack collection
-	protected ICpPackCollection allDevicePacks = null; // device-specific pack collection
-	protected ICpPackFamily allErrorPacks = null; // error pack collection
+	protected ICpPackCollection fAllPacks = null; // global pack collection
+	protected ICpPackCollection fAllInstalledPacks = null; // all installed pack collection
+	protected ICpPackCollection fAllGenericPacks = null; // generic pack collection
+	protected ICpPackCollection fAllDevicePacks = null; // device-specific pack collection
+	protected ICpPackFamily fAllErrorPacks = null; // error pack collection
 
-	protected ICpXmlParser pdscParser = null;
-	protected IRteDeviceRoot allDevices = null;
-	protected IRteDeviceRoot allInstalledDevices = null;
-	protected Map<String, ICpBoard> allBoards = null;
-	protected IRteBoardItem allRteBoards = null;
-	protected IRteExampleItem allExamples = null;
-	protected String cmsisPackRootDirectory = null;
-	protected URI cmsisPackRootURI = null;
+	protected ICpXmlParser fPdscParser = null;
+	protected IRteDeviceRoot fAllDevices = null;
+	protected IRteDeviceRoot fAllInstalledDevices = null;
+	protected Map<String, ICpBoard> fAllBoards = null;
+	protected IRteBoardItem fAllRteBoards = null;
+	protected IRteExampleItem fAllExamples = null;
+	protected String fCmsisPackRootDirectory = null;
+	protected URI fCmsisPackRootURI = null;
 
 	protected boolean bPacksLoaded = false;
 	protected boolean bReloading = false; // reload is in progress
 	protected boolean bReloadPending = false; // reload is requested, but pack installer is still busy
-	protected boolean bCheckForUpdates = false;; 
+	protected boolean bCheckForUpdates = false;
 
-	protected IRteEventProxy fRteEventProxy = null;
 	protected ICpPackInstaller fPackInstaller = null;
 	protected CpRepositoryList fRepoList = null;
 
@@ -92,8 +90,8 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
 	protected ICpPack.PackState packState = PackState.UNKNOWN;
 
-	protected PackIdxWatcher packIdxWatcher = null;
-	protected GpdscWatcher gpdscWatcher = new GpdscWatcher();
+	protected PackIdxWatcher fPackIdxWatcher = null;
+	protected GpdscWatcher fGpdscWatcher = new GpdscWatcher();
 
 	class PackIdxWatcher extends FileChangeWatcher {
 
@@ -113,7 +111,8 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 					// ensure directory exists
 					String dir = getCmsisPackRootDirectory();
 					FileChangeWatcher.createDirectories(dir);
-					file.createNewFile();
+					if(!file.createNewFile())
+						return;
 				} catch (IOException e) {
 					e.printStackTrace();
 					return;
@@ -157,18 +156,18 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 	 * Start watch the pack.idx file in the pack root folder
 	 */
 	protected void startPackIdxWatcher() {
-		if (packIdxWatcher == null) {
-			packIdxWatcher = new PackIdxWatcher();
+		if (fPackIdxWatcher == null) {
+			fPackIdxWatcher = new PackIdxWatcher();
 		}
-		packIdxWatcher.restartWatch();
+		fPackIdxWatcher.restartWatch();
 	}
 
 	/**
 	 * Stop watch the pack.idx file in the pack root folder
 	 */
 	protected void stopPackIdxWatcher() {
-		if (packIdxWatcher != null) {
-			packIdxWatcher.stopWatch();
+		if (fPackIdxWatcher != null) {
+			fPackIdxWatcher.stopWatch();
 		}
 	}
 
@@ -176,9 +175,9 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 	 * Stop watch the pack.idx file in the pack root folder
 	 */
 	protected void clearPackIdxWatcher() {
-		if (packIdxWatcher != null) {
-			packIdxWatcher.clearWatch();
-			packIdxWatcher = null;
+		if (fPackIdxWatcher != null) {
+			fPackIdxWatcher.clearWatch();
+			fPackIdxWatcher = null;
 		}
 	}
 
@@ -186,6 +185,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 	 *  Default pack manager implementation
 	 */
 	public CpPackManager() {
+		// default constructor does nothing
 	}
 
 	public String getPackIdxFile() {
@@ -211,30 +211,30 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
 	@Override
 	public boolean initParser(String xsdFile){
-		if(pdscParser == null) {
-			pdscParser = new PdscParser(xsdFile);
+		if(fPdscParser == null) {
+			fPdscParser = new PdscParser(xsdFile);
 		} else {
-			pdscParser.setXsdFile(xsdFile);
+			fPdscParser.setXsdFile(xsdFile);
 		}
-		return pdscParser.init();
+		return fPdscParser.init();
 	}
 
 	@Override
-	synchronized public void clear() {
-		allPacks = null;
-		allErrorPacks = null;
-		allInstalledPacks = null;
-		allGenericPacks = null;
-		allDevicePacks = null;
-		allDevices = null;
-		allInstalledDevices = null;
-		allBoards = null;
-		allRteBoards = null;
-		allExamples = null;
+	public synchronized void clear() {
+		fAllPacks = null;
+		fAllErrorPacks = null;
+		fAllInstalledPacks = null;
+		fAllGenericPacks = null;
+		fAllDevicePacks = null;
+		fAllDevices = null;
+		fAllInstalledDevices = null;
+		fAllBoards = null;
+		fAllRteBoards = null;
+		fAllExamples = null;
 		fGeneratedPacks = null;
 		bPacksLoaded = false;
-		if(pdscParser != null) {
-			pdscParser.clear();
+		if(fPdscParser != null) {
+			fPdscParser.clear();
 		}
 	}
 
@@ -278,118 +278,117 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 	public void destroy() {
 
 		clear();
-		pdscParser = null;
+		fPdscParser = null;
 		bReloading = false;
 		bReloadPending = false;
 		clearPackIdxWatcher();
-		gpdscWatcher.clearWatch();
-		gpdscWatcher = null;
+		fGpdscWatcher.clearWatch();
+		fGpdscWatcher = null;
 	}
 
 	@Override
-	synchronized public ICpPackCollection getPacks() {
-		if(allPacks == null) {
-			bPacksLoaded = loadPacks(cmsisPackRootDirectory);
+	public synchronized ICpPackCollection getPacks() {
+		if(fAllPacks == null) {
+			bPacksLoaded = loadPacks(fCmsisPackRootDirectory);
 		}
-		return allPacks;
+		return fAllPacks;
 	}
 
 	@Override
-	synchronized public ICpPackCollection getInstalledPacks() {
-		if(allPacks == null) {
-			bPacksLoaded = loadPacks(cmsisPackRootDirectory);
+	public synchronized ICpPackCollection getInstalledPacks() {
+		if(fAllPacks == null) {
+			bPacksLoaded = loadPacks(fCmsisPackRootDirectory);
 		}
-		return allInstalledPacks;
+		return fAllInstalledPacks;
 	}
 
 	@Override
-	synchronized public ICpPackCollection getDevicePacks() {
-		if(allPacks == null) {
-			bPacksLoaded = loadPacks(cmsisPackRootDirectory);
+	public synchronized ICpPackCollection getDevicePacks() {
+		if(fAllPacks == null) {
+			bPacksLoaded = loadPacks(fCmsisPackRootDirectory);
 		}
-		return allDevicePacks;
+		return fAllDevicePacks;
 	}
 
 	@Override
-	synchronized public ICpPackCollection getGenericPacks() {
-		if(allPacks == null) {
-			bPacksLoaded = loadPacks(cmsisPackRootDirectory);
+	public synchronized ICpPackCollection getGenericPacks() {
+		if(fAllPacks == null) {
+			bPacksLoaded = loadPacks(fCmsisPackRootDirectory);
 		}
-		return allGenericPacks;
+		return fAllGenericPacks;
 	}
 
 	@Override
-	synchronized public ICpPackFamily getErrorPacks() {
-		return allErrorPacks;
+	public synchronized ICpPackFamily getErrorPacks() {
+		return fAllErrorPacks;
 	}
 
 	@Override
-	synchronized public IRteDeviceItem getDevices() {
-		getPacks(); // ensure allPacks are loaded
-		if(allDevices == null && bPacksLoaded && allPacks != null)  {
-			allDevices = RteDeviceRoot.createTree(allPacks.getLatestEffectivePacks());
+	public synchronized IRteDeviceItem getDevices() {
+		getPacks(); // ensure fAllPacks are loaded
+		if(fAllDevices == null && bPacksLoaded && fAllPacks != null)  {
+			fAllDevices = RteDeviceRoot.createTree(fAllPacks.getLatestEffectivePacks());
 		}
-		return allDevices;
+		return fAllDevices;
 	}
 
 	@Override
-	synchronized public IRteDeviceItem getInstalledDevices() {
-		getPacks(); // ensure allPacks are loaded
-		if(allInstalledDevices == null && bPacksLoaded && allInstalledPacks != null)  {
-			allInstalledDevices = RteDeviceRoot.createTree(allInstalledPacks.getLatestInstalledPacks());
+	public synchronized IRteDeviceItem getInstalledDevices() {
+		getPacks(); // ensure fAllPacks are loaded
+		if(fAllInstalledDevices == null && bPacksLoaded && fAllInstalledPacks != null)  {
+			fAllInstalledDevices = RteDeviceRoot.createTree(fAllInstalledPacks.getLatestInstalledPacks());
 		}
-		return allInstalledDevices;
+		return fAllInstalledDevices;
 	}
 
 	@Override
-	synchronized public Map<String, ICpBoard> getBoards() {
-		getPacks(); // ensure allPacks are loaded
-		if(allBoards == null && bPacksLoaded && allPacks != null)  {
+	public synchronized Map<String, ICpBoard> getBoards() {
+		getPacks(); // ensure fAllPacks are loaded
+		if(fAllBoards == null && bPacksLoaded && fAllPacks != null)  {
 			collectBoards();
 		}
-		return allBoards;
+		return fAllBoards;
 	}
-	
+
 	@Override
 	public ICpBoard getBoard(String boardId) {
 		if(boardId == null || boardId.isEmpty())
 			return null;
-		
+
 		Map<String, ICpBoard> allBoards = getBoards();
 		if (allBoards != null) {
-			ICpBoard item = allBoards.get(boardId);
-			return item;
+			return allBoards.get(boardId);
 		}
 		return null;
 	}
 
-	
+
 
 	protected void collectBoards() {
-		allBoards = new HashMap<String, ICpBoard>();
-		Collection<ICpPack> packs = allPacks.getPacks();
+		fAllBoards = new HashMap<>();
+		Collection<ICpPack> packs = fAllPacks.getPacks();
 		for(ICpPack pack: packs) {
 			addBoards(pack);
 		}
 	}
 
 	@Override
-	synchronized public IRteBoardItem getRteBoards() {
-		getPacks(); // ensure allPacks are loaded
-		if(allRteBoards == null && bPacksLoaded && allPacks != null)  {
-			allRteBoards = RteBoardItem.createTree(allPacks.getLatestEffectivePacks());
+	public synchronized IRteBoardItem getRteBoards() {
+		getPacks(); // ensure fAllPacks are loaded
+		if(fAllRteBoards == null && bPacksLoaded && fAllPacks != null)  {
+			fAllRteBoards = RteBoardItem.createTree(fAllPacks.getLatestEffectivePacks());
 		}
-		return allRteBoards;
+		return fAllRteBoards;
 	}
 
 	@Override
 	public Collection<ICpBoard> getCompatibleBoards(IAttributes deviceAttributes) {
-		List<ICpBoard> boards =  new LinkedList<ICpBoard>();
+		List<ICpBoard> boards =  new LinkedList<>();
 		getBoards();
-		if(allBoards == null || allBoards.isEmpty()) {
+		if(fAllBoards == null || fAllBoards.isEmpty()) {
 			return boards;
 		}
-		for(ICpBoard b : allBoards.values()){
+		for(ICpBoard b : fAllBoards.values()){
 			if(b.hasCompatibleDevice(deviceAttributes)) {
 				boards.add(b);
 			}
@@ -398,16 +397,16 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 	}
 
 	@Override
-	synchronized public IRteExampleItem getExamples() {
-		getPacks(); // ensure allPacks are loaded
-		if(allExamples == null && bPacksLoaded && allPacks != null)  {
-			allExamples = RteExampleItem.createTree(allPacks.getPacks());
+	public synchronized IRteExampleItem getExamples() {
+		getPacks(); // ensure fAllPacks are loaded
+		if(fAllExamples == null && bPacksLoaded && fAllPacks != null)  {
+			fAllExamples = RteExampleItem.createTree(fAllPacks.getPacks());
 		}
-		return allExamples;
+		return fAllExamples;
 	}
 
 	@Override
-	synchronized public boolean loadPacks(final String rootDirectory){
+	public synchronized boolean loadPacks(final String rootDirectory){
 		if(rootDirectory == null || rootDirectory.isEmpty()) {
 			return false;
 		}
@@ -421,7 +420,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		File webFile = new File(getCmsisPackWebDir());
 		Collection<String> availableFileNames = Utils.findPdscFiles(webFile, null, 0);
 		loadPacks(availableFileNames);
-		
+
 		File localFile = new File(getCmsisPackLocalDir());
 		Collection<String> localFileNames = Utils.findPdscFiles(localFile, null, 0);
 		loadPacks(localFileNames);
@@ -434,8 +433,8 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		packState = PackState.LOCAL;
 		Collection<String> localRepoistoryFileNames = CpPidxParser.getLocalRepositoryFileNames(getCmsisPackLocalDir());
 		loadPacks(localRepoistoryFileNames);
-		
-		packState = PackState.INSTALLED;		
+
+		packState = PackState.INSTALLED;
 		Collection<String> installedFileNames = Utils.findPdscFiles(root, null, 3);
 		loadPacks(installedFileNames);
 
@@ -462,16 +461,16 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
 	@Override
 	public ICpPack readPack(String file){
-		if (pdscParser == null) {
+		if (fPdscParser == null) {
 			initParser(null);
 		}
-		ICpItem item = pdscParser.parseFile(file);
-		if(item != null && item instanceof ICpPack) {
+		ICpItem item = fPdscParser.parseFile(file);
+		if(item instanceof ICpPack) {
 			return (ICpPack)item;
 		}
 
-		if(pdscParser.getSevereErrorCount() > 0) {
-			Collection<String> errors = pdscParser.getErrorStrings();
+		if(fPdscParser.getSevereErrorCount() > 0) {
+			Collection<String> errors = fPdscParser.getErrorStrings();
 			if(errors != null && !errors.isEmpty()) {
 				for(String msg : errors) {
 					if(msg != null && !msg.isEmpty()){
@@ -485,42 +484,42 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 	}
 
 	protected ICpPack loadPack(String file){
-		if(allPacks == null) {
-			allPacks = new CpPackCollection();
+		if(fAllPacks == null) {
+			fAllPacks = new CpPackCollection();
 		}
-		if (allGenericPacks == null) {
-			allGenericPacks = new CpPackCollection(CmsisConstants.GENERIC);
+		if (fAllGenericPacks == null) {
+			fAllGenericPacks = new CpPackCollection(CmsisConstants.GENERIC);
 		}
-		if (allDevicePacks == null) {
-			allDevicePacks = new CpPackCollection(CmsisConstants.DEVICE_SPECIFIC);
+		if (fAllDevicePacks == null) {
+			fAllDevicePacks = new CpPackCollection(CmsisConstants.DEVICE_SPECIFIC);
 		}
-		if (allInstalledPacks == null) {
-			allInstalledPacks = new CpPackCollection();
+		if (fAllInstalledPacks == null) {
+			fAllInstalledPacks = new CpPackCollection();
 		}
 
 		ICpPack pack  = readPack(file);
 		if (pack != null && CmsisConstants.PACKAGE_TAG.equals(pack.getTag())) {
 			pack.setPackState(packState);
-			allPacks.addChild(pack);
+			fAllPacks.addChild(pack);
 			if (packState.isInstalledOrLocal()) {
-				allInstalledPacks.addChild(pack);
+				fAllInstalledPacks.addChild(pack);
 			}
 			if (pack.isDevicelessPack()) {
-				allGenericPacks.addChild(pack);
+				fAllGenericPacks.addChild(pack);
 			} else {
-				allDevicePacks.addChild(pack);
+				fAllDevicePacks.addChild(pack);
 			}
 		} else {
-			if (allErrorPacks == null) {
-				allErrorPacks = new CpPackFamily(null, CmsisConstants.ERRORS);
+			if (fAllErrorPacks == null) {
+				fAllErrorPacks = new CpPackFamily(null, CmsisConstants.ERRORS);
 			}
-			pack = new CpPack(allErrorPacks);
+			pack = new CpPack(fAllErrorPacks);
 			pack.setFileName(file);
 			pack.setText(Utils.extractFileName(file));
 			pack.setTag(file);
 			pack.setPackState(PackState.ERROR);
-			allErrorPacks.addChild(pack);
-			String errorString = pdscParser.getFirstErrorString();
+			fAllErrorPacks.addChild(pack);
+			String errorString = fPdscParser.getFirstErrorString();
 			if (!errorString.isEmpty()) {
 				// use the obtained String to output
 			} else if (!CmsisConstants.PACKAGE_TAG.equals(pack.getTag())) {
@@ -540,11 +539,11 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
 	@Override
 	public String getCmsisPackRootDirectory() {
-		return cmsisPackRootDirectory;
+		return fCmsisPackRootDirectory;
 	}
 
 	@Override
-	synchronized public CpRepositoryList getCpRepositoryList() {
+	public synchronized CpRepositoryList getCpRepositoryList() {
 		if (fRepoList == null) {
 			fRepoList = new CpRepositoryList();
 		}
@@ -553,7 +552,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
 	@Override
 	public URI getCmsisPackRootURI() {
-		return cmsisPackRootURI;
+		return fCmsisPackRootURI;
 	}
 
 	@Override
@@ -565,32 +564,32 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 			normalizedPackRoot = p.toString();
 		}
 
-		if (cmsisPackRootDirectory == null) {
+		if (fCmsisPackRootDirectory == null) {
 			if (normalizedPackRoot == null || normalizedPackRoot.isEmpty()) {
 				return;
 			}
-		} else if (cmsisPackRootDirectory.equals(normalizedPackRoot) && bPacksLoaded) {
+		} else if (fCmsisPackRootDirectory.equals(normalizedPackRoot) && bPacksLoaded) {
 			return;
 		}
 		clearPackIdxWatcher();
 		if (normalizedPackRoot == null || normalizedPackRoot.isEmpty()) {
-			cmsisPackRootDirectory = null;
-			cmsisPackRootURI = null;
+			fCmsisPackRootDirectory = null;
+			fCmsisPackRootURI = null;
 		} else {
-			cmsisPackRootDirectory = normalizedPackRoot;
+			fCmsisPackRootDirectory = normalizedPackRoot;
 			try {
 				// ensure directory exists
-				FileChangeWatcher.createDirectories(cmsisPackRootDirectory);
+				FileChangeWatcher.createDirectories(fCmsisPackRootDirectory);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			File f = new File(cmsisPackRootDirectory);
-			cmsisPackRootURI = f.toURI();
+			File f = new File(fCmsisPackRootDirectory);
+			fCmsisPackRootURI = f.toURI();
 		}
 		boolean bSchedulePackUpdate = initPackRoot();
 		reload();
 		startPackIdxWatcher(); // resume watching
-		if(bSchedulePackUpdate) { 
+		if(bSchedulePackUpdate) {
 			setCheckForUpdates(bSchedulePackUpdate);
 		}
 	}
@@ -600,22 +599,21 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 	 * @returns true if update is scheuled
 	 */
 	protected boolean initPackRoot() {
-		ICpPackRootProvider packRootProvider = CpPreferenceInitializer.getCmsisRootProvider(); 
+		ICpPackRootProvider packRootProvider = CpPreferenceInitializer.getCmsisRootProvider();
 		if(packRootProvider == null)
 			return  false;
-		
+
 		String cmsisPackRootDirectory = getCmsisPackRootDirectory();
-		if(cmsisPackRootDirectory == null) 
-			return  false;	
-		
+		if(cmsisPackRootDirectory == null)
+			return  false;
+
 		IPath rootPath = new Path(getCmsisPackRootDirectory());
 		IPath pidx = rootPath.append(CmsisConstants.DOT_WEB).append(CmsisConstants.REPO_KEIL_PINDEX_FILE);
 		if(pidx.toFile().exists())
-			return false; // nothing to do			
+			return false; // nothing to do
 		try {
 			packRootProvider.initPackRoot(getCmsisPackRootDirectory(), new NullProgressMonitor()); // progress monitor is reserved for future
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return true;
@@ -628,12 +626,12 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
 	@Override
 	public void setParser(ICpXmlParser xmlParser) {
-		pdscParser = xmlParser;
+		fPdscParser = xmlParser;
 	}
 
 	@Override
 	public ICpXmlParser getParser() {
-		return pdscParser;
+		return fPdscParser;
 	}
 
 	@Override
@@ -685,7 +683,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		ICpPack pack = jobResult.getPack();
 		if(pack != null) {
 			processPackAdded(pack);
-			allInstalledPacks.addChild(pack);
+			fAllInstalledPacks.addChild(pack);
 		}
 	}
 
@@ -695,34 +693,34 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		}
 		// fix for GitHub Issue #44: NPE in CpPackManager.processPackAdded() when installing first Pack into empty CMSIS root folder
 		if(getPacks() == null) { // ensure pack collections exist
-			return; // should not happen sinse default implementation of getPacks() allocates allPacks if not null 
+			return; // should not happen sinse default implementation of getPacks() allocates fAllPacks if not null
 		}
-		
+
 		// Update pack collection
-		allPacks.addChild(pack);
+		fAllPacks.addChild(pack);
 		if (pack.isDevicelessPack()) {
-			allGenericPacks.addChild(pack);
+			fAllGenericPacks.addChild(pack);
 		} else {
-			allDevicePacks.addChild(pack);
+			fAllDevicePacks.addChild(pack);
 		}
 
 		// Update RteDevice Tree
-		if (allDevices != null) {
-			allDevices.addDevices(pack);
+		if (fAllDevices != null) {
+			fAllDevices.addDevices(pack);
 		}
-		if (allInstalledDevices != null) {
-			allInstalledDevices.addDevices(pack);
+		if (fAllInstalledDevices != null) {
+			fAllInstalledDevices.addDevices(pack);
 		}
 
 		// Update Board Collection
-		if (allRteBoards != null) {
-			allRteBoards.addBoards(pack);
+		if (fAllRteBoards != null) {
+			fAllRteBoards.addBoards(pack);
 		}
 		addBoards(pack);
 
 		// Update Examples Collection
-		if (allExamples != null) {
-			allExamples.addExamples(pack);
+		if (fAllExamples != null) {
+			fAllExamples.addExamples(pack);
 		}
 	}
 
@@ -731,22 +729,22 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 			return;
 		}
 		ICpPack pack = jobResult.getPack();
-		// if the deleted pack is an error pack, only need to remove it from allErrorPacks
+		// if the deleted pack is an error pack, only need to remove it from fAllErrorPacks
 		if (pack.getPackState() == PackState.ERROR) {
-			allErrorPacks.removeChild(pack);
+			fAllErrorPacks.removeChild(pack);
 			pack.setParent(null);
 			return;
 		}
 
 		// Collect the pack collections from which the pack should be removed
 		Collection<ICpPackCollection> packCollections = new LinkedList<>();
-		packCollections.add(allInstalledPacks);
-		packCollections.add(allPacks);
+		packCollections.add(fAllInstalledPacks);
+		packCollections.add(fAllPacks);
 		if (RteEvent.PACK_DELETE_JOB_FINISHED.equals(topic)) {
 			if (pack.isDevicelessPack()) {
-				packCollections.add(allGenericPacks);
+				packCollections.add(fAllGenericPacks);
 			} else {
-				packCollections.add(allDevicePacks);
+				packCollections.add(fAllDevicePacks);
 			}
 		}
 		String familyId = pack.getPackFamilyId();
@@ -758,30 +756,30 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		}
 
 		// Remove Device from device tree if pack is not the latest version of this pack family
-		if (allDevices != null) {
-			allDevices.removeDevices(pack);
+		if (fAllDevices != null) {
+			fAllDevices.removeDevices(pack);
 		}
-		if (allInstalledDevices != null) {
-			allInstalledDevices.removeDevices(pack);
+		if (fAllInstalledDevices != null) {
+			fAllInstalledDevices.removeDevices(pack);
 		}
 
 		// Remove Board from board tree
-		if (allRteBoards != null) {
-			allRteBoards.removeBoards(pack);
+		if (fAllRteBoards != null) {
+			fAllRteBoards.removeBoards(pack);
 		}
 
 		// Remove Example from examples tree
-		if (allExamples != null) {
-			allExamples.removeExamples(pack);
+		if (fAllExamples != null) {
+			fAllExamples.removeExamples(pack);
 		}
-		
+
 		// add the latest installed pack of this pack family to the device tree if any
-		ICpPack installedPack = allInstalledPacks.getPack(familyId);
+		ICpPack installedPack = fAllInstalledPacks.getPack(familyId);
 		if (installedPack != null) {
-			if (allDevices != null)
-				allDevices.addDevices(installedPack);
-			if (allInstalledDevices != null)
-				allInstalledDevices.addDevices(installedPack);
+			if (fAllDevices != null)
+				fAllDevices.addDevices(installedPack);
+			if (fAllInstalledDevices != null)
+				fAllInstalledDevices.addDevices(installedPack);
 		}
 
 		// Add new pack into the packs, which could be the new pdsc file in the .Web or the .Download folder
@@ -795,16 +793,16 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 			return;
 		}
 		Collection<? extends ICpItem> boards = pack.getGrandChildren(CmsisConstants.BOARDS_TAG);
-		if (allBoards != null && boards != null) {
+		if (fAllBoards != null && boards != null) {
 			for(ICpItem item : boards) {
 				if(!(item instanceof ICpBoard)) {
 					continue;
 				}
 				ICpBoard currentBoard = (ICpBoard)item;
 				String id = currentBoard.getId();
-				ICpBoard previousBoard = allBoards.get(id);
+				ICpBoard previousBoard = fAllBoards.get(id);
 				if (previousBoard == null || isToReplaceExistingItem(previousBoard, currentBoard)) {
-					allBoards.put(id, currentBoard);
+					fAllBoards.put(id, currentBoard);
 				}
 			}
 		}
@@ -838,13 +836,12 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		if(file == null || file .isEmpty()) {
 			return null;
 		}
-
-		if(fGeneratedPacks != null && fGeneratedPacks.containsKey(file)) {
-			return fGeneratedPacks.get(file);
-		}
-
-		ICpPack pack = doLoadGpdsc(file);
-		gpdscWatcher.registerFile(file); // register file to watch change, even if file does not exists
+		ICpPack pack = fGeneratedPacks != null ? fGeneratedPacks.get(file) : null;
+		if(pack != null)
+			return pack;
+		
+		pack = doLoadGpdsc(file);
+		fGpdscWatcher.registerFile(file); // register file to watch change, even if file does not exists
 		return pack;
 	}
 
@@ -852,27 +849,22 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		if(kind == FileChangeWatcher.DELETE) {
 			fGeneratedPacks.put(file, null);
 		} else {
-			try {
-				Thread.sleep(500); // let file system some time to finish writing
-			} catch (InterruptedException e) {
-				// ignore the exception
-			}
 			doLoadGpdsc(file);
 		}
 		getRteEventProxy().emitRteEvent(RteEvent.GPDSC_CHANGED, file);
 	}
 
-	synchronized protected ICpPack doLoadGpdsc(String file) {
-		ICpPack pack  = readPack(file);
+	protected synchronized ICpPack doLoadGpdsc(String file) {
+		File f = new File(file);
+		ICpPack pack = f.exists() ? readPack(file) : null; 
 		if(pack != null) {
 			pack.setPackState(PackState.GENERATED);
 		}
 
 		if(fGeneratedPacks == null) {
-			fGeneratedPacks = new HashMap<String, ICpPack>();
+			fGeneratedPacks = new HashMap<>();
 		}
 		fGeneratedPacks.put(file,  pack);
-
 		return pack;
 	}
 
@@ -884,24 +876,26 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		if (requiredPacks == null) {
 			return true;
 		}
-
+		ICpPackCollection installedPacks = getInstalledPacks();
+		if(installedPacks == null) {
+			return false;
+		}
 		for (ICpItem requiredPack : requiredPacks) {
-			ICpPackCollection installedPacks = getInstalledPacks();
-			if (installedPacks == null || installedPacks.getPack(requiredPack.attributes()) == null) {
+			if (installedPacks.getPack(requiredPack.attributes()) == null) {
 				return false;
 			}
 		}
 		return true;
 	}
-	
+
 	@Override
 	public boolean isLocalRepository(ICpPack pack) {
 		return pack.getDir(true).indexOf(getCmsisPackRootDirectory()) < 0;
 	}
 
+
 	@Override
 	public boolean isCheckForUpdates() {
-		// TODO Auto-generated method stub
 		return bCheckForUpdates;
 	}
 
@@ -913,5 +907,5 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 		if(bCheckForUpdates)
 			emitRteEvent(RteEvent.PACKS_UPDATE_PENDING);
 	}
-	
+
 }

@@ -77,14 +77,14 @@ public class CpPackRemoveJob extends CpPackJob {
 			PackInstallerUtils.deleteFolderRecursiveWithProgress(installedDir.toFile(), progress);
 			progress.done();
 		}
-		
+
 		fResult.setPack(fPack);
 		fResult.setSuccess(true);
 		fPackInstaller.jobFinished(fJobId, RteEvent.PACK_DELETE_JOB_FINISHED, fResult);
 
 		return Status.OK_STATUS;
 	}
-	
+
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
 		if (fPack == null) {
@@ -95,7 +95,7 @@ public class CpPackRemoveJob extends CpPackJob {
 		if (fDelete && fPack.getPackState() == PackState.ERROR) {
 			return deleteErrorPack(monitor);
 		}
-		
+
 		IPath installedDir;
 		if (fPack.getPackState() == PackState.ERROR) {
 			fJobId = fPack.getTag();
@@ -122,10 +122,14 @@ public class CpPackRemoveJob extends CpPackJob {
 				.append(familyId + CmsisConstants.EXT_PDSC);
 		File localPdscFile = localPdscFilePath.toFile();
 
+		boolean deleted = false;
 		if (fDelete) {
-			if(downloadPdscFile.exists())
-				downloadPdscFile.delete();
-			// delete local pdsc if no downloaded packs exist for this family id 
+			if(downloadPdscFile.exists()) {
+				deleted = downloadPdscFile.setWritable(true, false) && downloadPdscFile.delete();
+			}
+			if(deleted && downloadPackFile.exists() )
+				deleted = downloadPackFile.setWritable(true, false) && downloadPackFile.delete();
+			// delete local pdsc if no downloaded packs exist for this family id
 			if(localPdscFile.exists()) {
 				ICpItem family = fPack.getParent();
 				if(family == null || family.getChildCount() == 1) // only one
@@ -152,7 +156,7 @@ public class CpPackRemoveJob extends CpPackJob {
 
 		progress.done();
 
-		if (fDelete || !downloadPackFile.exists() || !downloadPdscFile.exists()) {
+		if (deleted) {
 			fPackInstaller.jobFinished(fJobId, RteEvent.PACK_DELETE_JOB_FINISHED, fResult);
 		} else {
 			fPackInstaller.jobFinished(fJobId, RteEvent.PACK_REMOVE_JOB_FINISHED, fResult);

@@ -30,14 +30,6 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	// The plug-in ID
 	public static final String PLUGIN_ID = "com.arm.cmsis.pack"; //$NON-NLS-1$
 	// Preference ID
-	public static final String CMSIS_PACK_ROOT_PREFERENCE = "com.arm.cmsis.pack.root"; //$NON-NLS-1$
-	public static final String CMSIS_PACK_REPOSITORY_PREFERENCE = "com.arm.cmsis.pack.repository"; //$NON-NLS-1$
-	private static final String PROXY_PREFIX = "com.arm.cmsis.proxy."; //$NON-NLS-1$
-	public static final String PROXY_MODE 	= PROXY_PREFIX + "mode"; //$NON-NLS-1$
-	public static final String PROXY_ADDRESS= PROXY_PREFIX + "address"; //$NON-NLS-1$
-	public static final String PROXY_PORT 	= PROXY_PREFIX + "port"; //$NON-NLS-1$
-	public static final String PROXY_USER 	= PROXY_PREFIX + "username"; //$NON-NLS-1$
-	public static final String PROXY_PASSWORD = PROXY_PREFIX + "password"; //$NON-NLS-1$
 
 	private static BundleContext context;
 	private static CpPlugIn plugin;
@@ -125,7 +117,7 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	 * Returns the environment provider
 	 * @return ICpEnvironmentProvider
 	 */
-	static public ICpEnvironmentProvider getEnvironmentProvider() {
+	public static ICpEnvironmentProvider getEnvironmentProvider() {
 		return plugin != null ? plugin.theEnvironmentProvider : new CpEnvironmentProvider();
 	}
 
@@ -151,7 +143,7 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	 * Returns the pack manager
 	 * @return ICpPackManager
 	 */
-	static public ICpPackManager getPackManager() {
+	public static ICpPackManager getPackManager() {
 		return plugin != null ? plugin.thePackManager : null;
 	}
 
@@ -179,7 +171,7 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	 * Adds an IRteEventListener to the internal listener list
 	 * @param listener IRteEventListener
 	 */
-	static public void addRteListener(IRteEventListener listener) {
+	public static void addRteListener(IRteEventListener listener) {
 		if(plugin != null) {
 			plugin.addListener(listener);
 		}
@@ -189,7 +181,7 @@ public class CpPlugIn extends Plugin implements IRteEventProxy {
 	 * Removes an IRteEventListener from the internal listener list
 	 * @param listener
 	 */
-	static public void removeRteListener(IRteEventListener listener) {
+	public static void removeRteListener(IRteEventListener listener) {
 		if(plugin != null) {
 			plugin.removeListener(listener);
 		}

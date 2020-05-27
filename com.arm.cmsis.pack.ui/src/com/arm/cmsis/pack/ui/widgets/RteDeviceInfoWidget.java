@@ -13,6 +13,7 @@ package com.arm.cmsis.pack.ui.widgets;
 
 
 import java.util.Collection;
+import java.util.Collections;
 
 import org.eclipse.jface.resource.FontDescriptor;
 import org.eclipse.jface.viewers.ColumnViewer;
@@ -51,13 +52,13 @@ import com.arm.cmsis.pack.utils.DeviceVendor;
 
 
 /**
- *  Widget to display information about selected device 
+ *  Widget to display information about selected device
  */
 public class RteDeviceInfoWidget extends Composite {
 	private Text text;
 	private Table table;
 	private TableViewer tableViewer;
-	
+
 	private Label lblVendor;
 	private Label lblDevice;
 	private Label lblCpu;
@@ -67,8 +68,8 @@ public class RteDeviceInfoWidget extends Composite {
 	private Label lblFpu;
 	private Label lblEndian;
 	private Link linkUrl;
-	
-	ICpDeviceInfo fDeviceInfo = null;  
+
+	ICpDeviceInfo fDeviceInfo = null;
 	String url = CmsisConstants.EMPTY_STRING;
 	private Button btnSelect;
 	private Label lblDescription;
@@ -86,7 +87,7 @@ public class RteDeviceInfoWidget extends Composite {
 		return ITreeObject.castTo(obj, ICpBoard.class);
 	}
 
-	
+
 	public class RteBookContentProvider extends TreeObjectContentProvider {
 		@Override
 		public Object[] getElements(Object inputElement) {
@@ -127,15 +128,15 @@ public class RteDeviceInfoWidget extends Composite {
 		@Override
 		public boolean hasChildren(Object element) {
 			ICpBoard b = getCpBoard(element);
-			if(b != null) 
+			if(b != null)
 				return getChildren(element).length > 0;
 			return false;
 		}
 	}
-	
-	
-	/**  
-	 * Column label provider for books tree 
+
+
+	/**
+	 * Column label provider for books tree
 	 */
 	class RteBookColumnAdvisor extends RteColumnAdvisor<IRteModelController> {
 		/**
@@ -153,7 +154,7 @@ public class RteDeviceInfoWidget extends Composite {
 				return CellControlType.NONE;
 			if(columnIndex == 0){
 				String url = item.getUrl();
-				if(url != null && ! url.isEmpty()) 
+				if(url != null && ! url.isEmpty())
 					return CellControlType.URL;
 			}
 			return CellControlType.TEXT;
@@ -161,15 +162,15 @@ public class RteDeviceInfoWidget extends Composite {
 
 		@Override
 		public String getString(Object obj, int columnIndex) {
-			ICpItem item = ICpItem.cast(obj);		
+			ICpItem item = ICpItem.cast(obj);
 			if(columnIndex == 0 && item != null) {
 				if(item.getTag().equals(CmsisConstants.BOOK_TAG))
 					return item.getAttribute(CmsisConstants.TITLE);
 				return item.getName();
 			}
-			return CmsisConstants.EMPTY_STRING;	
+			return CmsisConstants.EMPTY_STRING;
 		}
-		
+
 		@Override
 		public Image getImage(Object obj, int columnIndex) {
 			ICpItem item = ICpItem.cast(obj);
@@ -205,74 +206,74 @@ public class RteDeviceInfoWidget extends Composite {
 	 */
 	public RteDeviceInfoWidget(Composite parent) {
 		super(parent, SWT.BORDER);
-		
+
 		GridLayout gridLayout = new GridLayout(6, false);
 		gridLayout.horizontalSpacing = 8;
 		setLayout(gridLayout);
-		
+
 		Label lblDeviceLabel = new Label(this, SWT.NONE);
 		lblDeviceLabel.setText(CpStringsUI.RteDeviceSelectorWidget_DeviceLabel);
-		
+
 		lblDevice = new Label(this, SWT.NONE);
 		lblDevice.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		FontDescriptor boldDescriptor = FontDescriptor.createFrom(lblDevice.getFont()).setStyle(SWT.BOLD).increaseHeight(1);
 		Font boldFont = boldDescriptor.createFont(lblDevice.getDisplay());
 		lblDevice.setFont( boldFont );
-		
+
 		btnSelect = new Button(this, SWT.NONE);
 		btnSelect.setText(CpStringsUI.RteDeviceInfoWidget_btnSelect_text);
 		new Label(this, SWT.NONE);
 		new Label(this, SWT.NONE);
 		new Label(this, SWT.NONE);
-		
+
 		lblFamilyLabel = new Label(this, SWT.NONE);
 		lblFamilyLabel.setText(CpStringsUI.RteDeviceInfoWidget_lblFamily_text);
-		
+
 		lblFamily = new Label(this, SWT.NONE);
 		lblFamily.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
-    	
+
 		Label lblCpuLabel = new Label(this, SWT.NONE);
 		lblCpuLabel.setText(CpStringsUI.RteDeviceSelectorWidget_CPULabel);
 		lblCpuLabel.setBounds(0, 0, 36, 13);
-		
+
 		lblCpu = new Label(this, SWT.NONE);
 		lblCpu.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		lblCpu.setBounds(0, 0, 32, 13);
 		new Label(this, SWT.NONE);
-		
+
 		lblSubfamilyLabel = new Label(this, SWT.NONE);
 		lblSubfamilyLabel.setText(CpStringsUI.RteDeviceInfoWidget_lblSubFamily_text);
-		
+
 		lblSubfamily = new Label(this, SWT.NONE);
 		lblSubfamily.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
-		
+
 		Label lblMemoryLabel = new Label(this, SWT.NONE);
 		lblMemoryLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblMemory);
-		
+
 		lblMemory = new Label(this, SWT.NONE);
 		lblMemory.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 
 		new Label(this, SWT.NONE);
-		
+
 		Label lblVendorLabel = new Label(this, SWT.NONE);
 		lblVendorLabel.setText(CpStringsUI.RteDeviceSelectorWidget_VendorLabel);
-		
+
 		lblVendor = new Label(this, SWT.NONE);
 		lblVendor.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 1, 1));
 		new Label(this, SWT.NONE);
-		
+
 		Label lblSecuritylabel = new Label(this, SWT.NONE);
 		lblSecuritylabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblSecurityLabel_text);
-		
+
 		lblSecurity = new Label(this, SWT.NONE);
 		lblSecurity.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
 
 		Label lblPackLabel = new Label(this, SWT.NONE);
 		lblPackLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblPack_text);
-		
+
 		lblPack = new Label(this, SWT.NONE);
 		lblPack.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
@@ -280,14 +281,14 @@ public class RteDeviceInfoWidget extends Composite {
 		Label lblFpuLabel = new Label(this, SWT.NONE);
 		lblFpuLabel.setText(CpStringsUI.RteDeviceSelectorWidget_FPULabel);
 		lblFpuLabel.setBounds(0, 0, 38, 13);
-		
+
 		lblFpu = new Label(this, SWT.NONE);
 		lblFpu.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
 
 		Label lblUrlLabel = new Label(this, SWT.NONE);
 		lblUrlLabel.setText(CpStringsUI.RteDeviceSelectorWidget_lblUrl);
-		
+
 		linkUrl = new Link(this, SWT.NONE);
 		linkUrl.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 		linkUrl.addSelectionListener(new SelectionAdapter(){
@@ -300,59 +301,59 @@ public class RteDeviceInfoWidget extends Composite {
 		Label lblEndianLabel = new Label(this, SWT.NONE);
 		lblEndianLabel.setText(CpStringsUI.RteDeviceSelectorWidget_Endian);
 		lblEndianLabel.setBounds(0, 0, 37, 13);
-		
+
 		lblEndian = new Label(this, SWT.NONE);
 		lblEndian.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 1, 1));
 		new Label(this, SWT.NONE);
-		
+
 		Label lblBooks = new Label(this, SWT.NONE);
 		lblBooks.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 		lblBooks.setText(CpStringsUI.RteDeviceInfoWidget_lblBooks_text);
 		new Label(this, SWT.NONE);
-		
+
 		lblDescription = new Label(this, SWT.NONE);
 		lblDescription.setText(CpStringsUI.RteDeviceInfoWidget_lblDescription_text);
 		new Label(this, SWT.NONE);
 		new Label(this, SWT.NONE);
-		
+
 		tableViewer = new TableViewer(this, SWT.BORDER | SWT.FULL_SELECTION | SWT.V_SCROLL);
 		table = tableViewer.getTable();
 		GridData gd_table = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
 		gd_table.minimumHeight = 80;
 		table.setLayoutData(gd_table);
-	
+
 		fBookColumnAdvisor = new RteBookColumnAdvisor(tableViewer);
 		ColumnViewerToolTipSupport.enableFor(tableViewer);
 
-		
+
 		tableViewer.setContentProvider(new RteBookContentProvider());
 		tableViewer.setLabelProvider(new AdvisedCellLabelProvider(fBookColumnAdvisor, 0));
-		
+
 		text = new Text(this, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
 		GridData gd_text = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 3);
 		gd_text.widthHint = 240;
 		gd_text.minimumWidth = 200;
 		text.setLayoutData(gd_text);
 		text.setEditable(false);
-		
+
 		lblBoards = new Label(this, SWT.NONE);
 		lblBoards.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false, 2, 1));
 		lblBoards.setText(CpStringsUI.RteDeviceInfoWidget_lblBoards_text);
 		new Label(this, SWT.NONE);
-		
+
 		treeViewer = new TreeViewer(this, SWT.BORDER| SWT.FULL_SELECTION);
 		tree = treeViewer.getTree();
 		GridData gd_tree = new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1);
 		gd_tree.minimumHeight = 80;
 		tree.setLayoutData(gd_tree);
-		
+
 		treeViewer.setContentProvider(new RteBoardContentProvider());
 		fBoardColumnAdvisor = new RteBookColumnAdvisor(treeViewer);
 		ColumnViewerToolTipSupport.enableFor(treeViewer);
 		treeViewer.setLabelProvider(new AdvisedCellLabelProvider(fBoardColumnAdvisor, 0));
-		
+
 	}
-	
+
 	protected void updateControls() {
 		if(isDisposed())
 			return;
@@ -361,7 +362,7 @@ public class RteDeviceInfoWidget extends Composite {
 		String deviceName = CmsisConstants.EMPTY_STRING;
 		String cpu = CmsisConstants.EMPTY_STRING;
 		String security = CmsisConstants.EMPTY_STRING;
-		String pack = CmsisConstants.EMPTY_STRING;
+		String packId = CmsisConstants.EMPTY_STRING;
 		String mem = CmsisConstants.EMPTY_STRING;
 		String fpu = CmsisConstants.EMPTY_STRING;
 		String endian = CmsisConstants.EMPTY_STRING;
@@ -369,26 +370,34 @@ public class RteDeviceInfoWidget extends Composite {
 		String subFamily = CmsisConstants.EMPTY_STRING;
 		String urlText = CmsisConstants.EMPTY_STRING;
 		url = CmsisConstants.EMPTY_STRING;
-		
+
+		Collection<ICpBoard> boards = Collections.emptyList();
+		ICpPackManager pm  = CpPlugIn.getPackManager();
+
 		if(fDeviceInfo != null) {
 			deviceName = fDeviceInfo.getFullDeviceName();
 			String clock = fDeviceInfo.getClockSummary();
-			cpu = CmsisConstants.ARM + CmsisConstants.SPACE + fDeviceInfo.getAttribute(CmsisConstants.DCORE) + CmsisConstants.SPACE + clock ; 
+			cpu = CmsisConstants.ARM + CmsisConstants.SPACE + fDeviceInfo.getAttribute(CmsisConstants.DCORE) + CmsisConstants.SPACE + clock ;
 			fpu = getFpuString(fDeviceInfo.getAttribute(CmsisConstants.DFPU));
 			security = fDeviceInfo.getAttribute(CmsisConstants.DSECURE);
 			endian = fDeviceInfo.getAttribute(CmsisConstants.DENDIAN);
 			vendorName = DeviceVendor.getOfficialVendorName(fDeviceInfo.getVendor());
-			pack = fDeviceInfo.getPackId();
+			packId = fDeviceInfo.getPackId();
 			family = fDeviceInfo.getAttribute(CmsisConstants.DFAMILY);
 			subFamily = fDeviceInfo.getAttribute(CmsisConstants.DSUBFAMILY);
 			mem = fDeviceInfo.getMemorySummary();
-			url = fDeviceInfo.getUrl();
+			if(pm != null) {
+				boards = pm.getCompatibleBoards(fDeviceInfo.attributes());
+				if(pm.isWebPack(fDeviceInfo.getPack())) {
+					url = fDeviceInfo.getUrl();
+				}
+			}
 			if(!url.isEmpty()) {
 				urlText = "<a href=\"" + url + "\">" + url + "</a>"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
 			}
 			if(fDeviceInfo.getDevice() != null) {
 				description = fDeviceInfo.getDescription();
-			} else {  
+			} else {
 				description = CpStringsUI.RteDeviceInfoWidget_lblMissing_text;
 				deviceName += " (" + CpStringsUI.RteDeviceInfoWidget_lblMissing_text + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 			}
@@ -398,25 +407,20 @@ public class RteDeviceInfoWidget extends Composite {
 		text.setText(description);
 		lblCpu.setText(cpu);
 		lblSecurity.setText(security);
-		lblPack.setText(pack);
+		lblPack.setText(packId);
 		linkUrl.setText(urlText);
 		linkUrl.setToolTipText(url);
 		lblMemory.setText(mem);
 		lblFamily.setText(family);
 		lblSubfamily.setText(subFamily);
-		
-		
+
+
 		lblFpu.setText(fpu);
 		lblEndian.setText(endian);
 		tableViewer.setInput(fDeviceInfo);
-		
-		Collection<ICpBoard> boards = null;
-		ICpPackManager pm  = CpPlugIn.getPackManager();
-		if(pm!= null) {
-			boards = pm.getCompatibleBoards(fDeviceInfo.attributes());
-		}
+
 		treeViewer.setInput(boards);
-		
+
 	}
 
 	private String getFpuString(String fpu){
@@ -455,7 +459,7 @@ public class RteDeviceInfoWidget extends Composite {
 	}
 
 	/**
-	 * Adds selection adapter to browse for device 
+	 * Adds selection adapter to browse for device
 	 * @param SelectionAdapter
 	 */
 	public void setSelectionAdapter(SelectionAdapter adapter) {
@@ -473,8 +477,8 @@ public class RteDeviceInfoWidget extends Composite {
 			fBoardColumnAdvisor.setModelController(modelController);
 		if(fBookColumnAdvisor != null)
 			fBookColumnAdvisor.setModelController(modelController);
-		
+
 	}
 
-	
+
 }

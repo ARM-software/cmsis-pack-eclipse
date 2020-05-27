@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2015 - 2020 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -41,8 +41,8 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	@Override
 	public ICpPack getPack() {
 		// get the latest pack
-		if(fPacks != null && !fPacks.isEmpty()) {
-			return fPacks.entrySet().iterator().next().getValue();
+		if(!getPackMap().isEmpty()) {
+			return getPackMap().entrySet().iterator().next().getValue();
 		}
 		return null;
 	}
@@ -73,9 +73,9 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 			String familyId = CpPack.familyFromId(packId);
 			if(familyId.equals(getId())) {
 				String version = CpPack.versionFromId(packId);
-				fPacks.get(version);
+				getPackMap().get(version);
 			}
-			return fPacks.get(packId); // supplied packId is in fact version
+			return getPackMap().get(packId); // supplied packId is in fact version
 		}
 		return null;
 	}
@@ -91,34 +91,41 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 		if (packs == null) {
 			return null;
 		}
-		String versionRange = attributes.getAttribute(CmsisConstants.VERSION);
-		if (versionRange == null || versionRange.isEmpty()) {
-			return null;
-		}
-		for (ICpPack pack : packs) {
+		return getPackByVersionRange(attributes.getAttribute(CmsisConstants.VERSION));
+	}
+
+	@Override
+	public ICpPack getPackByVersionRange(String versionRange) {
+		if(versionRange == null || versionRange.isEmpty())
+			return getPack();// returns latest version
+
+		for (ICpPack pack : getPacks()) {
 			if (VersionComparator.matchVersionRange(pack.getVersion(), versionRange)) {
 				return pack;
 			}
 		}
-
 		return null;
 	}
 
+
+
+	protected Map<String, ICpPack> getPackMap() {
+		if(fPacks == null) {
+			fPacks = new TreeMap<>(new VersionComparator());
+		}
+		return fPacks;
+	}
+
+
 	@Override
 	public Collection<ICpPack> getPacks() {
-		if(fPacks != null) {
-			return fPacks.values();
-		}
-		return null;
+		return getPackMap().values();
 	}
 
 
 	@Override
 	public Collection<? extends ICpItem> getChildren() {
-		if(fPacks != null) {
-			return fPacks.values();
-		}
-		return null;
+		return getPacks();
 	}
 
 	@Override
@@ -137,19 +144,16 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 		cachedChildArray = null;
 		fPreviousReleases = null;
 		ICpPack pack = (ICpPack)item;
-		if(fPacks == null) {
-			fPacks = new TreeMap<String, ICpPack>(new VersionComparator());
-		}
 		if (pack.getParent() == null) {
 			pack.setParent(this);
 		}
 		if (pack.getPackState() == PackState.ERROR) {
-			fPacks.put(pack.getTag(), pack);
+			getPackMap().put(pack.getTag(), pack);
 		} else {
 			String version = pack.getVersion();
-			ICpPack inserted =  fPacks.get(version);
+			ICpPack inserted =  getPackMap().get(version);
 			if(inserted == null || inserted.getPackState().ordinal() > pack.getPackState().ordinal()) {
-				fPacks.put(version, pack);
+				getPackMap().put(version, pack);
 			}
 		}
 	}
@@ -157,7 +161,7 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	@Override
 	public ICpPack getPackByFilename(String pdscFile) {
 		if(fPacks != null) {
-			for(ICpPack pack : fPacks.values()){
+			for(ICpPack pack : getPackMap().values()){
 				String fileName = pack.getFileName();
 				if(fileName != null && fileName.equals(pdscFile)) {
 					return pack;
@@ -203,16 +207,16 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	protected Collection<? extends ICpItem> collectPreviousReleases() {
 		ICpPack pack = getPack();
 		if(pack == null) {
-			return null;
+			return EMPTY_LIST;
 		}
 		Collection<? extends ICpItem> releases = pack.getReleases();
-		if (releases == null) {
-			return null;
+		if (releases == null || releases.isEmpty()) {
+			return EMPTY_LIST;
 		}
-		Map<String, ICpItem> previousReleases = new TreeMap<String, ICpItem>(new VersionComparator());
+		Map<String, ICpItem> previousReleases = new TreeMap<>(new VersionComparator());
 		for(ICpItem item : releases) {
 			String version = item.getAttribute(CmsisConstants.VERSION);
-			if(fPacks == null || !fPacks.containsKey(version)) {
+			if(fPacks == null || !getPackMap().containsKey(version)) {
 				previousReleases.put(version, item);
 			}
 		}
@@ -222,10 +226,8 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
 	@Override
 	protected Object[] createChildArray() {
 		fPreviousReleases = null;
-		Collection<ICpItem> children = new LinkedList<ICpItem>();
-		if(fPacks != null ) {
-			children.addAll(fPacks.values());
-		}
+		Collection<ICpItem> children = new LinkedList<>();
+		children.addAll(getPacks());
 		ICpItem previousReleases = getPreviousReleases(); // refresh previous release info
 		if(previousReleases != null){
 			children.add(fPreviousReleases);

@@ -437,7 +437,7 @@ public class ProjectUtils {
 	 * @param paths list of paths/files to process
 	 * @return updated list
 	 */
-	static public List<String> removeRtePathEntries(List<String> paths) {
+	public static List<String> removeRtePathEntries(List<String> paths) {
 
 		for (Iterator<String> iterator = paths.iterator(); iterator.hasNext();) {
 			String s = iterator.next();
@@ -457,7 +457,7 @@ public class ProjectUtils {
 	 * @param obj an object that is derived from IResource or adapts IResource
 	 * @return IResource if can be resolved or null
 	 */
-	static public IResource getResource(Object obj) {
+	public static IResource getResource(Object obj) {
 		if(obj instanceof IResource) {
 			return (IResource)obj;
 		}
@@ -476,7 +476,7 @@ public class ProjectUtils {
 	 * @param obj an object that is derived from IResource or adapts IResource
 	 * @return IReource if it is an RTE resource or null
 	 */
-	static public IResource getRteResource(Object obj) {
+	public static IResource getRteResource(Object obj) {
 		IResource r = getResource(obj);
 		if(r == null) {
 			return null;
@@ -510,7 +510,7 @@ public class ProjectUtils {
 	 * @param obj an object that is derived from IResource or adapts IResource
 	 * @return IFile if it is an RTE file or null
 	 */
-	static public IFile getRteFileResource(Object obj) {
+	public static IFile getRteFileResource(Object obj) {
 		IResource r = getRteResource(obj);
 		if(r instanceof IFile) {
 			return (IFile)r;
@@ -518,7 +518,7 @@ public class ProjectUtils {
 		return null;
 	}
 
-	static public ICpFileInfo getCpFileInfo(IResource resource) {
+	public static ICpFileInfo getCpFileInfo(IResource resource) {
 		if(resource == null || resource.getType() != IResource.FILE) {
 			return null;
 		}
@@ -541,7 +541,7 @@ public class ProjectUtils {
 	 * @param bExclude set to true to exclude the resource from build
 	 * @throws CoreException
 	 */
-	static public void setExcludeFromBuild(IProject project, String path, boolean bExclude) throws CoreException {
+	public static void setExcludeFromBuild(IProject project, String path, boolean bExclude) throws CoreException {
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
 		if(buildInfo == null)
 			return;
@@ -557,7 +557,7 @@ public class ProjectUtils {
 	 * @param path the resource's relative path to the project
 	 * @return true if the folder or file is excluded from build
 	 */
-	static public boolean isExcludedFromBuild(IProject project, String path) {
+	public static boolean isExcludedFromBuild(IProject project, String path) {
 		IManagedBuildInfo buildInfo = ManagedBuildManager.getBuildInfo(project);
 		if(buildInfo == null)
 			return false;
@@ -574,7 +574,7 @@ public class ProjectUtils {
 	 * @param basePath absolute base directory
 	 * @return A path relative to the base path, or this path if it could not be made relative to the given base
 	 */
-	static public String makePathRelative(String path, String basePath) {
+	public static String makePathRelative(String path, String basePath) {
 		if(path == null || basePath ==null || basePath.isEmpty()) {
 			return path;
 		}
@@ -666,15 +666,17 @@ public class ProjectUtils {
 		if(!PlatformUI.isWorkbenchRunning()) {
 			return false; // nothing to do in headless mode
 		}		
+		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+		Optional<String> perspectiveId = null;
+		if(envProvider != null) {
+			perspectiveId = envProvider.getCopyExamplePerspectiveSwitchId();
+		}
 		IResource r = project.findMember(fileName);
 		if(r != null && r.exists() && r.getType() == IResource.FILE) {
-			ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
-			Optional<String> perspectiveId = null;
-			if(envProvider != null) {
-				perspectiveId = envProvider.getCopyExamplePerspectiveSwitchId();
-			}
 			openEditorAsync(project.getFile(fileName), perspectiveId);
 			return true;
+		} else {
+			switchToPerspectiveAsync(perspectiveId); // simply switch to an example perspective
 		}
 		return false;
 	}
@@ -725,6 +727,42 @@ public class ProjectUtils {
 		});
 	}
 
+	/**
+	 * Switches active workbench page to a perspective specified by {@link ICpEnvironmentProvider} 
+	 */
+	public static void switchToExamplePerspective() {
+		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+		if(envProvider != null) {
+			switchToPerspectiveAsync(envProvider.getCopyExamplePerspectiveSwitchId());
+		}
+	}
+	
+	
+	/**
+	 * Switches active workbench page to a specified perspective 
+	 * @param perspectiveId perspective Id to switch to
+	 */
+	public static void switchToPerspectiveAsync( Optional<String> perspectiveId) {
+		if(perspectiveId == null || !perspectiveId.isPresent())
+			return;
+		Display.getDefault().asyncExec(new Runnable() {
+			@Override
+			public void run() {
+				IWorkbench wb = PlatformUI.getWorkbench();
+				if(wb == null) 
+					return;
+				IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+				if(window == null)
+					return;
+
+				IWorkbenchPage page = window.getActivePage();
+				if(page == null) 
+					return;
+				switchToPerspective(wb, page, perspectiveId);
+			}
+		});
+	}
+	
 
 	/**
 	 * Switches to specified perspective 

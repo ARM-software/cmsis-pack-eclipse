@@ -18,40 +18,40 @@ import com.arm.cmsis.pack.permissions.IMemoryPriviledge;
 import com.arm.cmsis.pack.permissions.IMemorySecurity;
 
 /**
- * The to-level zone element describing rzone or azone file 
+ * The to-level zone element describing rzone or azone file
  */
 public interface ICpRootZone extends ICpZoneConfig, ICpDeviceResource, ICpResourceGroup, IMemorySecurity, IMemoryPriviledge  {
 
 	/**
-	 * Returns a device unit for the zone 
+	 * Returns a device unit for the zone
 	 * @return ICpDeviceUnit
 	 */
 	ICpDeviceUnit getDeviceUnit();
-	
+
 	/**
-	 * Returns resources as ICpResourceContainer  
+	 * Returns resources as ICpResourceContainer
 	 * @return top resource
 	 */
 	ICpResourceContainer getResources();
-	
-	
+
+
 	/**
-	 * Returns creator element   
+	 * Returns creator element
 	 * @return ICpZoneCreator or null
 	 */
 	default ICpZoneCreator getZoneCreator() {
 		return getFirstChildOfType(ICpZoneCreator.class);
 	}
 
-	
+
 	/**
-	 * Returns "resources" xml element 
+	 * Returns "resources" xml element
 	 * @return ICpResourceContainer
 	 */
 	default ICpResourceContainer getResourceContainer() {
 		return getFirstChildOfType(ICpResourceContainer.class);
 	}
-	
+
 	/**
 	 * Returns zone container
 	 * @return ICpZoneContainer
@@ -60,7 +60,7 @@ public interface ICpRootZone extends ICpZoneConfig, ICpDeviceResource, ICpResour
 		return getFirstChildOfType(ICpZoneContainer.class); // could only be one
 	}
 
-	
+
 	/**
 	 * Returns memory partition group
 	 * @return ICpPartitionGroup
@@ -68,27 +68,27 @@ public interface ICpRootZone extends ICpZoneConfig, ICpDeviceResource, ICpResour
 	default ICpPartitionGroup getPartitionGroup() {
 		return getFirstChildOfType(ICpPartitionGroup.class); // could only be one
 	}
-	
-	
+
+
 	/**
-	 * Store current memory partition 
+	 * Store current memory partition
 	 */
 	void updatePartition();
-	
+
 	/**
 	 * Return the project/execution zone with the given name
 	 * @param name name of the zone
 	 * @return ICpZone zone or null if not found
 	 */
 	ICpZone getZone(String name);
-	
+
 	/**
 	 * Return collection of zones
 	 * @return zone collection, null if no zones are found.
 	 */
 	Collection<ICpZone> getZones();
 
-	
+
 	/**
 	 * Adds new zone to the collection if it does not exists
 	 * @param name zone name to add
@@ -96,17 +96,24 @@ public interface ICpRootZone extends ICpZoneConfig, ICpDeviceResource, ICpResour
 	 */
 	ICpZone addZone(String name);
 
-	
+
 	/**
 	 * Return system processor architecture
-	 * @return ECoreArchitecture enum value  
+	 * @return ECoreArchitecture enum value
 	 */
 	@Override
 	ECoreArchitecture getArchitecture();
-	
+
 	/**
-	 * Returns filename of corresponding resourceFile 
-	 * @return fileName 
+	 * Returns filename of corresponding resourceFile
+	 * @return fileName
 	 */
 	String getResourceFileName();
+
+	 /**
+     * Creates MPU setup for all zones, replaces the existing one
+     */
+    void createMpuSetup();
+
+
 }

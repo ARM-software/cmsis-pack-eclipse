@@ -145,7 +145,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	 * @param fProject IProject object associated with IRteProject
 	 * @return IRteProject
 	 */
-	synchronized public IRteProject getRteProject(String name) {
+	public synchronized IRteProject getRteProject(String name) {
 		return rteProjects.get(name);
 	}
 
@@ -171,7 +171,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	 * @param project IProject object to be associated with IRteProject
 	 * @return existing IRteProject if exists or new one
 	 */
-	synchronized public IRteProject createRteProject(IProject project) {
+	public synchronized IRteProject createRteProject(IProject project) {
 		IRteProject rteProject = getRteProject(project);
 		if(rteProject == null) {
 			rteProject = new RteProject(project);
@@ -186,7 +186,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	 * Adds RTE project to the internal collection
 	 * @param rteProject IRteProject to add
 	 */
-	synchronized public void addRteProject(IRteProject rteProject) {
+	public synchronized void addRteProject(IRteProject rteProject) {
 		if(rteProject != null) {
 			rteProjects.put(rteProject.getName(), rteProject);
 			emitRteEvent(RteEvent.PROJECT_ADDED, rteProject);
@@ -197,7 +197,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 	 * Removes RTE project from internal collection
 	 * @param rteProject IRteProject to remove
 	 */
-	synchronized public void deleteRteProject(IRteProject rteProject) {
+	public synchronized void deleteRteProject(IRteProject rteProject) {
 		if(rteProject != null) {
 			rteProjects.remove(rteProject.getName());
 			rteProject.destroy();
@@ -227,7 +227,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 		switch (event.getTopic()) {
 		case RteEvent.PACKS_RELOADED:
 		case RteEvent.PACKS_UPDATED:
-			refreshProjects();
+			refreshProjects(RteProjectUpdater.CAUSE_PACKS_CHANGED);
 			break;
 		case RteEvent.GPDSC_CHANGED:
 			refreshGpdscProjects((String) event.getData());
@@ -258,7 +258,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 			if (project != null) {
 				IRteProject rteProject = getRteProject(project);
 				if (rteProject != null) {
-					rteProject.refresh();
+					rteProject.refresh(RteProjectUpdater.CAUSE_IMPORT_COMPLETED);
 				}
 			}
 			ProjectUtils.openRteConfigFile(project);
@@ -281,13 +281,20 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 		}
 	}
 
-	
-	
+	@Deprecated
 	protected void refreshProjects() {
+		refreshProjects(RteProjectUpdater.NONE);
+	}
+	
+	/**
+	 * Refreshes all RTE projects 
+	 * @param cause refresh cause
+	 */
+	protected void refreshProjects(int cause) {
 		synchronized(rteProjects) {
 			for(IRteProject rteProject : rteProjects.values()) {
 				if (rteProject.getProject().isOpen()) {
-					rteProject.refresh();
+					rteProject.refresh(cause);
 				}
 			}
 		}
@@ -299,7 +306,8 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 				if (rteProject.getProject().isOpen()) {
 					IRteConfiguration rteConf = rteProject.getRteConfiguration();
 					if(rteConf != null && rteConf.isGeneratedPackUsed(file)) {
-						rteProject.refresh();
+						rteProject.refresh(RteProjectUpdater.CAUSE_GPDSC_CHANGED);
+						ProjectUtils.openRteConfigFile(rteProject.getProject());
 					}
 				}
 			}
@@ -379,7 +387,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 						if (rteProject != null) {
 							String relName = resource.getProjectRelativePath().toString();
 							if (!postponeRefresh && relName.equals(rteProject.getRteConfigurationName())) {
-								rteProject.refresh();
+								rteProject.refresh(RteProjectUpdater.CAUSE_CONFIG_CHANGED);
 							}
 						}
 						return false;
@@ -414,7 +422,7 @@ public class RteProjectManager extends RteEventProxy implements IResourceChangeL
 		for(IProject project : projects) {
 			IRteProject rteProject = getRteProject(project);
 			if(rteProject != null && rteProject.isUpdateCompleted()) {
-				rteProject.refresh();
+				rteProject.refresh(RteProjectUpdater.NONE);
 			}
 		}
 	}

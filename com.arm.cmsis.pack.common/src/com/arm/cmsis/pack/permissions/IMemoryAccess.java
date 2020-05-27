@@ -20,26 +20,26 @@ import com.arm.cmsis.pack.generic.IAttributedItem;
 public interface IMemoryAccess extends IAttributedItem {
 	
 	// access permissions
-	final static char PERIPHERAL_ACCESS		= 'p';
-	final static char READ_ACCESS 			= 'r';
-	final static char WRITE_ACCESS			= 'w';
-	final static char EXECUTE_ACCESS		= 'x';
+	static final char PERIPHERAL_ACCESS		= 'p';
+	static final char READ_ACCESS 			= 'r';
+	static final char WRITE_ACCESS			= 'w';
+	static final char EXECUTE_ACCESS		= 'x';
 
-	final static String p = "p"; //$NON-NLS-1$
-	final static String r = "r"; //$NON-NLS-1$
-	final static String w = "w"; //$NON-NLS-1$
-	final static String x = "x"; //$NON-NLS-1$
+	static final String P = "p"; //$NON-NLS-1$
+	static final String R = "r"; //$NON-NLS-1$
+	static final String W = "w"; //$NON-NLS-1$
+	static final String X = "x"; //$NON-NLS-1$
 	
-	final static String rx  = "rx"; //$NON-NLS-1$
-    final static String rwx = "rwx"; //$NON-NLS-1$
-    final static String prw = "prw"; //$NON-NLS-1$
-    final static String rw  = "rw"; //$NON-NLS-1$
+	static final String RX  = "rx"; //$NON-NLS-1$
+    static final String RWX = "rwx"; //$NON-NLS-1$
+    static final String PRW = "prw"; //$NON-NLS-1$
+    static final String RW  = "rw"; //$NON-NLS-1$
     
-	final static String DEFAULT_ACCESS = rwx;
-	final static String DEFAULT_RO_ACCESS = rx; 
-	final static String DEFAULT_PERIPHERAL_ACCESS = prw; 
+	static final String DEFAULT_ACCESS = RWX;
+	static final String DEFAULT_RO_ACCESS = RX; 
+	static final String DEFAULT_PERIPHERAL_ACCESS = PRW; 
 		
-	final static String ACCESS_FLAGS = "prwx";  //$NON-NLS-1$
+	static final String ACCESS_FLAGS = "prwx";  //$NON-NLS-1$
 
 	
 	/**
@@ -136,7 +136,7 @@ public interface IMemoryAccess extends IAttributedItem {
 	 */
 	 static String normalize(String access) {
 		if(access == null || access.isEmpty())
-			return access;
+			return CmsisConstants.EMPTY_STRING;
 		StringBuilder builder = new StringBuilder();
 		for(int i = 0; i < ACCESS_FLAGS.length(); i++) {
 			char ch = ACCESS_FLAGS.charAt(i);

@@ -121,7 +121,7 @@
    <extension
          point="org.eclipse.core.variables.dynamicVariables">
       <variable
-            description="The root directory containing CMSIS packs "
+            description="The root directory containing CMSIS-Packs "
             name="cmsis_pack_root"
             resolver="com.arm.cmsis.pack.project.CpVariableResolver"
             supportsArgument="true">

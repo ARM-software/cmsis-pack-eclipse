@@ -48,6 +48,7 @@ import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.data.ICpPackFamily;
+import com.arm.cmsis.pack.generic.ITreeObject;
 import com.arm.cmsis.pack.installer.ui.ButtonId;
 import com.arm.cmsis.pack.installer.ui.IHelpContextIds;
 import com.arm.cmsis.pack.installer.ui.Messages;
@@ -72,7 +73,7 @@ public class PacksView extends PackInstallerView {
 	 */
 	public static final String ID = "com.arm.cmsis.pack.installer.ui.views.PacksView"; //$NON-NLS-1$
 
-	private final static String ROOT = "Root"; //$NON-NLS-1$
+	private static final String ROOT = "Root"; //$NON-NLS-1$
 	private Action fRemovePack;
 	private Action fDeletePack;
 	private Action fInstallSinglePack;
@@ -87,19 +88,10 @@ public class PacksView extends PackInstallerView {
 		@Override
 		public Object[] getChildren(Object parentElement) {
 			ICpItem item = ICpItem.cast(parentElement);
-			if(item == null) {
-				return null;
+			if(item == null || item instanceof ICpPack) {
+				return ITreeObject.EMPTY_OBJECT_ARRAY;
 			}
-			if (item instanceof ICpPackCollection) {
-				return item.getChildArray();
-			} else if (item instanceof ICpPackFamily) {
-				return item.getChildArray();
-			} else if(CmsisConstants.PREVIOUS.equals(item.getTag())) {
-				return item.getChildArray();
-			} else if (ROOT.equals(item.getTag())) {
-				return item.getChildArray();
-			}
-			return null;
+			return item.getChildArray();
 		}
 
 		@Override
@@ -124,13 +116,17 @@ public class PacksView extends PackInstallerView {
 
 		@Override
 		public boolean hasChildren(Object element) {
-			return getChildren(element) != null && getChildren(element).length > 0;
+			ICpItem item = ICpItem.cast(element);
+			if(item == null || item instanceof ICpPack) {
+				return false;
+			}
+			return item.hasChildren();
 		}
 	}
 
 	class PacksViewColumnAdvisor extends ColumnAdvisor {
 		private String packCountButtonString;
-		
+
 		public PacksViewColumnAdvisor(ColumnViewer columnViewer) {
 			super(columnViewer);
 		}
@@ -214,7 +210,7 @@ public class PacksView extends PackInstallerView {
 						ICpPackFamily pf = (ICpPackFamily) obj;
 						if (!CpPlugIn.getPackManager().isRequiredPacksInstalled(pf.getPack())) {
 							return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_SUB_WARNING);
-						} 
+						}
 
 						if (CpPlugIn.getPackManager().isLocalRepository(pf.getPack())) {
 							return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALLED_LOCAL_REPO);
@@ -239,7 +235,7 @@ public class PacksView extends PackInstallerView {
 				case BUTTON_DELETE_ALL:
 				case BUTTON_REPOSITORY:
 					if (getButtonId(obj, columnIndex) == ButtonId.BUTTON_REPOSITORY) {
-						if (CpPlugIn.getPackManager().isLocalRepository((CpPack)obj)) {
+						if (CpPlugIn.getPackManager().isLocalRepository((ICpPack)obj)) {
 							return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALLED_LOCAL_REPO);
 						}
 					}
@@ -256,7 +252,7 @@ public class PacksView extends PackInstallerView {
 			if (getCellControlType(element, index) != CellControlType.BUTTON) {
 				return CmsisConstants.EMPTY_STRING;
 			}
-			
+
 			ButtonId buttonId = getButtonId(element, index);
 			switch (buttonId) {
 				case BUTTON_1PACK:
@@ -280,7 +276,8 @@ public class PacksView extends PackInstallerView {
 		public String getTooltipText(Object obj, int columnIndex) {
 			ICpItem item = ICpItem.cast(obj);
 			if (item != null) {
-				return getActionTooltip(item) == null ? getNameTooltip(item) : getActionTooltip(item);
+				String toolTip = getActionTooltip(item);
+				return toolTip != null ? toolTip : getNameTooltip(item);
 			}
 			return null;
 		}
@@ -350,10 +347,10 @@ public class PacksView extends PackInstallerView {
 				this.control.redraw();
 			}
 		}
-		
+
 		protected ButtonId getButtonId(Object element, int index) {
 			ButtonId buttonId = ButtonId.BUTTON_UNDEFINED;
-			
+
 			if (getCellControlType(element, index) != CellControlType.BUTTON) {
 				return buttonId;
 			}
@@ -505,7 +502,7 @@ public class PacksView extends PackInstallerView {
 			boolean isWinOS = CmsisConstants.WIN.equals(Utils.getHostType());
 			return isWinOS ? description : description.split("\\r?\\n")[0]; //$NON-NLS-1$
 		}
-		
+
 		@Override
 		public CellControlType getCellControlType(Object obj, int columnIndex) {
 			if (obj instanceof ICpPack && columnIndex == COLDESC) {
@@ -522,20 +519,19 @@ public class PacksView extends PackInstallerView {
 		public String getUrl(Object obj, int columnIndex) {
 			return getUrlText(obj, columnIndex);
 		}
-		
+
 		private String getUrlText(Object obj, int columnIndex) {
-			if (getCellControlType(obj, columnIndex) == CellControlType.URL) {
-				if (obj instanceof ICpPack) {
-					ICpPack pack = (ICpPack) obj;
-					ICpItem repo = pack.getFirstChild(CmsisConstants.REPOSITORY);
-					if (repo != null) {
-						return repo.getText();
-					}
+			if (obj instanceof ICpPack && getCellControlType(obj, columnIndex) == CellControlType.URL) {
+				ICpPack pack = (ICpPack) obj;
+				String repo = pack.getRepositoryUrl();
+				if (!repo.isEmpty()) {
+					return repo;
 				}
+				return pack.getDownloadUrl();
 			}
 			return super.getUrl(obj, columnIndex);
 		}
-			
+
 
 		@Override
 		public String getTooltipText(Object obj, int columnIndex) {
@@ -545,9 +541,9 @@ public class PacksView extends PackInstallerView {
 			}
 			return tt;
 		}
-		
+
 	}
-	
+
 	class PackTreeColumnComparator extends PackInstallerTreeColumnComparator {
 
 		private VersionComparator versionComparator;
@@ -571,7 +567,7 @@ public class PacksView extends PackInstallerView {
 			} else if (cp1 instanceof ICpPackCollection && cp2 instanceof ICpPackCollection) {
 				return 0;
 			}
-			
+
 			// For this view we only sort ICpPackFamily
 			if (!(e1 instanceof ICpPackFamily || e1 instanceof ICpPack)
 					|| !(e2 instanceof ICpPackFamily || e2 instanceof ICpPack)) {
@@ -687,67 +683,58 @@ public class PacksView extends PackInstallerView {
 				}
 				return sb.toString();
 			}
-			return getNameTooltip(item.getPack());
+			return getPackToolTip(item.getPack());
 		} else if (item instanceof ICpPack) {
-			ICpPack pack = item.getPack();
-			if (pack.getPackState() == PackState.ERROR) {
-				return Messages.PacksView_Delete_ + pack.getFileName();
-			}
-			if (pack.getReleases() == null) {
-				return null;
-			}
-			for (ICpItem release : pack.getReleases()) {
-				if (release.getVersion().equals(pack.getVersion())) {
-					String releaseTooltip = getNameTooltip(release);
-					String requiredPacks = CmsisConstants.EMPTY_STRING;
-					if (pack.getRequiredPacks() != null) {
-						requiredPacks += Messages.PacksView_RequiredPacks;
-						for (ICpItem reqPack: pack.getRequiredPacks()) {
-							String packId = reqPack.getVendor() + '.'
-									+ reqPack.getName() + '.'
-									+ '[' + reqPack.getVersion() + ']';
-							requiredPacks += "     " + packId + '\n'; //$NON-NLS-1$
-						}
-					}
-					return requiredPacks + releaseTooltip;
-				}
-			}
-			return null;
+			return getPackToolTip(( ICpPack)item);
 		} else if (CmsisConstants.RELEASE_TAG.equals(item.getTag())) {
-			
-			// evaluate repository tag for tooltip
-			String url = item.getAttribute(CmsisConstants.URL);
-			String tag = item.getAttribute(CmsisConstants.TAG);
-			String repo = CmsisConstants.EMPTY_STRING;
-			if (url != CmsisConstants.EMPTY_STRING) {
-				repo = Messages.PacksView_Repository + ":\n" + "     " + Messages.PacksView_Url + ": " + url;  //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-			}
-			if (tag != CmsisConstants.EMPTY_STRING) {
-				if (repo.equals(CmsisConstants.EMPTY_STRING)) {
-					repo = "\n" + Messages.PacksView_Repository + ":"; //$NON-NLS-1$ //$NON-NLS-2$
-				}
-				repo = repo + "\n" + "     " + Messages.PacksView_Tag + ": " + tag + "\n"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			}
-			
-			String tooltip = CmsisConstants.EMPTY_STRING;
-			if (item.hasAttribute(CmsisConstants.DEPRECATED)) {
-				tooltip += NLS.bind(Messages.PacksView_DeprecatedOn, item.getAttribute(CmsisConstants.DEPRECATED));
-			}
-			if (item.hasAttribute(CmsisConstants.REPLACEMENT)) {
-				tooltip += NLS.bind(Messages.PacksView_ReplacedBy, item.getAttribute(CmsisConstants.REPLACEMENT));
-			}
-			
-			 // version
-			tooltip += NLS.bind(Messages.PacksView_Version, fColumnLabelProviderWithImage.getText(item));
-			
-			// release notes
-			String releaseNotes = Messages.PacksView_ReleaseNotes + ":\n" + "      " + item.getText();  //$NON-NLS-1$//$NON-NLS-2$
-			
-			tooltip += repo + releaseNotes;
-			return tooltip;
+			return getReleaseToolTip(item, null);
 		}
 
 		return null;
+	}
+
+	protected String getPackToolTip(ICpPack pack) {
+
+		if (pack.getPackState() == PackState.ERROR) {
+			return Messages.PacksView_Delete_ + pack.getFileName();
+		}
+		return getReleaseToolTip(pack.getThisRelease(), pack);
+	}
+
+	protected String getReleaseToolTip(ICpItem release, ICpPack thisPack) {
+
+		StringBuilder sb = new StringBuilder();
+		// version
+		sb.append(NLS.bind(Messages.PacksView_Version, fColumnLabelProviderWithImage.getText(release)));
+
+		String url = release.hasAttribute(CmsisConstants.URL) ? release.getAttribute(CmsisConstants.URL) : release.getPack().getUrl();
+		if (!url.isEmpty() ) {
+			sb.append(Messages.PacksView_Url).append(": ").append(url).append("\n");  //$NON-NLS-1$ //$NON-NLS-2$
+		}
+		if(thisPack != null) {
+			String repo = thisPack.getRepositoryUrl();
+			if(!repo.isEmpty()) {
+				sb.append(Messages.PacksView_Repository).append(": ").append(repo).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$
+			}
+		}
+		String tag = release.getAttribute(CmsisConstants.TAG);
+		if(!tag.isEmpty()) {
+			sb.append(Messages.PacksView_Tag).append(": ").append(tag).append("\n"); //$NON-NLS-1$ //$NON-NLS-2$
+		}
+
+		if (release.hasAttribute(CmsisConstants.DEPRECATED)) {
+			sb.append(NLS.bind(Messages.PacksView_DeprecatedOn, release.getAttribute(CmsisConstants.DEPRECATED)));
+		}
+		if (release.hasAttribute(CmsisConstants.REPLACEMENT)) {
+			sb.append(NLS.bind(Messages.PacksView_ReplacedBy, release.getAttribute(CmsisConstants.REPLACEMENT)));
+		}
+
+		if(thisPack != null) {
+			sb.append(getRequiredPacksTooltip(thisPack.getRequiredPacks()));
+		}
+		// release notes
+		sb.append(Messages.PacksView_ReleaseNotes).append(":\n      ").append(release.getText());  //$NON-NLS-1$
+		return sb.toString();
 	}
 
 	/**
@@ -764,22 +751,36 @@ public class PacksView extends PackInstallerView {
 			return null;
 		}
 
-		Collection<? extends ICpItem> reqPacks = pack.getRequiredPacks();
-		if (reqPacks == null) {
+		String reqPacksTooltip = getRequiredPacksTooltip(pack.getRequiredPacks());
+		if(reqPacksTooltip.isEmpty())
 			return null;
-		}
-		String tooltip = Messages.PacksView_ResolveRequiredPacks;
-		for (ICpItem reqPack : reqPacks) {
-			ICpPackCollection installedPacks = CpPlugIn.getPackManager().getInstalledPacks();
-			if (installedPacks != null && installedPacks.getPack(reqPack.attributes()) != null) {
-				continue;
-			}
-			String packId = reqPack.getVendor() + '.' + reqPack.getName() + '.'
-					+ '[' + reqPack.getVersion() + ']';
-			tooltip += "    " + packId + '\n'; //$NON-NLS-1$
-		}
-		return tooltip;
+
+		return Messages.PacksView_ResolveRequiredPacks + reqPacksTooltip;
 	}
+
+
+	/**
+	 * Returns tooltip portion with required packs
+	 * @param requiredPacks collection of required packs
+	 * @return tooltip string
+	 */
+	private String getRequiredPacksTooltip(Collection<? extends ICpItem> requiredPacks) {
+		StringBuilder sb = new StringBuilder();
+		if (requiredPacks != null && !requiredPacks.isEmpty()) {
+			sb.append(Messages.PacksView_RequiredPacks);
+			for (ICpItem reqPack: requiredPacks) {
+				sb.append(CmsisConstants.SPACES4);
+				sb.append(reqPack.getVendor()).append(CmsisConstants.DOT).append(reqPack.getName());
+				String versionRange = reqPack.getAttribute(CmsisConstants.VERSION);
+				if(!versionRange.isEmpty()) {
+					sb.append(".[").append(versionRange).append(']');  //$NON-NLS-1$
+				}
+				sb.append('\n');
+			}
+		}
+		return sb.toString();
+	}
+
 
 	/**
 	 * The constructor.
@@ -865,13 +866,13 @@ public class PacksView extends PackInstallerView {
 				dialog.open();
 				super.run();
 			}
-			
+
 		};
-		
-		fManLocalRepo.setText(Messages.PacksView_ActionManageLocalRepo + "..."); //$NON-NLS-1$ 
+
+		fManLocalRepo.setText(Messages.PacksView_ActionManageLocalRepo + "..."); //$NON-NLS-1$
 		fManLocalRepo.setToolTipText(Messages.PacksView_ActionManageLocalRepo + "..."); //$NON-NLS-1$
 		fManLocalRepo.setImageDescriptor(ImageDescriptor.createFromImage(CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_INSTALLED_LOCAL_REPO)));
-		
+
 		fRemovePack = new Action() {
 			@Override
 			public void run() {
@@ -905,7 +906,7 @@ public class PacksView extends PackInstallerView {
 				if(packInstaller != null && pack != null) {
 					packInstaller.installPack(pack.getId(), false);
 				}
-			};
+			}
 		};
 		fInstallSinglePack.setToolTipText(Messages.PacksView_InstallSinglePackTooltip);
 
@@ -993,7 +994,7 @@ public class PacksView extends PackInstallerView {
 	 */
 	ICpPack getPackItem() {
 		ICmsisItem item = getSelectedItem();
-		if(item != null && item instanceof ICpPack) {
+		if(item instanceof ICpPack) {
 			return (ICpPack) item;
 		}
 		return null;
@@ -1011,7 +1012,7 @@ public class PacksView extends PackInstallerView {
 		return localPdscFile.exists();
 	}
 
-	
+
 	@Override
 	protected void enableActions(boolean en) {
 		if (fRemovePack != null)

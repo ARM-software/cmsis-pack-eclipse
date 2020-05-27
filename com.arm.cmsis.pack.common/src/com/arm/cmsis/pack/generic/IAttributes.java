@@ -344,23 +344,24 @@ public interface IAttributes {
 	 * @return string containing keys and values of all attributes
 	 */
 	default String getAttributesAsString(String delimiter) {
-		String s = CmsisConstants.EMPTY_STRING;
 		// we need to synchronize the entire object here as we cannot use synchronized method modifier in interfaces
 		synchronized (this) { 
 			if(hasAttributes()) {
+				StringBuilder bld = new StringBuilder();
 				Map<String, String> attr = getAttributesAsMap();
 				for(Entry<String, String> e : attr.entrySet()){
-					if(!s.isEmpty()) {
-						s += delimiter; 
+					if(bld.length() > 0 ) {
+						bld.append(delimiter); 
 					}
-					s += e.getKey();
-					s += "=\""; //$NON-NLS-1$
-					s += e.getValue();
-					s += "\""; //$NON-NLS-1$
+					bld.append(e.getKey());
+					bld.append("=\""); //$NON-NLS-1$
+					bld.append(e.getValue());
+					bld.append("\""); //$NON-NLS-1$
 				}
+				return bld.toString();
 			}
 		}
-		return s;
+		return CmsisConstants.EMPTY_STRING;
 	}
 
 	
@@ -403,13 +404,15 @@ public interface IAttributes {
 	 * @return value as hexadecimal string   
 	 */
 	static String longToHexString(Long value, int digits) {
-		if(value == null)
+		if(value == null) {
 			return null;
-		 String val = Long.toHexString(value).toUpperCase();
-		 int l = val.length();
-		 if(l >= digits)
-			 return CmsisConstants.ZEROX + val;  
-		 return CmsisConstants.ZEROX16.substring(0, digits + 2 - l) + val;
+		}
+		String val = Long.toHexString(value).toUpperCase();
+		int l = val.length();
+		if(l >= digits) {
+			return CmsisConstants.ZEROX + val;
+		}
+		return CmsisConstants.ZEROX16.substring(0, digits + 2 - l) + val;
 	}
 	
 	

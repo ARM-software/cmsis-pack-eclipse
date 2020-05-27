@@ -188,7 +188,7 @@ public class RteToolChainAdapterFactory {
 	 * @param toolchainPrefix a toolchain ID prefix 
 	 * @return true if a toolchain is installed
 	 */
-	static public boolean isToolchainInstalled(String toolchainPrefix) {
+	public static boolean isToolchainInstalled(String toolchainPrefix) {
 		IToolChain[] toolChains = ManagedBuildManager.getExtensionToolChains();
 		if(toolChains == null)
 			return false;

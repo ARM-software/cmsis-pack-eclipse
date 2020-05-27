@@ -25,32 +25,28 @@ import com.arm.cmsis.pack.enums.EEvaluationResult;
  */
 public class CpConditionContext extends CpAttributes implements ICpConditionContext {
 
-	protected EEvaluationResult fResult = EEvaluationResult.IGNORED;
-	protected Map<ICpItem, EEvaluationResult> fResults = null;
-	
+	private EEvaluationResult fResult = EEvaluationResult.IGNORED;
+	private Map<ICpItem, EEvaluationResult> fResults = null;
+
 	// temporary variables
-	protected Set<ICpCondition> tConditionsBeingEvaluated = new HashSet<ICpCondition>(); // to prevent recursion
-	protected EEvaluationResult tResultAccept = EEvaluationResult.UNDEFINED; // keeps last (the best) accept result
-	protected boolean tbDeny = false; // flag is set when deny expression is evaluated  
-	
-	public CpConditionContext() {
-	}
-	
+	private Set<ICpCondition> tConditionsBeingEvaluated = new HashSet<>(); // to prevent recursion
+	protected boolean tbDeny = false; // flag is set when deny expression is evaluated
+
 	@Override
 	public void resetResult() {
 		fResult = EEvaluationResult.IGNORED;
 		fResults = null;
-		tResultAccept = EEvaluationResult.UNDEFINED;
 		tbDeny = false;
 		tConditionsBeingEvaluated.clear();
 	}
+
 
 	@Override
 	public EEvaluationResult getEvaluationResult() {
 		return fResult;
 	}
 
-	
+
 	@Override
 	public void setEvaluationResult(EEvaluationResult result) {
 		fResult = result;
@@ -60,7 +56,7 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 		if(result.ordinal() < fResult.ordinal())
 			fResult = result;
 	}
-	
+
 	@Override
 	public EEvaluationResult getEvaluationResult(ICpItem item) {
 		if(fResults != null)
@@ -72,11 +68,10 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 	public EEvaluationResult evaluate(ICpItem item) {
 		if(item == null)
 			return EEvaluationResult.IGNORED;
-		EEvaluationResult res = EEvaluationResult.UNDEFINED;
 		if(fResults == null)
-			fResults = new HashMap<ICpItem, EEvaluationResult>();
+			fResults = new HashMap<>();
 
-		res = getCachedResult(item);
+		EEvaluationResult res = getEvaluationResult(item);
 		if(isEvaluate(res)) {
 			res = item.evaluate(this);
 			putCachedResult(item, res);
@@ -84,7 +79,7 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 		return res;
 	}
 
-	
+
 	/**
 	 * Checks if result to be (re-)evaluated
 	 * @param res EEvaluationResult
@@ -94,16 +89,6 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 		return res == null || res == EEvaluationResult.UNDEFINED;
 	}
 
-	/**
-	 * Retrieves cached result for the given item if already in cache
-	 * @param item ICpItem for which to retrieve result
-	 * @return cached result or null if not yet in cache
-	 */
-	protected EEvaluationResult getCachedResult(ICpItem item) {
-		 if(fResults != null)
-			 return fResults.get(item);
-		 return null;
-	 }
 
 	 /**
 	 * Puts evaluation result into cache
@@ -112,11 +97,11 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 	 */
 	protected void putCachedResult(ICpItem item, EEvaluationResult res) {
 		 if(fResults == null)
-			 fResults = new HashMap<ICpItem, EEvaluationResult>();
+			 fResults = new HashMap<>();
 		fResults.put(item, res);
 	 }
 
-	 
+
 	@Override
 	public EEvaluationResult evaluateExpression(ICpExpression expression) {
 		if(expression == null)
@@ -126,11 +111,11 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 			return EEvaluationResult.IGNORED;
 		case ICpExpression.DEVICE_EXPRESSION:
 		case ICpExpression.TOOLCHAIN_EXPRESSION:
-			boolean b = matchCommonAttributes(expression.attributes()); 
+			boolean b = matchCommonAttributes(expression.attributes());
 			return  b ? EEvaluationResult.FULFILLED : EEvaluationResult.FAILED;
 		case ICpExpression.REFERENCE_EXPRESSION:
-			return evaluate(expression.getCondition()); 
-		default: 
+			return evaluate(expression.getCondition());
+		default:
 			break;
 		}
 		return EEvaluationResult.ERROR;
@@ -140,7 +125,7 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 	public EEvaluationResult evaluateCondition(ICpCondition condition) {
 		if(tConditionsBeingEvaluated.contains(condition))
 			return EEvaluationResult.ERROR; // recursion
-		
+
 		tConditionsBeingEvaluated.add(condition);
 		EEvaluationResult resultRequire = EEvaluationResult.IGNORED;
 		EEvaluationResult resultAccept = EEvaluationResult.UNDEFINED;
@@ -150,9 +135,9 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 			if(!(child instanceof ICpExpression))
 				continue;
 			ICpExpression expr = (ICpExpression)child;
-			boolean bDeny = tbDeny; // save deny context  
+			boolean bDeny = tbDeny; // save deny context
 			if(expr.getExpressionType() == ICpExpression.DENY_EXPRESSION)
-				tbDeny = !tbDeny; // invert the deny context 
+				tbDeny = !tbDeny; // invert the deny context
 			EEvaluationResult res =  evaluate(expr);
 			tbDeny = bDeny; // restore deny context
 			if(res == EEvaluationResult.IGNORED || res == EEvaluationResult.UNDEFINED )
@@ -166,18 +151,17 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 			} else {
 				if(res.ordinal() < resultRequire.ordinal()){
 					resultRequire = res;
-				}	
+				}
 			}
 		}
 
 		tConditionsBeingEvaluated.remove(condition);
 
-		tResultAccept = resultAccept; 
-		if(resultAccept != EEvaluationResult.UNDEFINED && 
-		   resultAccept.ordinal() < resultRequire.ordinal()) {  
+		if(resultAccept != EEvaluationResult.UNDEFINED &&
+		   resultAccept.ordinal() < resultRequire.ordinal()) {
 			return resultAccept;
 		}
-		
+
 		return resultRequire;
 	}
 
@@ -192,7 +176,7 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 					filtered.add(item);
 			}
 		}
-		return filtered;		
+		return filtered;
 	}
-	
+
 }

@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.rte.dependencies;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -38,6 +39,7 @@ import com.arm.cmsis.pack.rte.components.IRteComponent;
 import com.arm.cmsis.pack.rte.components.IRteComponentGroup;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 import com.arm.cmsis.pack.utils.AlnumComparator;
+import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Class responsible for evaluating component dependencies and resolving them
@@ -53,10 +55,14 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 	// collected results for selected components
 	protected Map<IRteComponentItem, IRteDependencyItem> fDependencyItems = null;
 
-	// temporary collection of selected components
-	protected Collection<IRteComponent> tSelectedComponents = null;
-
 	protected Map<IRteComponentItem, EEvaluationResult> fEvaluationResults = null;
+
+	// temporary collections of selected components and results
+	protected Collection<IRteComponent> tSelectedComponents = null;
+	// sorted map : MISSING comes earlier than SELECTABLE
+	protected Map<IRteComponent, IRteDependencyResult> tComponentResults = null;
+	protected Map<IRteComponentGroup, IRteDependency> tApiConflicts = null;
+
 
 	/**
 	 *  Helper class to compare component by evaluation result (descending) and component name (acceding)
@@ -74,7 +80,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 			String name1 = c1.getActiveCpItem().getName();
 			return AlnumComparator.alnumCompare(name0, name1);
 		}
-	};
+	}
 
 	/**
 	 * Default constructor
@@ -92,22 +98,52 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 		fEvaluationResults = null;
 		fDependencyItems = null;
 		tSelectedComponents = null;
+		tComponentResults = null;
+		tApiConflicts = null;
 	}
 
 	protected Collection<IRteComponent> getSelectedComponents(){
 		if(tSelectedComponents == null) {
 			if(rteModel != null) {
 				tSelectedComponents = rteModel.getSelectedComponents();
+			} else {
+				tSelectedComponents = Collections.emptyList();
 			}
 		}
 		return tSelectedComponents;
+	}
+
+	@Override
+	public Collection<? extends IRteDependencyItem> getDependencyItems() {
+		return getDependencyItemMap().values();
+	}
+
+	protected Map<IRteComponentItem, IRteDependencyItem> getDependencyItemMap() {
+		if(fDependencyItems == null) {
+			fDependencyItems = new LinkedHashMap<>();
+		}
+		return fDependencyItems;
+	}
+
+	protected Map<IRteComponent, IRteDependencyResult> getComponentResults() {
+		if(tComponentResults == null) {
+			tComponentResults = new TreeMap<>(new ComponentResultComparator());
+		}
+		return tComponentResults;
+	}
+
+	protected Map<IRteComponentGroup, IRteDependency> getApiConflicts() {
+		if(tApiConflicts == null) {
+			tApiConflicts = new HashMap<>();
+		}
+		return tApiConflicts;
 	}
 
 	protected Collection<IRteComponent> getUsedComponents(){
 		if(rteModel != null) {
 			return rteModel.getUsedComponents();
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	protected Map<String, ICpPack> getGeneratedPacks(){
@@ -116,8 +152,6 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 		}
 		return null;
 	}
-
-
 
 	@Override
 	protected boolean isEvaluate(EEvaluationResult res) {
@@ -135,13 +169,10 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 
 	protected void collectDependencies(IRteDependencyResult depRes, ICpItem condition, EEvaluationResult overallResult) {
 		// first check require and deny expressions
-		Collection<? extends ICpItem> children = condition.getChildren();
-		for(ICpItem child :  children) {
-			ICpExpression expr = child.castTo(ICpExpression.class);
-			if(expr == null)
-				continue;
-			EEvaluationResult res =  getCachedResult(expr);
-			if(res == EEvaluationResult.IGNORED || res == EEvaluationResult.UNDEFINED || res == EEvaluationResult.FULFILLED) {
+		Collection<ICpExpression> children = condition.getChildrenOfType(ICpExpression.class);
+		for(ICpExpression expr :  children) {
+			EEvaluationResult res =  getEvaluationResult(expr);
+			if(res.isFulfilled() || res.isUndefined()) {
 				continue;
 			}
 
@@ -155,8 +186,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 				}
 			}
 			boolean bDeny = tbDeny; // save deny context
-			if(expr.getExpressionType() == ICpExpression.DENY_EXPRESSION)
-			{
+			if(expr.getExpressionType() == ICpExpression.DENY_EXPRESSION) {
 				tbDeny = !tbDeny; // invert the deny context
 			}
 			if(expr.getExpressionDomain() == ICpExpression.REFERENCE_EXPRESSION) {
@@ -215,8 +245,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 			putDependency(expression, dep);
 		}
 
-		EEvaluationResult result = dep.getEvaluationResult();
-		return result;
+		return dep.getEvaluationResult();
 	}
 
 	protected EEvaluationResult evaluateDenyDependency(IRteDependency dep) {
@@ -256,13 +285,13 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 	protected void putDependency(ICpExpression expression,  IRteDependency dep ) {
 		if(tbDeny) { // cache deny results separately
 			if(fDenyDependencies == null) {
-				fDenyDependencies = new HashMap<ICpExpression, IRteDependency>();
+				fDenyDependencies = new HashMap<>();
 			}
 			fDenyDependencies.put(expression, dep);
 
 		} else {
 			if(fDependencies == null) {
-				fDependencies = new HashMap<ICpExpression, IRteDependency>();
+				fDependencies = new HashMap<>();
 			}
 			fDependencies.put(expression, dep);
 		}
@@ -271,177 +300,240 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 
 	@Override
 	public IRteDependencyItem getDependencyItem(IRteComponentItem componentItem) {
-		if(fDependencyItems != null) {
-			return fDependencyItems.get(componentItem);
-		}
-		return null;
+		return getDependencyItemMap().get(componentItem);
 	}
 
 
 	@Override
 	public EEvaluationResult evaluateDependencies() {
 		resetResult();
-		if(rteModel == null)
-		{
+
+		if(rteModel == null) {
 			return EEvaluationResult.IGNORED; // nothing to do
 		}
 
+		if(evaluateDevice() == EEvaluationResult.FAILED) {
+			setEvaluationResult(EEvaluationResult.FAILED);
+			return getEvaluationResult();  // missing device => no use to evaluate something else
+		}
+
+		// Report missing components and gpdsc files
+		evaluateUsedComponents();
+
+		// Report unsatisfied dependencies and conflicts
+		evaluateSelectedComponents();
+
+		purgeResults();
+		return getEvaluationResult();
+	}
+
+	/**
+	 * Evaluates selected components and reports unsatisfied dependencies and conflicts
+	 */
+	protected void evaluateSelectedComponents() {
+		Collection<IRteComponent> selectedComponents = getSelectedComponents();
+		if(selectedComponents == null || selectedComponents.isEmpty()) {
+			return; // nothing selected => nothing to evaluate
+		}
+
+		// sorted map : MISSING comes earlier than SELECTABLE
+
+		for(IRteComponent component : selectedComponents){
+			evaluateSelectedComponent(component);
+		}
+		if(!getDependencyItemMap().isEmpty())	{
+			return; // no need to evaluate further if components or APIs are missing
+		}
+
+		// add API conflicts if any
+		for(Entry<IRteComponentGroup, IRteDependency> e : getApiConflicts().entrySet()) {
+			IRteDependency d = e.getValue();
+			if(d.getChildCount() > 1) {
+				d.setEvaluationResult(EEvaluationResult.CONFLICT);
+				IRteComponentGroup g = e.getKey();
+				getDependencyItemMap().put(g, d);
+				cacheConditionResult(g, EEvaluationResult.CONFLICT);
+				cacheConditionResult(g.getParentClass(), EEvaluationResult.CONFLICT);
+				updateEvaluationResult(EEvaluationResult.CONFLICT);
+			}
+		}
+		// finally add sorted dependency results
+		for(Entry<IRteComponent, IRteDependencyResult> e : getComponentResults().entrySet()) {
+			IRteComponent c = e.getKey();
+			IRteDependencyResult r = e.getValue();
+			getDependencyItemMap().put(c, r);
+		}
+	}
+
+
+	/**
+	 * Evaluates a selected component
+	 * @param component IRteComponent to evaluate
+	 */
+	protected void evaluateSelectedComponent(IRteComponent component) {
+		ICpComponent c = component.getActiveCpComponent();
+		if(c == null || c instanceof ICpComponentInfo) {
+			return; // already reported as missing
+		}
+		EEvaluationResult r = evaluate(c);
+
+		updateEvaluationResult(r);
+
+		cacheConditionResult(component, r);
+		cacheConditionResult(component.getParentClass(), r);
+
+		if(!r.isFulfilled()) {
+			IRteDependencyResult  depRes = new RteDependencyResult(component);
+			ICpItem condition = c.getCondition();
+			if(r != EEvaluationResult.ERROR) {
+				collectDependencies(depRes, condition, r);
+			}
+			depRes.setEvaluationResult(r);
+			getComponentResults().put(component, depRes);
+		}
+
+		evaluateGroupApi(component, c, r);
+	}
+
+
+	/**
+	 * Evaluates component group for API presence, API version and API conflicts
+	 * @param component IRteComponent to evaluate
+	 * @param c active ICpComponent
+	 * @param r EEvaluationResult of component evaluation
+	 */
+	protected void evaluateGroupApi(IRteComponent component, ICpComponent c, EEvaluationResult r) {
+		IRteComponentGroup g = component.getParentGroup();
+		cacheConditionResult(g, r);
+		//	 check for missing APIs and  API conflicts
+		ICpComponent api = g.getApi();
+		if(api instanceof ICpComponentInfo)  {
+			ICpComponentInfo apiInfo = (ICpComponentInfo)api;
+			if(apiInfo.getComponent() == null) {
+				reportMissingApi(g, EEvaluationResult.MISSING);
+			}
+			return;
+		}
+		String requiredApiVersion = c.getAttribute(CmsisConstants.CAPIVERSION);
+		if(!requiredApiVersion.isEmpty()) { // component requires API
+			if(api == null) {
+				reportMissingApi(component, EEvaluationResult.MISSING_API);
+				return;
+			}
+			String apiVersion = api.getVersion();
+			int versionDiff = VersionComparator.versionCompare(apiVersion, requiredApiVersion);
+			if(versionDiff < -2) {
+				reportMissingApi(component, EEvaluationResult.MISSING_API_VERSION);
+				return;
+			}
+		}
+
+		if(api != null && api.isExclusive()) {
+			IRteDependency d = getApiConflicts().get(g);
+			if(d == null) {
+				d = new RteDependency(api, true);
+				getApiConflicts().put(g, d);
+			}
+			d.addComponent(component, r);
+		}
+	}
+
+	protected void reportMissingApi(IRteComponentItem componentItem, EEvaluationResult r) {
+		IRteDependencyResult depRes = new RteMissingComponentResult(componentItem);
+		depRes.setEvaluationResult(r);
+		getDependencyItemMap().put(componentItem, depRes);
+		cacheConditionResult(componentItem, r);
+		IRteComponentGroup g = componentItem.getParentGroup();
+		if(g != componentItem) {
+			cacheConditionResult(g, r);
+		}
+		cacheConditionResult(componentItem.getParentClass(), r);
+		updateEvaluationResult(r);
+	}
+
+	/**
+	 * Evaluates used components and reports missing components and gpdsc files
+	 */
+	protected void evaluateUsedComponents() {
 		ICpEnvironmentProvider ep  = CpPlugIn.getEnvironmentProvider();
 		ICpConfigurationInfo configInfo = rteModel.getConfigurationInfo();
-		fDependencyItems = new LinkedHashMap<IRteComponentItem, IRteDependencyItem>();
+
+		Collection<IRteComponent> usedComponents = getUsedComponents();
+		for(IRteComponent component : usedComponents){
+			if(!component.isSelected()) {
+				continue;
+			}
+			ICpComponentInfo ci = component.getActiveCpComponentInfo();
+			if(ci == null) {
+				continue;
+			}
+			EEvaluationResult r;
+			IRteDependencyResult depRes = null;
+			if(ci.getComponent() != null) {
+				if(ci.isGenerated() || !ci.isSaved()) {
+					continue;
+				}
+				String gpdsc = ci.getGpdsc();
+				if(gpdsc == null || gpdsc.isEmpty()) {
+					continue;
+				}
+				gpdsc = ep.expandString(gpdsc, configInfo, true);
+
+				ICpPack pack = rteModel.getGeneratedPack(gpdsc);
+				if(pack != null) {
+					continue;
+				}
+				r = EEvaluationResult.MISSING_GPDSC;
+				depRes = new RteMissingGpdscResult(component, gpdsc);
+			} else {
+				r = ci.getEvaluationResult();
+				depRes = new RteMissingComponentResult(component);
+				updateEvaluationResult(r);
+			}
+
+			depRes.setEvaluationResult(r);
+			getDependencyItemMap().put(component, depRes);
+
+			cacheConditionResult(component, r);
+			cacheConditionResult(component.getParentClass(), r);
+			cacheConditionResult(component.getParentGroup(), r);
+
+			updateEvaluationResult(r);
+		}
+	}
+
+
+	/**
+	 * Checks if device info is available
+	 * @return EEvaluationResult
+	 */
+	protected EEvaluationResult evaluateDevice() {
 		IRteComponentItem devClass = getSelectedDeviceClass();
 		// first check if the selected device is available
 		ICpDeviceInfo di = rteModel.getDeviceInfo();
 		if(devClass != null && di != null) {
 			if(di.getDevice() == null){
-				fResult = EEvaluationResult.FAILED;
+				EEvaluationResult result = EEvaluationResult.FAILED;
 				IRteDependencyResult depRes = new RteMissingDeviceResult(devClass, di);
-				fDependencyItems.put(devClass, depRes);
-				cacheConditionResult(devClass, fResult);
-				return fResult; // missing device => no use to evaluate something else
+				getDependencyItemMap().put(devClass, depRes);
+				cacheConditionResult(devClass, result);
+				return result; // missing device => no use to evaluate something else
 			}
 			cacheConditionResult(devClass, EEvaluationResult.FULFILLED);
 		}
-
-		// report missing components and gpdsc files
-		Collection<IRteComponent> usedComponents = getUsedComponents();
-		if(usedComponents != null && !usedComponents.isEmpty()) {
-			for(IRteComponent component : usedComponents){
-				if(!component.isSelected()) {
-					continue;
-				}
-				ICpComponentInfo ci = component.getActiveCpComponentInfo();
-				if(ci == null) {
-					continue;
-				}
-				EEvaluationResult r = EEvaluationResult.IGNORED;
-
-				IRteDependencyResult depRes = null;
-				if(ci.getComponent() != null) {
-					if(ci.isGenerated() || !ci.isSaved()) {
-						continue;
-					}
-					String gpdsc = ci.getGpdsc();
-					if(gpdsc == null || gpdsc.isEmpty()) {
-						continue;
-					}
-					gpdsc = ep.expandString(gpdsc, configInfo, true);
-
-					ICpPack pack = rteModel.getGeneratedPack(gpdsc);
-					if(pack != null) {
-						continue;
-					}
-					r = EEvaluationResult.MISSING_GPDSC;
-					depRes = new RteMissingGpdscResult(component, gpdsc);
-				} else {
-					r = ci.getEvaluationResult();
-					depRes = new RteMissingComponentResult(component);
-					updateEvaluationResult(EEvaluationResult.FAILED);
-				}
-
-				depRes.setEvaluationResult(r);
-				fDependencyItems.put(component, depRes);
-
-				cacheConditionResult(component, r);
-				cacheConditionResult(component.getParentClass(), r);
-				cacheConditionResult(component.getParentGroup(), r);
-
-				updateEvaluationResult(r);
-			}
-		}
-
-		Collection<IRteComponent> selectedComponents = getSelectedComponents();
-		if(selectedComponents == null || selectedComponents.isEmpty()) {
-			return getEvaluationResult();
-		}
-
-		// sorted map : MISSING comes earlier than SELECTABLE
-		Map<IRteComponent, IRteDependencyResult> componentResults = new TreeMap<IRteComponent, IRteDependencyResult>(new ComponentResultComparator());
-		Map<IRteComponentGroup, IRteDependency> apiConflicts = new HashMap<IRteComponentGroup, IRteDependency>();
-		for(IRteComponent component : selectedComponents){
-			ICpComponent c = component.getActiveCpComponent();
-			if(c == null || c instanceof ICpComponentInfo) {
-				continue;
-			}
-			EEvaluationResult r = evaluate(c);
-
-			updateEvaluationResult(r);
-
-			cacheConditionResult(component, r);
-			cacheConditionResult(component.getParentClass(), r);
-
-			if(r.ordinal() < EEvaluationResult.FULFILLED.ordinal()) {
-				IRteDependencyResult  depRes = new RteDependencyResult(component);
-				ICpItem condition = c.getCondition();
-				if(r != EEvaluationResult.ERROR) {
-					collectDependencies(depRes, condition, r);
-				}
-				depRes.setEvaluationResult(r);
-				componentResults.put(component, depRes);
-			}
-
-			IRteComponentGroup g = component.getParentGroup();
-			cacheConditionResult(g, r);
-			//	 check for missing APIs and  API conflicts
-			ICpComponent api = g.getApi();
-			if(api != null) {
-				if(api instanceof ICpComponentInfo ) {
-					ICpComponentInfo apiInfo = (ICpComponentInfo)api;
-					if(apiInfo.getComponent() == null) {
-						r = EEvaluationResult.MISSING_API;
-						IRteDependencyResult depRes = new RteMissingComponentResult(g);
-						depRes.setEvaluationResult(r);
-						fDependencyItems.put(g, depRes);
-						cacheConditionResult(g, r);
-						cacheConditionResult(g.getParentClass(), r);
-						fResult = EEvaluationResult.FAILED;
-					}
-				} else if(api.isExclusive()) {
-					IRteDependency d = apiConflicts.get(g);
-					if(d == null) {
-						d = new RteDependency(api, true);
-						apiConflicts.put(g, d);
-					}
-					d.addComponent(component, r);
-				}
-			}
-		}
-		if(!fDependencyItems.isEmpty())
-		{
-			return getEvaluationResult(); // no need to evaluate further if components or APIs are missing
-		}
-
-		// add API evaluation results
-		for(Entry<IRteComponentGroup, IRteDependency> e : apiConflicts.entrySet()) {
-			IRteDependency d = e.getValue();
-			if(d.getChildCount() > 1) {
-				d.setEvaluationResult(EEvaluationResult.CONFLICT);
-				IRteComponentGroup g = e.getKey();
-				fDependencyItems.put(g, d);
-				cacheConditionResult(g, EEvaluationResult.CONFLICT);
-				cacheConditionResult(g.getParentClass(), EEvaluationResult.CONFLICT);
-				if(fResult.ordinal() > EEvaluationResult.CONFLICT.ordinal() ) {
-					fResult = EEvaluationResult.CONFLICT;
-				}
-			}
-		}
-		// finally add sorted dependency results
-		for(Entry<IRteComponent, IRteDependencyResult> e : componentResults.entrySet()) {
-			IRteComponent c = e.getKey();
-			IRteDependencyResult r = e.getValue();
-			fDependencyItems.put(c, r);
-		}
-		purgeResults();
-		return getEvaluationResult();
+		return EEvaluationResult.IGNORED;
 	}
 
-	// remove all items that are higher than overall result
+
+	/**
+	 * Removes all items that are higher than overall result
+	 */
 	protected void purgeResults() {
-		Iterator<IRteDependencyItem> iterator = fDependencyItems.values().iterator();
+		Iterator<IRteDependencyItem> iterator = getDependencyItemMap().values().iterator();
 		while(iterator.hasNext()) {
 			IRteDependencyItem d = iterator.next();
 			EEvaluationResult res = d.getEvaluationResult();
-			if(res.ordinal() > fResult.ordinal()) {
+			if(res.ordinal() > getEvaluationResult().ordinal()) {
 				iterator.remove();
 			}
 		}
@@ -463,7 +555,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 		}
 
 		if(fEvaluationResults == null) {
-			fEvaluationResults = new HashMap<IRteComponentItem, EEvaluationResult>();
+			fEvaluationResults = new HashMap<>();
 		}
 		fEvaluationResults.put(item, res);
 	}
@@ -484,9 +576,9 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 	@Override
 	public EEvaluationResult resolveDependencies() {
 		// try to run resolve iteration until all dependencies are resolved or no resolution is available
-		while(fDependencyItems != null && getEvaluationResult().ordinal() < EEvaluationResult.FULFILLED.ordinal())
+		while(!getEvaluationResult().isFulfilled())
 		{
-			if(resolveIteration() == false) {
+			if(!resolveIteration()) { // no dependency is resolved
 				break;
 			}
 		}
@@ -498,7 +590,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 	 * @return true if one of dependencies gets resolved => the state changes
 	 */
 	protected boolean resolveIteration(){
-		for(IRteDependencyItem depItem : fDependencyItems.values()) {
+		for(IRteDependencyItem depItem : getDependencyItemMap().values()) {
 			if(resolveDependency(depItem)) {
 				return true;
 			}
@@ -536,22 +628,13 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 		if(c != null) {
 			ICpComponent cpComponent = c.getActiveCpComponent();
 			if(cpComponent == null || cpComponent.isCustom()) {
-				return false; // custom component cannot be selected automatically 
+				return false; // custom component cannot be selected automatically
 			}
-			
+
 			rteModel.selectComponent(c, 1);
 			rteModel.evaluateComponentDependencies(); // re-evaluate dependencies to remove resolved ones
 			return true;
 		}
 		return false;
-	}
-
-
-	@Override
-	public Collection<? extends IRteDependencyItem> getDependencyItems() {
-		if(fDependencyItems != null) {
-			return fDependencyItems.values();
-		}
-		return null;
 	}
 }

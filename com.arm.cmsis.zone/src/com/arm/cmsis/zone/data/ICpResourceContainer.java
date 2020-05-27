@@ -15,49 +15,49 @@ import java.util.Collection;
 import java.util.Map;
 
 /**
- *   Resource container contains memory and peripherals groups 
+ *   Resource container contains memory and peripherals groups
  */
 public interface ICpResourceContainer extends ICpResourceGroup {
-	
-	/**
-	 * Adds memory sub-regions as well as overridden attributes and permissions for regions, groups and peripherals
-	 * @param pg partition group  
-	 */
-	void addPartititionBlocks(ICpPartitionGroup pg);
-	
-	
-	/**
-	 * Adds assignments from the zone container memory regions and blocks from supplied group
-	 * @param zoneContainer ICpZoneContainer 
-	 */
-	void addZoneAssignments(ICpZoneContainer zoneContainer);
-	
-	/**
-	 * Returns all memory regions available excluding peripherals
-	 * return collection of ICpMemoryRegion
-	 */
-	Collection<ICpMemoryRegion> getAllMemoryRegions();
 
 	/**
-	 * Returns all regions with STARTUP flag set 
-	 * return collection of ICpMemoryRegion
+	 * Adds memory sub-regions as well as overridden attributes and permissions for regions, groups and peripherals
+	 * @param pg partition group
 	 */
-	Collection<ICpMemoryRegion> getStarupMemoryRegions();
-	
-	
+	void addPartititionBlocks(ICpPartitionGroup pg);
+
+
+	/**
+	 * Adds assignments from the zone container memory regions and blocks from supplied group
+	 * @param zoneContainer ICpZoneContainer
+	 */
+	void addZoneAssignments(ICpZoneContainer zoneContainer);
+
+	/**
+	 * Returns all memory regions available excluding peripherals
+	 * return collection of ICpMemoryBlock
+	 */
+	Collection<ICpMemoryBlock> getAllMemoryRegions();
+
+	/**
+	 * Returns all regions with STARTUP flag set
+	 * return collection of ICpMemoryBlock
+	 */
+	Collection<ICpMemoryBlock> getStarupMemoryRegions();
+
+
 	/**
 	 * Returns all memory regions available for system/project zone
-	 * @return collection of ICpPeripheral 
+	 * @return collection of ICpPeripheral
 	 */
 	Collection<ICpPeripheral> getAllPeripherals();
 
-	
+
 	/**
 	 * Returns all memory regions available for system/project zone
-	 * @return collection of ICpPeripheralItem 
+	 * @return collection of ICpPeripheralItem
 	 */
 	Collection<ICpPeripheralItem> getAllPeripheralItems();
-	
+
 	/**
 	 * Returns SAU init element
 	 * @return ICpSauInit or null
@@ -65,14 +65,14 @@ public interface ICpResourceContainer extends ICpResourceGroup {
 	default ICpSauInit getSauInit() {
 		return getFirstChildOfType(ICpSauInit.class); // could only be one
 	}
-	
+
 	/**
-	 * Return MPC regions   
+	 * Return MPC regions
 	 * @return map of MPC regions ordered by their addresses
 	 */
 	Map<Long, IMpcRegion> getMpcRegions();
- 
-	
+
+
 	/**
 	 * Returns MPC region for given address
 	 * @param address region start address
@@ -80,14 +80,14 @@ public interface ICpResourceContainer extends ICpResourceGroup {
 	 */
 	IMpcRegion getMpcRegion(long address);
 
-	
+
 	/**
-	 * Return physical memory regions  
+	 * Return physical memory regions
 	 * @return map of PhysicalMemoryRegion ordered by their addresses
 	 */
 	Map<Long, PhysicalMemoryRegion> getPhysicalRegions();
- 
-	
+
+
 	/**
 	 * Returns physicalMemory region for given address
 	 * @param address region start address
@@ -97,11 +97,11 @@ public interface ICpResourceContainer extends ICpResourceGroup {
 
 
 	/**
-	 * Arranges memory block in their corresponding memory regions 
+	 * Arranges memory block in their corresponding memory regions
 	 * @return true if block arrangement has changed
 	 */
 	boolean arrangeBlocks();
-	
 
-	
+
+
 }

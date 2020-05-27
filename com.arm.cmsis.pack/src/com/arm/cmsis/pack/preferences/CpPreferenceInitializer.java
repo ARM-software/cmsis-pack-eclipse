@@ -13,7 +13,7 @@ package com.arm.cmsis.pack.preferences;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -40,46 +40,59 @@ import com.arm.cmsis.pack.utils.Encryptor;
 import com.arm.cmsis.pack.utils.Utils;
 
 /**
- *  Initializes CMSIS pack and RTE preferences
+ *  Initializes CMSIS-Pack and RTE preferences
  */
 public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
+
+	public static final String CMSIS_PACK_ROOT_PREFERENCE = "com.arm.cmsis.pack.root"; //$NON-NLS-1$
+	public static final String CMSIS_PACK_INSTALL_MISSING_PACKS_PREFERENCE = "com.arm.cmsis.pack.install.missing"; //$NON-NLS-1$
+	public static final String CMSIS_PACK_REPOSITORY_PREFERENCE = "com.arm.cmsis.pack.repository"; //$NON-NLS-1$
+	private static final String PROXY_PREFIX = "com.arm.cmsis.proxy."; //$NON-NLS-1$
+	public static final String PROXY_MODE 	= PROXY_PREFIX + "mode"; //$NON-NLS-1$
+	public static final String PROXY_ADDRESS= PROXY_PREFIX + "address"; //$NON-NLS-1$
+	public static final String PROXY_PORT 	= PROXY_PREFIX + "port"; //$NON-NLS-1$
+	public static final String PROXY_USER 	= PROXY_PREFIX + "username"; //$NON-NLS-1$
+	public static final String PROXY_PASSWORD = PROXY_PREFIX + "password"; //$NON-NLS-1$
+
 
 	protected static ICpPackRootProvider packRootProvider = null;
 
 	private static final String UPDATE_CFG = "update.cfg"; //$NON-NLS-1$
 	private static String lastUpdateTime = CmsisConstants.EMPTY_STRING;
 	private static Boolean autoUpdateFlag = null;
-
 	/**
 	 *  Default constructor
 	 */
 	public CpPreferenceInitializer() {
+		// does nothing
 	}
 
 	@Override
 	public void initializeDefaultPreferences() {
 		//Get default pack root
 		String defaultPackRoot = getDefaultPackRoot();
-		// and store it in the default preferences overriding the existing value 
+		// and store it in the default preferences overriding the existing value
 		IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		defaultPreferences.put(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, defaultPackRoot);
+		defaultPreferences.put(CMSIS_PACK_ROOT_PREFERENCE, defaultPackRoot);
 
-		String defaultRepoKey = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + 0;
-		String defaultValue = getDefaultCpRepository();			
+		String defaultRepoKey = CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + 0;
+		String defaultValue = getDefaultCpRepository();
 		defaultPreferences.put(defaultRepoKey, defaultValue);
+
+		defaultPreferences.putBoolean(CMSIS_PACK_INSTALL_MISSING_PACKS_PREFERENCE, true);
 	}
-	
+
 
 	/**
-	 * Returns environment-specific provider of CMSIS Pack root directory
-	 * @return
+	 * Returns environment-specific provider of CMSIS-Pack root directory
+	 * @return ICpPackRootProvider, never null
 	 */
 	public static ICpPackRootProvider getCmsisRootProvider() {
 		if(packRootProvider == null) {
 			//Returns the environment provider
 			ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
 			if(envProvider != null) {
-				//Returns environment-specific provider of CMSIS Pack root directory
+				//Returns environment-specific provider of CMSIS-Pack root directory
 				packRootProvider = envProvider.getCmsisRootProvider();
 			}
 			if(packRootProvider == null) {
@@ -91,12 +104,7 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 
 	public static String getDefaultPackRoot() {
 		String defaultValue = CmsisConstants.EMPTY_STRING;
-		String root = null;
-		ICpPackRootProvider provider = getCmsisRootProvider();
-		if(provider != null) {
-			//Returns default value for CMSIS Pack root directory as absolute path
-			 root = provider.getPackRoot();
-		}
+		String root = getCmsisRootProvider().getPackRoot();
 		if(root == null || root.isEmpty()) {
 			root = getDefaultCMSISPackDir().getAbsolutePath();
 		}
@@ -109,10 +117,10 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 		return defaultValue;
 	}
 
-	
+
 	/**
-	 * Returns default CMSIS pack root directory as a File
-	 * @return default CMSIS pack root directory as a File  
+	 * Returns default CMSIS-Pack root directory as a File
+	 * @return default CMSIS-Pack root directory as a File
 	 */
 	public static File getDefaultCMSISPackDir() {
 		File rootPackDir;
@@ -128,50 +136,53 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 		}
 
 		// Create the directory if it doesn't exist
-		if (!rootPackDir.exists()) {
-			if (!rootPackDir.mkdirs() && !rootPackDir.exists()) {
-				// This method can get called with no logging configured
-				System.err.printf("Unable to create CMSIS-Packs root directory: %s%n", rootPackDir.getAbsolutePath()); //$NON-NLS-1$
-			}
-		}
-
+		ensureRootDirExists(rootPackDir);
 		return rootPackDir;
+	}
+
+	private static void ensureRootDirExists(File rootPackDir) {
+		if(rootPackDir.exists())
+			return;
+		if (!rootPackDir.mkdirs() && !rootPackDir.exists()) {
+			// This method can get called with no logging configured
+			System.err.printf("Unable to create CMSIS-Packs root directory: %s%n", rootPackDir.getAbsolutePath()); //$NON-NLS-1$
+		}
 	}
 
 
 	public static String getPackRoot() {
-		String packRoot = CmsisConstants.EMPTY_STRING;	
-		
+		String packRoot;
+
 		//Get default pack root
 		String defaultPackRoot = getDefaultPackRoot();
-		
+
 		//Save default pack root into 'Default preference scope'
 		IEclipsePreferences defaultEclipsePreferences = DefaultScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
 		try {
-			defaultEclipsePreferences.put(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, defaultPackRoot);
-			//Forces any changes in the contents of this node and its descendants to the persistent store. 
+			defaultEclipsePreferences.put(CMSIS_PACK_ROOT_PREFERENCE, defaultPackRoot);
+			//Forces any changes in the contents of this node and its descendants to the persistent store.
 			defaultEclipsePreferences.flush();
 		} catch (BackingStoreException e) {
 			e.printStackTrace();
-		}			
-		
-		//Check if the user can edit CMSIS Pack root preference supplied by the provider
+		}
+
+		//Check if the user can edit CMSIS-Pack root preference supplied by the provider
 		boolean isCMSISRootPreferenceEditable =  isCmsisRootEditable();
-		
-		//Set packs' directory if 'defaultRoot' is not empty and if the user can NOT edit CMSIS Pack root preference supplied by the provider
-		if(!defaultPackRoot.isEmpty() && !isCMSISRootPreferenceEditable) {		
+
+		//Set packs' directory if 'defaultRoot' is not empty and if the user can NOT edit CMSIS-Pack root preference supplied by the provider
+		if(!defaultPackRoot.isEmpty() && !isCMSISRootPreferenceEditable) {
 			packRoot = defaultPackRoot;
 			return packRoot;
 		}
-		
+
 		//Get preferences pack root
 		IEclipsePreferences eclipsePreferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		String preferencesPackRoot  = eclipsePreferences.get(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CmsisConstants.EMPTY_STRING);			
+		String preferencesPackRoot  = eclipsePreferences.get(CMSIS_PACK_ROOT_PREFERENCE, CmsisConstants.EMPTY_STRING);
 
 		if(defaultPackRoot.equals(preferencesPackRoot)){
 			try {
-				eclipsePreferences.remove(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE);
-				//Forces any changes in the contents of this node and its descendants to the persistent store. 
+				eclipsePreferences.remove(CMSIS_PACK_ROOT_PREFERENCE);
+				//Forces any changes in the contents of this node and its descendants to the persistent store.
 				eclipsePreferences.flush();
 			} catch (BackingStoreException e) {
 				e.printStackTrace();
@@ -184,32 +195,32 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 			}
 			else {
 				packRoot = preferencesPackRoot;
-			}			 
+			}
 		}
 		return packRoot;
 	}
-	
-	
+
+
 	public static void setPackRoot(String newPackRoot) {
 		if(newPackRoot == null) {
 			newPackRoot = CmsisConstants.EMPTY_STRING;
 		}
-		
+
 		//Get default pack root
 		String defaultPackRoot = getDefaultPackRoot();
-		
+
 		// normalize and convert to OS format
 		IPath p = new org.eclipse.core.runtime.Path(Utils.removeTrailingSlash(newPackRoot));
 		String newOSPackRoot = p.toOSString();
-		
+
 		IEclipsePreferences eclipsePreferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		String oldPackRoot = eclipsePreferences.get(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CmsisConstants.EMPTY_STRING);
-		
-		if(defaultPackRoot.equals(newOSPackRoot)) { 
+		String oldPackRoot = eclipsePreferences.get(CMSIS_PACK_ROOT_PREFERENCE, CmsisConstants.EMPTY_STRING);
+
+		if(defaultPackRoot.equals(newOSPackRoot)) {
 			if(!oldPackRoot.isEmpty()) {
 				try {
-					eclipsePreferences.remove(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE);
-					//Forces any changes in the contents of this node and its descendants to the persistent store. 
+					eclipsePreferences.remove(CMSIS_PACK_ROOT_PREFERENCE);
+					//Forces any changes in the contents of this node and its descendants to the persistent store.
 					eclipsePreferences.flush();
 				} catch (BackingStoreException e) {
 					e.printStackTrace();
@@ -217,33 +228,33 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 			}
 			return; //Nothing new to set
 		}
-		
-		
+
+
 		if(!newOSPackRoot.equals(oldPackRoot)) {
 			//Associates the specified value with the specified key in this node.
-			eclipsePreferences.put(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, newOSPackRoot);
+			eclipsePreferences.put(CMSIS_PACK_ROOT_PREFERENCE, newOSPackRoot);
 			try {
-				//Forces any changes in the contents of this node and its descendants to the persistent store. 
+				//Forces any changes in the contents of this node and its descendants to the persistent store.
 				eclipsePreferences.flush();
 			} catch (BackingStoreException e) {
 				e.printStackTrace();
 			}
 		}
-		
-		
-		
+
+
+
 	}
 
 	public static List<String> getCpRepositories() {
-		List<String> repos = new LinkedList<String>();
+		List<String> repos = new LinkedList<>();
 		IEclipsePreferences prefs = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
 		int i = 0;
-		String key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
+		String key = CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
 		String repo = prefs.get(key, CmsisConstants.EMPTY_STRING);
 		while (!repo.isEmpty()) {
 			repos.add(repo);
 			i++;
-			key = CpPlugIn.CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
+			key = CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;
 			repo = prefs.get(key, CmsisConstants.EMPTY_STRING);
 		}
 		return repos;
@@ -277,7 +288,7 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 	public static boolean getAutoUpdateFlag() {
 		if (autoUpdateFlag == null) { // not defined yet
 			readUpdateFile();
-			
+
 		}
 		return autoUpdateFlag;
 	}
@@ -286,6 +297,17 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 		autoUpdateFlag = flag;
 		writeUpdateFile();
 	}
+
+
+	/**
+	 * Checks if to perform automatic installation of missing packs on project load
+	 * @return true if auto-install is enabled
+	 */
+	public static boolean isAutoInstallMissingPacks() {
+		IEclipsePreferences eclipsePreferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
+		return eclipsePreferences.getBoolean(CMSIS_PACK_INSTALL_MISSING_PACKS_PREFERENCE, true);
+	}
+
 
 	/**
 	 * Read the update.cfg file in .Web folder.
@@ -313,7 +335,7 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 		List<String> lines = Arrays.asList("Date=" + lastUpdateTime, "Auto=" + autoUpdateFlag.toString()); //$NON-NLS-1$ //$NON-NLS-2$
 		Path file = Paths.get(CpPlugIn.getPackManager().getCmsisPackWebDir(), UPDATE_CFG);
 		try {
-			Files.write(file, lines, Charset.forName("UTF-8")); //$NON-NLS-1$
+			Files.write(file, lines, StandardCharsets.UTF_8);
 		} catch (IOException e) {
 			// do nothing
 		}
@@ -321,44 +343,38 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 
 	public static int getProxyMode() {
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		return preferences.getInt(CpPlugIn.PROXY_MODE, 0);
+		return preferences.getInt(PROXY_MODE, 0);
 	}
 
 	public static String getProxyAddress() {
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		return preferences.get(CpPlugIn.PROXY_ADDRESS, CmsisConstants.EMPTY_STRING);
+		return preferences.get(PROXY_ADDRESS, CmsisConstants.EMPTY_STRING);
 	}
 
 	public static int getProxyPort() {
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		String portString = preferences.get(CpPlugIn.PROXY_PORT, CmsisConstants.EMPTY_STRING);
+		String portString = preferences.get(PROXY_PORT, CmsisConstants.EMPTY_STRING);
 		return Integer.parseInt(portString);
 	}
 
 	public static String getProxyUsername() {
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		return preferences.get(CpPlugIn.PROXY_USER, CmsisConstants.EMPTY_STRING);
+		return preferences.get(PROXY_USER, CmsisConstants.EMPTY_STRING);
 	}
 
 	public static String getProxyPassword() {
 		IEclipsePreferences preferences = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
-		String password = preferences.get(CpPlugIn.PROXY_PASSWORD, CmsisConstants.EMPTY_STRING);
+		String password = preferences.get(PROXY_PASSWORD, CmsisConstants.EMPTY_STRING);
 		Encryptor encryptor = Encryptor.getEncryptor(Encryptor.DEFAULT_KEY);
 		return encryptor.decrypt(password);
 	}
 
-	public static boolean hasCmsisRootProvider() {
-		return getCmsisRootProvider() != null;
-	}
-
 	public static boolean isCmsisRootEditable() {
-		ICpPackRootProvider rootProvider = getCmsisRootProvider();
-		return rootProvider == null || rootProvider.isUserEditable();
+		return getCmsisRootProvider().isUserEditable();
 	}
 
 	public static void destroy() {
 		packRootProvider = null;
 	}
-
 
 }

@@ -16,5 +16,6 @@ package com.arm.cmsis.pack.data;
  */
 public interface ICpDebugVars extends ICpDeviceProperty, ICpFile {
 	
+	// not methods, just convenience interface
 
 }

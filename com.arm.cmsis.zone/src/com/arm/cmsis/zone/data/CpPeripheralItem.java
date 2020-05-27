@@ -15,19 +15,19 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.permissions.IMemoryAccess;
 
 /**
- * Implementation of ICpPeripheralItem 
+ * Implementation of ICpPeripheralItem
  */
-public class CpPeripheralItem extends CpMemoryRegion implements ICpPeripheralItem {
-	
+public class CpPeripheralItem extends CpMemoryBlock implements ICpPeripheralItem {
+
 	public CpPeripheralItem(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
-	
+
 	/**
 	 * Copy constructor
 	 * @param realItem item to copy
 	 */
-	public CpPeripheralItem(ICpPeripheralItem realItem) { 
+	public CpPeripheralItem(ICpPeripheralItem realItem) {
 		super(realItem);
 	}
 
@@ -36,7 +36,7 @@ public class CpPeripheralItem extends CpMemoryRegion implements ICpPeripheralIte
 	public boolean isPeripheral() {
 		return true;
 	}
-	
+
 	@Override
 	public boolean isPeripheralAccess() {
 		return true;

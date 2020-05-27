@@ -3,12 +3,13 @@ package com.arm.cmsis.pack.ui;
 import org.eclipse.osgi.util.NLS;
 
 public class CpStringsUI extends NLS {
-	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.ui.CpStringsUI"; //$NON-NLS-1$	
+	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.ui.CpStringsUI"; //$NON-NLS-1$
+	public static String PreferencesInstallMissingPacks;
 	public static String RteEditor_ChangeDialogMsgTitle;
 	public static String PreferencesPackRootLabel;
 	public static String UseAllLatestPacks;
-	public static String UseAllLatestPacksTooltip;	
-	public static String ShowOnlyUsedPacks;	
+	public static String UseAllLatestPacksTooltip;
+	public static String ShowOnlyUsedPacks;
 	public static String CollapseAll;
 	public static String CollapseSelected;
 	public static String CollapseAllNodes;
@@ -28,7 +29,7 @@ public class CpStringsUI extends NLS {
 	public static String CpManLocalRepoPage_Pack;
 	public static String CpManLocalRepoPage_PdscFiles;
 	public static String CpManLocalRepoPage_Remove;
-	public static String CpManLocalRepoPage_Repository;	
+	public static String CpManLocalRepoPage_Repository;
 	public static String CpPreferencePage_Add;
 	public static String CpPreferencePage_AddPackFromLocalRepo;
 	public static String CpPreferencePage_Pack;

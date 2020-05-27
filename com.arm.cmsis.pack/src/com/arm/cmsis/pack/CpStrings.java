@@ -5,11 +5,12 @@ import org.eclipse.osgi.util.NLS;
 public class CpStrings extends NLS {
 	private static final String BUNDLE_NAME = "com.arm.cmsis.pack.CpStrings"; //$NON-NLS-1$
 	public static String API;
+	public static String APIversion;
 	public static String Component;
 	public static String Device;
 	public static String ICpPackInstaller_NON_UNICODE_FILES;
 	public static String IsMissing;
-	public static String IsNotAvailableFoCurrentConfiguration;
+	public static String IsNotAvailableForCurrentConfiguration;
 	public static String Latest;
 	public static String Fixed;
 	public static String Excluded;
@@ -38,6 +39,7 @@ public class CpStrings extends NLS {
 	public static String EvalResult_IncompatibleVendor;
 	public static String EvalResult_IncompatibleVersion;
 	public static String EvalResult_MissingApi;
+	public static String EvalResult_MissingApiVersion;
 	public static String EvalResult_MissingBundle;
 	public static String EvalResult_MissingComponent;
 	public static String EvalResult_MissingVariant;
@@ -50,6 +52,7 @@ public class CpStrings extends NLS {
 	public static String RteDependency_Conflict;
 	public static String RteDependency_InstallMissingComponent;
 	public static String RteDependency_MissingAPI;
+	public static String RteDependency_MissingAPIVersion;
 	public static String RteDependency_MissingBundle;
 	public static String RteDependency_MissingVariant;
 	public static String RteDependency_MissingVendor;
@@ -63,7 +66,11 @@ public class CpStrings extends NLS {
 	public static String RteDependencyResult_ComponentConficts;
 	public static String RteComponentVendorAny;
 	public static String RteComponentVersionLatest;
+	public static String RteMissingComponentResult_APIDefIsMissingNoPack;
+	public static String RteMissingComponentResult_IsFoundInPack;
+	public static String RteMissingComponentResult_NoComponentFoundMatchingDeviceCompiler;
 	public static String RtePackIsNotInstalled;
+	public static String PackIdIsNotAvailable;
 	public static String IsNotInstalled;
 	public static String IsExcluded;
 	public static String PackFilterInInEffectComponentsFiltered;

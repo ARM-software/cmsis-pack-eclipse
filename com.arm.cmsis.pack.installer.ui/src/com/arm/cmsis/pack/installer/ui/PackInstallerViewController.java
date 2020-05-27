@@ -38,8 +38,8 @@ import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
  */
 public class PackInstallerViewController extends RteEventProxy implements ISelectionListener {
 
-	public final static String INSTALLER_UI_FILTER_CHANGED = "installer.ui.filter.changed"; //$NON-NLS-1$
-	public final static String INSTALLER_UI_PACK_CHANGED = "installer.ui.pack.changed"; //$NON-NLS-1$
+	public static final String INSTALLER_UI_FILTER_CHANGED = "installer.ui.filter.changed"; //$NON-NLS-1$
+	public static final String INSTALLER_UI_PACK_CHANGED = "installer.ui.pack.changed"; //$NON-NLS-1$
 	protected PackInstallerViewFilter fFilter = null;
 	protected ICpPack fSelectedPack = null;
 
@@ -97,7 +97,7 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 		}
 	}
 
-	static public ICpPack getPackFromSelection(ISelection selection) {
+	public static ICpPack getPackFromSelection(ISelection selection) {
 		if(selection == null || !(selection instanceof IStructuredSelection)) {
 			return null;
 		}
@@ -108,7 +108,7 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 		return null;
 	}
 
-	static public ICpPack getPackFromObject(Object o) {
+	public static ICpPack getPackFromObject(Object o) {
 		if(o == null) {
 			return null;
 		}

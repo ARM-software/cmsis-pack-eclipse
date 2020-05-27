@@ -96,9 +96,9 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 		}
 		LaunchGenerator.launch(gen, getModelController().getConfigurationInfo(), launchType);
 	}
-	
+
 	/**
-	 * Action to launch a generator for selected item  
+	 * Action to launch a generator for selected item
 	 */
 	public class LaunchGeneratorAction extends Action {
 		protected String fLaunchType;
@@ -113,7 +113,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 			launchGenerator(getSelectedGenerator(), getLaunchType());
 		}
 	}
-	
+
 	/**
 	 * Column label provider for RteComponentTreeWidget
 	 */
@@ -133,14 +133,12 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 		 */
 		private CellControlType getSelectionControlType(Object obj) {
 			IRteComponentItem item = getComponentItem(obj);
-			if(item != null) {
-				if (item instanceof IRteComponent) {
-					int count = ((IRteComponent) item).getMaxInstanceCount();
-					if (count == 1) {
-						return CellControlType.INPLACE_CHECK;
-					} else if (count > 1) {
-						return CellControlType.INPLACE_SPIN;
-					}
+			if (item instanceof IRteComponent) {
+				int count = ((IRteComponent) item).getMaxInstanceCount();
+				if (count == 1) {
+					return CellControlType.INPLACE_CHECK;
+				} else if (count > 1) {
+					return CellControlType.INPLACE_SPIN;
 				}
 			}
 			return CellControlType.NONE;
@@ -195,8 +193,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 					|| getSelectionControlType(obj) == CellControlType.INPLACE_CHECK) {
 				IRteComponentItem item = getComponentItem(obj);
 				if(item instanceof IRteComponent) {
-					boolean check = item.isSelected();
-					return check;
+					return item.isSelected();
 				}
 			}
 			return false;
@@ -245,10 +242,8 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 			IRteComponentItem item = getComponentItem(obj);
 			if(item != null) {
 				switch(index) {
-				case COLSWCOMP: {
-					String label = item.getEffectiveName();
-					return label;
-				}
+				case COLSWCOMP:
+					return item.getEffectiveName();
 				case COLSEL:
 					if (getSelectionControlType(obj) == CellControlType.INPLACE_SPIN) {
 						return Integer.toString(((IRteComponent)item).getSelectedCount());
@@ -301,8 +296,9 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 
 		@Override
 		public long getMaxCount(Object obj, int columnIndex) {
-			if(columnIndex == COLSEL && obj instanceof IRteComponent) {
-				IRteComponent c = (IRteComponent)(obj);
+			IRteComponentItem item = getComponentItem(obj);
+			if(columnIndex == COLSEL && item instanceof IRteComponent) {
+				IRteComponent c = (IRteComponent)(item);
 				return c.getMaxInstanceCount();
 			}
 			return 0;
@@ -424,13 +420,11 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 					break;
 				case COLVENDOR:
 					break;
-				case COLVERSION: 
-				{
-					String version = item.getActiveVersion(); 
+				case COLVERSION:
+					String version = item.getActiveVersion();
 					if (version != null && !version.isEmpty() && !item.isUseLatestVersion() && !item.hasBundle()) {
 						return CpPlugInUI.getImage(CpPlugInUI.ICON_PIN);
 					}
-				}
 				break;
 				case COLDESCR:
 				default:
@@ -439,7 +433,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 			}
 			return null;
 		}
-		
+
 		@Override
 		public Image getSuffixButtonImage(Object obj, int columnIndex) {
 			if(columnIndex == COLSEL) {
@@ -458,14 +452,13 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 			}
 
 			switch(columnIndex) {
-			case COLSWCOMP: {
+			case COLSWCOMP:
 				String tooltip = item.getDescription();
 				ICpItem cpItem = item.getActiveCpItem();
 				if(cpItem != null) {
 					tooltip += '\n' + CpStringsUI.RteDeviceSelectorWidget_lblPack_text + ' ' + cpItem.getPackId();
 				}
 				return tooltip;
-			}
 			case COLVERSION:
 				String ver = item.getActiveVersion();
 				if(ver == null || ver.isEmpty()) {
@@ -596,6 +589,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 				case MISSING:
 				case MISSING_GPDSC:
 				case MISSING_API:
+				case MISSING_API_VERSION:
 				case MISSING_BUNDLE:
 				case MISSING_VARIANT:
 				case MISSING_VENDOR:
@@ -607,6 +601,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 					if(!item.isSelected()) {
 						break;
 					}
+					return ColorConstants.GREEN;
 				case FULFILLED:
 					return ColorConstants.GREEN;
 
@@ -807,7 +802,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 		return cp.getGenerator();
 	}
 
-	
+
 	/**
 	 * @param event
 	 */
@@ -846,7 +841,6 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 	public void handle(RteEvent event) {
 		if(event.getTopic().equals(RteEvent.COMPONENT_SHOW)) {
 			showComponentItem((IRteComponentItem)event.getData());
-			return;
 		} else if(event.getTopic().equals(RteEvent.COMPONENT_SELECTION_MODIFIED)) {
 			refresh();
 		} else {
@@ -905,22 +899,22 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 		Collection<String> types = gen.getAvailableTypes();
 		if(types == null || types.isEmpty())
 			return;
-		String genName = gen.getId(); 
+		String genName = gen.getId();
 		int n = 0;
 		for(String type : types) {
 			Action a = laGeneratorActions.get(type);
-			if(a == null) 
+			if(a == null)
 				continue;
 			String text = CpStringsUI.Launch + ' ' + genName + ' ' + '(' + type + ')';
 			a.setText(text);
 			manager.add(a);
 			n++;
 		}
-	
+
 		if(n > 0)
 			manager.add(new Separator());
 	}
-	
+
 	@Override
 	protected void fillContextMenu(IMenuManager manager) {
 		addGeneratorActions(manager);
@@ -928,13 +922,13 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 		manager.add(expandAll);
 		manager.add(collapseAll);
 	}
-	
+
 	@Override
 	public boolean isExpandAllSelectedSupported() {
-		return true; 
+		return true;
 	}
 
-	
+
 	@Override
 	protected void expandAllSelected() {
 		if(fTreeViewer == null) {
@@ -959,10 +953,10 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
 	@Override
 	protected void makeActions() {
 		super.makeActions();
-		
+
 		for(String type : CmsisConstants.LAUNCH_TYPES) {
 			LaunchGeneratorAction lga = new LaunchGeneratorAction(type);
-			laGeneratorActions.put(type, lga); 
+			laGeneratorActions.put(type, lga);
 		}
 	}
 

@@ -6,7 +6,7 @@
          <meta.schema plugin="com.arm.cmsis.pack.build.settings" id="ToolChainAdapter" name="Toolchain Adapter for CMSIS C/C++ projects"/>
       </appinfo>
       <documentation>
-         This exstension point facilitates the users to contribute their toolchain adapters CMSIS Pack Project plug-in
+         This exstension point facilitates the users to contribute their toolchain adapters CMSIS-Pack Project plug-in
       </documentation>
    </annotation>
 

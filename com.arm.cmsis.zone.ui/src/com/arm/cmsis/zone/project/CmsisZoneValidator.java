@@ -21,33 +21,33 @@ import com.arm.cmsis.pack.error.CmsisError;
 import com.arm.cmsis.pack.error.CmsisErrorCollection;
 import com.arm.cmsis.pack.item.ICmsisVisitor.VisitResult;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
-import com.arm.cmsis.zone.data.ICpMemoryRegion;
+import com.arm.cmsis.zone.data.ICpMemoryBlock;
 import com.arm.cmsis.zone.data.ICpRootZone;
 import com.arm.cmsis.zone.data.ICpZoneItem;
 import com.arm.cmsis.zone.error.CmsisZoneError;
 import com.arm.cmsis.zone.ui.CpZonePluginUI;
 
 /**
- *  A class to validate CMSIS Zone files/models  
+ *  A class to validate CMSIS-Zone files/models
  */
 public class CmsisZoneValidator extends CmsisErrorCollection implements ICmsisZoneValidator {
-	
+
 	@Override
 	public boolean validate(ICpRootZone rootZone) {
 		clearErrors();
 		if(rootZone == null)
 			return false;
-		
+
 		collectErrors(rootZone);
 		updateMarkers(rootZone);
-		
+
 		return getSevereErrorCount() == 0;
 	}
 
 	protected void collectErrors(ICpRootZone rootZone) {
 
 		// update startup region warnings
-		checkStartupRegions(rootZone); 
+		checkStartupRegions(rootZone);
 		// collect already existing errors discovered during parsing and initialization
 		rootZone.accept((item) -> {
 			if(item instanceof ICpZoneItem) {
@@ -60,41 +60,42 @@ public class CmsisZoneValidator extends CmsisErrorCollection implements ICmsisZo
 			return VisitResult.CONTINUE;
 		});
 	}
-	
+
 	protected void checkStartupRegions(ICpRootZone rootZone) {
 		// clear existing errors
 		rootZone.clearErrors(CmsisZoneError.Z12_MASK);
-		Collection<ICpMemoryRegion> allRegions = rootZone.getResources().getStarupMemoryRegions();
-		for(ICpMemoryRegion r : allRegions) {
+		Collection<ICpMemoryBlock> allRegions = rootZone.getResources().getStarupMemoryRegions();
+		for(ICpMemoryBlock r : allRegions) {
 			r.clearErrors(CmsisZoneError.Z12_MASK);
 		}
-		if(rootZone.isZoneModeMPU()) { 
+		if(rootZone.isZoneModeMPU()) {
 			// check if startup defined more than once
-			Collection<ICpMemoryRegion> startupRegions = rootZone.getResources().getStarupMemoryRegions();
-			if(startupRegions.size() <= 0) {
+			Collection<ICpMemoryBlock> startupRegions = rootZone.getResources().getStarupMemoryRegions();
+			int nStartupRegionCount = startupRegions.size();
+			if(nStartupRegionCount <= 0) {
 				rootZone.addError(new CmsisZoneError(ESeverity.Warning, CmsisZoneError.Z120));
-			} else if(startupRegions.size() > 1) {
+			} else if(nStartupRegionCount > 1) {
 				rootZone.addError(new CmsisZoneError(ESeverity.Warning, CmsisZoneError.Z121));
-				for(ICpMemoryRegion r : startupRegions) {
+				for(ICpMemoryBlock r : startupRegions) {
 					r.addError(new CmsisZoneError(ESeverity.Warning, CmsisZoneError.Z121));
 				}
 			}
 		}
 	}
-	
+
 	protected void updateMarkers(ICpRootZone rootZone) {
 		if(!PlatformUI.isWorkbenchRunning())
 			return; // no markers in non-UI
 		IFile aFile = CpPlugInUI.getFileForLocation(rootZone.getRootFileName());
 		if(aFile == null) {
-			return; // outside workspace? 
+			return; // outside workspace?
 		}
 		CpZonePluginUI.removeCmsisZoneMarkers(aFile);
 		IFile rFile = CpPlugInUI.getFileForLocation(rootZone.getResourceFileName());
 		if(rFile != null) {
-			CpZonePluginUI.removeCmsisZoneMarkers(rFile); 
+			CpZonePluginUI.removeCmsisZoneMarkers(rFile);
 		}
-		
+
 		CpZonePluginUI.setCmsisZoneMarkers(this);
 	}
 

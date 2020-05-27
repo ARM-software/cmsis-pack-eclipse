@@ -80,7 +80,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_BLOCK_NEW	= "block_new.png";	//$NON-NLS-1$
 
 	public static final String ICON_ARRANGE  	= "arrange.png";	//$NON-NLS-1$
-	
+
 	public static final String ICON_ITEM  		= "item.png"; 		//$NON-NLS-1$
 	public static final String ICON_BOOK  		= "book.png"; 		//$NON-NLS-1$
 	public static final String ICON_FILE  		= "file.gif"; 		//$NON-NLS-1$
@@ -194,7 +194,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	public static final String ICON_CMSIS_ZONE_48	= "CMSIS_Zone48.png"; 	//$NON-NLS-1$
 	public static final String ICON_CMSIS_ZONE_OVR 	= "CMSIS_Zone8.png"; 	//$NON-NLS-1$
 
-	
+
 	public static final String ICON_PIN = "pin.png"; 						//$NON-NLS-1$
 	public static final String ICON_DOWNLOAD = "download.png"; 				//$NON-NLS-1$
 	public static final String ERROR_OVR = "error_ovr.gif"; 				//$NON-NLS-1$
@@ -205,7 +205,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 
 	public static final String NEWFILE_WIZARD		= "newfile_wiz.png"; 	//$NON-NLS-1$
 	public static final String ICON_UV5 			= "uv5.png";			//$NON-NLS-1$
-	
+
 	public static final RGB GREEN = new RGB(189,249,181);
 	public static final RGB YELLOW = new RGB(252,200, 46);
 
@@ -227,7 +227,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		if(PlatformUI.isWorkbenchRunning()) {
 			IPreferenceStore store = getCorePreferenceStore();
 			store.addPropertyChangeListener(event -> {
-				if (event.getProperty() == CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE) {
+				if (event.getProperty() == CpPreferenceInitializer.CMSIS_PACK_ROOT_PREFERENCE) {
 					String newPackRoot = event.getNewValue().toString();
 					ICpPackManager pm  = CpPlugIn.getPackManager();
 					ICpPackRootProvider rootProvider = CpPreferenceInitializer.getCmsisRootProvider();
@@ -266,7 +266,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	 * Schedules check-for-pack-updates if needed
 	 */
 	private static void scheduleCheckForPackUpdates() {
-		ICpPackManager pm = CpPlugIn.getPackManager(); 
+		ICpPackManager pm = CpPlugIn.getPackManager();
 		if(pm == null)
 			return;
 		if (pm.isCheckForUpdates()) {
@@ -285,8 +285,8 @@ public class CpPlugInUI extends AbstractUIPlugin {
 			pm.getPackInstaller().updatePacksAsync();
 		}
 	}
-	
-	
+
+
 	/**
 	 * Returns preference store of CpPlugIn, since that does not have GUI
 	 * @return IPreferenceStore
@@ -299,7 +299,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	}
 
 
-	static public void addPreferenceStoreListener(IPropertyChangeListener listener) {
+	public static void addPreferenceStoreListener(IPropertyChangeListener listener) {
 		if(plugin == null) {
 			return;
 		}
@@ -310,7 +310,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		store.addPropertyChangeListener(listener);
 	}
 
-	static public void removePreferenceStoreListener(IPropertyChangeListener listener) {
+	public static void removePreferenceStoreListener(IPropertyChangeListener listener) {
 		if(plugin == null) {
 			return;
 		}
@@ -335,7 +335,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	 * Utility method to get command service from workbench
 	 * @return ICommandService
 	 */
-	static public ICommandService getCommandService(){
+	public static ICommandService getCommandService(){
 		if(!PlatformUI.isWorkbenchRunning()) {
 			return null;
 		}
@@ -350,7 +350,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	 * Utility method to get selection service from workbench
 	 * @return ISelectionService
 	 */
-	static public ISelectionService getSelectionService(){
+	public static ISelectionService getSelectionService(){
 		if(!PlatformUI.isWorkbenchRunning()) {
 			return null;
 		}
@@ -502,11 +502,11 @@ public class CpPlugInUI extends AbstractUIPlugin {
 	}
 
 	/**
-	 * Returns IFile for the given absolute file name 
+	 * Returns IFile for the given absolute file name
 	 * @param absFileName absolute file name
 	 * @return IFile if can be resolved or null
 	 */
-	static public IFile getFileForLocation(String absFileName) {
+	public static IFile getFileForLocation(String absFileName) {
 		if(absFileName == null || absFileName.isEmpty()) {
 			return null;
 		}
@@ -514,15 +514,15 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		return root.getFileForLocation(path);
 	}
-	
-	
+
+
 	/**
-	 * Refreshes IProject containing supplied file  
+	 * Refreshes IProject containing supplied file
 	 * @param absFileName absolute file name
 	 * @return true if file belongs to a project in workspace
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
-	static public boolean refreshProject(String absFileName) throws CoreException {
+	public static boolean refreshProject(String absFileName) throws CoreException {
 		IFile iFile = getFileForLocation(absFileName);
 		if(iFile != null) {
 			IProject project = iFile.getProject();
@@ -531,15 +531,15 @@ public class CpPlugInUI extends AbstractUIPlugin {
 		}
 		return false;
 	}
-	
-	
+
+
 	/**
-	 * Refreshes IFile corresponding supplied file  
+	 * Refreshes IFile corresponding supplied file
 	 * @param absFileName absolute file name
 	 * @return true if file belongs to a project in workspace
-	 * @throws CoreException 
+	 * @throws CoreException
 	 */
-	static public boolean refreshFile(String absFileName) throws CoreException {
+	public static boolean refreshFile(String absFileName) throws CoreException {
 		IFile iFile = getFileForLocation(absFileName);
 		if(iFile != null) {
 			iFile.refreshLocal(IResource.DEPTH_ZERO, null);

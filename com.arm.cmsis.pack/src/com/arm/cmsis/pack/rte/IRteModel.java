@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.rte;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 import com.arm.cmsis.pack.data.ICpDeviceItem;
@@ -180,6 +181,19 @@ public interface IRteModel extends IEvaluationResult  {
 	 * @return map absolute filename -> pack, null or empty if no generated packs used 
 	 */
 	Map<String, ICpPack> getGeneratedPacks();
+
+	/**
+	 * Return collection of used generated pack names   
+	 * @return collection of absolute filenames 
+	 */
+	default Collection<String> getGeneratedPackNames(){
+		Map<String, ICpPack> generatedPacks = getGeneratedPacks();
+		if(generatedPacks != null) {
+			return generatedPacks.keySet();
+		}
+		return Collections.emptySet();
+	}
+
 	
 	/**
 	 * Returns {@link ICpPack} loaded from given gpdsc file 

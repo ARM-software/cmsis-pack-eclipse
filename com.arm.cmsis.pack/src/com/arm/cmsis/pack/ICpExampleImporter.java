@@ -17,7 +17,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import com.arm.cmsis.pack.data.ICpExample;
 
 /**
- * Base interface to import examples from CMSIS packs
+ * Base interface to import examples from CMSIS-Packs
  */
 public interface ICpExampleImporter extends IAdaptable {
 	

@@ -20,9 +20,9 @@ import com.arm.cmsis.pack.enums.EEvaluationResult;
  */
 public class RteConstants {
 
-	public static final int NONE = 0; 
-	// Component RTE flags describing how to resolve components 
-	// when adding ICpComponentInfo objects to the hierarchy  
+	public static final int NONE = 0;
+	// Component RTE flags describing how to resolve components
+	// when adding ICpComponentInfo objects to the hierarchy
 	public static final int COMPONENT_IGNORE_NONE = 0;
 	public static final int COMPONENT_IGNORE_VERSION = 1;
 	public static final int COMPONENT_IGNORE_VENDOR  = 2;
@@ -32,11 +32,11 @@ public class RteConstants {
 	public static final int COMPONENT_IGNORE_ALL  = COMPONENT_IGNORE_VVV | COMPONENT_IGNORE_BUNDLE;
 
 	/**
-	 * Gets flag corresponding a component attribute  
-	 * @param attribute attribute to get flag for 
+	 * Gets flag corresponding a component attribute
+	 * @param attribute attribute to get flag for
 	 * @return flag value
 	 */
-	static public int flagForAttribute(String attribute) {
+	public static int flagForAttribute(String attribute) {
 		switch (attribute) {
 		case CmsisConstants.CVARIANT:
 			return COMPONENT_IGNORE_VARIANT;
@@ -49,13 +49,13 @@ public class RteConstants {
 		}
 		return NONE;
 	}
-	
+
 	/**
 	 * Returns short evaluation result description
-	 * @param result EEvaluationResult to get description for 
+	 * @param result EEvaluationResult to get description for
 	 * @return short description
 	 */
-	static public String getDescription(EEvaluationResult result) {
+	public static String getDescription(EEvaluationResult result) {
 		switch(result) {
 		case CONFLICT:
 			return CpStrings.EvalResult_Confilct;
@@ -75,6 +75,8 @@ public class RteConstants {
 			return CpStrings.EvalResult_MissingComponent;
 		case MISSING_API:
 			return CpStrings.EvalResult_MissingApi;
+		case MISSING_API_VERSION:
+			return CpStrings.EvalResult_MissingApiVersion;
 		case MISSING_BUNDLE:
 			return CpStrings.EvalResult_MissingBundle;
 		case MISSING_VARIANT:

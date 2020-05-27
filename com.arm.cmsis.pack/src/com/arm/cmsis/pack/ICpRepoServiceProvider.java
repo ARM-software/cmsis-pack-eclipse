@@ -26,7 +26,7 @@ import org.xml.sax.SAXException;
 public interface ICpRepoServiceProvider {
 
 	/**
-	 * Read the index file and put the pdsc file's info to the pdsc list, deprecated, never called, does nothing
+	 * Read the index file and put the pdsc file's info to the pdsc list, deprecated 
 	 * @param indexUrl URL of the pack index file
 	 * @param pdscList a list of pdsc file
 	 * @return size of the pdsc files that needs to be updated
@@ -35,7 +35,7 @@ public interface ICpRepoServiceProvider {
 	int readIndexFile(String indexUrl, List<String[]> pdscList) throws ParserConfigurationException, SAXException, IOException; 
 
 	/**
-	 * Read the index file and put the pdsc file's info to the pdsc list, deprecated, never called, does nothing
+	 * Read the index file and put the pdsc file's info to the pdsc list 
 	 * @param indexUrl URL of the pack index file
 	 * @param pdscList a list of pdsc file
 	 * @param monitor progress monitor

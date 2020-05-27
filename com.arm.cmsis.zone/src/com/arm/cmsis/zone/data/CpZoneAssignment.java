@@ -59,7 +59,7 @@ public class CpZoneAssignment extends CpZoneItem implements ICpZoneAssignment {
 			return ICpMemoryBlock.constructBlockId(CmsisConstants.MEMORY_TAG, getAttribute(CmsisConstants.MEMORY_TAG), null);
 		}
 		return ICpMemoryBlock.constructBlockId(CmsisConstants.PERIPHERAL, getPeripheralName(), getGroupName());
-	};
+	}
 	
 	@Override
 	public boolean isPeripheral() {
@@ -107,10 +107,8 @@ public class CpZoneAssignment extends CpZoneItem implements ICpZoneAssignment {
 	@Override
 	public String getDescription() {
 		ICpMemoryBlock mappedBlock = getAssignedBlock();
-		if(mappedBlock != null) {
-			if (mappedBlock.hasAttribute(CmsisConstants.INFO))		{
-				return mappedBlock.getAttribute(CmsisConstants.INFO);
-			}
+		if(mappedBlock != null && mappedBlock.hasAttribute(CmsisConstants.INFO)) {
+			return mappedBlock.getAttribute(CmsisConstants.INFO);
 		}
 		return super.getDescription();
 	}
@@ -139,7 +137,7 @@ public class CpZoneAssignment extends CpZoneItem implements ICpZoneAssignment {
 		if(block == null) {
 			return null;
 		}
-		ICpMemoryBlock assignedBlock = block.clone();
+		ICpMemoryBlock assignedBlock = block.cloneBlock();
 		assignedBlock.mergeAccess(this);  // merges only prwx 
 		assignedBlock.attributes().mergeAttributes(block.getEffectiveAttributes(null));
 		 

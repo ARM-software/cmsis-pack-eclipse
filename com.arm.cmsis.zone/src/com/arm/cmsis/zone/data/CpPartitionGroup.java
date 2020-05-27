@@ -15,20 +15,20 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 
 /**
- * 
+ *  Class representing partition element in azone file
  */
 public class CpPartitionGroup extends CpResourceGroup implements ICpPartitionGroup {
 
-	
+
 	public CpPartitionGroup(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
-	
+
 	@Override
 	protected ICpItem createChildItem(String tag) {
 		switch (tag) {
-		case CmsisConstants.MEMORY_TAG: 
-			return new CpMemoryRegion(this, tag);
+		case CmsisConstants.MEMORY_TAG:
+			return new CpMemoryBlock(this, tag);
 		case CmsisConstants.SLOT:
 			return new CpSlot(this, tag);
 		default:

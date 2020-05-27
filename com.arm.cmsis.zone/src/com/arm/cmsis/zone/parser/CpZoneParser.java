@@ -24,18 +24,18 @@ import com.arm.cmsis.zone.data.ICpRootZone;
 import com.arm.cmsis.zone.error.CmsisZoneError;
 
 /**
- *  Parser for system zone files 
+ *  Parser for system zone files
  */
 public class CpZoneParser extends CpXmlParser {
 
 	public static final String[] AZONE_IGNORE_TAGS = new String[] {
-			CmsisConstants.DEVICE_TAG, 
-			CmsisConstants.RESOURCES 
+			CmsisConstants.DEVICE_TAG,
+			CmsisConstants.RESOURCES
 		};
 
-	
+
 	protected ICpRootZone aZone = null;
-	
+
 	public CpZoneParser() {
 	}
 
@@ -64,8 +64,8 @@ public class CpZoneParser extends CpXmlParser {
 		root.addChild(rootZone);
 		return rootZone;
 	}
-	
-	
+
+
 	@Override
 	public ICpItem parseFile(String file) {
 		ICpItem root = super.parseFile(file);
@@ -83,7 +83,7 @@ public class CpZoneParser extends CpXmlParser {
 		File f = new File(file);
 		return f.exists() && !f.isDirectory();
 	}
-	
+
 	protected void parseResourceZoneFile(String file){
 		if(!fileExists(file)) {
 			CmsisZoneError err = new CmsisZoneError(ESeverity.Error, CmsisZoneError.Z404);
@@ -95,13 +95,13 @@ public class CpZoneParser extends CpXmlParser {
 			}
 			return;
 		}
-		
+
 		CpZoneParser rParser = new CpZoneParser();
 		rParser.setExplicitRoot(aZone); // to append resources to azone
 		rParser.parseFile(file);
 		if(rParser.getSevereErrorCount() > 0 ) {
 			CmsisZoneError err = new CmsisZoneError(ESeverity.Error, CmsisZoneError.Z405);
-			err.setFile(getXmlFile()); // we do set an azone file, the rest will refer to rzone one  
+			err.setFile(getXmlFile()); // we do set an azone file, the rest will refer to rzone one
 			addError(err);
 			addErrors(rParser);
 			if(aZone != null) {
@@ -114,14 +114,14 @@ public class CpZoneParser extends CpXmlParser {
 	public String writeToXmlString(ICpItem root) {
 		if(root == null)
 			return null;
-		String tag = root.getTag(); 
+		String tag = root.getTag();
 		if(CmsisConstants.AZONE.equals(tag)){
 			setIgnoreTagsFromArray(AZONE_IGNORE_TAGS);
 		} else {
 			setIgnoreTags(null);
 		}
-		root.setAttribute(CmsisConstants.SCHEMALOCATION, tag + CmsisConstants.DOT_XSD); 
-		
+		root.setAttribute(CpXmlParser.SCHEMALOCATION, tag + CmsisConstants.DOT_XSD);
+
 		String result = super.writeToXmlString(root);
 		setIgnoreTags(null);
 		return result;
@@ -135,9 +135,9 @@ public class CpZoneParser extends CpXmlParser {
 	public String writeToFullXmlString(ICpItem root) {
 		if(root == null)
 			return null;
-		String tag = root.getTag(); 
-		root.setAttribute(CmsisConstants.SCHEMALOCATION, tag + CmsisConstants.DOT_XSD); 
-		
+		String tag = root.getTag();
+		root.setAttribute(CpXmlParser.SCHEMALOCATION, tag + CmsisConstants.DOT_XSD);
+
 		String result = super.writeToXmlString(root);
 		setIgnoreTags(null);
 		return result;

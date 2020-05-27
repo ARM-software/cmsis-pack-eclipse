@@ -14,7 +14,6 @@ package com.arm.cmsis.zone.data;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,14 +26,14 @@ import com.arm.cmsis.pack.enums.ESeverity;
 import com.arm.cmsis.pack.item.ICmsisVisitor.VisitResult;
 import com.arm.cmsis.zone.error.CmsisZoneError;
 /**
- * 
+ *
  */
 public class CpResourceContainer extends CpResourceGroup implements ICpResourceContainer  {
 
-	protected Map<Long, PhysicalMemoryRegion> fPhysicalRegions = null; 
-	protected Map<Long, IMpcRegion> fMpcRegions = null; 
-	
-	
+	protected Map<Long, PhysicalMemoryRegion> fPhysicalRegions = null;
+	protected Map<Long, IMpcRegion> fMpcRegions = null;
+
+
 	public CpResourceContainer(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
@@ -45,21 +44,21 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		fMpcRegions = null;
 		super.clear();
 	}
-	
+
 	@Override
 	public void invalidate() {
 		super.invalidate();
 	}
 
-	
+
 	@Override
 	public void init() {
 		collectMpcRegions();
-		constructMemoryBlockMap(); 
+		constructMemoryBlockMap();
 		constructPhysicalRegionMap(); // will trigger arrange
 	}
-	
-	
+
+
 	@Override
 	protected boolean isShowBlock(ICpMemoryBlock block, boolean bShowRAM, boolean bShowROM, boolean bShowPeripheral) {
 		if(block instanceof ICpPeripheralGroup)
@@ -82,26 +81,26 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		});
 		return memoryBlocks;
 	}
-	
-	
+
+
 	@Override
 	public PhysicalMemoryRegion getPhysicalRegion(long address) {
 		return getPhysicalRegions().get(address);
 	}
-	
+
 	@Override
 	public Map<Long, PhysicalMemoryRegion> getPhysicalRegions() {
 		if(fPhysicalRegions == null) {
-			constructPhysicalRegionMap();	
+			constructPhysicalRegionMap();
 		}
 		return fPhysicalRegions;
 	}
-	
+
 	protected void constructPhysicalRegionMap() {
 		fPhysicalRegions = new HashMap<>();
 		for( ICpMemoryBlock block: getMemoryBlocksAsMap().values()) {
-			if(block instanceof ICpMemoryRegion && block.getParentBlock() == null) {
-				ICpMemoryRegion r = (ICpMemoryRegion)block;
+			if(block instanceof ICpMemoryBlock && block.getParentBlock() == null) {
+				ICpMemoryBlock r = block;
 				Long address = r.getAddress(); // physical address
 
 				PhysicalMemoryRegion region = fPhysicalRegions.get(address);
@@ -113,10 +112,10 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean arrangeBlocks() {
-		 Map<Long, PhysicalMemoryRegion> physicalRegions = getPhysicalRegions(); 
+		 Map<Long, PhysicalMemoryRegion> physicalRegions = getPhysicalRegions();
 		 boolean bModified = false;
 		 for(PhysicalMemoryRegion region : physicalRegions.values()) {
 				if(region.arrangeBlocks())
@@ -124,24 +123,24 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 			}
 		return bModified;
 	}
-	
+
 	@Override
-	public Collection<ICpMemoryRegion> getAllMemoryRegions() {
-		Collection<ICpMemoryRegion> regions = new HashSet<>();
+	public Collection<ICpMemoryBlock> getAllMemoryRegions() {
+		Collection<ICpMemoryBlock> regions = new LinkedList<>();
 		for( ICpMemoryBlock block: getMemoryBlocksAsMap().values()) {
-			if(block instanceof ICpMemoryRegion && !block.isPeripheral()) {
-				regions.add((ICpMemoryRegion)block);
+			if(block instanceof ICpMemoryBlock && !block.isPeripheral()) {
+				regions.add(block);
 			}
 		}
 		return regions;
 	}
-	
+
 	@Override
-	public Collection<ICpMemoryRegion> getStarupMemoryRegions() {
-		Collection<ICpMemoryRegion> regions = new HashSet<>();
+	public Collection<ICpMemoryBlock> getStarupMemoryRegions() {
+		Collection<ICpMemoryBlock> regions = new LinkedList<>();
 		for( ICpMemoryBlock block: getMemoryBlocksAsMap().values()) {
-			if(block instanceof ICpMemoryRegion && block.isStartup()) {
-				regions.add((ICpMemoryRegion)block);
+			if(block instanceof ICpMemoryBlock && block.isStartup()) {
+				regions.add(block);
 			}
 		}
 		return regions;
@@ -151,7 +150,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 
 	@Override
 	public Collection<ICpPeripheral> getAllPeripherals() {
-		Collection<ICpPeripheral> peripherals = new HashSet<>();
+		Collection<ICpPeripheral> peripherals = new LinkedList<>();
 		for( ICpMemoryBlock block: getMemoryBlocksAsMap().values()) {
 			if(block instanceof ICpPeripheral ) {
 				peripherals.add((ICpPeripheral)block);
@@ -159,11 +158,11 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		}
 		return peripherals;
 	}
-	
-	
+
+
 	@Override
 	public Collection<ICpPeripheralItem> getAllPeripheralItems() {
-		Collection<ICpPeripheralItem> peripheralItems = new HashSet<>();
+		Collection<ICpPeripheralItem> peripheralItems = new LinkedList<>();
 		for( ICpMemoryBlock block: getMemoryBlocksAsMap().values()) {
 			if(block instanceof ICpPeripheralItem ) {
 				peripheralItems.add((ICpPeripheralItem)block);
@@ -171,16 +170,16 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		}
 		return peripheralItems;
 	}
-	
-	
+
+
 	@Override
 	public void addPartititionBlocks(ICpPartitionGroup pg) {
 		if(pg == null)
 			return;
 
-		Collection<ICpMemoryRegion> regions = pg.getChildrenOfType(ICpMemoryRegion.class);
+		Collection<ICpMemoryBlock> regions = pg.getChildrenOfType(ICpMemoryBlock.class);
 		if(regions != null && !regions.isEmpty()) {
-			for(ICpMemoryRegion r : regions) {
+			for(ICpMemoryBlock r : regions) {
 				if(!r.isPeripheral()) {
 					addPartititionRegion(r);
 					continue;
@@ -195,18 +194,18 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 						ICpSlot slot = p.getSlot(s.getName());
 						if(slot == null) {
 							// we can neither recover nor tell user what to do
-							continue;  
+							continue;
 						}
 						slot.updateAttributes(s);
 					}
 				}
 			}
 		}
-		
+
 		invalidate();
 	}
 
-	protected void addPartititionRegion(ICpMemoryRegion r) {
+	protected void addPartititionRegion(ICpMemoryBlock r) {
 		ICpResourceGroup memoryGroup = ensureMemoryGroup();
 		String regionName = r.getParentRegionName();
 		boolean updateParentPermissions = false;
@@ -214,9 +213,9 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 			regionName = r.getName();
 			updateParentPermissions = true;
 		}
-		ICpMemoryRegion region = memoryGroup.getMemoryRegion(regionName);
+		ICpMemoryBlock region = memoryGroup.getMemoryRegion(regionName);
 		if(region == null) {
-			region = new CpMemoryRegion(memoryGroup, CmsisConstants.MEMORY_TAG);
+			region = new CpMemoryBlock(memoryGroup, CmsisConstants.MEMORY_TAG);
 			memoryGroup.addChild(region);
 			region.setName(regionName);
 			region.addError(new CmsisZoneError(ESeverity.Error, CmsisZoneError.Z201));
@@ -231,7 +230,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		}
 	}
 
-	
+
 	/**
 	 * Adds/updates a peripheral item from partition or assignment
 	 * @param a ICpPeripheral or ICpZoneAssignment
@@ -264,7 +263,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		return p;
 	}
 
-	
+
 	@Override
 	public void addZoneAssignments(ICpZoneContainer zoneContainer) {
 		constructMemoryBlockMap();
@@ -286,7 +285,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 				addZoneAssignment(a, zoneName);
 			}
 		}
-		
+
 	}
 
 	protected void addZoneAssignment(ICpZoneAssignment a, String zoneName) {
@@ -302,13 +301,13 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		String id = a.getId();
 		if(id == null || id.isEmpty())
 			return;
-			
+
 		if(getMemoryBlock(id) != null) {
 			return; // already there
 		}
-		ICpMemoryRegion r = group.getMemoryRegion(id);
+		ICpMemoryBlock r = group.getMemoryRegion(id);
 		if(r == null) {
-			r = new CpMemoryRegion(group, CmsisConstants.MEMORY_TAG);
+			r = new CpMemoryBlock(group, CmsisConstants.MEMORY_TAG);
 			group.addChild(r);
 			r.setName(id);
 			r.mergeAccess(a);
@@ -324,7 +323,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		p.mergeAccess(a);
 	}
 
-	
+
 	@Override
 	public Map<Long, IMpcRegion> getMpcRegions() {
 		if(fMpcRegions == null) {
@@ -339,10 +338,10 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		if(memory != null) {
 			List<ICpMpc> mpcItems = new LinkedList<>(memory.getChildrenOfType(ICpMpc.class));
 			Collections.sort(mpcItems, new MemoryStartComparator());
-			MpcRegion region = null; 
+			MpcRegion region = null;
 			for(ICpMpc mpc : mpcItems) {
 				if(region != null) {
-					if(region.addMpc(mpc)) 
+					if(region.addMpc(mpc))
 						continue; // the mpc is appended to the previous region
 				}
 				region = new MpcRegion(this, mpc); // create new region
@@ -351,7 +350,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 		}
 	}
 
-	
+
 	@Override
 	public IMpcRegion getMpcRegion(long address) {
 		for(IMpcRegion region : getMpcRegions().values()) {

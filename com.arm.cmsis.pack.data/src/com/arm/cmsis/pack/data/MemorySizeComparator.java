@@ -32,7 +32,7 @@ public class MemorySizeComparator implements Comparator<ICpMemory> {
 		
 	}
 
-	static public int compareBySize(ICpMemory o1, ICpMemory o2) {
+	public static int compareBySize(ICpMemory o1, ICpMemory o2) {
 		if(o1 == null && o2 == null )
 			return 0;
 		if(o1 == null)

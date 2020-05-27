@@ -2,7 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Common
 Bundle-SymbolicName: com.arm.cmsis.pack.common
-Bundle-Version: 2.5.0.qualifier
+Automatic-Module-Name: com.arm.cmsis.pack.common
+Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: ARM
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.arm.cmsis.pack.common,

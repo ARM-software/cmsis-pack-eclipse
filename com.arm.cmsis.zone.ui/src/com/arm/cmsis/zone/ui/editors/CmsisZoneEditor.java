@@ -42,7 +42,7 @@ import com.arm.cmsis.zone.ui.CpZonePluginUI;
 import com.arm.cmsis.zone.ui.Messages;
 
 /**
- * Base class for CMSIS zone editors
+ * Base class for CMSIS-Zone editors
  */
 public class CmsisZoneEditor extends RteEditor<CmsisZoneController> {
 

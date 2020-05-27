@@ -32,7 +32,7 @@ public class BuildSettings extends Attributes implements IBuildSettings {
 	protected Map<Integer, Collection<String> > stringLists = new HashMap<>();
 	protected Map<String, IBuildSettings> individualSettings = null;
 	protected IBuildSettings parentSettings = null;
-	protected Level level = Level.PROJECT;
+	protected Level fLevel = Level.PROJECT;
 	/**
 	 *  Default constructor
 	 */
@@ -41,11 +41,11 @@ public class BuildSettings extends Attributes implements IBuildSettings {
 
 	public BuildSettings(IBuildSettings parent, Level level) {
 		parentSettings = parent;
-		this.level = level;
+		this.fLevel = level;
 	}
 	
 	@Override
-	synchronized public void clear(){
+	public synchronized void clear(){
 		stringLists.clear();
 		individualSettings = null;
 		super.clear();
@@ -60,7 +60,7 @@ public class BuildSettings extends Attributes implements IBuildSettings {
 	
 	@Override
 	public Level getLevel() {
-		return level ;
+		return fLevel ;
 	}
 	
 	@Override
@@ -101,7 +101,7 @@ public class BuildSettings extends Attributes implements IBuildSettings {
 	}
 
 	@Override
-	synchronized public String getAttribute(String key) {
+	public synchronized String getAttribute(String key) {
 		String value = super.getAttribute(key);
 		if(value == null && getParentSettings() != null && getParentSettings().getLevel() == Level.VIRTUAL_GROUP) {
 			return getParentSettings().getAttribute(key);
@@ -110,7 +110,7 @@ public class BuildSettings extends Attributes implements IBuildSettings {
 	}
 
 	@Override
-	synchronized public boolean hasAttribute(String key) {
+	public synchronized boolean hasAttribute(String key) {
 		if(super.hasAttribute(key))
 			return true;
 		if(getParentSettings() != null && getParentSettings().getLevel() == Level.VIRTUAL_GROUP) {

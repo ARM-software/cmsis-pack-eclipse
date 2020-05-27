@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2015 - 2020 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -69,31 +70,31 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	protected IMemorySettings fMemorySettings = null;
 
 	// source files included in project: project relative path -> absPath
-	protected Map<String, ICpFileInfo> projectFiles = new HashMap<String, ICpFileInfo>();
+	protected Map<String, ICpFileInfo> projectFiles = new HashMap<>();
 
 	// root of the code template hierarchy
 	protected ICpCodeTemplate fCodeTemplateRoot = new CpCodeTemplate(null);
 
 	// scvd files for component viewer: project relative path -> absPath
-	protected Map<String, ICpFileInfo> fScvdFiles = new HashMap<String, ICpFileInfo>();
+	protected Map<String, ICpFileInfo> fScvdFiles = new HashMap<>();
 
 	// paths to library sources (for debugger)
-	protected Set<String> libSourcePaths = new TreeSet<String>(new RtePathComparator());
+	protected Set<String> libSourcePaths = new TreeSet<>(new RtePathComparator());
 
 	// pieces of code put into RTE_Components.h file
 	protected Set<String> rteComponentsH = new TreeSet<>();
 
 	// pieces of code put into RTE_Components.h file
 	protected Set<String> globalPreIncludeStrings = new TreeSet<>();
-	
+
 	//pieces of code put into local pre-includes (include name to text )
 	protected Map<String, String> localPreIncludeStrings= new TreeMap<>(new AlnumComparator(false));
 
 	// header -> comment (for editor)
-	protected Map<String, String> headers = new TreeMap<String, String>(new AlnumComparator(false));
+	protected Map<String, String> headers = new TreeMap<>(new AlnumComparator(false));
 
 	// documentation files relevant to configuration
-	protected Map<String, String>  docs = new TreeMap<String, String>(new AlnumComparator(false));
+	protected Map<String, String>  docs = new TreeMap<>(new AlnumComparator(false));
 
 	protected String svdFile = null;
 
@@ -108,6 +109,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	boolean valid = true; // flag that indicates that device and all required components are resolved
 
 	public RteConfiguration() {
+		// does nothing
 	}
 
 	protected void clear() {
@@ -141,7 +143,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	public IRteModel getRteModel() {
 		return fModel;
 	}
-	
+
 	@Override
 	public ICpDeviceInfo getDeviceInfo() {
 		return fConfigInfo != null ? fConfigInfo.getDeviceInfo() : null;
@@ -193,9 +195,9 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	@Override
 	public ICpFileInfo[] getProjectFileInfos(String fileName) {
 		Collection<ICpFileInfo> fileInfos = new LinkedList<>();
-		for (String key : projectFiles.keySet()) {
-			if (key.matches(fileName)) {
-				fileInfos.add(projectFiles.get(key));
+		for (Entry<String, ICpFileInfo> e : projectFiles.entrySet()) {
+			if (e.getKey().matches(fileName)) {
+				fileInfos.add(e.getValue());
 			}
 		}
 		ICpFileInfo[] infos = new ICpFileInfo[fileInfos.size()];
@@ -221,7 +223,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	public Map<String, String> getLocalPreIncludeStrings() {
 		return localPreIncludeStrings;
 	}
-	
+
 	@Override
 	public Map<String, String> getHeaders() {
 		return headers;
@@ -324,7 +326,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 				dv.replaceChild(dvi);
 				collectFile(dvi, null, -1);
 				continue;
-			} 
+			}
 			if(tag.equals(CmsisConstants.COMPILE_TAG)) {
 				String define = p.getAttribute(CmsisConstants.DEFINE);
 				rteBuildSettings.addStringListValue(IBuildSettings.RTE_DEFINES, define);
@@ -398,9 +400,9 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 			if( fi.getCategory() == EFileCategory.PRE_INCLUDE_LOCAL) {
 				collectFile(fi, ci, -1);
 			}
-		}		
-		
-		// collect other files 
+		}
+
+		// collect other files
 		for(ICpItem child :  children) {
 			if(!(child instanceof ICpFileInfo)) {
 				continue;
@@ -426,17 +428,17 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	 * @param index for multi-instance components : instance index, for others -1
 	 */
 	protected void collectFile(ICpFileInfo fi, ICpComponentInfo ci, int index) {
-		String name = fi.getName();
+		String name = Utils.extractFileName(fi.getName());
 		EFileCategory cat = fi.getCategory();
 		ICpFile f = fi.getFile();
 		String absPath  = null;
 		String effectivePath = null;
 		if(f != null) {
 			if(cat.isHeader()){
-				absPath = f.getFilePath(); // we only need path portion 
+				absPath = f.getFilePath(); // we only need path portion
 				name = f.getFileName();
 			} else {
-				absPath = f.getAbsolutePath(name);
+				absPath = f.getAbsolutePath(fi.getName());
 			}
 		}
 
@@ -444,19 +446,20 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		if(isAddToProject(fi)){
 			String className = ci != null? ci.getAttribute(CmsisConstants.CCLASS) : CmsisConstants.EMPTY_STRING;
 			String deviceName = fConfigInfo.getDeviceInfo().getFullDeviceName();
-			effectivePath = getPathRelativeToProject(fi, className, deviceName, index);
+			effectivePath = getPathRelativeToProject(fi, name, className, deviceName, index);
 			projectFiles.put(effectivePath, fi);
 			if(cat.isSource() && ci != null ) {
 				IBuildSettings componentSettings = rteBuildSettings.getBuildSettings(ci.getName());
 				if(componentSettings != null) {
-					// simply create empty settings: it will inherit parent group 
+					// simply create empty settings: it will inherit parent group
 					componentSettings.createBuildSettings(effectivePath, IBuildSettings.Level.FILE);
 				}
 			}
 			if(fi.isGenerated() || (role != EFileRole.CONFIG  && role != EFileRole.COPY)) {
 				effectivePath = CpVariableResolver.insertCmsisRootVariable(absPath);
 			} else if (cat == EFileCategory.HEADER) {
-				effectivePath = Utils.extractPath(effectivePath, false);
+				int nSegmentsToRemove = Utils.getSegmentCount(name);
+				effectivePath = Utils.removeTrailingPathSegments(effectivePath, nSegmentsToRemove);
 			}
 		} else {
 			effectivePath = CpVariableResolver.insertCmsisRootVariable(absPath);
@@ -470,7 +473,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		}
 
 		String componentName = ci.getName();
-		
+
 		if(cat == EFileCategory.HEADER) {
 			addFile(name, cat, componentName, ci); // only adds header filename
 			cat = EFileCategory.INCLUDE;
@@ -485,7 +488,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		collectScvdFile(fi);
 	}
 
-	
+
 	/**
 	 * Collects file of code templates
 	 * @param fi ICpFileInfo
@@ -544,7 +547,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		return CmsisConstants.CMSIS_RTE_VAR + path;
 	}
 
-	
+
 	protected void addFile(String effectivePath, EFileCategory cat, String comment, ICpComponentInfo ci) {
 		if(effectivePath == null || effectivePath.isEmpty()) {
 			return;
@@ -561,7 +564,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 			if(ext == null || !ext.equals("s")) //$NON-NLS-1$
 				break;
 			// else fall through and treat the file as an assembler source
-		  } 
+		  }
 		case SOURCE_ASM:
 			effectivePath = ProjectUtils.removeLastPathSegment(effectivePath);
 		case INCLUDE:
@@ -606,7 +609,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 			break;
 		}
 	}
-	
+
 	protected void addComponentPreincludeOption(String componentName, String fileName) {
 		IBuildSettings componentSettings = rteBuildSettings.createBuildSettings(componentName, IBuildSettings.Level.VIRTUAL_GROUP);
 		componentSettings.addStringListValue(IBuildSettings.RTE_PRE_INCLUDES, fileName);
@@ -668,7 +671,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
 	/**
 	 * Collects specific include string
-	 * @param tag child's tag 
+	 * @param tag child's tag
 	 * @param c ICpComponent
 	 * @param count number of component instances
 	 * @return code string
@@ -683,17 +686,17 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		}
 		String s = c.getFirstChildText(tag);
 		return expandInstancePlaceHolders(s, count);
-		
+
 	}
-	
-	
+
+
 	/**
 	 * Expands given string by replacing %INSTANSE% Strings with index
-	 * @param s String to expand 
+	 * @param s String to expand
 	 * @param count number of component instances
-	 * @return expanded 
+	 * @return expanded
 	 */
-	static protected String expandInstancePlaceHolders(String s, int count) {
+	protected static String expandInstancePlaceHolders(String s, int count) {
 		if(s == null || s.isEmpty() || count <= 0) {
 			return s;
 		}
@@ -710,7 +713,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 		}
 		return expanded;
 	}
-	
+
 	@Override
 	public boolean isAddToProject(ICpFileInfo fi) {
 		if(fi == null ) {
@@ -774,17 +777,19 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
 
 	/**
-	 * Returns path relative to project (for component files) 
+	 * Returns path relative to project (for component files)
 	 * @param fi {@link ICpFileInfo} represents file
-	 * @param className class name of the file's component 
+	 * @param fileName filename to use, may also contain path segments
+	 * @param className class name of the file's component
 	 * @param deviceName device name used in project
 	 * @param index component instance index
-	 * @return path relative to the project  
+	 * @return path relative to the project
 	 */
-	protected String getPathRelativeToProject(ICpFileInfo fi, String className, String deviceName, int index){
+	protected String getPathRelativeToProject(ICpFileInfo fi, String fileName, String className, String deviceName, int index){
 		if(fi == null) {
 			return null;
 		}
+
 		if(fi.isGenerated()) {
 			ICpFile f = fi.getFile();
 			String absPath = f.getAbsolutePath(f.getName());
@@ -804,11 +809,15 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 			path += Utils.wildCardsToX(deviceName) + '/';
 		}
 
-		String fileName = Utils.extractFileName(fi.getName());
 		if(index >= 0) {
+			int nSegments = Utils.getSegmentCount(fileName);
+			String filePath = Utils.extractPath(fileName, false);
+			if(nSegments > 1 && !filePath.isEmpty()) {
+				path += filePath + '/';
+			}
 			String ext =  Utils.extractFileExtension(fileName);
 			fileName = Utils.extractBaseFileName(fileName);
-			fileName += "_" + String.valueOf(index);  //$NON-NLS-1$
+			fileName += "_" + index;  //$NON-NLS-1$
 			if(ext != null) {
 				fileName += "." + ext; //$NON-NLS-1$
 			}
@@ -843,6 +852,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 	 * Returns memory settings (previously set or created from device information
 	 * @return IMemorySettings
 	 */
+	@Override
 	public IMemorySettings getMemorySettings() {
 		if(fMemorySettings == null){
 			fMemorySettings = createMemorySettings(getDeviceInfo());
@@ -852,13 +862,14 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
 	/**
 	 * Sets explicit memory settings, usually from an import operation
-	 * @param memorySettings IMemorySettings to set 
+	 * @param memorySettings IMemorySettings to set
 	 */
+	@Override
 	public void setMemorySettings(IMemorySettings memorySettings) {
 		fMemorySettings = memorySettings;
 	}
-	
-	
+
+
 	@Override
 	public Collection<? extends IRteDependencyItem> validate() {
 		EEvaluationResult res = fModel.getEvaluationResult();

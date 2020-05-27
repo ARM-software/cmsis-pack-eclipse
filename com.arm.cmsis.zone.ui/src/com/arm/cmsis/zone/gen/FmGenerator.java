@@ -47,16 +47,16 @@ import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 
 /**
- * Class to call FreeMarker Template processing 
+ * Class to call FreeMarker Template processing
  */
 public class FmGenerator extends RteErrorCollection {
 
 	private Configuration fCfg; // FreeMarker Configuration
-	
+
 	private NodeModel fDataModel = null; // data model for FreeMarker
-	
+
 	private IProgressMonitor fProgressMonitor = null;
-	
+
 
 	public FmGenerator() {
 		fCfg = new Configuration(Configuration.VERSION_2_3_22);
@@ -70,11 +70,11 @@ public class FmGenerator extends RteErrorCollection {
 		setProgressMonitor(progressMonitor);
 	}
 
-	
+
 	public void setProgressMonitor(IProgressMonitor progressMonitor) {
 		fProgressMonitor = progressMonitor;
 	}
-	
+
 	public IProgressMonitor getProgressMonitor() {
 		if(fProgressMonitor == null) {
 			fProgressMonitor = new NullProgressMonitor();
@@ -83,33 +83,33 @@ public class FmGenerator extends RteErrorCollection {
 	}
 
 
-	
+
 	protected String createFZoneFile(ICpRootZone aZone) {
 		if(aZone == null){
 			return null;
 		}
-		
+
 		File f = new File (Utils.changeFileExtension(aZone.getRootFileName(), CmsisConstants.FZONE));
 		String fZoneFile = f.getAbsolutePath();
 		getCmsisConsole().output(Messages.FmGenerator_GenFreemarketInputFile +  fZoneFile);
-		
+
 		ICpItem ftlModel  = aZone.toFtlModel(null);
 		ICpXmlParser parser = new CpXmlParser();
 		parser.setXsdFile("fzone.xsd"); //$NON-NLS-1$
 		parser.writeToXmlFile(ftlModel, fZoneFile);
 		if(parser.getSevereErrorCount() > 0) {
-			getCmsisConsole().outputError(Messages.FmGenerator_ErrorCreatingFile + fZoneFile); 
+			getCmsisConsole().outputError(Messages.FmGenerator_ErrorCreatingFile + fZoneFile);
 			getCmsisConsole().outputErrors(parser.getErrors());
 			return null;
 		}
 		return fZoneFile;
 	}
-	
+
 	protected ICpRootZone loadZoneFile(String aZoneFile) {
 		if(aZoneFile == null || aZoneFile.isEmpty())
 			return null;
-		
-		getCmsisConsole().output(Messages.FmGenerator_LoadingZoneFile +  aZoneFile); 
+
+		getCmsisConsole().output(Messages.FmGenerator_LoadingZoneFile +  aZoneFile);
 
 		ICpXmlParser parser = new CpZoneParser();
 		File file = new File(aZoneFile);
@@ -127,7 +127,7 @@ public class FmGenerator extends RteErrorCollection {
 		return null;
 	}
 
-	
+
 	public boolean processZoneFile(String aZoneFile, String templateFolder, String outputFolder){
 		ICpRootZone aZone = loadZoneFile(aZoneFile);
 		if(aZone == null) {
@@ -140,33 +140,34 @@ public class FmGenerator extends RteErrorCollection {
 		getCmsisConsole().outputErrors(validator.getErrors());
 		if(!bValid) {
 			return false;
-		} 
+		}
 		try {
 			return processZone(aZone, templateFolder, outputFolder);
 		} catch (CoreException e) {
 			e.printStackTrace();
 			CmsisZoneError err = new CmsisZoneError(e, ESeverity.Error, CmsisZoneError.Z501);
 			err.setFile(aZoneFile);
+			err.setItem(aZone);
 			getCmsisConsole().outputError(err);
 			addError(err);
 			return false;
-		} 
+		}
 	}
-	
-	
+
+
 	public boolean processZone(ICpRootZone aZone, String templateFolder, String outputFolder) throws CoreException {
-		
+
 		// generate sub-zone files
 		CmsisZoneProjectCreator.createZoneFiles(aZone, getCmsisConsole(), getProgressMonitor());
 		String fZoneFile = createFZoneFile(aZone);
 		if(fZoneFile == null)
 			return false;
-		return processTemplates(fZoneFile, templateFolder, outputFolder); 
+		return processTemplates(fZoneFile, templateFolder, outputFolder);
 	}
-	
-	
+
+
 	public boolean processTemplates(String fZoneFile, String templateFolder, String outputFolder) {
-		String fZoneFilePath = Utils.extractPath(fZoneFile, true); 
+		String fZoneFilePath = Utils.extractPath(fZoneFile, true);
 		if(templateFolder == null) {
 			templateFolder = CmsisConstants.FTL;
 		}
@@ -176,10 +177,10 @@ public class FmGenerator extends RteErrorCollection {
 		}
 		if(!tFolder.exists())
 			tFolder.mkdirs();
-		
+
 		if(outputFolder == null) {
 			outputFolder = CmsisConstants.FTL_GEN;
-		} 
+		}
 		File oFolder = new File(outputFolder);
 		if(!oFolder.isAbsolute()) {
 			oFolder = new File(fZoneFilePath + outputFolder);
@@ -187,15 +188,15 @@ public class FmGenerator extends RteErrorCollection {
 
 		if(!oFolder.exists())
 			oFolder.mkdirs();
-		
+
 		getCmsisConsole().output(Messages.FmGenerator_ProcessingTemplates + tFolder.getAbsolutePath());
-		
+
 		/* Create a data-model */
 		fDataModel = null;
 		try {
 			fDataModel = NodeModel.parse(new File(fZoneFile));
 			fCfg.setDirectoryForTemplateLoading(tFolder);
-		} catch (SAXException | IOException | ParserConfigurationException e) {			
+		} catch (SAXException | IOException | ParserConfigurationException e) {
 			e.printStackTrace();
 			CmsisZoneError err = new CmsisZoneError(e, ESeverity.Error, CmsisZoneError.Z601);
 			err.setFile(fZoneFile);
@@ -209,9 +210,9 @@ public class FmGenerator extends RteErrorCollection {
 			addError(err);
 			return false;
 		}
-		
+
 		Collection<String> templateFiles = Utils.findFiles(tFolder, CmsisConstants.FTL, null, 0);
-		if(templateFiles == null || templateFiles.isEmpty()) { 
+		if(templateFiles == null || templateFiles.isEmpty()) {
 			CmsisZoneError err = new CmsisZoneError(ESeverity.Warning, CmsisZoneError.Z604);
 			err.setFile(tFolder.getAbsolutePath());
 			getCmsisConsole().outputError(err);
@@ -222,7 +223,7 @@ public class FmGenerator extends RteErrorCollection {
 
 		boolean success = true;
 		for(String templateFile : templateFiles) {
-			String template = Utils.extractFileName(templateFile); 
+			String template = Utils.extractFileName(templateFile);
 			String out = oFolder.getAbsolutePath() + '/' + Utils.removeFileExtension(template);
 			try {
 				doGenerate(template, out);
@@ -251,23 +252,14 @@ public class FmGenerator extends RteErrorCollection {
 		}
 		return success;
 	}
-	
-	
+
+
 	protected void doGenerate(String template, String output) throws IOException, TemplateException  {
 		getCmsisConsole().output(CmsisConstants.SPACES8  + template + Messages.FmGenerator_Arrow+ output);
-		Writer out = null;
-		try {
+		try (Writer out = new FileWriter(output);) {
 			Template ftl = fCfg.getTemplate(template);
-			out = new FileWriter(output);		
 			ftl.process(fDataModel.getNode().getFirstChild(), out);
-		} catch(TemplateException e) {
-			throw e;
-		} finally {
-			if(out != null) {
-				out.flush();
-				out.close();
-			}
 		}
 	}
-	
+
 }

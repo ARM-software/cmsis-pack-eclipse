@@ -1,10 +1,11 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
+Bundle-Name: CMSIS Config
 Bundle-SymbolicName: com.arm.cmsis.config;singleton:=true
-Bundle-Version: 2.5.0.qualifier
+Automatic-Module-Name: com.arm.cmsis.config
+Bundle-Version: 2.6.0.qualifier
 Bundle-Activator: com.arm.cmsis.config.ConfigPlugIn
-Bundle-Vendor: %Bundle-Vendor
+Bundle-Vendor: ARM
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jface.text,

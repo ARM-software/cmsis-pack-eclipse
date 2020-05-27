@@ -73,7 +73,7 @@ public interface ICpPackInstaller extends IAdaptable {
 		for(String packId : packIds) {
 			installPack(packId);
 		}
-	};
+	}
 
 	/**
 	 * Installs pack with given ID.
@@ -90,7 +90,7 @@ public interface ICpPackInstaller extends IAdaptable {
 	 */
 	void installPack(final IAttributes packAttributes);
 
-	
+
 	/**
 	 * Installs required packs of the given pack.
 	 * @param pack Pack whose required packs needs to be installed
@@ -117,10 +117,10 @@ public interface ICpPackInstaller extends IAdaptable {
 	void updatePacks(IProgressMonitor monitor);
 
 	/**
-	 * Check for updates in the internet and updates all packs asynchronously  
+	 * Check for updates in the internet and updates all packs asynchronously
 	 */
 	default void updatePacksAsync() {/*default does nothing */}
-	
+
 	/**
 	 * Uninstalls installed pack
 	 * @param pack installed ICpPack to remove
@@ -150,13 +150,13 @@ public interface ICpPackInstaller extends IAdaptable {
 		InputStream archiveStream = new FileInputStream(archiveFile);
 		return unzip(archiveStream, destPath, true, true, progress);
 	}
-	
+
 	/**
-	 * Extracts files from archive 
+	 * Extracts files from archive
 	 * @param archiveInput InputStream for the source .zip file
 	 * @param destPath the destination path
 	 * @param overwrite boolean flag specifies if to overwrite existing entries
-	 * @param setReadOnly boolean flag specifies if to sets read-only attribute the destination entries 
+	 * @param setReadOnly boolean flag specifies if to sets read-only attribute the destination entries
 	 * @param monitor IProgressMonitor
 	 * @return True if the unzip is successful, false otherwise
 	 * @throws IOException
@@ -164,18 +164,18 @@ public interface ICpPackInstaller extends IAdaptable {
 	default boolean unzip(InputStream archiveInput, IPath destPath, boolean overwrite, boolean setReadOnly, IProgressMonitor monitor) throws IOException {
 		return unzipArchive(archiveInput, destPath, overwrite, setReadOnly, monitor);
 	}
-	
+
 	/**
-	 * Extracts files from archive 
+	 * Extracts files from archive
 	 * @param archiveInput InputStream for the source .zip file
 	 * @param destPath the destination path
 	 * @param overwrite boolean flag specifies if to overwrite existing entries
-	 * @param setReadOnly boolean flag specifies if to sets read-only attribute the destination entries 
+	 * @param setReadOnly boolean flag specifies if to sets read-only attribute the destination entries
 	 * @param monitor IProgressMonitor
 	 * @return True if the unzip is successful, false otherwise
 	 * @throws IOException
 	 */
-	public static boolean unzipArchive(InputStream archiveInput, IPath destPath, boolean overwrite, boolean setReadOnly, IProgressMonitor monitor) throws IOException {
+	static boolean unzipArchive(InputStream archiveInput, IPath destPath, boolean overwrite, boolean setReadOnly, IProgressMonitor monitor) throws IOException {
 		if(archiveInput == null || destPath == null)
 			return false;
 		if(monitor == null)
@@ -226,28 +226,27 @@ public interface ICpPackInstaller extends IAdaptable {
 						throw e;
 					}
 				}
-			}				
+			}
 		}
 		zipInput.closeEntry();
 		zipInput.close();
-		if(countBytes  == 0) { // something went wrong, empty archive? 
+		if(countBytes  == 0) { // something went wrong, empty archive?
 			throw new IOException(); // caller adds message
 		}
 		return result;
 	}
-	
+
 
 	/**
 	 * Returns number of files in the archive
 	 * @param archiveFile the zip file
 	 * @return the number of files contained in this zip file
-	 * @throws Exception 
+	 * @throws Exception
 	 */
 	public static int getFilesCount(File archiveFile) throws IOException {
 		int count = 0;
-		try {
-			ZipInputStream zipInput;
-			zipInput = new ZipInputStream(new FileInputStream(archiveFile));
+		try (ZipInputStream zipInput = new ZipInputStream(new FileInputStream(archiveFile));)
+		{
 			ZipEntry zipEntry = zipInput.getNextEntry();
 			while (zipEntry != null) {
 				if (!zipEntry.isDirectory()) {
@@ -256,7 +255,6 @@ public interface ICpPackInstaller extends IAdaptable {
 				zipEntry = zipInput.getNextEntry();
 			}
 			zipInput.closeEntry();
-			zipInput.close();
 		} catch (IllegalArgumentException e) {
 			e.printStackTrace();
 			String msg = e.getMessage();
@@ -269,7 +267,7 @@ public interface ICpPackInstaller extends IAdaptable {
 
 		return count;
 	}
-	
+
 	/**
 	 * The Actions to take after a pack job is finished
 	 * @param jobId the job's ID, could be a pack ID
@@ -321,23 +319,23 @@ public interface ICpPackInstaller extends IAdaptable {
 	 */
 	void reset();
 
-	
+
 	/**
 	 * Checks if the installer updates the packs
 	 * @return true if updates
 	 */
 	default boolean isUpdatingPacks() { return false;}
-	
+
 	/**
-	 * Checks if console and pop-up messages are suppressed 
-	 * @return true if suppressed 
+	 * Checks if console and pop-up messages are suppressed
+	 * @return true if suppressed
 	 */
 	default boolean isSuppressMessages() { return false; }
-	
+
 	/**
 	 * Enables/disables console and pop-up messages
 	 * @param bSuppress suppress messages flag
 	 */
 	default void setSuppressMessages(boolean bSuppress) { /* default does nothing*/}
-	
+
 }

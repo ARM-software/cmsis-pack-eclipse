@@ -24,24 +24,24 @@ import com.arm.cmsis.pack.data.MemoryStartComparator;
 import com.arm.cmsis.zone.error.Messages;
 
 /**
- *  Resource group  
+ *  Resource group
  */
 public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup {
-	
+
 	protected Map<String, ICpMemoryBlock> fMemoryBlocks = null; // all blocks including peripherals and peripheral groups
-	protected ICpMemoryBlock[] fMemoryBlockArray = null;  // cached array of the memory block children  
-	
+	protected ICpMemoryBlock[] fMemoryBlockArray = null;  // cached array of the memory block children
+
 	public CpResourceGroup(ICpItem parent, String tag) {
 		super(parent, tag);
 	}
-	
+
 	@Override
 	public void clear() {
 		fMemoryBlocks = null;
 		fMemoryBlockArray = null;
 		super.clear();
 	}
-	
+
 	@Override
 	public void invalidate() {
 		fMemoryBlocks = null;
@@ -58,7 +58,7 @@ public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup 
 			return Messages.getString("CpResourceGroup.Peripherals"); //$NON-NLS-1$
 		return super.getEffectiveName();
 	}
-	
+
 	@Override
 	public ICpResourceGroup getResourceGroup(String name) {
 		ICpItem child = getFirstChild(name);
@@ -66,7 +66,7 @@ public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup 
 			return (ICpResourceGroup) child;
 		}
 		return null;
-	}	
+	}
 
 	@Override
 	public ICpResourceGroup ensureResourceGroup(String tag) {
@@ -76,7 +76,7 @@ public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup 
 			addChild(group);
 		}
 		return group;
-	}	
+	}
 
 	@Override
 	public ICpPeripheralGroup ensurePeripheralGroup( String name) {
@@ -88,7 +88,7 @@ public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup 
 		}
 		return group;
 	}
-	
+
 	@Override
 	public ICpPeripheralGroup getPeripheralGroup(String name) {
 		return getFirstChildOfType(name, ICpPeripheralGroup.class);
@@ -97,8 +97,8 @@ public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup 
 	@Override
 	public Object[] getEffectiveChildArray(){
 		return getMemoryBlocksAsArray();
-	} 
-	
+	}
+
 	@Override
 	public ICpMemoryBlock[] getMemoryBlocksAsArray() {
 		if(fMemoryBlockArray  == null) {
@@ -108,33 +108,25 @@ public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup 
 			boolean bShowRAM = rootZone.getZoneOption(CmsisConstants.RAM, CmsisConstants.SHOW);
 			List<ICpMemoryBlock> blocks = new LinkedList<>();
 			for(ICpMemoryBlock block : getMemoryBlocksAsMap().values()){
-				if(!isShowBlock(block, bShowRAM, bShowROM, bShowPeripheral))
-				
-				if(block instanceof ICpPeripheralGroup)
-					continue;
-				if(!bShowPeripheral && block.isPeripheral())
-					continue;
-				if(!bShowROM && block.isROM())
-					continue;
-				if(!bShowRAM && block.isRAM())
-					continue;
-				blocks.add(block);
+				if(isShowBlock(block, bShowRAM, bShowROM, bShowPeripheral)) {
+					blocks.add(block);
+				}
 			}
-			
+
 			Collections.sort(blocks, new MemoryStartComparator(true));
 			fMemoryBlockArray = blocks.toArray(new ICpMemoryBlock[0]);
 		}
 		return fMemoryBlockArray;
 	}
-	
-	
+
+
 	protected boolean isShowBlock(ICpMemoryBlock block, boolean bShowRAM, boolean bShowROM, boolean bShowPeripheral) {
 		if(!bShowPeripheral && block.isPeripheral())
-			return false;;
+			return false;
 		if(!bShowROM && block.isROM())
-			return false;;
+			return false;
 		if(!bShowRAM && block.isRAM())
-			return false;;
+			return false;
 		return true;
 	}
 
@@ -151,7 +143,7 @@ public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup 
 		return getMemoryBlocksAsMap().get(id);
 	}
 
-	
+
 	/**
 	 * Constructs memory block map for this group
 	 * @return Map<String, ICpMemoryBlock>

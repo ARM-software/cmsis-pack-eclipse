@@ -41,8 +41,8 @@ import com.arm.cmsis.pack.ui.tree.AdvisedEditingSupport;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 
 public class RteValidateWidget extends RteModelTreeWidget {
-	
-	/** Column label provider for RteComponentTreeWidget 
+
+	/** Column label provider for RteComponentTreeWidget
 	 *
 	 */
 	IRteDependencyItem getDependencyItem(Object element){
@@ -51,7 +51,7 @@ public class RteValidateWidget extends RteModelTreeWidget {
 		}
 		return null;
 	}
-	
+
 	/**
 	 * Set current configuration for this component tree widget
 	 * @param configuration A RTE configuration that contains RTE component
@@ -64,7 +64,7 @@ public class RteValidateWidget extends RteModelTreeWidget {
 			refresh();
 		}
 	}
-	
+
 	public class RteValidateColumnAdvisor extends RteColumnAdvisor<IRteModelController> {
 		/**
 		 * Constructs advisor for a viewer
@@ -112,6 +112,7 @@ public class RteValidateWidget extends RteModelTreeWidget {
 						case INCOMPATIBLE_VERSION:
 						case MISSING:
 						case MISSING_API:
+						case MISSING_API_VERSION:
 						case MISSING_BUNDLE:
 						case MISSING_VARIANT:
 						case MISSING_VENDOR:
@@ -119,7 +120,7 @@ public class RteValidateWidget extends RteModelTreeWidget {
 						case MISSING_GPDSC:
 						case UNAVAILABLE:
 						case UNAVAILABLE_PACK:
-							return CpPlugInUI.getImage(CpPlugInUI.ICON_ERROR); 
+							return CpPlugInUI.getImage(CpPlugInUI.ICON_ERROR);
 
 						case INACTIVE:
 						case INSTALLED:
@@ -143,9 +144,9 @@ public class RteValidateWidget extends RteModelTreeWidget {
 							if(instances > 1) {
 								return CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT);
 							}
-							return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);							
+							return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
 						}
-					} 
+					}
 				}
 			}
 			return null;
@@ -153,7 +154,7 @@ public class RteValidateWidget extends RteModelTreeWidget {
 	}
 
 	/**
-	 * 	Content provider for RteValidateWidget tree 
+	 * 	Content provider for RteValidateWidget tree
 	 */
 	public class RteValidateContentProvider extends TreeObjectContentProvider {
 		@Override
@@ -164,38 +165,38 @@ public class RteValidateWidget extends RteModelTreeWidget {
 					return depItems.toArray();
 				}
 				return ITreeObject.EMPTY_OBJECT_ARRAY;
-			} 
+			}
 			return getChildren(inputElement);
 		}
 	}
-	
+
 	@Override
     public Composite createControl(Composite parent) {
-    	
+
 		Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL|SWT.BORDER);
 		tree.setHeaderVisible(true);
 		fTreeViewer = new TreeViewer(tree);
 		ColumnViewerToolTipSupport.enableFor(fTreeViewer);
 		fColumnAdvisor = new RteValidateColumnAdvisor(fTreeViewer);
-		
+
 		TreeViewerColumn column0 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		tree.setLinesVisible(true);
 		column0.getColumn().setText(CpStringsUI.RteValidateWidget_ValidationOutput);
 		column0.getColumn().setWidth(400);
 		column0.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 0));
-		
+
 		fTreeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
 			@Override
 			public void selectionChanged(SelectionChangedEvent event) {
 				handleTreeSelectionChanged(event);
 			}
 		});
-		
+
 		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, 0);
 		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
-		col0LabelProvider.setOwnerDrawEnabled(false);   
+		col0LabelProvider.setOwnerDrawEnabled(false);
 		column0.setLabelProvider(col0LabelProvider);
-		
+
 		TreeViewerColumn column1 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
 		column1.getColumn().setText(CpStringsUI.RteValidateWidget_Description);
 		column1.getColumn().setWidth(500);
@@ -204,14 +205,14 @@ public class RteValidateWidget extends RteModelTreeWidget {
 
 		RteValidateContentProvider validateProvider = new RteValidateContentProvider();
 		fTreeViewer.setContentProvider(validateProvider);
-    
+
     	GridData gridData = new GridData();
     	gridData.horizontalAlignment = SWT.FILL;
     	gridData.verticalAlignment = SWT.FILL;
     	gridData.grabExcessHorizontalSpace = true;
     	gridData.grabExcessVerticalSpace = true;
     	tree.setLayoutData(gridData);
-    	
+
     	if (getModelController() != null) {
 			fTreeViewer.setInput(getModelController());
 		}
@@ -228,7 +229,7 @@ public class RteValidateWidget extends RteModelTreeWidget {
 		}
 		return null;
 	}
-    
+
 	/**
 	 * @param event
 	 */
@@ -236,12 +237,12 @@ public class RteValidateWidget extends RteModelTreeWidget {
 		if(getModelController() == null) {
 			return;
 		}
-		
+
 		IRteDependencyItem d = getSelectedDependencyItem();
 		if(d == null) {
 			return;
 		}
-		
+
 		IRteComponentItem item = d.getComponentItem();
 		if(item != null) {
 			getModelController().emitRteEvent(RteEvent.COMPONENT_SHOW, item);
@@ -251,13 +252,13 @@ public class RteValidateWidget extends RteModelTreeWidget {
 	@Override
 	public void handle(RteEvent event) {
 		switch(event.getTopic()) {
-		case RteEvent.COMPONENT_SELECTION_MODIFIED: 
+		case RteEvent.COMPONENT_SELECTION_MODIFIED:
 			update();
 			return;
 		}
 		super.handle(event);
 	}
-	
+
 	@Override
 	public void update() {
 		refresh();

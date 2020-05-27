@@ -14,12 +14,12 @@ package com.arm.cmsis.pack.data;
 import com.arm.cmsis.pack.common.CmsisConstants;
 
 /**
- * Interface describing a CMSIS component  
+ * Interface describing a CMSIS component
  */
 public interface ICpComponent extends ICpItem {
 
 	/**
-	 * Returns if this item is an API 
+	 * Returns if this item is an API
 	 * @return true if the component is API
 	 */
 	boolean isApi();
@@ -42,45 +42,45 @@ public interface ICpComponent extends ICpItem {
 	 */
 	boolean isCmsisRtosComponent();
 
-	
+
 	/**
 	 * Checks if component should be treated as multi-instance one, even if max instance count is 1
-	 * @return true if component is a multi-instance one  
+	 * @return true if component is a multi-instance one
 	 */
 	boolean isMultiInstance();
 
 	/**
-	 * Checks if component is a bootstrap for generator (launches specified generator) 
-	 * @return true if component is bootstrap one  
+	 * Checks if component is a bootstrap for generator (launches specified generator)
+	 * @return true if component is bootstrap one
 	 */
 	boolean isBootStrap();
-	
+
 	/**
-	 * Returns generator associated with the component (generated or bootstrap) 
-	 * @return {@link ICpGenerator} if component is a bootstrap or generated, null otherwise  
+	 * Returns generator associated with the component (generated or bootstrap)
+	 * @return {@link ICpGenerator} if component is a bootstrap or generated, null otherwise
 	 */
 	 ICpGenerator getGenerator();
 
 	 /**
-	  * Returns generator id associated with the component (generated or bootstrap) 
-	  * @return generator id if component is a bootstrap or generated, null otherwise  
+	  * Returns generator id associated with the component (generated or bootstrap)
+	  * @return generator id if component is a bootstrap or generated, null otherwise
 	  */
 	 String getGeneratorId();
-	 
+
 	/**
-	 * Returns number of maximum instances for the component 
-	 * @return true if the component is API
+	 * Returns number of maximum instances for the component
+	 * @return number of maximum instances for the component
 	 */
 	int getMaxInstances();
-	
+
 	/**
 	 * Returns piece of code corresponding this component to copy to RteComponents.h file
-	 * @return code to copy to RteComponents.h file as string 
+	 * @return code to copy to RteComponents.h file as string
 	 */
 	String getRteComponentsHCode();
-	
+
 	/**
-	 * Constructs component name out of ICpItem tag and attributes  
+	 * Constructs component name out of ICpItem tag and attributes
 	 * @param componentItem  ICpItem representing a component or its info
 	 * @return component name
 	 */
@@ -96,10 +96,10 @@ public interface ICpComponent extends ICpItem {
 			name += componentItem.getAttribute(CmsisConstants.CBUNDLE);
 		}
 		name += CmsisConstants.DOUBLE_COLON;
-		
+
 		name += componentItem.getAttribute(CmsisConstants.CCLASS);
 		name += "."; //$NON-NLS-1$
-		
+
 		name += componentItem.getAttribute(CmsisConstants.CGROUP);
 		if(componentItem.hasAttribute(CmsisConstants.CSUB)) {
 			name += "."; //$NON-NLS-1$

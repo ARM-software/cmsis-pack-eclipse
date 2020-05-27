@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.item;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -57,10 +58,12 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	
 	@Override
 	public synchronized Collection<? extends T> getChildren() {
+		if(fChildMap == null) {
+			return Collections.emptyList();
+		}
+
 		if(fChildren == null) {
-			if(fChildMap != null) {
-				fChildren = fChildMap.values();
-			}
+			fChildren = fChildMap.values();
 		}
 		return fChildren;
 	}
@@ -72,7 +75,7 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 		if(childMap != null) {
 			return childMap.keySet();
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	
@@ -109,7 +112,7 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 
 	@Override
 	public List<String> getKeyPath() {
-		List<String> keyPath = new LinkedList<String>();
+		List<String> keyPath = new LinkedList<>();
 		T child = getThisItem();
 		for(T parent = getParent(); parent != null; parent = parent.getParent()) {
 			String key = parent.getItemKey(child);
@@ -184,6 +187,9 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	@Override
 	public T removeChild(String key) {
 		if(hasChild(key)) {
+			 // invalidate cached collections
+			cachedChildArray = null; 
+			fChildren = null; 
 			return childMap().remove(key);
 		}
 		return null;
@@ -223,7 +229,7 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 	 */
 	protected Map<String, T> createMap() {
 		// default implementation creates TreeMap with natural sorting
-		return new TreeMap<String,T>();
+		return new TreeMap<>();
 	}
 
 	@Override
@@ -252,7 +258,7 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 		if(childMap != null) {
 			return childMap.keySet();
 		}
-		return null;
+		return Collections.emptyList();
 	}
 	
 	@Override
@@ -261,7 +267,7 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 		if(childMap != null) {
 			return childMap.values();
 		}
-		return null;
+		return Collections.emptyList();
 	}
 
 	@Override

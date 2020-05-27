@@ -43,7 +43,6 @@ import com.arm.cmsis.pack.ui.widgets.RteTreeWidget;
 import com.arm.cmsis.pack.ui.wizards.OkWizard;
 import com.arm.cmsis.zone.data.ICpDeviceUnit;
 import com.arm.cmsis.zone.data.ICpMemoryBlock;
-import com.arm.cmsis.zone.data.ICpMemoryRegion;
 import com.arm.cmsis.zone.data.ICpPeripheral;
 import com.arm.cmsis.zone.data.ICpPeripheralGroup;
 import com.arm.cmsis.zone.data.ICpProcessorUnit;
@@ -63,10 +62,10 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 	protected Action arrangeBlocksAction = null;
 	protected Action deleteZoneAction = null;
 	protected Action configureSlotseAction = null;
-	
+
 	protected CmsisZoneKeyAdapter fKeyAdapter;
 	protected ICpItem contextMenuItem = null;
-	
+
 	@Override
 	public void destroy(){
 		super.destroy();
@@ -76,8 +75,8 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		arrangeBlocksAction = null;
 		configureSlotseAction = null;
 	}
-	
-	
+
+
 	public ICpProcessorUnit getTargetProcessor() {
 		return null;
 	}
@@ -99,7 +98,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 	public void setZone(ICpZone zone) {
 		// default does nothing
 	}
-	
+
 	public boolean isShowList() {
 		return getAttributeAsBoolean(CmsisConstants.LIST, false);
 	}
@@ -109,32 +108,32 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		ICpItem selItem = getSelectedItem();
 		contextMenuItem = selItem;
 		if(getZone() != null) {
-			manager.add(new Separator());			
+			manager.add(new Separator());
 			manager.add(deleteZoneAction);
-			manager.add(new Separator());			
+			manager.add(new Separator());
 			manager.add(propertiesAction);
 			return;
-		} 
+		}
 		if(tContextMenuPoint.y < 0 ) // on header or outside
 			return;
-		
-		super.fillContextMenu(manager); 
+
+		super.fillContextMenu(manager);
 		if(canAddBlock(selItem)) {
-			manager.add(new Separator());			
+			manager.add(new Separator());
 			manager.add(addBlockAction);
 			//manager.add(arrangeBlocksAction);
 		}
 		if(canDeleteBlock(selItem)) {
-			manager.add(new Separator());			
+			manager.add(new Separator());
 			manager.add(deleteBlockAction);
 		}
 
 		if(hasSlots(selItem)) {
-			manager.add(new Separator());			
+			manager.add(new Separator());
 			manager.add(configureSlotseAction);
 		}
 		if(hasProperties(selItem)) {
-			manager.add(new Separator());			
+			manager.add(new Separator());
 			manager.add(propertiesAction);
 		}
 	}
@@ -143,7 +142,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 	@Override
 	protected void makeActions() {
 		super.makeActions();
-		
+
 		propertiesAction = new Action() {
 			@Override
 			public void run() {
@@ -160,8 +159,8 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 			}
 		};
 		configureSlotseAction.setText(Messages.CmsisZoneTreeWidget_Configure);
-		
-		
+
+
 		deleteBlockAction = new Action() {
 			@Override
 			public void run() {
@@ -170,7 +169,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		};
 		deleteBlockAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_DELETE));
 		deleteBlockAction.setText(Messages.CmsisZoneTreeWidget_DeleteMemoryRegion);
-		
+
 		addBlockAction = new Action() {
 			@Override
 			public void run() {
@@ -179,7 +178,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		};
 		addBlockAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_BLOCK_NEW));
 		addBlockAction.setText(Messages.CmsisZoneTreeWidget_AddMemoryRegion);
-		
+
 		arrangeBlocksAction = new Action() {
 			@Override
 			public void run() {
@@ -189,7 +188,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		arrangeBlocksAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_ARRANGE));
 		arrangeBlocksAction.setText(Messages.CmsisZoneTreeWidget_ArrangeMemoryRegions);
 		arrangeBlocksAction.setToolTipText(Messages.CmsisZoneTreeWidget_ArrangeMemoryRegionsAccordingToSizesAndPermissions);
-		
+
 		String text = Messages.CmsisZoneTreeWidget_DeleteZone;
 		deleteZoneAction = new Action(text, IAction.AS_PUSH_BUTTON){
 			@Override
@@ -197,27 +196,27 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 				ICpZone zone = getZone();
 				if(zone == null)
 					return;
-				String msg = text + Messages.CmsisZoneTreeWidget_SimpleQuotationMark + zone.getName() + Messages.CmsisZoneTreeWidget_SimpleQuotationMarkWithQuestionSymbol;  
-				boolean yes = MessageDialog.openQuestion(getFocusWidget().getShell(), 
+				String msg = text + Messages.CmsisZoneTreeWidget_SimpleQuotationMark + zone.getName() + Messages.CmsisZoneTreeWidget_SimpleQuotationMarkWithQuestionSymbol;
+				boolean yes = MessageDialog.openQuestion(getFocusWidget().getShell(),
 						msg, msg);
 				if(yes) {
 					// run async as we will remove this page /column
 					Display.getDefault().asyncExec(()->getModelController().deleteZone(zone));
 				}
 			}
-		}; 
+		};
 		deleteZoneAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_DELETE));
 	}
 
 	protected void arrangeBlocks() {
 		getModelController().arrangeBlocks();
-		
+
 	}
 
 	protected void deleteSelectedBlocks() {
 		fKeyAdapter.processDeletePressed();
 	}
-	
+
 	public static boolean canDeleteBlock(ICpItem selItem) {
 		if(selItem == null)
 			return false;
@@ -234,7 +233,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 			return;
 		if(!canAddBlock(selItem))
 			return;
-		if(!(selItem instanceof ICpMemoryRegion))
+		if(!(selItem instanceof ICpMemoryBlock))
 			return;
 		ICpMemoryBlock parentBlock = (ICpMemoryBlock)selItem;
 		MemoryBlockWizard newWizard = new MemoryBlockWizard(getModelController(), parentBlock);
@@ -248,8 +247,8 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 			return false;
 		if(selItem instanceof ICpPeripheralGroup)
 			return false;
-		if(selItem instanceof ICpMemoryRegion) {
-			ICpMemoryRegion r= (ICpMemoryRegion)selItem;
+		if(selItem instanceof ICpMemoryBlock) {
+			ICpMemoryBlock r= (ICpMemoryBlock)selItem;
 			return r.getParentBlock() == null;
 		}
 		return false;
@@ -267,16 +266,16 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 			return true;
 		}
 		return false;
-	};
+	}
 
 	protected void properties() {
 		OkWizard wizard = getPropertiesWizard();
 		if(wizard != null)
 			wizard.execute(getFocusWidget().getShell());
 	}
-	
+
 	protected OkWizard getPropertiesWizard() {
-		ICpItem selItem = contextMenuItem != null ? contextMenuItem : getSelectedItem(); 
+		ICpItem selItem = contextMenuItem != null ? contextMenuItem : getSelectedItem();
 		contextMenuItem = null;
 		if(!hasProperties(selItem))
 			return null;
@@ -284,13 +283,13 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 			return new CmsisZoneWizard(getModelController(), (ICpZone)selItem);
 		}
 		if(selItem instanceof ICpMemoryBlock) {
-			ICpMemoryBlock block = (ICpMemoryBlock)selItem; 
+			ICpMemoryBlock block = (ICpMemoryBlock)selItem;
 			ICpMemoryBlock parentBlock = block.getParentBlock();
 			return new MemoryBlockWizard(getModelController(), parentBlock, block);
 		}
 		return null;
 	}
-		
+
 	protected boolean hasSlots(ICpItem selItem) {
 		if(selItem instanceof ICpPeripheral) {
 			ICpPeripheral p = (ICpPeripheral)selItem;
@@ -303,25 +302,25 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 			}
 		}
 		return false;
-	};
+	}
 
-	
+
 	protected void configureSlots() {
-		ICpItem selItem = contextMenuItem != null ? contextMenuItem : getSelectedItem(); 
+		ICpItem selItem = contextMenuItem != null ? contextMenuItem : getSelectedItem();
 		contextMenuItem = null;
 		if(!hasSlots(selItem)) {
-			return;  
+			return;
 		}
 		ICpPeripheral p = (ICpPeripheral)selItem;
-		
+
 		CpPeripheralSlotSetupDlg dlg = new CpPeripheralSlotSetupDlg(getFocusWidget().getShell(), p);
 		if(dlg.open() == Window.OK) {
 			if(dlg.apply()) {
-				getModelController().setModified(true); 
+				getModelController().setModified(true);
 			}
 		}
 	}
-	
+
 	protected ICpItem getSelectedItem() {
 		if (getViewer() != null) {
 			if(tContextMenuColumn > 0 ) {
@@ -330,7 +329,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 				if(zone != null)
 					return zone;
 			}
-			
+
 			IStructuredSelection sel = (IStructuredSelection)getViewer().getSelection();
 			if(sel != null) {
 				Object element = sel.getFirstElement();
@@ -368,7 +367,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		return selectedItems;
 	}
 
-	
+
 	@Override
 	public void handle(RteEvent event) {
 		switch(event.getTopic()){
@@ -380,7 +379,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		}
 		super.handle(event);
 	}
-	
+
 	/**
 	 * Highlights given item expanding parent nodes if needed
 	 * @param item Component item to select
@@ -405,9 +404,9 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		TreeSelection ts = new TreeSelection(tp);
 		fTreeViewer.setSelection(ts, true);
 	}
-	
+
 	protected abstract CmsisZoneColumnAdvisor createColumnAdvisor();
-	
+
 	protected CmsisZoneColumnAdvisor getCmsisZoneColumnAdvisor() {
 		return (CmsisZoneColumnAdvisor) fColumnAdvisor;
 	}
@@ -425,11 +424,11 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 			fTreeViewer.expandToLevel(2);
 			if(isExpandAllSelectedSupported())
 				expandAllSelected();
-			
+
 		}
 		update();
 	}
-	
+
 	@Override
 	public Composite createControl(Composite parent) {
 
@@ -440,12 +439,12 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		ColumnViewerToolTipSupport.enableFor(fTreeViewer);
 		CmsisZoneColumnAdvisor advisor = createColumnAdvisor();
 		fColumnAdvisor = advisor;
-		
+
 		fKeyAdapter = new CmsisZoneKeyAdapter(advisor, tree);
 
 		ITreeContentProvider contentProvider = createContentProvider();
 		fTreeViewer.setContentProvider(contentProvider);
-		
+
 		GridData gridData = new GridData();
 		gridData.horizontalAlignment = SWT.FILL;
 		gridData.verticalAlignment = SWT.FILL;
@@ -462,7 +461,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		CmsisZoneColumnAdvisor advisor = (CmsisZoneColumnAdvisor)getColumnAdvisor();
 		advisor.createColumns();
 	}
-	
+
 	@Override
 	public void refresh() {
 		if(fTreeViewer == null || fTreeViewer.getControl() == null || fTreeViewer.getControl().isDisposed())
@@ -505,7 +504,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 		if(getModelController().getRootZone() == null) {
 			return;
 		}
-		
+
 		fTreeViewer.getTree().setRedraw(false);
 		ISelection prevSel = fTreeViewer.getSelection();
 		Collection<ICpMemoryBlock> assignedBlocks = getModelController().getAssignedBlocks(getZone());
@@ -518,8 +517,8 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
 
 	@Override
 	public boolean isExpandAllSelectedSupported() {
-		return !isShowList(); 
+		return !isShowList();
 	}
-	
-	
+
+
 }

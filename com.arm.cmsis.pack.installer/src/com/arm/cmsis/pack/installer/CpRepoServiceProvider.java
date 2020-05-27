@@ -50,7 +50,7 @@ import com.arm.cmsis.pack.utils.Utils;
  */
 public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 
-	private final static int TIME_OUT = 10000;
+	private static final int TIME_OUT = 10000;
 
 	public CpRepoServiceProvider() {
 	}
@@ -69,7 +69,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 		String destFileName = webFolder.append(CmsisConstants.REPO_KEIL_PINDEX_FILE).toOSString();  
 		File pidxFile = downloadFile(indexUrl, destFileName, monitor);
 		if(pidxFile == null || monitor.isCanceled()) {
-			return 0;
+			return -1;
 		}
 		return CpPidxParser.parsePidx(pidxFile.toString(), pdscList);	// parse file
 
@@ -99,7 +99,7 @@ public class CpRepoServiceProvider implements ICpRepoServiceProvider {
 	
 	
 	protected File downloadFile(String packUrl, String destFileName, IProgressMonitor monitor) throws IOException {
-		SubMonitor progress = SubMonitor.convert(monitor, 100);
+		SubMonitor progress = SubMonitor.convert(monitor, 1);
 		/***************** Establish connection *****************/
 		URLConnection connection = null;
 		progress.subTask(Messages.CpPackInstallJob_ConnectingTo + packUrl);

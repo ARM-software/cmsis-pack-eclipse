@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.StringFieldEditor;
@@ -35,7 +36,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
-import com.arm.cmsis.pack.CpPlugIn;
+
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
@@ -68,8 +69,8 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 	protected static Encryptor encryptor;
 
 	public CpPreferencePage() {
-		super();
-		
+		super(GRID);
+
 		if (encryptor == null) {
 	        encryptor = Encryptor.getEncryptor(Encryptor.DEFAULT_KEY);
 		}
@@ -87,27 +88,28 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 	protected void createFieldEditors() {
 		Composite parent = getFieldEditorParent();
 		if(!CpPreferenceInitializer.isCmsisRootEditable()) {
-			fCmsisRootEditor = new StringFieldEditor(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
+			fCmsisRootEditor = new StringFieldEditor(CpPreferenceInitializer.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
 			fCmsisRootEditor.setEnabled(false, parent);
 			fCmsisRootEditor.getLabelControl(parent).setEnabled(true);
 		} else {
-			fCmsisRootEditor = new CpDirectoryFieldEditor(CpPlugIn.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
+			fCmsisRootEditor = new CpDirectoryFieldEditor(CpPreferenceInitializer.CMSIS_PACK_ROOT_PREFERENCE, CpStringsUI.PreferencesPackRootLabel, parent);
 		}
 		addField(fCmsisRootEditor);
+		addField(new BooleanFieldEditor(CpPreferenceInitializer.CMSIS_PACK_INSTALL_MISSING_PACKS_PREFERENCE, CpStringsUI.PreferencesInstallMissingPacks, SWT.NONE, parent));
 	}
 
 	@Override
 	protected Control createContents(Composite parent) {
-		// Row 1: field editor for 'CMSIS Pack root folder'
+		// Row 1: field editor for 'CMSIS-Pack root folder'
 		Control control = createCmsisPackRootFolder(parent);
-		
+
 		// Row 2: check box of "Check for Update"
 		createCheckForUpdate(parent);
 
 		// separator and label
 		Label separator = new Label(parent, SWT.HORIZONTAL | SWT.SEPARATOR);
 	    separator.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-	    
+
 		// Row 3: Proxy Settings
 	    createProxyContents(parent);
 
@@ -116,7 +118,7 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 	    description.setText(CmsisConstants.EMPTY_STRING);
 		GridData dummy = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		description.setLayoutData(dummy);
-	    
+
 		return control;
 	}
 
@@ -131,9 +133,9 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 			}
 		});
 	}
-	
+
 	protected Control createCmsisPackRootFolder(Composite parent) {
-		
+
 		Composite feComp = new Composite(parent, SWT.NULL);
 		GridLayout feLayout = new GridLayout();		// grid layout for field editor
 		feLayout.numColumns = 1;
@@ -150,10 +152,10 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 		feLayoutData.horizontalAlignment = SWT.FILL;
 		feLayoutData.grabExcessHorizontalSpace = true;
 		feComp.setLayoutData(feLayoutData);
-		
+
 		return super.createContents(feComp);
 	}
-	
+
 	protected void createProxyContents(Composite parent) {
 		Group proxyComposite = new Group(parent, SWT.LEFT);
         GridLayout layout = new GridLayout(5, false);
@@ -290,21 +292,21 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 		if(!checkCmsisRoot()) {
 			return false;
 		}
-		
+
 		CpPreferenceInitializer.setAutoUpdateFlag(fAutoUpdate);
 
 		if (!checkProxyData()) {
 			return false;
 		}
 		saveProxyData();
-		
+
 		return super.performOk();
 	}
-	
+
 	protected boolean checkCmsisRoot() {
 		if(!CpPreferenceInitializer.isCmsisRootEditable())
 			return true; // we can do nothing about it
-		
+
 		String cmsisRootDir = fCmsisRootEditor.getStringValue().trim();
 		if(cmsisRootDir.isEmpty())
 			return true; // valid value (though it is empty)
@@ -324,20 +326,20 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 
 	protected void loadProxyData() {
 		IPreferenceStore store = getPreferenceStore();
-		fProxyMode = store.getInt(CpPlugIn.PROXY_MODE);
-		fAddress = store.getString(CpPlugIn.PROXY_ADDRESS);
-		fPort = store.getString(CpPlugIn.PROXY_PORT);
-		fUser = store.getString(CpPlugIn.PROXY_USER);
-		fPass = decrypt(store.getString(CpPlugIn.PROXY_PASSWORD));
+		fProxyMode = store.getInt(CpPreferenceInitializer.PROXY_MODE);
+		fAddress = store.getString(CpPreferenceInitializer.PROXY_ADDRESS);
+		fPort = store.getString(CpPreferenceInitializer.PROXY_PORT);
+		fUser = store.getString(CpPreferenceInitializer.PROXY_USER);
+		fPass = decrypt(store.getString(CpPreferenceInitializer.PROXY_PASSWORD));
 	}
 
 	protected void saveProxyData() {
 		IPreferenceStore store = getPreferenceStore();
-		store.setValue(CpPlugIn.PROXY_MODE, fProxyMode);
-		store.setValue(CpPlugIn.PROXY_ADDRESS, fAddressText.getText());
-		store.setValue(CpPlugIn.PROXY_PORT, fPortText.getText());
-		store.setValue(CpPlugIn.PROXY_USER, fUserText.getText());
-		store.setValue(CpPlugIn.PROXY_PASSWORD, encrypt(fPassText.getText()));
+		store.setValue(CpPreferenceInitializer.PROXY_MODE, fProxyMode);
+		store.setValue(CpPreferenceInitializer.PROXY_ADDRESS, fAddressText.getText());
+		store.setValue(CpPreferenceInitializer.PROXY_PORT, fPortText.getText());
+		store.setValue(CpPreferenceInitializer.PROXY_USER, fUserText.getText());
+		store.setValue(CpPreferenceInitializer.PROXY_PASSWORD, encrypt(fPassText.getText()));
 	}
 
 	protected String encrypt(String input) {
@@ -352,5 +354,5 @@ public class CpPreferencePage extends FieldEditorPreferencePage implements IWork
 	public Image getImage() {
 		return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
 	}
-	
+
 }

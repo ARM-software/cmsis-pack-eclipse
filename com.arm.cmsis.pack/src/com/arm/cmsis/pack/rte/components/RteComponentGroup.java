@@ -31,7 +31,7 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class RteComponentGroup extends RteComponentItem implements IRteComponentGroup{
 
-	protected Map<String, ICpComponent> fApis = null; // api collection sorted by version 
+	protected Map<String, ICpComponent> fApis = null; // api collection sorted by version
 	protected String fActiveApiVersion = null;
 	protected boolean fbUseLatesApi = true;
 	/**
@@ -43,13 +43,13 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 		fbExclusive = false;
 	}
 
-	
+
 	@Override
 	public IRteComponentGroup getParentGroup() {
 		return this;
 	}
-	
-	
+
+
 	@Override
 	public ICpItem getCpItem() {
 		ICpComponent api = getApi();
@@ -71,12 +71,12 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 
 	@Override
 	public IRteComponentItem getEffectiveItem() {
-		if(fApis == null || fApis.isEmpty()) { 
-			if(getChildCount() == 1) { 
+		if(fApis == null || fApis.isEmpty()) {
+			if(getChildCount() == 1) {
 				IRteComponentItem child = fChildMap.entrySet().iterator().next().getValue();
 				String childName = child.getName();
 				if(childName.isEmpty() || childName.equals(getName()))
-					return child; 
+					return child;
 			}
 		}
 		return super.getEffectiveItem();
@@ -88,12 +88,12 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 			ICpComponent c = (ICpComponent)cpItem;
 			if( c.isApi())
 				addApi(c);
-			else 
+			else
 				addComponent(c, RteConstants.NONE);
 		} else if (cpItem instanceof ICpTaxonomy ){
 			String csub = cpItem.getAttribute(CmsisConstants.CSUB);
 			if( csub != null && !csub.isEmpty()) {
-				// add component using subName as a key    
+				// add component using subName as a key
 				IRteComponentItem component = getChild(csub);
 				if(component != null) {
 					component.addCpItem(cpItem);
@@ -111,22 +111,22 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 			return;
 		}
 		String componentName = cpComponent.getAttribute(CmsisConstants.CSUB);
-		// add component using subName as a key    
+		// add component using subName as a key
 		IRteComponentItem component = getChild(componentName);
 		if(component == null) {
-			component = new RteComponent(this, componentName); 
+			component = new RteComponent(this, componentName);
 			addChild(component);
 		}
 		component.addComponent(cpComponent, flags);
 	}
-		
-	
+
+
 	/**
 	 * Adds an API item to this group
 	 * @param cpApi ICpApi item
 	 */
 	protected void addApi(ICpComponent cpApi) {
-		String groupName = cpApi.getAttribute(CmsisConstants.CGROUP); 
+		String groupName = cpApi.getAttribute(CmsisConstants.CGROUP);
 		if(!groupName.equals(getName()))
 			return;
 
@@ -134,21 +134,21 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 		if(cpApi instanceof ICpComponentInfo) {
 			apiInfo = (ICpComponentInfo)cpApi;
 		}
-		
+
 		String version = null;
-		if(apiInfo == null || apiInfo.isVersionFixed()) 
+		if(apiInfo == null || apiInfo.isVersionFixed())
 			version = cpApi.getVersion();
 
 		ICpComponent existingApi = getApi(version);
-		if(existingApi == null) { 
+		if(existingApi == null) {
 			if(fApis == null)
-				fApis = new TreeMap<String, ICpComponent>(new VersionComparator());
+				fApis = new TreeMap<>(new VersionComparator());
 			fApis.put(cpApi.getVersion(), cpApi);
-		} 
+		}
 		if(apiInfo != null) {
 			if(existingApi == null || existingApi instanceof ICpComponentInfo) {
 				apiInfo.setComponent(null);
-				apiInfo.setEvaluationResult(EEvaluationResult.MISSING_API);
+				apiInfo.setEvaluationResult(EEvaluationResult.MISSING);
 			} else {
 				apiInfo.setComponent(existingApi);
 			}
@@ -172,7 +172,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 		return getApi(getActiveApiVersion());
 	}
 
-	
+
 	@Override
 	public Map<String, ICpComponent> getApis() {
 		return fApis;
@@ -197,14 +197,14 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 		} else {
 			fbUseLatesApi = false;
 		}
-		
+
 		String activeApiVersion = getActiveApiVersion();
 		if(activeApiVersion.equals(newVersion))
 			return false;
 		fActiveApiVersion = newVersion;
 		return true;
 	}
-	
+
 	@Override
 	public IRteComponentGroup getGroup(IAttributes attributes) {
 		if(attributes.getAttribute(CmsisConstants.CGROUP, CmsisConstants.EMPTY_STRING).equals(getName()))
@@ -230,7 +230,7 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 	public void setActiveVersion(String version) {
 		if(fApis != null && !fApis.isEmpty())
 			setActiveApi(version);
-		else 
+		else
 			super.setActiveVersion(version);
 	}
 
@@ -241,5 +241,5 @@ public class RteComponentGroup extends RteComponentItem implements IRteComponent
 			return fbUseLatesApi;
 		return super.isUseLatestVersion();
 	}
-	
+
 }

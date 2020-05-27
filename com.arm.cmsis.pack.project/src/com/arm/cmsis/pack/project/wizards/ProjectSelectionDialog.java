@@ -47,8 +47,8 @@ public class ProjectSelectionDialog extends SelectionStatusDialog {
 	Set<IRteProject> fProjectsWithSpecifics;
 
 	// sizing constants
-	private final static int SIZING_SELECTION_WIDGET_HEIGHT = 250;
-	private final static int SIZING_SELECTION_WIDGET_WIDTH = 300;
+	private static final int SIZING_SELECTION_WIDGET_HEIGHT = 250;
+	private static final int SIZING_SELECTION_WIDGET_WIDTH = 300;
 
 	public ProjectSelectionDialog(Shell parentShell, Set<IRteProject> projectsWithSpecifics) {
 		super(parentShell);

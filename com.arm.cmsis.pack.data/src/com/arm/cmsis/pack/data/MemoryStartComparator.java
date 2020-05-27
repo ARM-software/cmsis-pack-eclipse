@@ -54,7 +54,7 @@ public class MemoryStartComparator extends MemorySizeComparator {
 	 * @param m2 second ICpMemory
 	 * @return negative value if first memory has lower address, positive if higher and 0 if equal
 	 */
-	static public int compareByStart(ICpMemory m1, ICpMemory m2) {
+	public static int compareByStart(ICpMemory m1, ICpMemory m2) {
 		if(m1 == null && m2 == null )
 			return 0;
 		if(m1 == null)
@@ -72,7 +72,7 @@ public class MemoryStartComparator extends MemorySizeComparator {
 	 * @param m2 second ICpMemory
 	 * @return negative value if first memory has lower address, positive if higher and 0 if equal
 	 */
-	static public int compareByAddress(ICpMemory m1, ICpMemory m2) {
+	public static int compareByAddress(ICpMemory m1, ICpMemory m2) {
 		if(m1 == null && m2 == null )
 			return 0;
 		if(m1 == null)

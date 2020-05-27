@@ -138,6 +138,15 @@ public interface IRteProject extends IAdaptable {
 	void refresh();
 
 	/**
+	 * Triggers reload and full update of resources, dynamic files and toolchain settings.<br>
+	 * @param cause integer flag indicating what causes refresh
+	 * @see RteProjectUpdater RteProjectUpdater for possible cause flags
+	 */
+	default void refresh(int cause) {
+		refresh(); // default ignores cause
+	}
+	
+	/**
 	 * Clean-up project by removing excluded RTE config files.
 	 * Default does nothing
 	 */
@@ -160,5 +169,20 @@ public interface IRteProject extends IAdaptable {
 	 * @param completed flag indicating if update is completed
 	 */
 	void setUpdateCompleted(boolean completed);
+
+
+	/**
+	 * Checks if project allows project updater to install missing packs
+	 * @return true if installing is enabled, default is false.
+	 */
+	default boolean isInstallMissingPacksOnUpdate() { return false;}
+
+	/**
+	 * Sets project flag to install missing packs
+	 * @param bInstall flag to set
+	 */
+	default void setInstallMissingPacksOnUpdate(boolean bInstall) { /* default does nothing */}
+
+
 
 }

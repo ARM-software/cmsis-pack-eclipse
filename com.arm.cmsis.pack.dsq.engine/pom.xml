@@ -4,17 +4,21 @@
   <packaging>eclipse-plugin</packaging>
   <parent>
   	<groupId>com.arm.cmsis</groupId>
-  	<artifactId>com.arm.cmsis.parent</artifactId>
-  	<version>2.5.0-SNAPSHOT</version>
-  	<relativePath>../com.arm.cmsis.parent</relativePath>
+  	<artifactId>com.arm.cmsis.parent.sign</artifactId>
+  	<version>2.6.0-SNAPSHOT</version>
+  	<relativePath>../com.arm.cmsis.parent.sign</relativePath>
   </parent>
   
+  <properties>
+    <xtext-version>2.18.0</xtext-version>
+  </properties>
+
   <build>
 		<plugins>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>exec-maven-plugin</artifactId>
-				<version>1.4.0</version>
+				<version>${exec-maven-plugin-version}</version>
 				<executions>
 					<execution>
 						<id>mwe2Launcher</id>
@@ -33,6 +37,7 @@
 					</arguments>
 					<classpathScope>compile</classpathScope>
 					<includePluginDependencies>true</includePluginDependencies>
+          <includeProjectDependencies>false</includeProjectDependencies>
 					<cleanupDaemonThreads>false</cleanupDaemonThreads><!-- see https://bugs.eclipse.org/bugs/show_bug.cgi?id=475098#c3 -->
 				</configuration>
 				<dependencies>
@@ -44,17 +49,17 @@
 					<dependency>
 						<groupId>org.eclipse.xtext</groupId>
 						<artifactId>org.eclipse.xtext.common.types</artifactId>
-						<version>2.18.0</version>
+						<version>${xtext-version}</version>
 					</dependency>
 					<dependency>
 						<groupId>org.eclipse.xtext</groupId>
 						<artifactId>org.eclipse.xtext.xtext.generator</artifactId>
-						<version>2.18.0</version>
+						<version>${xtext-version}</version>
 					</dependency>
 					<dependency>
 						<groupId>org.eclipse.xtext</groupId>
 						<artifactId>org.eclipse.xtext.xbase</artifactId>
-						<version>2.18.0</version>
+						<version>${xtext-version}</version>
 					</dependency>
 					<dependency>
 						<groupId>org.eclipse.xtext</groupId>
@@ -66,7 +71,7 @@
 			<plugin>
 					<groupId>org.eclipse.xtend</groupId>
 					<artifactId>xtend-maven-plugin</artifactId>
-					<version>2.18.0</version>
+					<version>${xtext-version}</version>
 					<executions>
 						<execution>
 							<goals>
@@ -78,6 +83,8 @@
 						</execution>
 					</executions>
 					<configuration>
+            <showEmptyDirWarning>false</showEmptyDirWarning>
+            <xtendAsPrimaryDebugSource>true</xtendAsPrimaryDebugSource>
 						<outputDirectory>${basedir}/xtend-gen</outputDirectory>
 						<testOutputDirectory>${basedir}/xtend-gen</testOutputDirectory>
 					</configuration>
@@ -85,7 +92,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-clean-plugin</artifactId>
-				<version>2.5</version>
+				<version>3.1.0</version>
 				<configuration>
 					<filesets combine.children="append">
 						<fileset>
@@ -93,7 +100,7 @@
 							<includes>
 								<include>**/*</include>
 							</includes>
-						</fileset>						
+						</fileset>
 						<fileset>
 							<directory>${basedir}/xtend-gen/</directory>
 							<includes>
@@ -107,35 +114,47 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.codehaus.mojo</groupId>
-										<artifactId>exec-maven-plugin</artifactId>
-										<versionRange>[1.2.1,)</versionRange>
-										<goals>
-											<goal>java</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 	</build>
-	
-  
+
+  <profiles>
+    <profile>
+      <id>only-eclipse</id>
+      <activation>
+        <property>
+          <name>m2e.version</name>
+        </property>
+      </activation>
+      <build>
+        <pluginManagement>
+          <plugins>
+            <plugin>
+              <groupId>org.eclipse.m2e</groupId>
+              <artifactId>lifecycle-mapping</artifactId>
+              <version>1.0.0</version>
+              <configuration>
+                <lifecycleMappingMetadata>
+                  <pluginExecutions>
+                    <pluginExecution>
+                      <pluginExecutionFilter>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <versionRange>[${exec-maven-plugin-version},)</versionRange>
+                        <goals>
+                          <goal>java</goal>
+                        </goals>
+                      </pluginExecutionFilter>
+                      <action>
+                        <ignore></ignore>
+                      </action>
+                    </pluginExecution>
+                  </pluginExecutions>
+                </lifecycleMappingMetadata>
+              </configuration>
+            </plugin>
+          </plugins>
+        </pluginManagement>
+      </build>
+    </profile>
+  </profiles>
+
 </project>

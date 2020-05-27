@@ -18,26 +18,26 @@ import java.util.List;
  */
 public interface IDsqCommand extends IDsqContext {
 
-	final static String DSQ_READ_8 = "Read8"; //$NON-NLS-1$
-	final static String DSQ_READ_16 = "Read16"; //$NON-NLS-1$
-	final static String DSQ_READ_32 = "Read32"; //$NON-NLS-1$
-	final static String DSQ_READ_64 = "Read64"; //$NON-NLS-1$
-	final static String DSQ_READ_AP = "ReadAP"; //$NON-NLS-1$
-	final static String DSQ_READ_DP = "ReadDP"; //$NON-NLS-1$
-	final static String DSQ_WRITE_8 = "Write8"; //$NON-NLS-1$
-	final static String DSQ_WRITE_16 = "Write16"; //$NON-NLS-1$
-	final static String DSQ_WRITE_32 = "Write32"; //$NON-NLS-1$
-	final static String DSQ_WRITE_64 = "Write64"; //$NON-NLS-1$
-	final static String DSQ_WRITE_AP = "WriteAP"; //$NON-NLS-1$
-	final static String DSQ_WRITE_DP = "WriteDP"; //$NON-NLS-1$
-	final static String DSQ_DAP_DELAY = "DapDelay"; //$NON-NLS-1$
-	final static String DSQ_DAP_WRITE_ABORT = "DapWriteABORT"; //$NON-NLS-1$
-	final static String DSQ_DAP_SWJ_PINS = "DapSwjPins"; //$NON-NLS-1$
-	final static String DSQ_DAP_SWJ_CLOCK = "DapSwjClock"; //$NON-NLS-1$
-	final static String DSQ_DAP_SWJ_SEQUENCE = "DapSwjSequence"; //$NON-NLS-1$
-	final static String DSQ_DAP_JTAG_SEQUENCE = "DapJtagSequence"; //$NON-NLS-1$
-	final static String DSQ_LOAD_DEBUG_INFO = "LoadDebugInfo"; //$NON-NLS-1$
-	final static String DSQ_MESSAGE = "Message"; //$NON-NLS-1$
+	static final String DSQ_READ_8 = "Read8"; //$NON-NLS-1$
+	static final String DSQ_READ_16 = "Read16"; //$NON-NLS-1$
+	static final String DSQ_READ_32 = "Read32"; //$NON-NLS-1$
+	static final String DSQ_READ_64 = "Read64"; //$NON-NLS-1$
+	static final String DSQ_READ_AP = "ReadAP"; //$NON-NLS-1$
+	static final String DSQ_READ_DP = "ReadDP"; //$NON-NLS-1$
+	static final String DSQ_WRITE_8 = "Write8"; //$NON-NLS-1$
+	static final String DSQ_WRITE_16 = "Write16"; //$NON-NLS-1$
+	static final String DSQ_WRITE_32 = "Write32"; //$NON-NLS-1$
+	static final String DSQ_WRITE_64 = "Write64"; //$NON-NLS-1$
+	static final String DSQ_WRITE_AP = "WriteAP"; //$NON-NLS-1$
+	static final String DSQ_WRITE_DP = "WriteDP"; //$NON-NLS-1$
+	static final String DSQ_DAP_DELAY = "DapDelay"; //$NON-NLS-1$
+	static final String DSQ_DAP_WRITE_ABORT = "DapWriteABORT"; //$NON-NLS-1$
+	static final String DSQ_DAP_SWJ_PINS = "DapSwjPins"; //$NON-NLS-1$
+	static final String DSQ_DAP_SWJ_CLOCK = "DapSwjClock"; //$NON-NLS-1$
+	static final String DSQ_DAP_SWJ_SEQUENCE = "DapSwjSequence"; //$NON-NLS-1$
+	static final String DSQ_DAP_JTAG_SEQUENCE = "DapJtagSequence"; //$NON-NLS-1$
+	static final String DSQ_LOAD_DEBUG_INFO = "LoadDebugInfo"; //$NON-NLS-1$
+	static final String DSQ_MESSAGE = "Message"; //$NON-NLS-1$
 
 	/**
 	 * Get the command name

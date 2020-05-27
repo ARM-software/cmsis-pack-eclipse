@@ -66,7 +66,13 @@ public class PackPropertyView extends PackInstallerView {
 	 *
 	 */
 	class PackPropertyViewContentProvider extends TreeObjectContentProvider {
-		private ICpItem root;
+		private ICpItem componentsRoot = null;
+
+		@Override
+		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+			if(oldInput != newInput)
+				componentsRoot = null;
+		}
 
 		@Override
 		public Object[] getChildren(Object parentElement) {
@@ -79,28 +85,30 @@ public class PackPropertyView extends PackInstallerView {
 				return getPackChildren((ICpPack) item);
 			}
 			// device node
-			else if (item instanceof ICpDeviceItem) {
+			if (item instanceof ICpDeviceItem) {
 				return getDeviceItems((ICpDeviceItem) item);
 			}
 			// board node
-			else if (item instanceof ICpBoard) {
+			if (item instanceof ICpBoard) {
 				return getBoardChildren((ICpBoard) item);
 			}
 			// example node
-			else if (item instanceof ICpExample) {
+			if (item instanceof ICpExample) {
 				return getExampleChildren((ICpExample) item);
 			}
 			// examples node
-			else if (CmsisConstants.EXAMPLES_TAG.equals(item.getTag())) {
+			if (CmsisConstants.EXAMPLES_TAG.equals(item.getTag())) {
 				return getExamples(item);
 			}
 			// components node
-			else if (CmsisConstants.COMPONENTS_TAG.equals(item.getTag())) {
-				root = buildComponentTree(item);
-				return root.getChildArray();
+			if (CmsisConstants.COMPONENTS_TAG.equals(item.getTag())) {
+				if(componentsRoot == null) {
+					componentsRoot = buildComponentTree(item);
+				}
+				return componentsRoot.getChildArray();
 			}
 			// required packages node
-			else if (CmsisConstants.PACKAGES_TAG.equals(item.getTag())) {
+			if (CmsisConstants.PACKAGES_TAG.equals(item.getTag())) {
 				return getRequiredPacks(item);
 			}
 
@@ -127,7 +135,9 @@ public class PackPropertyView extends PackInstallerView {
 				}
 				// requirements node, here we only need the required packages
 				else if (CmsisConstants.REQUIREMENTS_TAG.equals(child.getTag())) {
-					result.add(child.getFirstChild(CmsisConstants.PACKAGES_TAG));
+					ICpItem item = child.getFirstChild(CmsisConstants.PACKAGES_TAG);
+					if(item != null)
+						result.add(item);
 				}
 				// examples node
 				else if (CmsisConstants.EXAMPLES_TAG.equals(child.getTag())) {
@@ -180,19 +190,16 @@ public class PackPropertyView extends PackInstallerView {
 		}
 
 		private Object[] getExampleChildren(ICpExample example) {
-			if (example == null || example.getChildren() == null) {
-				return ITreeObject.EMPTY_OBJECT_ARRAY;
-			}
-
-			Collection<ICpItem> result = new LinkedList<>();
-			for (ICpItem item : example.getChildren()) {
+			if (example != null) {
 				// Only show the board item under the example item
-				if (item instanceof ICpBoard) {
-					result.add(item);
-					break;
+				ICpBoard board = example.getFirstChildOfType(ICpBoard.class);
+				if (board != null ) {
+					Collection<ICpItem> result = new LinkedList<>();
+					result.add(board);
+					return result.toArray();
 				}
 			}
-			return result.toArray();
+			return ITreeObject.EMPTY_OBJECT_ARRAY;
 		}
 
 		/**
@@ -235,7 +242,9 @@ public class PackPropertyView extends PackInstallerView {
 				int lastDot = path.lastIndexOf('.');
 				String parentPath = path.substring(0, lastDot);
 				node = buildPath(parentPath, parent);
-				node.addChild(new CpComponent(node, path.substring(lastDot + 1)));
+				if(node != null) {
+					node.addChild(new CpComponent(node, path.substring(lastDot + 1)));
+				}
 			}
 		}
 
@@ -299,7 +308,7 @@ public class PackPropertyView extends PackInstallerView {
 				return null;
 			}
 			ICpPack pack = item.getPack();
-			boolean installed = pack != null ? pack.getPackState().isInstalledOrLocal() : false;
+			boolean installed = pack != null && pack.getPackState().isInstalledOrLocal();
 			// root node
 			if (pack != null && item == pack) {
 				if (installed) {
@@ -311,7 +320,7 @@ public class PackPropertyView extends PackInstallerView {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE_GREY);
 			}
 			// Component node
-			else if (item instanceof ICpComponent) {
+			if (item instanceof ICpComponent) {
 				ICpComponent c = (ICpComponent) item;
 				if(c.getMaxInstances() > 1) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
@@ -319,11 +328,11 @@ public class PackPropertyView extends PackInstallerView {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
 			}
 			// File node
-			else if (item instanceof ICpFile) {
+			if (item instanceof ICpFile) {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
 			}
 			// Board node
-			else if (item instanceof ICpBoard) {
+			if (item instanceof ICpBoard) {
 				if (item.isDeprecated()) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_DEPR);
 				}
@@ -333,7 +342,7 @@ public class PackPropertyView extends PackInstallerView {
 				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_GREY);
 			}
 			// Device node
-			else if (item instanceof ICpDeviceItem) {
+			if (item instanceof ICpDeviceItem) {
 				ICpDeviceItem di = (ICpDeviceItem) item;
 				if (di.getDeviceItems() == null) {
 					if (di.isDeprecated()) {
@@ -391,10 +400,13 @@ public class PackPropertyView extends PackInstallerView {
 				return capitalizeInitChar(item.getTag());
 			}
 			// required package node
-			else if (!(item instanceof ICpPack) && CmsisConstants.PACKAGE_TAG.equals(item.getTag())) {
-				return item.getAttribute(CmsisConstants.VENDOR) + '.'
-						+ item.getAttribute(CmsisConstants.NAME) + '.'
-						+ '[' + item.getAttribute(CmsisConstants.VERSION) + ']';
+			if (!(item instanceof ICpPack) && CmsisConstants.PACKAGE_TAG.equals(item.getTag())) {
+				String version = item.getAttribute(CmsisConstants.VERSION);
+				String text = item.getAttribute(CmsisConstants.VENDOR) + '.' + item.getAttribute(CmsisConstants.NAME);
+				if(!version.isEmpty()) {
+					text += ".[" + item.getAttribute(CmsisConstants.VERSION) + ']'; //$NON-NLS-1$
+				}
+				return text;
 			}
 			return capitalizeInitChar(item.getId());
 		}
@@ -598,6 +610,7 @@ public class PackPropertyView extends PackInstallerView {
 		case RteEvent.PACKS_RELOADED:
 		case PackInstallerViewController.INSTALLER_UI_PACK_CHANGED:
 			refresh();
+			break;
 		default:
 			super.handleRteEvent(event);
 		}
@@ -606,13 +619,13 @@ public class PackPropertyView extends PackInstallerView {
 	@Override
 	protected void enableActions(boolean en) {
 		if (fInstallPackAction != null)
-			fInstallPackAction.setEnabled(en);;
-		if (fInstallRequiredPacksAction != null) 
-			fInstallRequiredPacksAction.setEnabled(en);;
-		if (fCopyAction != null) 
-			fCopyAction.setEnabled(en);;
-			
+			fInstallPackAction.setEnabled(en);
+		if (fInstallRequiredPacksAction != null)
+			fInstallRequiredPacksAction.setEnabled(en);
+		if (fCopyAction != null)
+			fCopyAction.setEnabled(en);
+
 		super.enableActions(en);
 	}
-	
+
 }
