@@ -27,6 +27,7 @@ The [Apache FreeMarker 2.3.29](https://freemarker.apache.org/) is delivered unde
 This repository contains the source code of the **CMSIS-Pack Management for Eclipse** that consists of the following plug-ins:
 * **com.arm.cmsis.pack** 	- core responsible for loading pack data and managing the RTE (Run-Time Environment) configurations
 * **com.arm.cmsis.pack.common** 	- generic base code, constants and utilities
+* **com.arm.cmsis.pack.common.tests** 	- basic JUnit tests **com.arm.cmsis.pack.common**
 * **com.arm.cmsis.pack.data** 	- base classes for pack data
 * **com.arm.cmsis.pack.dsq** 	- default implementation of Debug Sequences Framework
 * **com.arm.cmsis.pack.ui** - set of reusable GUI elements that can be used to manipulate pack and RTE data
