@@ -5,6 +5,6 @@ Bundle-SymbolicName: com.arm.cmsis.pack.common.tests
 Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: ARM
 Automatic-Module-Name: com.arm.cmsis.pack.common.tests
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: com.arm.cmsis.pack.common;bundle-version="2.6.0",
  org.junit;bundle-version="4.12.0"

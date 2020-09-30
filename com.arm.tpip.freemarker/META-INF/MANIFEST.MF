@@ -6,7 +6,7 @@ Automatic-Module-Name: com.arm.tpip.freemarker
 Bundle-Version: 2.3.29.qualifier
 Bundle-Vendor: ARM
 Bundle-ClassPath: lib/freemarker.jar
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: freemarker,
  freemarker.cache,
  freemarker.core,

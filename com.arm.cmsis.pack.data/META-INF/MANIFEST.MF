@@ -5,7 +5,7 @@ Bundle-SymbolicName: com.arm.cmsis.pack.data
 Automatic-Module-Name: com.arm.cmsis.pack.data
 Bundle-Version: 2.6.0.qualifier
 Bundle-Vendor: ARM
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.arm.cmsis.pack.build,
  com.arm.cmsis.pack.data,
  com.arm.cmsis.pack.dsq,

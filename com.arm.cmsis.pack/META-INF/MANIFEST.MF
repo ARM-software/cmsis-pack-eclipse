@@ -6,7 +6,7 @@ Automatic-Module-Name: com.arm.cmsis.pack
 Bundle-Version: 2.6.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.CpPlugIn
 Bundle-Vendor: ARM
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack,
  com.arm.cmsis.pack.preferences,

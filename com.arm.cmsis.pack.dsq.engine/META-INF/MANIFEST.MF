@@ -20,7 +20,7 @@ Require-Bundle: org.eclipse.xtext,
  com.arm.cmsis.pack.data,
  com.arm.cmsis.pack,
  org.apache.log4j
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.arm.cmsis.pack.debugseq,
  com.arm.cmsis.pack.debugseq.converter,
  com.arm.cmsis.pack.debugseq.debugSeq,

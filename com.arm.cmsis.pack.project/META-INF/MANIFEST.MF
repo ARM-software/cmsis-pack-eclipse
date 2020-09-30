@@ -27,7 +27,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.arm.cmsis.pack,
  com.arm.cmsis.pack.ui,
  com.arm.cmsis.pack.build.settings
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack.configuration,
  com.arm.cmsis.pack.project,
