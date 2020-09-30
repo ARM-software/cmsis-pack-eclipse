@@ -118,6 +118,7 @@ public class CmsisConstants {
 	public static final String DENDIAN		= "Dendian";		//$NON-NLS-1$
 	public static final String DCLOCK		= "Dclock";			//$NON-NLS-1$
 	public static final String DMVE			= "Dmve";			//$NON-NLS-1$
+	public static final String DCDECP		= "Dcdecp";			//$NON-NLS-1$
 
 	public static final String MVE			= "MVE";			//$NON-NLS-1$
 	public static final String NO_MVE		= "NO_MVE";			//$NON-NLS-1$
