@@ -77,7 +77,7 @@ public class RteMissingComponentResult extends RteDependencyResult {
 
 		String description = CpStrings.APIversion;
 	    description += " '" + requiredApiVersion + "' "; //$NON-NLS-1$ //$NON-NLS-2$
-	    description += "or higher is required" + ". "; //$NON-NLS-1$ //$NON-NLS-2$
+	    description += CpStrings.RteMissingComponentResult_orHigherIsRequired + ". ";  //$NON-NLS-1$
 	    if(availableApi == null) {
 	    	description += CpStrings.RteMissingComponentResult_APIDefIsMissingNoPack;
 	    } else  {

@@ -152,6 +152,13 @@ public class RteModel implements IRteModel {
 		update();
 	}
 
+
+
+	@Override
+	public ICpConditionContext getFilterContext() {
+		return fComponentFilter;
+	}
+
 	@Override
 	public void update(){
 		update(RteConstants.NONE);
@@ -278,7 +285,7 @@ public class RteModel implements IRteModel {
 			return null;
 		}
 		String id = pi.isVersionFixed() ? pi.getId() : pi.getPackFamilyId();
-		
+
 		pack = fAllInstalledPacks.getPack(id);
 		if(pack != null) {
 			pi.setPack(pack);
@@ -498,7 +505,7 @@ public class RteModel implements IRteModel {
 		ICpPackInfo pi = ci.getPackInfo();
 		ICpPack pack = resolvePack(pi);
 		if(pack == null ){
-			return; // entirely missing 
+			return; // entirely missing
 		}
 
 		if(fPackFilter.isExcluded(pi.getId())) {
@@ -507,7 +514,7 @@ public class RteModel implements IRteModel {
 			ci.setEvaluationResult(EEvaluationResult.UNAVAILABLE);
 		}
 	}
-	
+
 
 	@Override
 	public Map<String, ICpPackInfo> getUsedPackInfos() {

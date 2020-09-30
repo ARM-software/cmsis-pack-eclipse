@@ -669,17 +669,18 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
 				bIncompatible = true;
 			}
 		}
-  
-		for(Entry<String, ? extends IRteComponentItem> e : children.entrySet()) {
-			IRteComponentItem child = e.getValue();
-			if(child == activeChild) {
-				continue;
-			}
-			if(matchKey(keyPattern, e.getKey())){
-				matchFound = true;
-				EEvaluationResult res= child.findComponents(dependency);
-				if(res != EEvaluationResult.IGNORED && res.ordinal() > result.ordinal()) {
-					result = res;
+		if(result.ordinal() < EEvaluationResult.SELECTABLE.ordinal()) { 
+			for(Entry<String, ? extends IRteComponentItem> e : children.entrySet()) {
+				IRteComponentItem child = e.getValue();
+				if(child == activeChild) {
+					continue;
+				}
+				if(matchKey(keyPattern, e.getKey())){
+					matchFound = true;
+					EEvaluationResult res= child.findComponents(dependency);
+					if(res != EEvaluationResult.IGNORED && res.ordinal() > result.ordinal()) {
+						result = res;
+					}
 				}
 			}
 		}

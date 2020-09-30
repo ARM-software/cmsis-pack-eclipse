@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import com.arm.cmsis.pack.data.ICpConditionContext;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -31,8 +32,8 @@ import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 
 /**
  * Interface responsible for manipulating Run-Time-Configuration of a project for selected device and toolchain.
- * It can be considered as a controller that connects CMSIS-Pack items with project model 
- *    
+ * It can be considered as a controller that connects CMSIS-Pack items with project model
+ *
  */
 public interface IRteModel extends IEvaluationResult  {
 
@@ -48,15 +49,15 @@ public interface IRteModel extends IEvaluationResult  {
 
 	/**
 	 * Updates the model
-	 * @param flags a combination of COMPONENT__* flags 
+	 * @param flags a combination of COMPONENT__* flags
 	 * @see RteConstants
 	 */
 	void update(int flags);
-	
-	
+
+
 	/**
-	 * Returns pack filter associated with model  
-	 * @return ICpPackFilter 
+	 * Returns pack filter associated with model
+	 * @return ICpPackFilter
 	 */
 	ICpPackFilter getPackFilter();
 
@@ -66,9 +67,9 @@ public interface IRteModel extends IEvaluationResult  {
 	 * @return true if new filter is not equal to previous one
 	 */
 	boolean setPackFilter(ICpPackFilter filter);
-	
+
 	/**
-	 * Returns actual device item used by the model 
+	 * Returns actual device item used by the model
 	 * @return ICpDeviceItem
 	 */
 	ICpDeviceItem getDevice();
@@ -80,66 +81,66 @@ public interface IRteModel extends IEvaluationResult  {
 	ICpDeviceInfo getDeviceInfo();
 
 	/**
-	 * Sets device info to be used by the model  
+	 * Sets device info to be used by the model
 	 * @param deviceInfo device info to set
 	 */
 	void setDeviceInfo(ICpDeviceInfo deviceInfo);
 
 	/**
 	 * Returns toolchain information as generic IcpItem with "Tcompiler" and "Toutput" attributes
-	 * @return ICpItem describing toolchain info 
+	 * @return ICpItem describing toolchain info
 	 */
 	ICpItem getToolchainInfo();
 
 	/**
-	 * Returns serializable model object 
+	 * Returns serializable model object
 	 * @return ICpConfigurationInfo in its current state
 	 */
 	ICpConfigurationInfo getConfigurationInfo();
-		
-	
+
+
 	/**
 	 * Sets configuration data to the model
 	 * @param info ICpConfigurationInfo to set
 	 */
 	void setConfigurationInfo(ICpConfigurationInfo info);
-		
-	
+
+
 	/**
-	 * Returns filtered component tree  
-	 * @return IRteComponentItem representing component tree root 
+	 * Returns filtered component tree
+	 * @return IRteComponentItem representing component tree root
 	 */
 	IRteComponentItem getComponents();
 
 	/**
 	 * Sets, resets or changes component selection.
 	 * <br>
-	 * If selection state has changed re-evaluates dependencies  
-	 * @param component to set, reset or change selection selection 
+	 * If selection state has changed re-evaluates dependencies
+	 * @param component to set, reset or change selection selection
 	 * @param nInstances number of instances to select, 0 to reset selection
 	 */
 	void selectComponent(IRteComponent component, int nInstances);
-	
-	
+
+
 	/**
 	 * Evaluates dependencies of selected components
-	 * @return dependency evaluation result 
+	 * @return dependency evaluation result
 	 */
 	EEvaluationResult evaluateComponentDependencies();
 
 	/**
 	 * Tries to resolve component dependencies
-	 * @return evaluation result after dependency resolving 
+	 * @return evaluation result after dependency resolving
 	 */
 	EEvaluationResult resolveComponentDependencies();
 
-	
+
 	/**
-	 * Returns dependency evaluation result for given item (class, group or component) 
-	 * @param item IRteComponentItem for which to get result 
+	 * Returns dependency evaluation result for given item (class, group or component)
+	 * @param item IRteComponentItem for which to get result
 	 * @return condition result or IGNORED if item has no result
 	 */
-	EEvaluationResult getEvaluationResult(IRteComponentItem item); 
+	EEvaluationResult getEvaluationResult(IRteComponentItem item);
 
 	 /**
 	 * Returns collection of selected components
@@ -152,13 +153,13 @@ public interface IRteModel extends IEvaluationResult  {
 	 * @return collection of used components
 	 */
 	Collection<IRteComponent> getUsedComponents();
-	
+
 	/**
 	 * Returns packs currently used by configuration
 	 * @return map id to ICpPackInfo
 	 */
 	Map<String, ICpPackInfo> getUsedPackInfos();
-	
+
 	/**
 	 * Returns collection of dependency results (items and dependencies)
 	 * @return collection of dependency results
@@ -171,20 +172,20 @@ public interface IRteModel extends IEvaluationResult  {
 	void updateComponentInfos();
 
 	/**
-	 * Returns hierarchical collection of devices available for this target 
-	 * @return root of device tree as IRteDeviceItem  
+	 * Returns hierarchical collection of devices available for this target
+	 * @return root of device tree as IRteDeviceItem
 	 */
 	IRteDeviceItem getDevices();
 
 	/**
-	 * Return collection of used generated packs, an entry can be <code>null</code> if a gpdsc is not loaded   
-	 * @return map absolute filename -> pack, null or empty if no generated packs used 
+	 * Return collection of used generated packs, an entry can be <code>null</code> if a gpdsc is not loaded
+	 * @return map absolute filename -> pack, null or empty if no generated packs used
 	 */
 	Map<String, ICpPack> getGeneratedPacks();
 
 	/**
-	 * Return collection of used generated pack names   
-	 * @return collection of absolute filenames 
+	 * Return collection of used generated pack names
+	 * @return collection of absolute filenames
 	 */
 	default Collection<String> getGeneratedPackNames(){
 		Map<String, ICpPack> generatedPacks = getGeneratedPacks();
@@ -194,18 +195,24 @@ public interface IRteModel extends IEvaluationResult  {
 		return Collections.emptySet();
 	}
 
-	
+
 	/**
-	 * Returns {@link ICpPack} loaded from given gpdsc file 
-	 * @param gpdsc absolute gpdsc file name   
-	 * @return loaded {@link ICpPack} or null if such file does not exists or load failed  
+	 * Returns {@link ICpPack} loaded from given gpdsc file
+	 * @param gpdsc absolute gpdsc file name
+	 * @return loaded {@link ICpPack} or null if such file does not exists or load failed
 	 */
 	ICpPack getGeneratedPack(String gpdsc);
 
 	/**
-	 * Checks if the model requires given gpdsc file 
-	 * @param gpdsc absolute gpdsc file name   
-	 * @return true if given gpdsc file is needed  
+	 * Checks if the model requires given gpdsc file
+	 * @param gpdsc absolute gpdsc file name
+	 * @return true if given gpdsc file is needed
 	 */
 	boolean isGeneratedPackUsed(String gpdsc);
+
+	/**
+	 * Returns filter context used by the model
+	 * @return ICpConditionContext
+	 */
+	default ICpConditionContext getFilterContext() { return null;}
 }

@@ -69,6 +69,7 @@ public class CpStrings extends NLS {
 	public static String RteMissingComponentResult_APIDefIsMissingNoPack;
 	public static String RteMissingComponentResult_IsFoundInPack;
 	public static String RteMissingComponentResult_NoComponentFoundMatchingDeviceCompiler;
+	public static String RteMissingComponentResult_orHigherIsRequired;
 	public static String RtePackIsNotInstalled;
 	public static String PackIdIsNotAvailable;
 	public static String IsNotInstalled;

@@ -22,6 +22,7 @@ import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpPackFilter;
 import com.arm.cmsis.pack.data.ICpComponent;
+import com.arm.cmsis.pack.data.ICpConditionContext;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpGenerator;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -49,8 +50,8 @@ import com.arm.cmsis.pack.rte.packs.IRtePackFamily;
 import com.arm.cmsis.pack.rte.packs.RtePackCollection;
 
 /**
- * Default implementation of IRteModelController interface 
- *    
+ * Default implementation of IRteModelController interface
+ *
  */
 public abstract class RteModelController extends RteEventProxy implements IRteModelController {
 
@@ -59,17 +60,17 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	protected ICpPackFilter 	  fSavedPackFilter = null;
 	protected ICpPackFilter 	  fCurrentPackFilter = null;
 	protected IRtePackCollection  fRtePackCollection = null;
-	
+
 	protected IAttributes fSavedDeviceAttributes = null;
 	protected Set<String> fSavedComponentKeys = null;
 	protected Set<String> fSavedGpdscFiles = null;
-	
+
 	protected boolean fbComponentSelectionModified = false;
 	protected boolean fbPackFilterModified = false;
 	protected boolean fbDeviceModified = false;
 	protected boolean fbShowUsedPacksOnly = true;
-	
-	
+
+
 	/**
 	 *  Default constructor
 	 */
@@ -82,7 +83,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		return fModel;
 	}
 
-	
+
 	//@Override
 	@Override
 	public void clear() {
@@ -108,42 +109,42 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	public boolean isPackFilterModified() {
 		return fbPackFilterModified;
 	}
-	
+
 	@Override
 	public boolean isDeviceModified() {
 		return fbDeviceModified;
 	}
-	
+
 	protected boolean isGpdscFileListModified() {
 		Map<String, ICpPack> genPacks = getGeneratedPacks();
-		
+
 		if(fSavedGpdscFiles == null)
 			return genPacks != null && !genPacks.isEmpty() ;
 		if (genPacks == null)
 			return fSavedGpdscFiles != null && !fSavedGpdscFiles.isEmpty() ;
-				
+
 		return !fSavedGpdscFiles.equals(genPacks.keySet());
-		
+
 	}
-	
+
 	protected Set<String> collectGpdscFiles() {
 		Map<String, ICpPack> genPacks = getGeneratedPacks();
 		if(genPacks == null || genPacks.isEmpty()) {
 			return null;
-		}  
+		}
 		return new HashSet<String>(genPacks.keySet());
 	}
-	
+
 	@Override
 	public boolean isModified() {
 		return isDeviceModified() || isPackFilterModified() || isComponentSelectionModified();
 	}
-	
+
 	protected boolean checkIfComponentsModified() {
 		Set<String> keys = collectComponentKeys();
 		return !keys.equals(fSavedComponentKeys);
 	}
-	
+
 	protected Set<String> collectComponentKeys() {
 		Set<String> ids = new HashSet<String>();
 		ICpConfigurationInfo info = getConfigurationInfo();
@@ -151,7 +152,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		collectComponentKeys(ids, info.getGrandChildren(CmsisConstants.APIS_TAG));
 		return ids;
 	}
-	
+
 	protected static void collectComponentKeys(Set<String> ids, Collection<? extends ICpItem> children) {
 		if(children == null || children.isEmpty()) {
 			return;
@@ -175,7 +176,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		fRtePackCollection.setPackFilterInfo(fModel.getConfigurationInfo().getPackFilterInfo());
 		update();
 	}
-	
+
 	protected void collectPacks() {
 		ICpPackCollection allPacks = null;
 		ICpPackManager pm  = CpPlugIn.getPackManager();
@@ -184,17 +185,17 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		}
 		fRtePackCollection = new RtePackCollection();
 		if(allPacks != null) {
-			fRtePackCollection.addCpItem(allPacks); 
+			fRtePackCollection.addCpItem(allPacks);
 		}
 	}
-	
+
 
 	@Override
 	public void setConfigurationInfo(ICpConfigurationInfo info) {
 		if(info == getDataInfo()) {
 			return;
 		}
-		
+
 		if(info == null) {
 			clear();
 			return;
@@ -205,7 +206,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		fSavedDeviceAttributes = new Attributes(info.getDeviceInfo().attributes());
 		collectPacks();
 
-		fRtePackCollection.setPackFilterInfo(info.getPackFilterInfo()); 
+		fRtePackCollection.setPackFilterInfo(info.getPackFilterInfo());
 		fModel.setConfigurationInfo(info); // will update used packs
 		fRtePackCollection.setUsedPacks(getUsedPackInfos());
 		fSavedComponentKeys = collectComponentKeys(); // initial update
@@ -225,18 +226,18 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		}
 	}
 
-	
+
 	@Override
 	public void updateComponentInfos() {
 		fModel.updateComponentInfos();
 		fRtePackCollection.setUsedPacks(getUsedPackInfos());
 	}
-	
+
 	@Override
 	public void update() {
 		update(RteConstants.NONE);
 	}
-	
+
 	@Override
 	public void update(int flags) {
 		updateComponentInfos();
@@ -256,11 +257,11 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 			setSavedFlags(info.getGrandChildren(CmsisConstants.APIS_TAG));
 		}
 		if(isGpdscFileListModified()) {
-			update(); 
+			update();
 		} else {
 			updateConfigurationInfo();
 		}
-		
+
 		fModel.getComponents().purge();
 		fRtePackCollection.purge();
 		fSavedPackFilter = new CpPackFilter(getPackFilter());
@@ -272,9 +273,9 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		fbPackFilterModified = false;
 		fbDeviceModified = false;
 	}
-	
+
 	protected void setSavedFlags(Collection<? extends ICpItem> children) {
-		;
+
 		if(children != null) {
 			for(ICpItem item : children) {
 				if(item instanceof ICpComponentInfo) {
@@ -284,17 +285,17 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 			}
 		}
 	}
-	
-	
+
+
 	@Override
 	public IRtePackCollection getRtePackCollection() {
 		return fRtePackCollection;
 	}
 
 	/**
-	 * Returns absolute gpdsc filename associated with component 
+	 * Returns absolute gpdsc filename associated with component
 	 * @param component {@link IRteComponent}
-	 * @return associated gpdsc file or null if none 
+	 * @return associated gpdsc file or null if none
 	 */
 	protected String getGpdsc(IRteComponent component) {
 		if(component == null)
@@ -302,22 +303,22 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		ICpComponent c = component.getActiveCpComponent();
 		if(c == null)
 			return null;
-		
+
 		if(c.isGenerated()) {
 			ICpPack pack = c.getPack();
 			if(pack == null)
 				return null; // should not happen
 			return pack.getFileName();
-		} 
+		}
 		ICpGenerator gen = c.getGenerator();
 		if(gen != null) {
 			ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
 			return ep.expandString(gen.getGpdsc(), getConfigurationInfo(), true);
 		}
-		
+
 		return null;
 	}
-	
+
 	@Override
 	public void selectComponent(IRteComponent component, int nInstances) {
 		if(component == null)
@@ -327,10 +328,10 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		postChangeSelection(component, old);
 	}
 
-	
+
 	@Override
 	public void selectActiveVariant(IRteComponentItem item, String variant) {
-		if(item == null) 
+		if(item == null)
 			return;
 		ICpComponent old = item.getActiveCpComponent();
 		item.setActiveVariant(variant);
@@ -339,7 +340,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 
 	@Override
 	public void selectActiveVendor(IRteComponentItem item, String vendor) {
-		if(item == null) 
+		if(item == null)
 			return;
 		ICpComponent old = item.getActiveCpComponent();
 		item.setActiveVendor(vendor);
@@ -349,7 +350,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 
 	@Override
 	public void selectActiveVersion(IRteComponentItem item, String version) {
-		if(item == null) 
+		if(item == null)
 			return;
 		ICpComponent old = item.getActiveCpComponent();
 		item.setActiveVersion(version);
@@ -363,21 +364,21 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 			String oldGenId = oldComponent != null ? oldComponent.getGeneratorId() : null;
 			if(oldGenId != null && !oldGenId.equals(genId)){
 				adjustGeneratedSelection(component, oldGenId, false);
-			}  
+			}
 			if(genId != null){
 				adjustGeneratedSelection(component, genId, component.isSelected());
-			}  
+			}
 		}
 		updateComponentInfos();
 		evaluateComponentDependencies();
-	}	
+	}
 
 	protected void adjustGeneratedSelection(IRteComponent component, String genId, boolean bSelect) {
 		IRteComponentItem componentRoot = getComponents();
 		Collection<IRteComponent> componentsToSelect = componentRoot.getGeneratorComponents(genId, null);
 		if(componentsToSelect == null || componentsToSelect.isEmpty())
 			return;
-		int count = bSelect ? 1 : 0; 
+		int count = bSelect ? 1 : 0;
 		for(IRteComponent c : componentsToSelect) {
 			if(c == component)
 				continue;
@@ -396,10 +397,10 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		emitRteEvent(RteEvent.FILTER_MODIFIED, this);
 	}
 
-	
+
 	@Override
 	public EEvaluationResult resolveComponentDependencies() {
-		EEvaluationResult res = fModel.resolveComponentDependencies(); 
+		EEvaluationResult res = fModel.resolveComponentDependencies();
 		updateComponentInfos();
 		emitComponentSelectionModified();
 		return res;
@@ -428,7 +429,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	@Override
 	public void setDeviceInfo(ICpDeviceInfo deviceInfo) {
 		boolean changed = false;
-		int updateFlags = RteConstants.NONE;  
+		int updateFlags = RteConstants.NONE;
 		if(getDeviceInfo() == null) {
 			changed = true;
 		} else {
@@ -436,7 +437,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 			if(changed)
 				updateFlags = RteConstants.COMPONENT_IGNORE_ALL;
 		}
-		
+
 		if(changed) {
 			fbDeviceModified = !fSavedDeviceAttributes.equals(deviceInfo.attributes());
 			fModel.setDeviceInfo(deviceInfo);
@@ -471,7 +472,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	public EEvaluationResult getEvaluationResult() {
 		return fModel.getEvaluationResult();
 	}
-	
+
 	@Override
 	public EEvaluationResult getEvaluationResult(IRteComponentItem item) {
 		return fModel.getEvaluationResult(item);
@@ -530,7 +531,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 			emitPackFilterModified();
 		}
 	}
-	
+
 
 	@Override
 	public boolean isUseAllLatestPacks() {
@@ -542,13 +543,13 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 		fRtePackCollection.setUseAllLatestPacks(bUseLatest);
 		emitPackFilterModified();
 	}
-	
+
 	@Override
 	public void setShowUsedPacksOnly(boolean bShowUsed) {
-		fbShowUsedPacksOnly  = bShowUsed; 
+		fbShowUsedPacksOnly  = bShowUsed;
 		emitPackFilterModified();
 	}
-	
+
 
 	@Override
 	public boolean isShowUsedPacksOnly() {
@@ -573,5 +574,10 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 	@Override
 	public boolean isGeneratedPackUsed(String gpdsc) {
 		return fModel.isGeneratedPackUsed(gpdsc);
+	}
+
+	@Override
+	public ICpConditionContext getFilterContext() {
+		return fModel.getFilterContext();
 	}
 }

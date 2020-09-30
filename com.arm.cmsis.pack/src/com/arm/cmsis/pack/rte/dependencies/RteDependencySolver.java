@@ -26,6 +26,8 @@ import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpConditionContext;
 import com.arm.cmsis.pack.data.ICpComponent;
+import com.arm.cmsis.pack.data.ICpCondition;
+import com.arm.cmsis.pack.data.ICpConditionContext;
 import com.arm.cmsis.pack.data.ICpExpression;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
@@ -199,6 +201,26 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 			}
 			tbDeny = bDeny; // restore deny context
 		}
+	}
+
+
+
+	@Override
+	public EEvaluationResult evaluateCondition(ICpCondition condition) {
+		ICpConditionContext filterContext = rteModel.getFilterContext();
+		if(filterContext != null ) {
+			// check if filtering condition evaluates to FULFILLED or IGNORED
+			EEvaluationResult res = filterContext.evaluate(condition);
+			switch(res) {
+			case FAILED:
+				return EEvaluationResult.IGNORED;
+			case ERROR:
+				return res;
+			default:
+				break;
+			}
+		}
+		return super.evaluateCondition(condition);
 	}
 
 
@@ -421,10 +443,12 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 				return;
 			}
 			String apiVersion = api.getVersion();
-			int versionDiff = VersionComparator.versionCompare(apiVersion, requiredApiVersion);
-			if(versionDiff < -2) {
-				reportMissingApi(component, EEvaluationResult.MISSING_API_VERSION);
-				return;
+			if(!apiVersion.isEmpty()) { // some deprecated packs may still contain APIs without version
+				int versionDiff = VersionComparator.versionCompare(apiVersion, requiredApiVersion);
+				if(versionDiff < -2) {
+					reportMissingApi(component, EEvaluationResult.MISSING_API_VERSION);
+					return;
+				}
 			}
 		}
 
