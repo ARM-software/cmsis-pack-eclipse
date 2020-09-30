@@ -88,7 +88,7 @@ public class ExamplesView extends PackInstallerView {
 		@Override
 		public boolean isEnabled(Object obj, int columnIndex) {
 			if(fExampleToInstall != null) {
-				return false; // do not allow several examples at once 
+				return false; // do not allow several examples at once
 			}
 			switch(columnIndex) {
 			case COLNAME:
@@ -119,7 +119,7 @@ public class ExamplesView extends PackInstallerView {
 			case COLNAME:
 				item = getRteExampleItem(obj);
 				if (item != null) {
-					if (item.getEnvironment().equals(CmsisConstants.UV))
+					if (CmsisConstants.UV.equals(item.getEnvironment()))
 						return CpPlugInUI.getImage(CpPlugInUI.ICON_UV5);
 					else if (item.isSupported() && !item.isToImport())
 						return Window.getDefaultImage();
@@ -238,7 +238,7 @@ public class ExamplesView extends PackInstallerView {
 			setButtonPressed(null, COLBUTTON, null);
 			this.control.redraw();
 		}
-		
+
 		protected ButtonId getButtonId(Object obj, int index) {
 			if (getCellControlType(obj, index) == CellControlType.BUTTON) {
 				IRteExampleItem item = getRteExampleItem(obj);
@@ -280,14 +280,14 @@ public class ExamplesView extends PackInstallerView {
 			fExampleToInstall = null;
 		}
 	}
-	
-	
+
+
 	String constructExampleTooltipText(ICpExample example, Object obj) {
 		String tooltip = CmsisConstants.EMPTY_STRING;
 
 		String boardId = example.getBoardId();
 		ICpBoard b = CpPlugIn.getPackManager().getBoard(boardId);
-		
+
 		if(b != null) {
 			String line1 = NLS.bind(Messages.ExamplesView_Board, b.getName(), b.getVendor());
 			StringBuilder lb2 = new StringBuilder(Messages.ExamplesView_Device);
@@ -363,7 +363,7 @@ public class ExamplesView extends PackInstallerView {
 		column0.getColumn().setWidth(300);
 		ExamplesViewColumnAdvisor columnAdvisor = new ExamplesViewColumnAdvisor(fViewer);
 		column0.setLabelProvider(new AdvisedCellLabelProvider(columnAdvisor, 0));
-		
+
 		// ------ Second Column
 		TreeViewerColumn column1 = new TreeViewerColumn(fViewer, SWT.LEFT);
 		column1.getColumn().setText(CmsisConstants.ACTION_TITLE);
@@ -426,7 +426,7 @@ public class ExamplesView extends PackInstallerView {
 				IAction.AS_CHECK_BOX) {
 			@Override
 			public void run() {
-				boolean bChecked = fShowInstOnlyAction.isChecked(); 
+				boolean bChecked = fShowInstOnlyAction.isChecked();
 				fViewController.getFilter().setShowExamplesInstalledOnly(bChecked);
 				fViewer.setFilters(fViewFilters);
 				fViewer.setSelection(null);
@@ -479,5 +479,5 @@ public class ExamplesView extends PackInstallerView {
 		}
 		return null;
 	}
-	
+
 }

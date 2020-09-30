@@ -154,17 +154,6 @@ public class CpPidxParser {
 	/**
 	 *
 	 * @param item
-	 * 	a pair of pack id as key and folder as value
-	 * @return
-	 * 	pdsc file name
-	 */
-	public static String getPackId(Entry<String, String> item) {
-		return parsePdsc(getPdscFileName(item));
-	}
-
-	/**
-	 *
-	 * @param item
 	 * 		a pair of pack id as key and folder as value
 	 * @return
 	 * 		pdsc file name constructed by folder (not as url, i.e. without file://localhost/) and pack id

@@ -67,11 +67,6 @@ public class BoardsView extends PackInstallerView {
 		private Map<IRteDeviceItem, IRteBoardItem> deviceToBoardMap = new HashMap<>();
 
 		@Override
-		public Object[] getElements(Object inputElement) {
-			return getChildren(inputElement);
-		}
-
-		@Override
 		public Object[] getChildren(Object parentElement) {
 			IRteBoardItem rteBoardDeviceItem = getBoardDeviceTreeItem(parentElement);
 			if (rteBoardDeviceItem != null) {
@@ -165,7 +160,7 @@ public class BoardsView extends PackInstallerView {
 				if(board == null) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_DEPR);
 				}
-				
+
 				if (bdItem.getBoard().isDeprecated()) {
 					return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD_DEPR);
 				}

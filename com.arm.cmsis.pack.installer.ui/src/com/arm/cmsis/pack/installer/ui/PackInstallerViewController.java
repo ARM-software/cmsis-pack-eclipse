@@ -11,11 +11,12 @@
 
 package com.arm.cmsis.pack.installer.ui;
 
+import java.util.List;
+
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.ISelectionListener;
+import org.eclipse.jface.viewers.ITreeSelection;
 import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -29,6 +30,7 @@ import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
 import com.arm.cmsis.pack.installer.ui.views.PackInstallerView;
 import com.arm.cmsis.pack.installer.ui.views.PackPropertyView;
+import com.arm.cmsis.pack.item.ICmsisItem;
 import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
@@ -36,7 +38,7 @@ import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
 /**
  *  Class responsible for synchronizing Pack Installer Views
  */
-public class PackInstallerViewController extends RteEventProxy implements ISelectionListener {
+public class PackInstallerViewController extends RteEventProxy {
 
 	public static final String INSTALLER_UI_FILTER_CHANGED = "installer.ui.filter.changed"; //$NON-NLS-1$
 	public static final String INSTALLER_UI_PACK_CHANGED = "installer.ui.pack.changed"; //$NON-NLS-1$
@@ -44,6 +46,7 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 	protected ICpPack fSelectedPack = null;
 
 	public PackInstallerViewController() {
+		// no initialization
 	}
 
 	public void clear() {
@@ -61,7 +64,7 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 		if(event.getTopic().equals(RteEvent.PACKS_RELOADED)) {
 			fSelectedPack = null;
 			if (fFilter != null) {
-				fFilter.clear();
+				fFilter.clearSelection();
 			}
 		}
 		super.handle(event);
@@ -82,26 +85,24 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 		return new PackInstallerViewFilter();
 	}
 
+	public void selectionChanged(PackInstallerView part, ICmsisItem selectedItem, List<String> selectionPath) {
 
-	@Override
-	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-		if(part instanceof PackInstallerView) {
-			updateSelectedPack((IStructuredSelection)selection);
-			PackInstallerView view = (PackInstallerView)part;
-			if(view.isFilterSource()) {
-				boolean changed = getFilter().setSelection(part, (IStructuredSelection) selection);
-				if(changed) {
-					emitRteEvent(INSTALLER_UI_FILTER_CHANGED, null);
-				}
+		updateSelectedPack(selectedItem);
+		PackInstallerView view = part;
+		if(view.isFilterSource()) {
+			boolean changed = getFilter().setSelection(view, selectedItem, selectionPath);
+			if(changed) {
+				emitRteEvent(INSTALLER_UI_FILTER_CHANGED, null);
 			}
 		}
 	}
 
+
 	public static ICpPack getPackFromSelection(ISelection selection) {
-		if(selection == null || !(selection instanceof IStructuredSelection)) {
+		if(!(selection instanceof ITreeSelection)) {
 			return null;
 		}
-		IStructuredSelection sel = (IStructuredSelection) selection;
+		ITreeSelection sel = (ITreeSelection) selection;
 		if(sel.size() == 1) {
 			return getPackFromObject(sel.getFirstElement());
 		}
@@ -136,8 +137,8 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 
 
 
-	protected void updateSelectedPack(IStructuredSelection selection) {
-		ICpPack pack = getPackFromSelection(selection);
+	protected void updateSelectedPack(ICmsisItem selectedItem) {
+		ICpPack pack = getPackFromObject(selectedItem);
 		if(fSelectedPack == pack) {
 			return;
 		}
@@ -146,10 +147,8 @@ public class PackInstallerViewController extends RteEventProxy implements ISelec
 	}
 
 
-	public void showPackProperties(ISelection selection) {
-		if(selection != null && selection instanceof IStructuredSelection) {
-			updateSelectedPack((IStructuredSelection)selection);
-		}
+	public void showPackProperties(ICmsisItem selectedItem) {
+		updateSelectedPack(selectedItem);
 		IWorkbench wb = PlatformUI.getWorkbench();
 		if(wb == null) {
 			return;

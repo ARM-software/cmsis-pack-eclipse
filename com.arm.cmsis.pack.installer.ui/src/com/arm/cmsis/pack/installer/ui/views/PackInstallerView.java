@@ -14,6 +14,8 @@ package com.arm.cmsis.pack.installer.ui.views;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.util.LinkedList;
+import java.util.List;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -30,6 +32,9 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.ITreeContentProvider;
+import org.eclipse.jface.viewers.ITreeSelection;
+import org.eclipse.jface.viewers.TreePath;
+import org.eclipse.jface.viewers.TreeSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -69,6 +74,7 @@ import com.arm.cmsis.pack.installer.ui.ButtonId;
 import com.arm.cmsis.pack.installer.ui.CpInstallerPlugInUI;
 import com.arm.cmsis.pack.installer.ui.Messages;
 import com.arm.cmsis.pack.installer.ui.PackInstallerViewController;
+import com.arm.cmsis.pack.installer.ui.PackInstallerViewFilter;
 import com.arm.cmsis.pack.item.ICmsisItem;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 
@@ -89,7 +95,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 	protected StackLayout fStackLayout = null;
 	protected Link fLink = null;
 	protected Listener fLinkListener;
-
+	protected List<String> fSelectionPath = new LinkedList<>();
 
 	protected ViewerFilter[] fViewFilters = null;
 	PatternFilter fPatternFilter = null;
@@ -104,6 +110,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 	Action fShowPackProperties = null;
 	Action fCopyRepository = null;
 	Action fCopyTag = null;
+
 
 
 	public PackInstallerView() {
@@ -135,10 +142,9 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 		default: 					return Messages.PackInstallerView_BtUndefined;
 		}
 	}
-	
+
 	@Override
 	public void dispose() {
-		//viewController.selectionChanged(this, null);
 		fViewController.removeListener(this);
 		fViewController = null;
 
@@ -177,15 +183,35 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 	}
 
 	protected ICmsisItem getSelectedItem() {
-		IStructuredSelection sel = (IStructuredSelection)fViewer.getSelection();
+		ITreeSelection sel = fViewer.getStructuredSelection();
 		if(sel.size() == 1) {
-			Object o = sel.getFirstElement();
-			if(o instanceof ICmsisItem ){
-				return (ICmsisItem)o;
-			}
+			return ICmsisItem.cast(sel.getFirstElement());
 		}
 		return null;
 	}
+
+	public static List<String> createSelectionPath(ISelection selection) {
+		List<String> selectionPath = new LinkedList<>();
+		if(!(selection instanceof ITreeSelection))
+			return selectionPath;
+		ITreeSelection treeSelection = (ITreeSelection)selection;
+		TreePath[] treePaths = treeSelection.getPaths();
+		if(treePaths == null || treePaths.length == 0) {
+			return selectionPath;
+		}
+		TreePath path = treePaths[0];
+		for(int i = 0; i < path.getSegmentCount(); i++) {
+			Object o = path.getSegment(i);
+			if(o instanceof ICmsisItem) {
+				ICmsisItem item = (ICmsisItem)o;
+				String name = item.getName();
+				selectionPath.add(name);
+			}
+		}
+
+		return selectionPath;
+	}
+
 
 	protected void hookViewSelection() {
 		IWorkbenchPartSite site = getSite();
@@ -209,7 +235,8 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 	@Override
 	public void selectionChanged(IWorkbenchPart part, ISelection selection) {
 		if(part == this && fViewController !=null ) {
-			fViewController.selectionChanged(part, selection);
+			fSelectionPath = createSelectionPath(selection);
+			fViewController.selectionChanged(this, getSelectedItem(), fSelectionPath);
 		}
 	}
 
@@ -324,7 +351,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 		fShowPackProperties = new Action() {
 			@Override
 			public void run() {
-				fViewController.showPackProperties(fViewer.getSelection()); // the item should be already selected
+				fViewController.showPackProperties(getSelectedItem()); // the item should be already selected
 			}
 		};
 		fShowPackProperties.setText(Messages.PacksView_ShowPacksOutline);
@@ -336,7 +363,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 
 				@Override
 				public void run() {
-					// Empty search text and selection
+					// Empty search text and fSelection
 					fViewer.setSelection(null);
 					fTree.getFilterControl().setText(CmsisConstants.EMPTY_STRING);
 				}
@@ -373,12 +400,11 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 				if(fViewer == null) {
 					return;
 				}
-				ISelection selection = fViewer.getSelection();
-				if (selection == null) {
+				ICmsisItem cmsisItem = getSelectedItem();
+				if (cmsisItem == null) {
 					return;
 				}
-				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				fViewer.expandToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
+				fViewer.expandToLevel(cmsisItem, AbstractTreeViewer.ALL_LEVELS);
 			}
 		};
 		fExpandItemAction.setText(Messages.ExpandSelected);
@@ -405,12 +431,12 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 				if(fViewer == null) {
 					return;
 				}
-				ISelection selection = fViewer.getSelection();
-				if (selection == null) {
+				ICmsisItem cmsisItem = getSelectedItem();
+				if (cmsisItem == null) {
 					return;
 				}
-				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				fViewer.collapseToLevel(obj, AbstractTreeViewer.ALL_LEVELS);
+
+				fViewer.collapseToLevel(cmsisItem, AbstractTreeViewer.ALL_LEVELS);
 			}
 		};
 		fCollapseItemAction.setText(Messages.CollapseSelected);
@@ -447,10 +473,9 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 			public void run() {
 				Toolkit toolkit =  Toolkit.getDefaultToolkit();
 				Clipboard cb = toolkit.getSystemClipboard();
-				ISelection selection = fViewer.getSelection();
-				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				if(obj instanceof ICpPack) {
-					ICpPack pack = (CpPack)obj;
+				ICmsisItem cmsisItem = getSelectedItem();
+				if(cmsisItem instanceof ICpPack) {
+					ICpPack pack = (CpPack)cmsisItem;
 					if (pack.getReleases() != null) {
 						for (ICpItem release : pack.getReleases()) {
 							if (release.getVersion().equals(pack.getVersion())) {
@@ -460,15 +485,15 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 							}
 						}
 					}
-					
+
 				}
 				super.run();
 			}
-			
+
 		};
 		fCopyRepository.setText(Messages.PackInstallerView_BtCopyRepository);
 		fCopyRepository.setToolTipText(Messages.PackInstallerView_BtCopyRepository);
-		
+
 		fCopyTag = new Action() {
 
 			@Override
@@ -488,15 +513,15 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 							}
 						}
 					}
-					
+
 				}
 				super.run();
 			}
-			
+
 		};
 		fCopyTag.setText(Messages.PackInstallerView_BtCopyTag);
 		fCopyTag.setToolTipText(Messages.PackInstallerView_BtCopyTag);
-		
+
 		fViewer.addDoubleClickListener(event -> fDoubleClickAction.run());
 	}
 
@@ -594,12 +619,12 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 					String repo = release.getAttribute(CmsisConstants.URL);
 					String tag = release.getAttribute(CmsisConstants.TAG);
 					boolean sep = false;
-					if (repo != CmsisConstants.EMPTY_STRING) {
+					if (!repo.isEmpty()) {
 						manager.add(new Separator());
 						manager.add(fCopyRepository);
 						sep = true;
 					}
-					if (tag != CmsisConstants.EMPTY_STRING) {
+					if (!tag.isEmpty()) {
 						if (!sep) {
 							manager.add(new Separator());
 						}
@@ -624,9 +649,70 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 		case RteEvent.PACK_OLNLINE_STATE_CHANGED:
 			updateOnlineState(); // already in UI thread
 			return;
+		default:
+			break;
 		}
-		
+
 		Display.getDefault().asyncExec(() -> handleRteEvent(event));
+	}
+
+	/**
+	 *
+	 */
+	protected void restoreSelection() {
+		if(fViewController == null) {
+			return;
+		}
+		if(fSelectionPath == null || fSelectionPath.isEmpty()) {
+			return;
+		}
+		ICmsisItem selectedItem = selectItem(fSelectionPath);
+
+		PackInstallerViewFilter filter = fViewController.getFilter();
+		if(filter == null || this != filter.getSelectionView())
+			return;
+
+		fViewController.selectionChanged(this, selectedItem, fSelectionPath);
+	}
+
+	/**
+	 * @param selectionPath
+	 */
+	protected ICmsisItem selectItem(List<String> selectionPath) {
+		if(fViewer == null || !(fViewer.getContentProvider() instanceof ITreeContentProvider))
+			return null;
+		ITreeContentProvider cp = (ITreeContentProvider)fViewer.getContentProvider();
+		Object[] elements = cp.getElements(fViewer.getInput());
+		List<ICmsisItem> path = new LinkedList<>();
+		ICmsisItem selectedItem = null;
+		for(String name : selectionPath) {
+			ICmsisItem cmsisItem = getCmsisItem(elements, name);
+			if(cmsisItem == null) {
+				break;
+			}
+			path.add(cmsisItem);
+			selectedItem = cmsisItem;
+			elements = cp.getChildren(cmsisItem);
+		}
+
+		if(path.isEmpty())
+			return null;
+		TreePath tp = new TreePath(path.toArray());
+		TreeSelection ts = new TreeSelection(tp);
+		fViewer.setSelection(ts, true);
+		return selectedItem;
+	}
+
+	protected ICmsisItem getCmsisItem(Object[] elements, String name) {
+		if(elements == null || name == null || name.isEmpty())
+			return null;
+		for(Object o: elements) {
+			ICmsisItem cmsisItem = ICmsisItem.cast(o);
+			if(cmsisItem != null && name.equals(cmsisItem.getName())) {
+				return cmsisItem;
+			}
+		}
+		return null;
 	}
 
 	protected void enableActions(boolean en) {
@@ -650,13 +736,13 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 			fCopyRepository.setEnabled(en);
 		if (fCopyTag != null)
 			fCopyTag.setEnabled(en);
-		
+
 		IActionBars bars = getViewSite().getActionBars();
 		bars.updateActionBars();
-		
+
 		fViewer.refresh();
 	}
-	
+
 	protected void updateOnlineState() {
 		if(getViewSite() == null || getViewSite().getActionBars() == null) {
 			return;
@@ -676,6 +762,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
 		case RteEvent.PACKS_RELOADED:
 			refresh();
 			showRelevantPage();
+			restoreSelection();
 			break;
 		case RteEvent.PACK_INSTALL_JOB_FINISHED:
 		case RteEvent.PACK_REMOVE_JOB_FINISHED:

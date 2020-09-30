@@ -47,6 +47,7 @@ public class CpManLocalRepoPage extends PreferencePage implements IWorkbenchPref
 	 * Create the preference page.
 	 */
 	public CpManLocalRepoPage() {
+		// no initialization
 	}
 
 	/**
@@ -75,7 +76,7 @@ public class CpManLocalRepoPage extends PreferencePage implements IWorkbenchPref
 		tableViewerColumn.setLabelProvider(new ColumnLabelProvider() {
 			@Override
 			public String getText(Object element) {
-				
+
 				return ((String[]) element)[0];
 			}
 		});
@@ -173,12 +174,12 @@ public class CpManLocalRepoPage extends PreferencePage implements IWorkbenchPref
 				newItems.put(item.getText(0), item.getText(1));
 			}
 		}
-		
+
 		if (!newItems.equals(itemFromFile)) {
 			CpPidxParser.createPidxFile(localRepoFile, newItems, rteRootPath.toString());
 			CpPlugIn.getPackManager().reload();
 			itemFromFile = newItems;
-			
+
 		}
 		return super.performOk();
 	}
@@ -213,13 +214,13 @@ public class CpManLocalRepoPage extends PreferencePage implements IWorkbenchPref
 	protected void readPidx() {
 		String localRepoFile = CpPlugIn.getPackManager().getCmsisPackLocalDir() + '/' + CmsisConstants.LOCAL_REPOSITORY_PIDX;
 		Map<String, String> map = CpPidxParser.parsePidx(localRepoFile);
-		
+
 		if (itemFromFile == null || map == null) {
 			return;
 		}
 
 		for (Map.Entry<String, String> item : map.entrySet()) {
-			String packId = CpPidxParser.getPackId(item);
+			String packId = item.getKey();
 			if (packId != null) {
 				itemFromFile.put(packId, item.getValue().replace('\\', '/'));
 			}

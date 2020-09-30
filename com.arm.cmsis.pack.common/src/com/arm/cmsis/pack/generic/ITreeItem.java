@@ -11,6 +11,7 @@
 
 package com.arm.cmsis.pack.generic;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -18,28 +19,28 @@ import java.util.LinkedList;
 
 /**
  * Generic template-based interface for tree like structures
- * 
- * @param <T> type of items to store in the tree, must implement ITreeItem interface itself 
+ *
+ * @param <T> type of items to store in the tree, must implement ITreeItem interface itself
  */
 public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
-	
+
 	/**
 	 * Returns immediate parent of this item
-	 * @return immediate parent item or null if this item is top-level item 
+	 * @return immediate parent item or null if this item is top-level item
 	 */
 	@Override
 	T getParent();
 
 	/**
-	 * Sets parent item for this item. 
+	 * Sets parent item for this item.
 	 * @param T parent item
 	 */
 	void setParent(T parent);
 
-	
+
 	/**
-	 * Returns top-level parent of the hierarchy (the item that has no parent above) 
-	 * @return top parent item   
+	 * Returns top-level parent of the hierarchy (the item that has no parent above)
+	 * @return top parent item
 	 */
 	default T getRoot() {
 		if(getParent() == null) {
@@ -47,8 +48,8 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 		}
 		return getParent().getRoot();
 	}
-	
-	
+
+
 	/**
 	 * Returns this item
 	 * @return this item
@@ -58,33 +59,33 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 		return (T)this; // we know that this item type is T : T extends ITreeItem<T>
 	}
 
-	
+
 	/**
-	 * Returns object of type T effectively associated with this item  
+	 * Returns object of type T effectively associated with this item
 	 * @return effective object of type T
-	 * @see #getEffectiveHierarchyItem() 
+	 * @see #getEffectiveHierarchyItem()
 	 */
-	T getEffectiveItem();
+	default T getEffectiveItem() { return getThisItem();} // default returns this
 
 	/**
 	 * Function symmetric to <code>getEffectiveItem()</code> fulfilling condition:
 	 * <p/>
-	 * <code>getEffectiveItem().getEffectiveHierarchyItem() == this</code> 
+	 * <code>getEffectiveItem().getEffectiveHierarchyItem() == this</code>
 	 * <p/>
 	 * @return item that represents a node in effective tree. That could be:
-	 * <ul> 
+	 * <ul>
 	 * <li> the item itself
 	 * <li> item's effective parent
 	 * </ul>
-	 * @see #getEffectiveItem() 
+	 * @see #getEffectiveItem()
 	 */
-	T getEffectiveHierarchyItem();
+	default T getEffectiveHierarchyItem() { return getThisItem();} // default returns this
 
 	/**
-	 * Returns effective parent of this item which might be the immediate parent or higher-level parent in the hierarchy 
-	 * @return effective parent item 
+	 * Returns effective parent of this item which might be the immediate parent or higher-level parent in the hierarchy
+	 * @return effective parent item
 	 */
-	T getEffectiveParent();
+	default T getEffectiveParent() { return getParent();}
 
 
     /**
@@ -101,7 +102,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
     	}
     	return null;
     }
-	
+
 	/**
 	 * Returns collection of children of specified type
 	 * @param type type class type to search
@@ -110,7 +111,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	default <C> Collection<C> getChildrenOfType(Class<C> type) {
 		if(!hasChildren())
 			return Collections.emptyList();
-		
+
 		LinkedList<C> typedChildren = new LinkedList<>();
 		for( T child : getChildren()) {
 			if(type.isInstance(child)) {
@@ -119,7 +120,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 		}
 		return typedChildren;
 	}
-	
+
 	/**
 	 * Returns collection of children of specified type recursively
 	 * @param type type class type to search
@@ -140,79 +141,79 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 
 	/**
 	 * Returns list of of child items
-	 * @return list of child items or null if item has no child elements 
+	 * @return list of child items or null if item has no child elements
 	 */
-	Collection<? extends T> getChildren(); 
-	
-	
+	Collection<? extends T> getChildren();
+
+
 	/**
 	 * Returns list of of effective child items.
 	 * <p> Effective child items can be a subset of own children (filtering) or grand children ( level is skipped)</p>
 	 * Default should return all own children
-	 * @return list of effective child items or null if item has no effective child elements 
+	 * @return list of effective child items or null if item has no effective child elements
 	 */
-	Collection<? extends T> getEffectiveChildren(); 
+	Collection<? extends T> getEffectiveChildren();
 
 	/**
 	 * Returns number of effective child items.
-	 * @return effective child count 
+	 * @return effective child count
 	 */
-	int getEffectiveChildCount(); 
+	int getEffectiveChildCount();
 
 	/**
 	 * Checks if the item has effective children
-	 * @return true if item has effective children 
+	 * @return true if item has effective children
 	 */
-	boolean hasEffectiveChildren(); 
+	boolean hasEffectiveChildren();
 
 	/**
-	 * Adds item to children list 
-	 * @param item child item to add 
+	 * Adds item to children list
+	 * @param item child item to add
 	 */
 	void addChild(T item);
 
-	
+
 	/**
-	 * Returns implementation-dependent string key corresponding to the item 
+	 * Returns implementation-dependent string key corresponding to the item
 	 * @param item item to get key from
 	 * @return implementation-dependent key that can be used in functions using key parameter
 	 */
 	String getItemKey(T item);
-	
-	
+
+
 	/**
-	 * Returns the first child item 
-	 * @return first child item  
+	 * Returns the first child item
+	 * @return first child item
 	 */
 	T getFirstChild();
-		
+
 	/**
-	 * Returns implementation-depended string key of the first child 
+	 * Returns implementation-depended string key of the first child
 	 * @return key of the very first child
-	 * @see #getItemKey(ITreeItem) 
+	 * @see #getItemKey(ITreeItem)
 	 */
-	String getFirstChildKey(); 
-	
+	String getFirstChildKey();
+
 
 	/**
 	 * Searches child collection for the first item corresponding to the given string key
 	 * @param key implementation-dependent string to search for
 	 * @return child item if found, null otherwise
-	 * @see #getItemKey(ITreeItem) 
+	 * @see #getItemKey(ITreeItem)
 	 */
 	T getFirstChild(final String key);
 
-	
+
 	/**
 	 * Returns first child's text
 	 * @param key implementation-dependent string to search for
 	 * @return child item's text if found, null otherwise
-	 * @see #getFirstChild(ITreeItem) 
+	 * @see #getFirstChild(ITreeItem)
 	 * @see #getItemKey(ITreeItem)
 	 */
 	String getFirstChildText(final String key);
 
-	
+
 	/**
 	 * Searches child collection for the first item corresponding to the given class type
      * @param type class type to search
@@ -242,7 +243,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 			 return type.cast(child);
 		 return null;
 	 }
-	 
+
 	/**
 	 * Removes child from the collection
 	 * @param childToRemove child to remove
@@ -253,11 +254,11 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	 * Removes first child corresponding to the given string
 	 * @param key implementation-dependent string to search for
 	 * @return removed child item if existed, null otherwise
-	 * @see #getItemKey(ITreeItem) 
+	 * @see #getItemKey(ITreeItem)
 	 */
 	T removeFirstChild(final String key);
 
-	
+
 	/**
 	 * Removes all children corresponding to the given string
 	 * @param key implementation-dependent string to search for
@@ -267,37 +268,67 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
 	T removeAllChildren(final String key);
 
 	/**
-	 * Adds item to children list and removes all other children with the same key 
+	 * Adds item to children list and removes all other children with the same key
 	 * @param item item to replace others
-	 * @see #getItemKey(ITreeItem) 
+	 * @see #getItemKey(ITreeItem)
 	 */
 	void replaceChild(T item);
 
-	
+
 	 /**
-	 * Returns first item in the hierarchy that matches given wildcard pattern  
-	 * @param pattern wildcard string to search for 
+	 * Returns first item in the hierarchy that matches given wildcard pattern
+	 * @param pattern wildcard string to search for
 	 * @return first item matching given pattern if found, null otherwise
 	 */
 	T getFirstItem(final String pattern);
-	
+
 
 	/**
-	 * Returns collection of segments from root to this 
-	 * @return collection of items from root to this  
+	 * Returns collection of segments from root to this
+	 * @return ArrayList of items from root to this
 	 */
-	Object[] getHierachyPath(); 
-	
+	default ArrayList<T> getHierachyPathList() {
+		ArrayList<T> segments =  new ArrayList<>();
+		segments.add(getThisItem());
+		for(T item = getParent(); item != null; item = item.getParent()){
+			if(item.getParent() != null) {
+				segments.add(0, item);
+			}
+		}
+		return segments;
+	}
+
 	/**
-	 * Returns collection of segments from root to this item as effective hierarchy path 
-	 * @return collection of items from root to this  
+	 * Returns array of segments from root to this
+	 * @return array of objects from root to this
 	 */
-	Object[] getEffectiveHierachyPath(); 
+	default Object[] getHierachyPath() { return getHierachyPathList().toArray();}
+
+
+	/**
+	 * Returns collection of segments from root to this item as effective hierarchy path
+	 * @return collection of items from root to this
+	 */
+	default ArrayList<T> getEffectiveHierachyPathList() {
+		ArrayList<T> segments =  new ArrayList<>();
+		for(T item = getEffectiveHierarchyItem(); item != null; item = item.getEffectiveParent()){
+			if(item.getParent() != null) {
+				segments.add(0, item);
+			}
+		}
+		return segments;
+	}
+
+	/**
+	 * Returns collection of segments from root to this item as effective hierarchy path
+	 * @return array of objects from root to this
+	 */
+	default Object[] getEffectiveHierachyPath() { return getEffectiveHierachyPathList().toArray();}
 
 	/**
 	 * Returns array of effective child items as generic Objects
-	 * @return array of effective child items or empty array if item has no children 
+	 * @return array of effective child items or empty array if item has no children
 	 */
-	Object[] getEffectiveChildArray();
-	
+	default Object[] getEffectiveChildArray() { return getEffectiveItem().getChildArray();}
+
 }

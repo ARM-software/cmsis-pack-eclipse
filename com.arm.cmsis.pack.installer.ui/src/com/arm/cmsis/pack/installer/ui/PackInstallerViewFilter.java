@@ -13,12 +13,11 @@ package com.arm.cmsis.pack.installer.ui;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.ui.IWorkbenchPart;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
@@ -32,6 +31,7 @@ import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.data.ICpPackFamily;
 import com.arm.cmsis.pack.installer.ui.views.BoardsView;
 import com.arm.cmsis.pack.installer.ui.views.DevicesView;
+import com.arm.cmsis.pack.installer.ui.views.PackInstallerView;
 import com.arm.cmsis.pack.item.ICmsisItem;
 import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
@@ -43,25 +43,25 @@ import com.arm.cmsis.pack.utils.Utils;
  */
 public class PackInstallerViewFilter extends ViewerFilter {
 
-	protected IRteDeviceItem 		fDeviceItem = null ;
+	protected IRteDeviceItem fDeviceItem = null ;
 	protected IRteBoardItem	fBoardItem = null;
 
-	
 	protected boolean bAllDevices = false;
 	protected boolean bAllBoards  = false;
-	
+
 	protected String fBoardName = null;
-	
 	protected Set<String> fSelectedDeviceNames = null;
 
-	protected IWorkbenchPart selectionPart;
-	protected IStructuredSelection selection;
+	protected PackInstallerView fSelectionView = null;
+
+	protected ICmsisItem fSelectedItem = null;
+	protected List<String> fSelectionPath = null;
 
 	protected boolean fbInstalledExamplesOnly = true;
 	protected String filterString = null;
-	
-	protected Set<ICpPackFamily> fFilteredDevicePackFamilies = new HashSet<ICpPackFamily>();
-	
+
+	protected Set<ICpPackFamily> fFilteredDevicePackFamilies = new HashSet<>();
+
 
 	/**
 	 * Default constructor
@@ -71,27 +71,46 @@ public class PackInstallerViewFilter extends ViewerFilter {
 	}
 
 	public void clear() {
-		selection = null;
-		selectionPart = null;
+		fSelectionView = null;
+		clearSelection();
+	}
+
+	public void clearSelection() {
+		fSelectionPath = null;
+		fSelectedItem = null;
 		fFilteredDevicePackFamilies.clear();
 		fSelectedDeviceNames = null;
 		fDeviceItem = null;
 		fBoardItem = null;
-		filterString = null;
 	}
-	
+
+
 	public Set<ICpPackFamily> getFilteredDevicePackFamilies() {
 		return fFilteredDevicePackFamilies;
 	}
-	
+
+	public List<String> getSelectionPath() {
+		return fSelectionPath;
+	}
+
+	public PackInstallerView getSelectionView() {
+		return fSelectionView;
+	}
+
 	/**
+	 * Sets filter selection
 	 * @param part
-	 * @param selection
+	 * @param fSelection
 	 */
-	public boolean setSelection(IWorkbenchPart part, IStructuredSelection selection) {
-		this.selectionPart = part;
-		this.selection = selection;
-		boolean bFilterChanged  = updateFilter();
+	public boolean setSelection(PackInstallerView view, ICmsisItem selectedItem, List<String> selectionPath) {
+		fSelectionView = view;
+		fSelectedItem = selectedItem;
+		if(selectionPath.equals(fSelectionPath)) {
+			return false;
+		}
+		fSelectionPath = selectionPath;
+		boolean bFilterChanged = updateFilter();
+
 		if(bFilterChanged) {
 			updateFilterdPacks();
 		}
@@ -116,9 +135,9 @@ public class PackInstallerViewFilter extends ViewerFilter {
 
 	protected boolean updateFilter() {
 		filterString = createFilterString();
-		if (selectionPart instanceof DevicesView) {
+		if (fSelectionView instanceof DevicesView) {
 			return setDeviceSelection();
-		} else if (selectionPart instanceof BoardsView) {
+		} else if (fSelectionView instanceof BoardsView) {
 			return setBoardSelection();
 		}
 		return false;
@@ -126,9 +145,9 @@ public class PackInstallerViewFilter extends ViewerFilter {
 
 	protected boolean setDeviceSelection() {
 		IRteDeviceItem item = null;
-		if(selection != null && selection.size() == 1) {
-			item = (IRteDeviceItem) selection.getFirstElement();
-			bAllDevices = CmsisConstants.ALL_DEVICES.equals(item.getName());
+		if(fSelectedItem != null) {
+			item = (IRteDeviceItem) fSelectedItem;
+			bAllDevices = CmsisConstants.ALL_DEVICES.equals(fSelectedItem.getName());
 		} else {
 			bAllDevices = false;
 		}
@@ -143,27 +162,25 @@ public class PackInstallerViewFilter extends ViewerFilter {
 		fDeviceItem = item;
 		if(fDeviceItem != null && !bAllDevices) {
 			fSelectedDeviceNames = item.getAllDeviceNames();
-		} else { 
+		} else {
 			fSelectedDeviceNames = null;
 		}
 		return true;
 	}
 
-	
+
 	protected boolean setBoardSelection() {
-		ICmsisItem item = null;
-		if(selection != null && selection.size() == 1) {
-			item = (ICmsisItem) selection.getFirstElement();
-			bAllBoards = CmsisConstants.ALL_BOARDS.equals(item.getName());
+		if(fSelectedItem != null) {
+			bAllBoards = CmsisConstants.ALL_BOARDS.equals(fSelectedItem.getName());
 		} else {
 			bAllBoards = false;
 		}
-		if(item != null && item instanceof IRteDeviceItem)
-			return setDeviceItem((IRteDeviceItem)item);
-		return setBoardItem((IRteBoardItem)item);
+		if(fSelectedItem instanceof IRteDeviceItem)
+			return setDeviceItem((IRteDeviceItem)fSelectedItem);
+		return setBoardItem((IRteBoardItem)fSelectedItem);
 	}
-	
-	
+
+
 	protected boolean setBoardItem(IRteBoardItem item) {
 		if(fBoardItem == item)
 			return false;
@@ -178,32 +195,27 @@ public class PackInstallerViewFilter extends ViewerFilter {
 		}
 		return true;
 	}
-	
+
 	public String getFilterString() {
 		return filterString;
 	}
-	
+
 	protected String createFilterString() {
-		if (selection == null || selection.isEmpty()) {
-			if (selectionPart instanceof DevicesView) {
+		if (fSelectedItem == null) {
+			if (fSelectionView instanceof DevicesView) {
 				return Messages.PacksExamplesViewFilter_NoDevices;
-			} else if (selectionPart instanceof BoardsView) {
+			} else if (fSelectionView instanceof BoardsView) {
 				return Messages.PacksExamplesViewFilter_NoBoards;
-			} else {
-				return null;
 			}
+			return null;
 		}
-		ICmsisItem item = (ICmsisItem) selection.getFirstElement();
-		if (item != null) {
-			if (selectionPart instanceof BoardsView && item.hasChildren() &&
-					(CmsisConstants.MOUNTED_DEVICES.equals(item.getName()) ||
-							CmsisConstants.COMPATIBLE_DEVICES.equals(item.getName()))) {
-				return item.getChildren().iterator().next().getName()
-						+ " (" + item.getName() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
-			}
-			return item.getName();
+		if (fSelectionView instanceof BoardsView && fSelectedItem.hasChildren() &&
+				(CmsisConstants.MOUNTED_DEVICES.equals(fSelectedItem.getName()) ||
+						CmsisConstants.COMPATIBLE_DEVICES.equals(fSelectedItem.getName()))) {
+			return fSelectedItem.getChildren().iterator().next().getName()
+					+ " (" + fSelectedItem.getName() + ")"; //$NON-NLS-1$ //$NON-NLS-2$
 		}
-		return null;
+		return fSelectedItem.getName();
 	}
 
 	/**
@@ -218,22 +230,22 @@ public class PackInstallerViewFilter extends ViewerFilter {
 	public boolean select(Viewer viewer, Object parentElement, Object element) {
 		if (element instanceof IRteExampleItem) {
 			return selectExamples((IRteExampleItem) element);
-		} else 	if (element instanceof ICpPackFamily)
+		} else if (element instanceof ICpPackFamily) {
 			return selectPacks( (ICpPackFamily) element);
+		}
 		return true;
-		
 	}
 
 	protected boolean isDevicePackFamilyFiltered(ICpPackFamily f) {
 		ICpPack pack = f.getPack();
 		if (pack == null) {
 			return false;
-		} 
-		
+		}
+
 		if(pack.isDevicelessPack()) {
 			return false;
 		}
-		
+
 		if(fDeviceItem != null) {
 			if(bAllDevices)
 				return true;
@@ -247,25 +259,25 @@ public class PackInstallerViewFilter extends ViewerFilter {
 				return false;
 			if(fBoardName == null)
 				return false;
-			return packContainsBoard(fBoardItem, pack); 
+			return packContainsBoard(fBoardItem, pack);
 		}
 		return false;
 	}
 
-	
+
 	protected boolean selectPacks(ICpPackFamily f) {
 		ICpPack pack = f.getPack();
 		if (pack == null) {
 			return false;
-		} 
-		
+		}
+
 		if(pack.isDevicelessPack()) {
 			return true;
 		}
-		
+
 		return fFilteredDevicePackFamilies.contains(f);
 	}
-	
+
 
 	/**
 	 * @param board The board
@@ -283,7 +295,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
 		if (Utils.checkIfIntersect(fSelectedDeviceNames, devicesContainedInPack)) {
 			return true;
 		}
-		
+
 		IRteDeviceItem mountedDevices = board.getMountedDevices();
 		IRteDeviceItem compatibleDevices = board.getCompatibleDevices();
 
@@ -334,7 +346,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
 			}
 		}
 
-		
+
 		// Check if the mounted devices or compatible devices on this pack's board
 		// intersect with deviceItem's devices
 		Collection<? extends ICpItem> boards = pack.getGrandChildren(CmsisConstants.BOARDS_TAG);
@@ -394,19 +406,17 @@ public class PackInstallerViewFilter extends ViewerFilter {
 				packState != PackState.GENERATED) {
 					return false;
 		}
-		
+
 		if (fDeviceItem != null) {
 			if (bAllDevices) {
 				return true;
 			}
-			return boardContainsDevice(example.getBoardId(), fDeviceItem);
-		} else if (fBoardItem != null) {
-			if (bAllBoards) {
-				return true;
-			}
-			return exampleContainsBoard(example, fBoardItem.getBoard());
+			return boardContainsDevice(example.getBoardId());
 		}
-		return false;
+		if (bAllBoards) {
+			return true;
+		}
+		return exampleContainsBoard(example, fBoardItem.getBoard());
 	}
 
 	private boolean exampleContainsBoard(ICpExample example, ICpBoard board) {
@@ -415,21 +425,16 @@ public class PackInstallerViewFilter extends ViewerFilter {
 		String boardId = example.getBoardId();
 		if (boardId == null || boardId.isEmpty())
 			return false;
-		
+
 		return boardId.equals(board.getId());
 	}
 
-	private boolean boardContainsDevice(String boardId, IRteDeviceItem rteDeviceItem) {
+	private boolean boardContainsDevice(String boardId) {
 		if (boardId == null) {
 			return false;
 		}
-		
+
 		IRteBoardItem board = CpPlugIn.getPackManager().getRteBoards().findBoard(boardId);
-		if (board != null) {
-			if (Utils.checkIfIntersect(board.getAllDeviceNames(), fSelectedDeviceNames)) {
-				return true;
-			}
-		}
-		return false;
+		return (board != null && Utils.checkIfIntersect(board.getAllDeviceNames(), fSelectedDeviceNames));
 	}
 }

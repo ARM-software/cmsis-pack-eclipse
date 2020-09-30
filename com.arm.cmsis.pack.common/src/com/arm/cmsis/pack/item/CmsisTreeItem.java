@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.utils.WildCards;
@@ -71,7 +70,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 			item.invalidateAll();
 		}
 	}
-	
+
 	@Override
 	public void destroy() {
 		super.destroy();
@@ -83,7 +82,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	public boolean purge() {
 		if(isRemoved())
 			return true;
-		
+
 		Collection<? extends T> children = getChildren();
 		if(children == null) {
 			return false;
@@ -133,19 +132,6 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 	@Override
 	public T getParent() {
 		return fParent;
-	}
-
-
-	@Override
-	public Object[] getHierachyPath() {
-		List<Object> segments =  new LinkedList<>();
-		segments.add(this);
-		for(T item = getParent(); item != null; item = item.getParent()){
-			if(item.getParent() != null) {
-				segments.add(0, item);
-			}
-		}
-		return segments.toArray();
 	}
 
 
@@ -204,40 +190,6 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 
 
 	@Override
-	public T getEffectiveItem() {
-		return getThisItem();
-	}
-
-	@Override
-	public T getEffectiveParent() {
-		return getParent();
-	}
-
-
-	@Override
-	public T getEffectiveHierarchyItem() {
-		// default returns this item
-		return getThisItem();
-	}
-
-
-	@Override
-	public Object[] getEffectiveHierachyPath() {
-		List<Object> segments =  new LinkedList<>();
-		for(T item = getEffectiveHierarchyItem(); item != null; item = item.getEffectiveParent()){
-			if(item.getParent() != null) {
-				segments.add(0, item);
-			}
-		}
-		return segments.toArray();
-	}
-
-	@Override
-	public Object[] getEffectiveChildArray() {
-		return getEffectiveItem().getChildArray();
-	}
-
-	@Override
 	public Collection<? extends T> getEffectiveChildren() {
 		return getEffectiveItem().getChildren();
 	}
@@ -248,7 +200,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
 		if(children != null) {
 			return children.size();
 		}
-		return 0;	
+		return 0;
 	}
 
 	@Override

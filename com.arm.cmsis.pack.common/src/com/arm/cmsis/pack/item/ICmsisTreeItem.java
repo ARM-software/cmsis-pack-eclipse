@@ -16,14 +16,14 @@ import java.util.Collection;
 import com.arm.cmsis.pack.generic.ITreeItem;
 
 /**
- * Base interface for CMSIS homogeneous generic tree items 
+ * Base interface for CMSIS homogeneous generic tree items
  */
 public interface ICmsisTreeItem<T extends ITreeItem<T> & ICmsisItem> extends ITreeItem<T> , ICmsisItem  {
 	/**
 	 * Searches child collection for the first item corresponding to the given tag
-	 * @param tag item tag to search for 
+	 * @param tag item tag to search for
 	 * @return child item if found, null otherwise
-	 * @see #getFirstChild(String) 
+	 * @see #getFirstChild(String)
 	 */
 	default T getFirstChildByTag(final String tag) {
 		if(tag == null || tag.isEmpty())
