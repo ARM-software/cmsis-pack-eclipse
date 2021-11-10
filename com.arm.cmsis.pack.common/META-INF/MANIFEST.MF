@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Common
 Bundle-SymbolicName: com.arm.cmsis.pack.common
 Automatic-Module-Name: com.arm.cmsis.pack.common
-Bundle-Version: 2.6.0.qualifier
-Bundle-Vendor: ARM
+Bundle-Version: 2.6.1.qualifier
+Bundle-Vendor: Arm Limited
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.arm.cmsis.pack.common,
  com.arm.cmsis.pack.enums,

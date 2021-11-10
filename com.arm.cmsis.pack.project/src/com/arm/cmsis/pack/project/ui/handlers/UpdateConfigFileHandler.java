@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2018 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,85 +39,85 @@ import com.arm.cmsis.pack.utils.Utils;
 
 public class UpdateConfigFileHandler extends AbstractHandler implements IElementUpdater {
 
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ISelection selection = HandlerUtil.getCurrentSelection(event);
-		if (!(selection instanceof IStructuredSelection)) {
-			return null;
-		}
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        ISelection selection = HandlerUtil.getCurrentSelection(event);
+        if (!(selection instanceof IStructuredSelection)) {
+            return null;
+        }
 
-		IStructuredSelection sel = (IStructuredSelection) selection;
-		for (Object obj : sel.toArray()) {
+        IStructuredSelection sel = (IStructuredSelection) selection;
+        for (Object obj : sel.toArray()) {
 
-			IFile file = ProjectUtils.getRteFileResource(obj);
-			String dstFile = file.getProjectRelativePath().toString();
+            IFile file = ProjectUtils.getRteFileResource(obj);
+            String dstFile = file.getProjectRelativePath().toString();
 
-			ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
-			ICpFile f = fi.getFile();
-			String srcFile = f.getAbsolutePath(f.getName());
+            ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
+            ICpFile f = fi.getFile();
+            String srcFile = f.getAbsolutePath(f.getName());
 
-			EFileRole role = fi.getRole();
-			if (role == EFileRole.CONFIG || role == EFileRole.COPY) {
-				int index = -1;
-				EFileCategory cat = fi.getCategory();
-				if (cat.isHeader() || cat.isSource()) {
-					String baseSrc = Utils.extractBaseFileName(srcFile);
-					String baseDst = Utils.extractBaseFileName(dstFile);
-					int len = baseSrc.length() + 1;
-					if (baseDst.length() > len) {
-						String instance = baseDst.substring(len);
-						try {
-							index = Integer.decode(instance);
-						} catch (NumberFormatException e) {
-							// do nothing, use -1
-						}
-					}
-				}
-				try {
-					int bCopied = ProjectUtils.copyFile(file.getProject(), srcFile, dstFile, index, null, true);
-					if (bCopied == 1) {
-						// do the version update and save it in the .cproject file
-						fi.setVersion(f.getVersion());
-						IRteProject rteProject = CpProjectPlugIn.getRteProjectManager()
-								.getRteProject(file.getProject());
-						RteProjectStorage projectStorage = rteProject.getProjectStorage();
-						projectStorage.setConfigFileVersion(dstFile, f.getVersion());
-						projectStorage.save(CoreModel.getDefault().getProjectDescription(file.getProject()));
-						rteProject.save();
-					}
-				} catch (CoreException e) {
-					e.printStackTrace();
-				}
-			}
-		}
+            EFileRole role = fi.getRole();
+            if (role == EFileRole.CONFIG || role == EFileRole.COPY) {
+                int index = -1;
+                EFileCategory cat = fi.getCategory();
+                if (cat.isHeader() || cat.isSource()) {
+                    String baseSrc = Utils.extractBaseFileName(srcFile);
+                    String baseDst = Utils.extractBaseFileName(dstFile);
+                    int len = baseSrc.length() + 1;
+                    if (baseDst.length() > len) {
+                        String instance = baseDst.substring(len);
+                        try {
+                            index = Integer.decode(instance);
+                        } catch (NumberFormatException e) {
+                            // do nothing, use -1
+                        }
+                    }
+                }
+                try {
+                    int bCopied = ProjectUtils.copyFile(file.getProject(), srcFile, dstFile, index, null, true);
+                    if (bCopied == 1) {
+                        // do the version update and save it in the .cproject file
+                        fi.setVersion(f.getVersion());
+                        IRteProject rteProject = CpProjectPlugIn.getRteProjectManager()
+                                .getRteProject(file.getProject());
+                        RteProjectStorage projectStorage = rteProject.getProjectStorage();
+                        projectStorage.setConfigFileVersion(dstFile, f.getVersion());
+                        projectStorage.save(CoreModel.getDefault().getProjectDescription(file.getProject()));
+                        rteProject.save();
+                    }
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
-	@Override
-	public void updateElement(UIElement element, @SuppressWarnings("rawtypes") Map parameters) {
-		ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		ISelection selection = selectionService.getSelection("org.eclipse.ui.navigator.ProjectExplorer"); //$NON-NLS-1$
-		if (selection instanceof IStructuredSelection) {
-			IStructuredSelection sel = (IStructuredSelection) selection;
-			if (sel.size() == 1) {
-				Object obj = sel.getFirstElement();
-				IFile file = ProjectUtils.getRteFileResource(obj);
-				ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
-				if (fi == null || fi.getFile() == null) {
-					return;
-				}
-				int versionDiff = fi.getVersionDiff();
-				String versionText = " (" + fi.getVersion() + " -> " + fi.getFile().getVersion() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-				if (versionDiff < 0) {
-					element.setText(Messages.UpdateConfigFileHandler_Upgrade + file.getName() + versionText);
-				} else if (versionDiff > 2) {
-					element.setText(Messages.UpdateConfigFileHandler_Downgrade + file.getName() + versionText);
-				}
-			} else if (sel.size() > 1) {
-				element.setText(Messages.UpdateConfigFileHandler_UpdateSelectedFiles);
-			}
-		}
-	}
+    @Override
+    public void updateElement(UIElement element, @SuppressWarnings("rawtypes") Map parameters) {
+        ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        ISelection selection = selectionService.getSelection("org.eclipse.ui.navigator.ProjectExplorer"); //$NON-NLS-1$
+        if (selection instanceof IStructuredSelection) {
+            IStructuredSelection sel = (IStructuredSelection) selection;
+            if (sel.size() == 1) {
+                Object obj = sel.getFirstElement();
+                IFile file = ProjectUtils.getRteFileResource(obj);
+                ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
+                if (fi == null || fi.getFile() == null) {
+                    return;
+                }
+                int versionDiff = fi.getVersionDiff();
+                String versionText = " (" + fi.getVersion() + " -> " + fi.getFile().getVersion() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+                if (versionDiff < 0) {
+                    element.setText(Messages.UpdateConfigFileHandler_Upgrade + file.getName() + versionText);
+                } else if (versionDiff > 2) {
+                    element.setText(Messages.UpdateConfigFileHandler_Downgrade + file.getName() + versionText);
+                }
+            } else if (sel.size() > 1) {
+                element.setText(Messages.UpdateConfigFileHandler_UpdateSelectedFiles);
+            }
+        }
+    }
 
 }

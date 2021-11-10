@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -12,8 +12,8 @@
 package com.arm.cmsis.pack.rte.components;
 
 /**
- * Interface for class level hierarchy items 
+ * Interface for class level hierarchy items
  */
 public interface IRteComponentClass extends IRteComponentItem {
-// used a a type 
+// used a a type
 }

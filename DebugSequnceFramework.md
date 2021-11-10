@@ -68,7 +68,7 @@ The left side of ‘->’ in a line corresponds to a statement in the Debug Sequ
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-_Copyright (c) 2014-2017, ARM Limited and Contributors. All rights reserved._
+_Copyright (c) 2014-2021, ARM Limited and Contributors. All rights reserved._
 
 
 [CMSIS Debug Access Sequences]: https://arm-software.github.io/CMSIS_5/Pack/html/pdsc_SequenceNameEnum_pg.html

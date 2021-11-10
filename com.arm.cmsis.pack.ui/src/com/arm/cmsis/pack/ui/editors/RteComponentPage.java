@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,77 +31,75 @@ import com.arm.cmsis.pack.ui.widgets.RteWidget;
  */
 public class RteComponentPage extends RteModelEditorPage {
 
-	IAction resolveAction = null;
+    IAction resolveAction = null;
 
-	public RteComponentPage() {
-	}
+    public RteComponentPage() {
+    }
 
+    @Override
+    protected void createActions() {
+        resolveAction = new Action(CpStringsUI.RteComponentTreeWidget_Resolve, IAction.AS_PUSH_BUTTON) {
+            @Override
+            public void run() {
+                IRteModelController model = getModelController();
+                if (model != null) {
+                    model.resolveComponentDependencies();
+                }
+            }
+        };
+        resolveAction.setToolTipText(CpStringsUI.RteComponentTreeWidget_ResolveComponentDependencies);
+        resolveAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RESOLVE_CHECK_WARN));
+        resolveAction.setDisabledImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RESOLVE_CHECK_GREY));
+        headerWidget.addAction(resolveAction, SWT.LEFT, true);
 
-	@Override
-	protected void createActions() {
-		resolveAction = new Action(CpStringsUI.RteComponentTreeWidget_Resolve, IAction.AS_PUSH_BUTTON) {
-			@Override
-			public void run() {
-				IRteModelController model = getModelController();
-				if (model != null) {
-					model.resolveComponentDependencies();
-				}
-			}
-		};
-		resolveAction.setToolTipText(CpStringsUI.RteComponentTreeWidget_ResolveComponentDependencies);
-		resolveAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RESOLVE_CHECK_WARN));
-		resolveAction.setDisabledImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RESOLVE_CHECK_GREY));
-		headerWidget.addAction(resolveAction, SWT.LEFT, true);
+        super.createActions();
+    }
 
-		super.createActions();
-	}
-	
-	@Override
-	public void handle(RteEvent event) {
-		switch (event.getTopic()) {
-		case RteEvent.COMPONENT_SELECTION_MODIFIED:
-			update();
-			return;
-		default:
-			super.handle(event);
-		}
-	}
+    @Override
+    public void handle(RteEvent event) {
+        switch (event.getTopic()) {
+        case RteEvent.COMPONENT_SELECTION_MODIFIED:
+            update();
+            return;
+        default:
+            super.handle(event);
+        }
+    }
 
+    @Override
+    public void updateActions() {
+        if (getModelController() != null) {
+            EEvaluationResult res = getModelController().getEvaluationResult();
+            resolveAction.setEnabled(res == EEvaluationResult.SELECTABLE);
+        }
+        super.updateActions();
+    }
 
-	@Override
-	public void updateActions() {
-		if(getModelController() != null) {
-			EEvaluationResult res = getModelController().getEvaluationResult();
-			resolveAction.setEnabled(res == EEvaluationResult.SELECTABLE);
-		}
-		super.updateActions();
-	}
+    @Override
+    protected RteWidget<IRteModelController> createContentWidget() {
+        return new RteComponentManagerWidget();
+    }
 
-	@Override
-	protected RteWidget<IRteModelController> createContentWidget() {
-		return  new RteComponentManagerWidget();
-	}
+    @Override
+    protected String getHelpID() {
+        return IHelpContextIds.COMPONENT_PAGE;
+    }
 
-	@Override
-	protected String getHelpID() {
-		return IHelpContextIds.COMPONENT_PAGE;
-	}
+    @Override
+    protected Image getImage() {
+        return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
+    }
 
-	@Override
-	protected Image getImage() {
-		return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE);
-	}
+    @Override
+    protected String getLabel() {
+        return CpStringsUI.RteManagerWidget_Components;
+    }
 
-	@Override
-	protected String getLabel() {
-		return CpStringsUI.RteManagerWidget_Components;
-	}
-	
-	@Override
-	public boolean isModified() {
-		if(getModelController() != null)
-			return getModelController().isComponentSelectionModified();
-		return false;
-	}
+    @Override
+    public boolean isModified() {
+        if (getModelController() != null)
+            return getModelController().isComponentSelectionModified();
+        return false;
+    }
 
 }

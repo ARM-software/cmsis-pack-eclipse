@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,98 +31,91 @@ import com.arm.cmsis.zone.ui.Messages;
 import com.arm.cmsis.zone.ui.handlers.CmsisZoneGenerateAction;
 
 /**
- * Manages the installation/deinstallation of global actions for multi-page editors.
- * Responsible for the redirection of global actions to the active editor.
- * Multi-page contributor replaces the contributors for the individual editors in the multi-page editor.
+ * Manages the installation/deinstallation of global actions for multi-page
+ * editors. Responsible for the redirection of global actions to the active
+ * editor. Multi-page contributor replaces the contributors for the individual
+ * editors in the multi-page editor.
  */
 public class CmsisZoneEditorContributor extends MultiPageEditorActionBarContributor {
-	protected IEditorPart activeEditorPart;
-	CmsisZoneGenerateAction generateAction;
-	
-	/**
-	 * Creates a multi-page contributor.
-	 */
-	public CmsisZoneEditorContributor() {
-		super();
-		createActions();
-	}
-	
-	protected void createActions() {
-		generateAction = new CmsisZoneGenerateAction() {
-			
-			@Override
-			protected IEditorPart getActiveEditor() {
-				IWorkbenchPage page = getPage();
-				if(page == null)
-					return null;
-					
-				IEditorPart editor = page.getActiveEditor();
-				return editor;
-			}
-		};
-	}
-	
-	@Override
-	public void contributeToMenu(IMenuManager manager) {
-		IMenuManager menu = new MenuManager(Messages.CmsisZoneEditorContributor_CmsisZone);
-		manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
-		menu.add(generateAction);
-	}
+    protected IEditorPart activeEditorPart;
+    CmsisZoneGenerateAction generateAction;
 
-	@Override
-	public void contributeToToolBar(IToolBarManager manager) {
-		manager.add(new Separator());
-		manager.add(generateAction);
-	}
+    /**
+     * Creates a multi-page contributor.
+     */
+    public CmsisZoneEditorContributor() {
+        super();
+        createActions();
+    }
 
-	/**
-	 * Returns the action registered with the given text editor.
-	 * @return IAction or null if editor is null.
-	 */
-	protected IAction getAction(ITextEditor editor, String actionID) {
-		return (editor == null ? null : editor.getAction(actionID));
-	}
-	
-	@Override
-	public void setActivePage(IEditorPart part) {
-		if (activeEditorPart == part)
-			return;
+    protected void createActions() {
+        generateAction = new CmsisZoneGenerateAction() {
 
-		activeEditorPart = part;
+            @Override
+            protected IEditorPart getActiveEditor() {
+                IWorkbenchPage page = getPage();
+                if (page == null)
+                    return null;
 
-		IActionBars actionBars = getActionBars();
-		if (actionBars != null) {
+                IEditorPart editor = page.getActiveEditor();
+                return editor;
+            }
+        };
+    }
 
-			ITextEditor editor = (part instanceof ITextEditor) ? (ITextEditor) part : null;
+    @Override
+    public void contributeToMenu(IMenuManager manager) {
+        IMenuManager menu = new MenuManager(Messages.CmsisZoneEditorContributor_CmsisZone);
+        manager.prependToGroup(IWorkbenchActionConstants.MB_ADDITIONS, menu);
+        menu.add(generateAction);
+    }
 
-			actionBars.setGlobalActionHandler(
-				ActionFactory.DELETE.getId(),
-				getAction(editor, ITextEditorActionConstants.DELETE));
-			actionBars.setGlobalActionHandler(
-				ActionFactory.UNDO.getId(),
-				getAction(editor, ITextEditorActionConstants.UNDO));
-			actionBars.setGlobalActionHandler(
-				ActionFactory.REDO.getId(),
-				getAction(editor, ITextEditorActionConstants.REDO));
-			actionBars.setGlobalActionHandler(
-				ActionFactory.CUT.getId(),
-				getAction(editor, ITextEditorActionConstants.CUT));
-			actionBars.setGlobalActionHandler(
-				ActionFactory.COPY.getId(),
-				getAction(editor, ITextEditorActionConstants.COPY));
-			actionBars.setGlobalActionHandler(
-				ActionFactory.PASTE.getId(),
-				getAction(editor, ITextEditorActionConstants.PASTE));
-			actionBars.setGlobalActionHandler(
-				ActionFactory.SELECT_ALL.getId(),
-				getAction(editor, ITextEditorActionConstants.SELECT_ALL));
-			actionBars.setGlobalActionHandler(
-				ActionFactory.FIND.getId(),
-				getAction(editor, ITextEditorActionConstants.FIND));
-			actionBars.setGlobalActionHandler(
-				IDEActionFactory.BOOKMARK.getId(),
-				getAction(editor, IDEActionFactory.BOOKMARK.getId()));
-			actionBars.updateActionBars();
-		}
-	}
+    @Override
+    public void contributeToToolBar(IToolBarManager manager) {
+        manager.add(new Separator());
+        manager.add(generateAction);
+    }
+
+    /**
+     * Returns the action registered with the given text editor.
+     *
+     * @return IAction or null if editor is null.
+     */
+    protected IAction getAction(ITextEditor editor, String actionID) {
+        return (editor == null ? null : editor.getAction(actionID));
+    }
+
+    @Override
+    public void setActivePage(IEditorPart part) {
+        if (activeEditorPart == part)
+            return;
+
+        activeEditorPart = part;
+
+        IActionBars actionBars = getActionBars();
+        if (actionBars != null) {
+
+            ITextEditor editor = (part instanceof ITextEditor) ? (ITextEditor) part : null;
+
+            actionBars.setGlobalActionHandler(ActionFactory.DELETE.getId(),
+                    getAction(editor, ITextEditorActionConstants.DELETE));
+            actionBars.setGlobalActionHandler(ActionFactory.UNDO.getId(),
+                    getAction(editor, ITextEditorActionConstants.UNDO));
+            actionBars.setGlobalActionHandler(ActionFactory.REDO.getId(),
+                    getAction(editor, ITextEditorActionConstants.REDO));
+            actionBars.setGlobalActionHandler(ActionFactory.CUT.getId(),
+                    getAction(editor, ITextEditorActionConstants.CUT));
+            actionBars.setGlobalActionHandler(ActionFactory.COPY.getId(),
+                    getAction(editor, ITextEditorActionConstants.COPY));
+            actionBars.setGlobalActionHandler(ActionFactory.PASTE.getId(),
+                    getAction(editor, ITextEditorActionConstants.PASTE));
+            actionBars.setGlobalActionHandler(ActionFactory.SELECT_ALL.getId(),
+                    getAction(editor, ITextEditorActionConstants.SELECT_ALL));
+            actionBars.setGlobalActionHandler(ActionFactory.FIND.getId(),
+                    getAction(editor, ITextEditorActionConstants.FIND));
+            actionBars.setGlobalActionHandler(IDEActionFactory.BOOKMARK.getId(),
+                    getAction(editor, IDEActionFactory.BOOKMARK.getId()));
+            actionBars.updateActionBars();
+        }
+    }
 }

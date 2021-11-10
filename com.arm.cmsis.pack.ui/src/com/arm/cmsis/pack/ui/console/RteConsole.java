@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -48,310 +48,307 @@ import com.arm.cmsis.pack.ui.preferences.CpUIPreferenceConstants;
  */
 public class RteConsole extends MessageConsole implements ICmsisConsole, IPropertyChangeListener, IRteEventListener {
 
-	public static final String CONSOLE_TYPE = "com.arm.cmsis.pack.rte.console";	 //$NON-NLS-1$
-	public static final String BASE_NAME = CpStringsUI.RteConsole_BaseName;
-	public static final String GLOBAL_NAME = CpStringsUI.RteConsole_GlobalName;
-	public boolean redirectToCDT = false;
-	protected IProject fProject = null;
+    public static final String CONSOLE_TYPE = "com.arm.cmsis.pack.rte.console"; //$NON-NLS-1$
+    public static final String BASE_NAME = CpStringsUI.RteConsole_BaseName;
+    public static final String GLOBAL_NAME = CpStringsUI.RteConsole_GlobalName;
+    public boolean redirectToCDT = false;
+    protected IProject fProject = null;
 
-	private Map<Integer, MessageConsoleStream> fStreams = new HashMap<Integer, MessageConsoleStream>();
+    private Map<Integer, MessageConsoleStream> fStreams = new HashMap<Integer, MessageConsoleStream>();
 
-	
-	public RteConsole(String name, ImageDescriptor imageDescriptor) {
-		super(name, CONSOLE_TYPE, imageDescriptor, true);
-		updateBackGround();
-		CpPlugInUI.addPreferenceStoreListener(this);
-		initStreams();
-	}
+    public RteConsole(String name, ImageDescriptor imageDescriptor) {
+        super(name, CONSOLE_TYPE, imageDescriptor, true);
+        updateBackGround();
+        CpPlugInUI.addPreferenceStoreListener(this);
+        initStreams();
+    }
 
-	public RteConsole(String name, IProject project) {
-		super(name, null);
-		fProject = project;
-		redirectToCDT = project != null ? true : false;
-	}
-	
-	public boolean isRedirectToCDT() {
-		return redirectToCDT && fProject != null;
-	}
-	
+    public RteConsole(String name, IProject project) {
+        super(name, null);
+        fProject = project;
+        redirectToCDT = project != null ? true : false;
+    }
 
-	private void initStreams() {
-		asyncExec(() -> {
-			for(int i = 0;  i < STREAM_COUNT; i++) {
-				getStream(i);
-			}
-		});
-	}
+    public boolean isRedirectToCDT() {
+        return redirectToCDT && fProject != null;
+    }
 
-	@Override
-	protected void dispose() {
-		super.dispose();
-		CpPlugInUI.removePreferenceStoreListener(this);
-		CpPlugIn.removeRteListener(this);
-		for(MessageConsoleStream stream : fStreams.values()) {
-			try {
-				stream.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		fStreams.clear();
-	}
+    private void initStreams() {
+        asyncExec(() -> {
+            for (int i = 0; i < STREAM_COUNT; i++) {
+                getStream(i);
+            }
+        });
+    }
 
-	@Override
-	public void propertyChange(PropertyChangeEvent event) {
-		String property = event.getProperty();
-		if(!property.startsWith(CpUIPreferenceConstants.CONSOLE_PREFIX)){
-			return;
-		}
-		if(property.startsWith(CpUIPreferenceConstants.CONSOLE_COLOR_PREFIX)) {
-			int streamType = getStreamType(property);
-			MessageConsoleStream stream = fStreams.get(streamType);
-			if(stream != null) {
-				updateStreamColor(stream, property);
-			}
-		} else 	if(property.equals(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT)) {
-			IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
-			boolean activateOnWrite = store.getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT);
-			for(MessageConsoleStream stream : fStreams.values()) {
-				stream.setActivateOnWrite(activateOnWrite);
-			}
-		} else if (property.equals(CpUIPreferenceConstants.CONSOLE_BG_COLOR)) {
-			updateBackGround();
-		}
-	}
+    @Override
+    protected void dispose() {
+        super.dispose();
+        CpPlugInUI.removePreferenceStoreListener(this);
+        CpPlugIn.removeRteListener(this);
+        for (MessageConsoleStream stream : fStreams.values()) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        fStreams.clear();
+    }
 
-	private void updateBackGround() {
-		asyncExec(() -> {
-			IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
-			RGB rgb = PreferenceConverter.getColor( store, CpUIPreferenceConstants.CONSOLE_BG_COLOR);
-			setBackground(new Color(Display.getCurrent(), rgb));
-		});
-	}
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        String property = event.getProperty();
+        if (!property.startsWith(CpUIPreferenceConstants.CONSOLE_PREFIX)) {
+            return;
+        }
+        if (property.startsWith(CpUIPreferenceConstants.CONSOLE_COLOR_PREFIX)) {
+            int streamType = getStreamType(property);
+            MessageConsoleStream stream = fStreams.get(streamType);
+            if (stream != null) {
+                updateStreamColor(stream, property);
+            }
+        } else if (property.equals(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT)) {
+            IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
+            boolean activateOnWrite = store.getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT);
+            for (MessageConsoleStream stream : fStreams.values()) {
+                stream.setActivateOnWrite(activateOnWrite);
+            }
+        } else if (property.equals(CpUIPreferenceConstants.CONSOLE_BG_COLOR)) {
+            updateBackGround();
+        }
+    }
 
-	MessageConsoleStream getStream(int streamType) {
-		MessageConsoleStream stream = fStreams.get(streamType);
-		if(stream == null) {
-			stream = newMessageStream();
-			initStream(stream, streamType);
-			fStreams.put(streamType, stream);
-		}
-		return stream;
-	}
+    private void updateBackGround() {
+        asyncExec(() -> {
+            IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
+            RGB rgb = PreferenceConverter.getColor(store, CpUIPreferenceConstants.CONSOLE_BG_COLOR);
+            setBackground(new Color(Display.getCurrent(), rgb));
+        });
+    }
 
-	private void initStream(MessageConsoleStream stream, int streamType) {
-		IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
-		boolean activateOnWrite = store.getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT);
-		stream.setActivateOnWrite(activateOnWrite);
-		updateStreamColor(stream, getColorPreferenceConstant(streamType));
-	}
+    MessageConsoleStream getStream(int streamType) {
+        MessageConsoleStream stream = fStreams.get(streamType);
+        if (stream == null) {
+            stream = newMessageStream();
+            initStream(stream, streamType);
+            fStreams.put(streamType, stream);
+        }
+        return stream;
+    }
 
-	private void updateStreamColor(MessageConsoleStream stream, String preferenceConstant) {
-		stream.setColor(new Color(Display.getCurrent(), getStreamColor(preferenceConstant)));
-	}
+    private void initStream(MessageConsoleStream stream, int streamType) {
+        IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
+        boolean activateOnWrite = store.getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT);
+        stream.setActivateOnWrite(activateOnWrite);
+        updateStreamColor(stream, getColorPreferenceConstant(streamType));
+    }
 
-	private RGB getStreamColor(String preferenceConstant) {
-		IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
-		return PreferenceConverter.getColor( store, preferenceConstant);
-	}
+    private void updateStreamColor(MessageConsoleStream stream, String preferenceConstant) {
+        stream.setColor(new Color(Display.getCurrent(), getStreamColor(preferenceConstant)));
+    }
 
-	private String getColorPreferenceConstant(int streamType) {
-		switch(streamType) {
-		case INFO:
-			return CpUIPreferenceConstants.CONSOLE_INFO_COLOR;
-		case WARNING:
-			return CpUIPreferenceConstants.CONSOLE_WARNING_COLOR;
-		case ERROR:
-			return  CpUIPreferenceConstants.CONSOLE_ERROR_COLOR;
-		case OUTPUT:
-		default:
-			return CpUIPreferenceConstants.CONSOLE_OUT_COLOR;
-		}
-	}
+    private RGB getStreamColor(String preferenceConstant) {
+        IPreferenceStore store = CpPlugInUI.getDefault().getPreferenceStore();
+        return PreferenceConverter.getColor(store, preferenceConstant);
+    }
 
-	private int getStreamType(String preferenceConstant) {
-		switch(preferenceConstant) {
-		case CpUIPreferenceConstants.CONSOLE_INFO_COLOR:
-			return INFO;
-		case CpUIPreferenceConstants.CONSOLE_WARNING_COLOR:
-			return WARNING;
-		case CpUIPreferenceConstants.CONSOLE_ERROR_COLOR:
-			return ERROR;
-		case CpUIPreferenceConstants.CONSOLE_OUT_COLOR:
-		default:
-			return OUTPUT;
-		}
-	}
+    private String getColorPreferenceConstant(int streamType) {
+        switch (streamType) {
+        case INFO:
+            return CpUIPreferenceConstants.CONSOLE_INFO_COLOR;
+        case WARNING:
+            return CpUIPreferenceConstants.CONSOLE_WARNING_COLOR;
+        case ERROR:
+            return CpUIPreferenceConstants.CONSOLE_ERROR_COLOR;
+        case OUTPUT:
+        default:
+            return CpUIPreferenceConstants.CONSOLE_OUT_COLOR;
+        }
+    }
 
-	/**
-	 * Outputs the message to specified console stream
-	 * @param streamType stream type: OUTPUT, INFO, WARNING, ERROR
-	 * @param msg message to output
-	 */
-	@Override
-	public void output(int streamType, String msg) {
-		if(!PlatformUI.isWorkbenchRunning()) {
-			ICmsisConsole.super.output(streamType, msg); // standard IO
-			return;
-		}
-		
-		if (isRedirectToCDT()) {
-			writeToCDTConsole(streamType, msg + '\n', fProject);
-		} else {
-			MessageConsoleStream stream = getStream(streamType);
-			stream.println(msg);
-		}
-	}
+    private int getStreamType(String preferenceConstant) {
+        switch (preferenceConstant) {
+        case CpUIPreferenceConstants.CONSOLE_INFO_COLOR:
+            return INFO;
+        case CpUIPreferenceConstants.CONSOLE_WARNING_COLOR:
+            return WARNING;
+        case CpUIPreferenceConstants.CONSOLE_ERROR_COLOR:
+            return ERROR;
+        case CpUIPreferenceConstants.CONSOLE_OUT_COLOR:
+        default:
+            return OUTPUT;
+        }
+    }
 
-	
-	
-	public static void writeToCDTConsole(int streamType, String msg, IProject project) {
-		IBuildConsoleManager manager = CUIPlugin.getDefault().getConsoleManager();
-		if (manager == null) {
-			return;
-		}
+    /**
+     * Outputs the message to specified console stream
+     *
+     * @param streamType stream type: OUTPUT, INFO, WARNING, ERROR
+     * @param msg        message to output
+     */
+    @Override
+    public void output(int streamType, String msg) {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            ICmsisConsole.super.output(streamType, msg); // standard IO
+            return;
+        }
 
-		org.eclipse.cdt.core.resources.IConsole console = manager.getConsole(project);
-		if (console == null) {
-			return;
-		}
+        if (isRedirectToCDT()) {
+            writeToCDTConsole(streamType, msg + '\n', fProject);
+        } else {
+            MessageConsoleStream stream = getStream(streamType);
+            stream.println(msg);
+        }
+    }
 
-		ConsoleOutputStream infoStream = null;
-		try {
-			switch (streamType) {
-			case INFO:
-				infoStream = console.getInfoStream();
-				break;
-			case ERROR:
-				infoStream = console.getErrorStream();
-				break;
-			case WARNING:				
-			case OUTPUT:
-			default:
-				infoStream = console.getOutputStream();
-				break;
-			}
-			infoStream.write(msg.getBytes());
-		} catch (IOException | CoreException e) {
-			e.printStackTrace();
-		} finally {
-			if (infoStream != null) {
-				try {
-					infoStream.close();
-				} catch (IOException exception) {
-					// Can't do much about it.
-				}
-			}
-		}
-	}
+    public static void writeToCDTConsole(int streamType, String msg, IProject project) {
+        IBuildConsoleManager manager = CUIPlugin.getDefault().getConsoleManager();
+        if (manager == null) {
+            return;
+        }
 
-	/**
-	 * Opens RteConsole 
-	 * @return RteConsole
-	 */
-	public static RteConsole openConsole() {
-		return openConsole(null);
-	}
+        org.eclipse.cdt.core.resources.IConsole console = manager.getConsole(project);
+        if (console == null) {
+            return;
+        }
 
-	/**
-	 * Opens RteConsole for given project
-	 * @param project IProject to open console for
-	 * @return RteConsole
-	 */
-	public static RteConsole openConsole(IProject project) {
-		return openConsole(GLOBAL_NAME, project);
-	}
+        ConsoleOutputStream infoStream = null;
+        try {
+            switch (streamType) {
+            case INFO:
+                infoStream = console.getInfoStream();
+                break;
+            case ERROR:
+                infoStream = console.getErrorStream();
+                break;
+            case WARNING:
+            case OUTPUT:
+            default:
+                infoStream = console.getOutputStream();
+                break;
+            }
+            infoStream.write(msg.getBytes());
+        } catch (IOException | CoreException e) {
+            e.printStackTrace();
+        } finally {
+            if (infoStream != null) {
+                try {
+                    infoStream.close();
+                } catch (IOException exception) {
+                    // Can't do much about it.
+                }
+            }
+        }
+    }
 
+    /**
+     * Opens RteConsole
+     *
+     * @return RteConsole
+     */
+    public static RteConsole openConsole() {
+        return openConsole(null);
+    }
 
-	/**
-	 * Opens RteConsole for given project name
-	 * @param consoleName name of console to open console for
-	 * @return RteConsole
-	 */
-	protected static synchronized RteConsole openConsole(String consoleName, IProject project) 	{
-		if(!PlatformUI.isWorkbenchRunning()) {
-			return new RteConsole(BASE_NAME, project); // will output to stdout
-		}
-		if(consoleName == null)
-			consoleName = GLOBAL_NAME;
-		if(project != null)	{
-			if (CpPlugInUI.getDefault().getPreferenceStore()
-					.getBoolean(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT)) {
-				return new RteConsole(BASE_NAME, project); //simple console just for redirection to CDT 
-			}
-		}		
-		
-		RteConsole rteConsole = null;
-		IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
-		if(consoles != null) {
-			for (IConsole console : consoles) {
-				if(!CONSOLE_TYPE.equals(console.getType())) {
-					continue;
-				}
-				String name = console.getName();
-				if (consoleName.equals(name)) {
-					rteConsole = (RteConsole) console;
-					break;
-				}
-			}
-		}
-		if (rteConsole == null) {
-			ImageDescriptor imageDescriptor = CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_CONSOLE);
-			rteConsole = new RteConsole(consoleName, imageDescriptor);
-			if(GLOBAL_NAME.equals(consoleName)) {
-				CpPlugIn.addRteListener(rteConsole);
-			}
-			ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { rteConsole });
-		}
+    /**
+     * Opens RteConsole for given project
+     *
+     * @param project IProject to open console for
+     * @return RteConsole
+     */
+    public static RteConsole openConsole(IProject project) {
+        return openConsole(GLOBAL_NAME, project);
+    }
 
-		if(CpPlugInUI.getDefault().getPreferenceStore().getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT)) {
-			showConsole(rteConsole);
-		}
-		return rteConsole;
-	}
+    /**
+     * Opens RteConsole for given project name
+     *
+     * @param consoleName name of console to open console for
+     * @return RteConsole
+     */
+    protected static synchronized RteConsole openConsole(String consoleName, IProject project) {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return new RteConsole(BASE_NAME, project); // will output to stdout
+        }
+        if (consoleName == null)
+            consoleName = GLOBAL_NAME;
+        if (project != null) {
+            if (CpPlugInUI.getDefault().getPreferenceStore().getBoolean(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT)) {
+                return new RteConsole(BASE_NAME, project); // simple console just for redirection to CDT
+            }
+        }
 
-	public static synchronized RteConsole openGlobalConsole() {
-		return openConsole(GLOBAL_NAME, null);
-	}
+        RteConsole rteConsole = null;
+        IConsole[] consoles = ConsolePlugin.getDefault().getConsoleManager().getConsoles();
+        if (consoles != null) {
+            for (IConsole console : consoles) {
+                if (!CONSOLE_TYPE.equals(console.getType())) {
+                    continue;
+                }
+                String name = console.getName();
+                if (consoleName.equals(name)) {
+                    rteConsole = (RteConsole) console;
+                    break;
+                }
+            }
+        }
+        if (rteConsole == null) {
+            ImageDescriptor imageDescriptor = CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_RTE_CONSOLE);
+            rteConsole = new RteConsole(consoleName, imageDescriptor);
+            if (GLOBAL_NAME.equals(consoleName)) {
+                CpPlugIn.addRteListener(rteConsole);
+            }
+            ConsolePlugin.getDefault().getConsoleManager().addConsoles(new IConsole[] { rteConsole });
+        }
 
-	public static synchronized void showConsole(final RteConsole console) {
-		asyncExec(() -> ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console));
-	}
+        if (CpPlugInUI.getDefault().getPreferenceStore().getBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT)) {
+            showConsole(rteConsole);
+        }
+        return rteConsole;
+    }
 
-	protected static void asyncExec(Runnable runnable) {
-		if(Display.getDefault() != null) {
-			Display.getDefault().asyncExec(runnable);
-		}
-	}
+    public static synchronized RteConsole openGlobalConsole() {
+        return openConsole(GLOBAL_NAME, null);
+    }
 
+    public static synchronized void showConsole(final RteConsole console) {
+        asyncExec(() -> ConsolePlugin.getDefault().getConsoleManager().showConsoleView(console));
+    }
 
-	@Override
-	public void handle(RteEvent event) {
-		String topic = event.getTopic();
-		final int type;
-		switch (topic) {
-		case RteEvent.PRINT :
-		case RteEvent.PRINT_OUTPUT :
-			type = OUTPUT;
-			break;
-		case RteEvent.PRINT_INFO:
-			type = INFO;
-			break;
-		case RteEvent.PRINT_WARNING:
-			type = WARNING;
-			break;
-		case RteEvent.PRINT_ERROR:
-		case RteEvent.GPDSC_LAUNCH_ERROR:			
-			type = ERROR;
-			break;
-		default :
-			return;
-		}
-		String message = (String) event.getData();
-		if(PlatformUI.isWorkbenchRunning()) {
-			asyncExec(() -> output(type, message));
-		} else {
-			 output(type, message);
-		}
-	}
+    protected static void asyncExec(Runnable runnable) {
+        if (Display.getDefault() != null) {
+            Display.getDefault().asyncExec(runnable);
+        }
+    }
+
+    @Override
+    public void handle(RteEvent event) {
+        String topic = event.getTopic();
+        final int type;
+        switch (topic) {
+        case RteEvent.PRINT:
+        case RteEvent.PRINT_OUTPUT:
+            type = OUTPUT;
+            break;
+        case RteEvent.PRINT_INFO:
+            type = INFO;
+            break;
+        case RteEvent.PRINT_WARNING:
+            type = WARNING;
+            break;
+        case RteEvent.PRINT_ERROR:
+        case RteEvent.GPDSC_LAUNCH_ERROR:
+            type = ERROR;
+            break;
+        default:
+            return;
+        }
+        String message = (String) event.getData();
+        if (PlatformUI.isWorkbenchRunning()) {
+            asyncExec(() -> output(type, message));
+        } else {
+            output(type, message);
+        }
+    }
 }

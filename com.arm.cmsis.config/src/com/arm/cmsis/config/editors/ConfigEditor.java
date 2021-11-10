@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,7 +36,7 @@ import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.ErrorDialog;
-import org.eclipse.jface.resource.FontDescriptor;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.DocumentEvent;
 import org.eclipse.jface.text.IDocument;
@@ -58,7 +58,6 @@ import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -118,7 +117,7 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
     /** The document in the editor. */
     private IDocument fDocument;
 
-    /** The resource file in the workspace*/
+    /** The resource file in the workspace */
     IFile fFile;
 
     /** parser job for the config wizard. */
@@ -172,10 +171,9 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
                     @Override
                     public void run() {
                         IConfigWizardItem root = fParser.getConfigWizardRoot();
-                        if (root == null) {	// parsing error
+                        if (root == null) { // parsing error
                             editor.selectAndReveal(fParser.getParsingErrorOffset(), 0);
-                        } else if (fViewer.getControl() != null &&
-                                !fViewer.getControl().isDisposed()) {
+                        } else if (fViewer.getControl() != null && !fViewer.getControl().isDisposed()) {
                             fViewer.setInput(root);
                         }
                     }
@@ -213,14 +211,13 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
 
             fDocument = editor.getDocumentProvider().getDocument(editor.getEditorInput());
         } catch (PartInitException e) {
-            ErrorDialog.openError(getSite().getShell(), Messages.ConfigEditor_ErrorInNestedTextEditor,
-                    null, e.getStatus());
+            ErrorDialog.openError(getSite().getShell(), Messages.ConfigEditor_ErrorInNestedTextEditor, null,
+                    e.getStatus());
         }
     }
 
     /**
-     * Creates page 1 of the multi-page editor, which shows the
-     * configuration wizard
+     * Creates page 1 of the multi-page editor, which shows the configuration wizard
      */
     void createPage1() {
 
@@ -269,8 +266,8 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
 
     /**
      * The <code>MultiPageEditorPart</code> implementation of this
-     * <code>IWorkbenchPart</code> method disposes all nested editors.
-     * Subclasses may extend.
+     * <code>IWorkbenchPart</code> method disposes all nested editors. Subclasses
+     * may extend.
      */
     @Override
     public void dispose() {
@@ -287,9 +284,9 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
     }
 
     /**
-     * Saves the multi-page editor's document as another file. Also updates the
-     * text for page 0's tab, and updates this multi-page editor's input to
-     * correspond to the nested editor's.
+     * Saves the multi-page editor's document as another file. Also updates the text
+     * for page 0's tab, and updates this multi-page editor's input to correspond to
+     * the nested editor's.
      */
     @Override
     public void doSaveAs() {
@@ -303,13 +300,13 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
     protected void setInput(IEditorInput input) {
         super.setInput(input);
         fFile = ResourceUtil.getFile(input);
-        String title= input.getName();
+        String title = input.getName();
         setPartName(title);
     }
 
     /**
-     * The <code>MultiPageEditorExample</code> implementation of this method
-     * checks that the input is an instance of <code>IFileEditorInput</code>.
+     * The <code>MultiPageEditorExample</code> implementation of this method checks
+     * that the input is an instance of <code>IFileEditorInput</code>.
      */
     @Override
     public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
@@ -325,7 +322,7 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
     }
 
     /**
-    
+     *
      * Calculates the contents of page 2 when the it is activated.
      */
     @Override
@@ -367,23 +364,19 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
                 int kind = delta.getKind();
                 int flags = delta.getFlags();
 
-                if (type == IResource.FILE && kind == IResourceDelta.REMOVED
-                        && resource.equals(fFile)) {
+                if (type == IResource.FILE && kind == IResourceDelta.REMOVED && resource.equals(fFile)) {
 
                     if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
                         // renamed
                         IPath newPath = delta.getMovedToPath();
-                        IFile r = (IFile) ResourcesPlugin.getWorkspace()
-                                .getRoot().findMember(newPath);
-                        final FileEditorInput fileEditorInput = new FileEditorInput(
-                                r);
+                        IFile r = (IFile) ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
+                        final FileEditorInput fileEditorInput = new FileEditorInput(r);
                         Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
                         return false;
                     } else if (flags == 0 // project deleted
                             || (flags & IResourceDelta.MARKERS) != 0) { // markers have changed
                         Display.getDefault().asyncExec(() -> {
-                            ConfigEditor.this.getEditorSite().getPage()
-                            .closeEditor(ConfigEditor.this, true);
+                            ConfigEditor.this.getEditorSite().getPage().closeEditor(ConfigEditor.this, true);
                         });
                         return false;
                     }
@@ -420,16 +413,18 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
         super.setFocus();
     }
 
-    /************************* Here begins the Configuration Wizard GUI part *************************/
+    /*************************
+     * Here begins the Configuration Wizard GUI part
+     *************************/
 
     class ManagedToolBar {
         ToolBar toolBar;
         ToolBarManager toolBarManager;
 
-        public ManagedToolBar(final Composite parent, int style){
+        public ManagedToolBar(final Composite parent, int style) {
             toolBarManager = new ToolBarManager(style);
             toolBar = toolBarManager.createControl(parent);
-            toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL|GridData.GRAB_HORIZONTAL));
+            toolBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.GRAB_HORIZONTAL));
             toolBar.addListener(SWT.FOCUSED, new Listener() {
                 @Override
                 public void handleEvent(Event event) {
@@ -439,7 +434,7 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
         }
 
         public void addAction(IAction action, boolean showText) {
-            if(showText) {
+            if (showText) {
                 ActionContributionItem aci = new ActionContributionItem(action);
                 aci.setMode(ActionContributionItem.MODE_FORCE_TEXT);
                 toolBarManager.add(aci);
@@ -463,12 +458,10 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
         imageLabel.setImage(CpPlugInUI.getImage(CpPlugInUI.ICON_DETAILS));
 
         Label title = new Label(parent, SWT.NONE);
-        FontDescriptor boldDescriptor = FontDescriptor.createFrom(title.getFont()).setStyle(SWT.BOLD).increaseHeight(1);
-        Font boldFont = boldDescriptor.createFont(title.getDisplay());
-        title.setFont(boldFont);
+        title.setFont(JFaceResources.getHeaderFont());
         title.setText(Messages.ConfigEditor_SecondPageText);
 
-        ManagedToolBar toolbar = new ManagedToolBar(parent, SWT.FLAT|SWT.RIGHT_TO_LEFT);
+        ManagedToolBar toolbar = new ManagedToolBar(parent, SWT.FLAT | SWT.RIGHT_TO_LEFT);
 
         PlatformUI.getWorkbench().getHelpSystem().setHelp(parent, IHelpContextIds.CONFIG_WIZARD);
 
@@ -699,55 +692,54 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
                 return null;
             }
 
-            long value = item.getValue();		// current selected value in the combo box
-            long modifier = item.getModifier();	// number modifier after the keyword o
+            long value = item.getValue(); // current selected value in the combo box
+            long modifier = item.getModifier(); // number modifier after the keyword o
             char op = item.getModification();
-            long realValue = Utils.modifyValueR(value, op, modifier,
-                    item.getMaxValue(), item.getMinValue());
+            long realValue = Utils.modifyValueR(value, op, modifier, item.getMaxValue(), item.getMinValue());
 
-            if (item.isStringOption() && type == CellControlType.MENU) {	// string options
-            	Map<String, String> items = item.getStrItems();
-            	if (item.getSelStr() != null && items.containsKey(item.getSelStr())) {
-            		return items.get(item.getSelStr());
-            	}
+            if (item.isStringOption() && type == CellControlType.MENU) { // string options
+                Map<String, String> items = item.getStrItems();
+                if (item.getSelStr() != null && items.containsKey(item.getSelStr())) {
+                    return items.get(item.getSelStr());
+                }
                 return null;
             }
-			if (type == CellControlType.MENU) {
-			    Map<Long, String> items = item.getItems();
-			    if (items.containsKey(realValue)) {
-			        return items.get(realValue);
-			    }
-			    return null;
-			}
-			if (item.getBase() == 10) {
-			    return String.valueOf(realValue);
-			} else if (item.getBase() == 2) {
-			    String str = Long.toBinaryString(realValue);
-			    StringBuilder sb = new StringBuilder(str);
-			    int idx = sb.length() - 4;
+            if (type == CellControlType.MENU) {
+                Map<Long, String> items = item.getItems();
+                if (items.containsKey(realValue)) {
+                    return items.get(realValue);
+                }
+                return null;
+            }
+            if (item.getBase() == 10) {
+                return String.valueOf(realValue);
+            } else if (item.getBase() == 2) {
+                String str = Long.toBinaryString(realValue);
+                StringBuilder sb = new StringBuilder(str);
+                int idx = sb.length() - 4;
 
-			    while (idx > 0) {
-			        sb.insert(idx, " "); //$NON-NLS-1$
-			        idx = idx - 4;
-			    }
-			    return "0b" + sb.toString().toUpperCase(); //$NON-NLS-1$
-			} else if (item.getBase() == 8) {
-			    String str = Long.toOctalString(realValue);
-			    return "0" + str; //$NON-NLS-1$
-			} else {
-			    String str = Long.toHexString(realValue);
-			    if (!str.startsWith("0") && str.length()%2 != 0) { //$NON-NLS-1$
-			        str = "0" + str; //$NON-NLS-1$
-			    }
-			    StringBuilder sb = new StringBuilder(str);
-			    int idx = sb.length() - 4;
+                while (idx > 0) {
+                    sb.insert(idx, " "); //$NON-NLS-1$
+                    idx = idx - 4;
+                }
+                return "0b" + sb.toString().toUpperCase(); //$NON-NLS-1$
+            } else if (item.getBase() == 8) {
+                String str = Long.toOctalString(realValue);
+                return "0" + str; //$NON-NLS-1$
+            } else {
+                String str = Long.toHexString(realValue);
+                if (!str.startsWith("0") && str.length() % 2 != 0) { //$NON-NLS-1$
+                    str = "0" + str; //$NON-NLS-1$
+                }
+                StringBuilder sb = new StringBuilder(str);
+                int idx = sb.length() - 4;
 
-			    while (idx > 0) {
-			        sb.insert(idx, " "); //$NON-NLS-1$
-			        idx = idx - 4;
-			    }
-			    return "0x" + sb.toString().toUpperCase(); //$NON-NLS-1$
-			}
+                while (idx > 0) {
+                    sb.insert(idx, " "); //$NON-NLS-1$
+                    idx = idx - 4;
+                }
+                return "0x" + sb.toString().toUpperCase(); //$NON-NLS-1$
+            }
         }
 
         @Override
@@ -767,8 +759,7 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
             }
             long modifier = item.getModifier();
             char op = item.getModification();
-            long realValue = Utils.modifyValueR(item.getValue(), op, modifier,
-                    item.getMaxValue(), item.getMinValue());
+            long realValue = Utils.modifyValueR(item.getValue(), op, modifier, item.getMaxValue(), item.getMinValue());
             return realValue;
         }
 
@@ -829,7 +820,7 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
             }
             IConfigWizardItem item = getConfigWizardItem(obj);
             fParser.updateModel(item, newVal);
-            fViewer.update(item,  null);
+            fViewer.update(item, null);
         }
 
         @Override
@@ -844,8 +835,7 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
     }
 
     private void buildTreeViewer(Composite parent) {
-        fViewer = new TreeViewer(parent, SWT.FULL_SELECTION | SWT.BORDER |
-                SWT.H_SCROLL | SWT.V_SCROLL);
+        fViewer = new TreeViewer(parent, SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         Tree tree = fViewer.getTree();
         tree.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 3, 1));
         tree.addSelectionListener(new SelectionAdapter() {
@@ -893,7 +883,7 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
                     Tree tree = (Tree) fViewer.getControl();
                     Rectangle area = parent.getClientArea();
                     Point preferredSize = tree.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-                    int width = area.width - 2*tree.getBorderWidth();
+                    int width = area.width - 2 * tree.getBorderWidth();
                     if (preferredSize.y > tree.getBounds().height) {
                         // Subtract the scrollbar width from the total column width
                         // if a vertical scrollbar will be required
@@ -905,16 +895,16 @@ public class ConfigEditor extends MultiPageEditorPart implements IResourceChange
                         // tree is getting smaller so make the columns
                         // smaller first and then resize the tree to
                         // match the client area width
-                        column2.getColumn().setWidth(Math.max(0, width - column0.getColumn().getWidth() -
-                                column1.getColumn().getWidth() - 10));
+                        column2.getColumn().setWidth(Math.max(0,
+                                width - column0.getColumn().getWidth() - column1.getColumn().getWidth() - 10));
                         tree.setSize(area.width, area.height);
                     } else {
                         // tree is getting bigger so make the tree
                         // bigger first and then make the columns wider
                         // to match the client area width
                         tree.setSize(area.width, area.height);
-                        column2.getColumn().setWidth(Math.max(0, width - column0.getColumn().getWidth() -
-                                column1.getColumn().getWidth() - 10));
+                        column2.getColumn().setWidth(Math.max(0,
+                                width - column0.getColumn().getWidth() - column1.getColumn().getWidth() - 10));
                     }
                 }
             });

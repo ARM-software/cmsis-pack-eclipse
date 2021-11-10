@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -21,30 +21,30 @@ import com.arm.cmsis.pack.utils.DeviceVendor;
  */
 public class CpAttributes extends Attributes {
 
-	public CpAttributes() {
-		super();
-	}
+    public CpAttributes() {
+        super();
+    }
 
-	/**
-	 * Copy constructor
-	 * @param copyFrom
-	 */
-	public CpAttributes(IAttributes copyFrom) {
-		super(copyFrom);
-	}
+    /**
+     * Copy constructor
+     *
+     * @param copyFrom
+     */
+    public CpAttributes(IAttributes copyFrom) {
+        super(copyFrom);
+    }
 
-
-	@Override
-	public boolean matchAttribute(String key, String value, String pattern) {
-		if(CmsisConstants.DVENDOR.equals(key)) {
-			return DeviceVendor.match(value, pattern);
-		}
-		if (CmsisConstants.DCDECP.equals(key)) { // CDE support
-			long lval = IAttributes.stringToLong(value, 0L);
-			long lpat = IAttributes.stringToLong(pattern, 0L);
-			return (lval & lpat) != 0; // alternatively considered (lval & lpat) == lpat
-		}
-		return super.matchAttribute(key, value, pattern);
-	}
+    @Override
+    public boolean matchAttribute(String key, String value, String pattern) {
+        if (CmsisConstants.DVENDOR.equals(key)) {
+            return DeviceVendor.match(value, pattern);
+        }
+        if (CmsisConstants.DCDECP.equals(key)) { // CDE support
+            long lval = IAttributes.stringToLong(value, 0L);
+            long lpat = IAttributes.stringToLong(pattern, 0L);
+            return (lval & lpat) != 0; // alternatively considered (lval & lpat) == lpat
+        }
+        return super.matchAttribute(key, value, pattern);
+    }
 
 }

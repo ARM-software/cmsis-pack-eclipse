@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2017 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -19,29 +19,28 @@ import com.arm.cmsis.pack.data.ICpItem;
  */
 public class CpProcessorUnit extends CpResourceItem implements ICpProcessorUnit {
 
-	
-	public CpProcessorUnit(ICpItem parent, String tag) {
-		super(parent, tag);
-	}
-	
-	@Override
-	public void invalidate() {
-		super.invalidate();
-	}
+    public CpProcessorUnit(ICpItem parent, String tag) {
+        super(parent, tag);
+    }
 
-	@Override
-	protected String constructName() {
-		if(hasAttribute(CmsisConstants.PNAME)) {
-			return getAttribute(CmsisConstants.PNAME);
-		}
-		if(hasAttribute(CmsisConstants.DCORE)) {
-			return getAttribute(CmsisConstants.DCORE);
-		}
-		return getTag();
-	}
-	
-	@Override
-	 public String getDeviceName() {
-		return getParentDeviceUnit().getDeviceName();
-	}
+    @Override
+    public void invalidate() {
+        super.invalidate();
+    }
+
+    @Override
+    protected String constructName() {
+        if (hasAttribute(CmsisConstants.PNAME)) {
+            return getAttribute(CmsisConstants.PNAME);
+        }
+        if (hasAttribute(CmsisConstants.DCORE)) {
+            return getAttribute(CmsisConstants.DCORE);
+        }
+        return getTag();
+    }
+
+    @Override
+    public String getDeviceName() {
+        return getParentDeviceUnit().getDeviceName();
+    }
 }

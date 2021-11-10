@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -18,26 +18,26 @@ import com.arm.cmsis.pack.common.CmsisConstants;
  */
 public class CpTaxonomyContainer extends CpItem {
 
-	/**
-	 * @param parent
-	 */
-	public CpTaxonomyContainer(ICpItem parent) {
-		super(parent);
-	}
+    /**
+     * @param parent
+     */
+    public CpTaxonomyContainer(ICpItem parent) {
+        super(parent);
+    }
 
-	/**
-	 * @param parent
-	 * @param tag
-	 */
-	public CpTaxonomyContainer(ICpItem parent, String tag) {
-		super(parent, tag);
-	}
+    /**
+     * @param parent
+     * @param tag
+     */
+    public CpTaxonomyContainer(ICpItem parent, String tag) {
+        super(parent, tag);
+    }
 
-	@Override
-	protected ICpItem createChildItem(String tag) {
-		if(tag.equals(CmsisConstants.DESCRIPTION)) 
-			return new CpTaxonomy(this, tag);
-		return super.createChildItem(tag);
-	}
+    @Override
+    protected ICpItem createChildItem(String tag) {
+        if (tag.equals(CmsisConstants.DESCRIPTION))
+            return new CpTaxonomy(this, tag);
+        return super.createChildItem(tag);
+    }
 
 }

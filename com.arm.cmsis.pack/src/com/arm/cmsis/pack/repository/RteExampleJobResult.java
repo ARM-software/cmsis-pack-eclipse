@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2016 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -15,54 +15,54 @@ package com.arm.cmsis.pack.repository;
  * The result of an example job, copy
  */
 public class RteExampleJobResult {
-	
-	protected String projectPath;
-	protected boolean success;
-	protected String errorString;
 
-	public RteExampleJobResult() {
-	}
+    protected String projectPath;
+    protected boolean success;
+    protected String errorString;
 
-	/**
-	 * @return the projectPath
-	 */
-	public String getProjectPath() {
-		return projectPath;
-	}
+    public RteExampleJobResult() {
+    }
 
-	/**
-	 * @param projectPath the projectPath to set
-	 */
-	public void setProjectPath(String projectPath) {
-		this.projectPath = projectPath;
-	}
+    /**
+     * @return the projectPath
+     */
+    public String getProjectPath() {
+        return projectPath;
+    }
 
-	/**
-	 * @return the success
-	 */
-	public boolean isSuccess() {
-		return success;
-	}
+    /**
+     * @param projectPath the projectPath to set
+     */
+    public void setProjectPath(String projectPath) {
+        this.projectPath = projectPath;
+    }
 
-	/**
-	 * @param success the success to set
-	 */
-	public void setSuccess(boolean success) {
-		this.success = success;
-	}
+    /**
+     * @return the success
+     */
+    public boolean isSuccess() {
+        return success;
+    }
 
-	/**
-	 * @return the errorString
-	 */
-	public String getErrorString() {
-		return errorString;
-	}
+    /**
+     * @param success the success to set
+     */
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
 
-	/**
-	 * @param errorString the errorString to set
-	 */
-	public void setErrorString(String errorString) {
-		this.errorString = errorString;
-	}
-	
+    /**
+     * @return the errorString
+     */
+    public String getErrorString() {
+        return errorString;
+    }
+
+    /**
+     * @param errorString the errorString to set
+     */
+    public void setErrorString(String errorString) {
+        this.errorString = errorString;
+    }
+
 }

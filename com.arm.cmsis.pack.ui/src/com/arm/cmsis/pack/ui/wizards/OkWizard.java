@@ -8,39 +8,41 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 
 /**
- * Wizard to show either OK or Finish button  
+ * Wizard to show either OK or Finish button
  */
 
 public abstract class OkWizard extends Wizard implements INewWizard {
-	
-	/**
-	 * Runs the wizard in a dialog
-	 * @param shell
-	 * @return Wizard dialog return code
-	 */
-	public int execute(Shell shell){
-		WizardDialog dlg;
-		if(isShowOkButton()) {
-			dlg = new OkWizardDialog(shell, this);
-		} else {
-			dlg = new WizardDialog(shell, this);
-		}
-		dlg.setPageSize(600, 400); // limit initial size 
 
-		return dlg.open();
-	}
+    /**
+     * Runs the wizard in a dialog
+     * 
+     * @param shell
+     * @return Wizard dialog return code
+     */
+    public int execute(Shell shell) {
+        WizardDialog dlg;
+        if (isShowOkButton()) {
+            dlg = new OkWizardDialog(shell, this);
+        } else {
+            dlg = new WizardDialog(shell, this);
+        }
+        dlg.setPageSize(600, 400); // limit initial size
 
-	/**
-	 * Checks if show "OK" button instead of "Finish", default is true
-	 * @return true if show "OK" button instead of "Finish"  
-	 */
-	public boolean isShowOkButton() {
-		return true;
-	}
+        return dlg.open();
+    }
 
-	@Override
-	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		// default does nothing 
-	}
-	
+    /**
+     * Checks if show "OK" button instead of "Finish", default is true
+     * 
+     * @return true if show "OK" button instead of "Finish"
+     */
+    public boolean isShowOkButton() {
+        return true;
+    }
+
+    @Override
+    public void init(IWorkbench workbench, IStructuredSelection selection) {
+        // default does nothing
+    }
+
 }

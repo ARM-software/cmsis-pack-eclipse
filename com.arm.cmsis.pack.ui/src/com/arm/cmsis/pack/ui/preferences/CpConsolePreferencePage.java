@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,40 +26,41 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
  * Console preferences : colors, activation
  *
  */
-public class CpConsolePreferencePage extends FieldEditorPreferencePage implements
-IWorkbenchPreferencePage {
+public class CpConsolePreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
-	public CpConsolePreferencePage() {
-		super(GRID);
-	}
+    public CpConsolePreferencePage() {
+        super(GRID);
+    }
 
+    @Override
+    public void init(IWorkbench workbench) {
+        setPreferenceStore(CpPlugInUI.getDefault().getPreferenceStore());
+    }
 
-	@Override
-	public void init(IWorkbench workbench) {
-		setPreferenceStore(CpPlugInUI.getDefault().getPreferenceStore());
-	}
+    @Override
+    public Image getImage() {
+        return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_CONSOLE);
+    }
 
-	@Override
-	public Image getImage() {
-		return CpPlugInUI.getImage(CpPlugInUI.ICON_RTE_CONSOLE);
-	}
+    @Override
+    protected void createFieldEditors() {
 
+        addField(new BooleanFieldEditor(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT,
+                CpStringsUI.CpConsolePreferencePage_PrintInCdtConsole, SWT.NONE, getFieldEditorParent()));
+        addField(new BooleanFieldEditor(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT,
+                CpStringsUI.CpConsolePreferencePage_AutoOpen, SWT.NONE, getFieldEditorParent()));
 
-	@Override
-	protected void createFieldEditors() {
+        addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_OUT_COLOR,
+                CpStringsUI.CpConsolePreferencePage_OutputColor, getFieldEditorParent()));
+        addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_INFO_COLOR,
+                CpStringsUI.CpConsolePreferencePage_InfoColor, getFieldEditorParent()));
+        addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_WARNING_COLOR,
+                CpStringsUI.CpConsolePreferencePage_WarnColor, getFieldEditorParent()));
+        addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_ERROR_COLOR,
+                CpStringsUI.CpConsolePreferencePage_ErrorColor, getFieldEditorParent()));
+        addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_BG_COLOR,
+                CpStringsUI.CpConsolePreferencePage_BgColor, getFieldEditorParent()));
 
-		addField(new BooleanFieldEditor(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT, CpStringsUI.CpConsolePreferencePage_PrintInCdtConsole, SWT.NONE, getFieldEditorParent()));
-		addField(new BooleanFieldEditor(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT, CpStringsUI.CpConsolePreferencePage_AutoOpen, SWT.NONE, getFieldEditorParent()));
-
-		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_OUT_COLOR, CpStringsUI.CpConsolePreferencePage_OutputColor, getFieldEditorParent()));
-		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_INFO_COLOR, CpStringsUI.CpConsolePreferencePage_InfoColor, getFieldEditorParent()));
-		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_WARNING_COLOR, CpStringsUI.CpConsolePreferencePage_WarnColor, getFieldEditorParent()));
-		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_ERROR_COLOR, CpStringsUI.CpConsolePreferencePage_ErrorColor, getFieldEditorParent()));
-		addField(new ColorFieldEditor(CpUIPreferenceConstants.CONSOLE_BG_COLOR, CpStringsUI.CpConsolePreferencePage_BgColor, getFieldEditorParent()));
-
-	}
-
-
-
+    }
 
 }

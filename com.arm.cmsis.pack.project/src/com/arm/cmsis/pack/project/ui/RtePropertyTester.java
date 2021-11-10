@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2018 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,16 +15,15 @@ import org.eclipse.core.expressions.PropertyTester;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
 
 public class RtePropertyTester extends PropertyTester {
-	
-	public RtePropertyTester() {
-	}
 
-	@Override
-	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-		if (property.equalsIgnoreCase("rteFile")) { //$NON-NLS-1$
-			return ProjectUtils.getRteFileResource(receiver) != null;
-		}	
-		return false;
-	}
+    public RtePropertyTester() {
+    }
+
+    @Override
+    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+        if (property.equalsIgnoreCase("rteFile")) { //$NON-NLS-1$
+            return ProjectUtils.getRteFileResource(receiver) != null;
+        }
+        return false;
+    }
 }
-	

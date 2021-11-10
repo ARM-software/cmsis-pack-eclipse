@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2016 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -16,9 +16,10 @@ package com.arm.cmsis.pack.dsq;
  */
 public interface IDsqSequence extends IDsqContext {
 
-	/**
-	 * Returns the sequence name to execute
-	 * @return Sequence name to execute
-	 */
-	String getSequenceName();
+    /**
+     * Returns the sequence name to execute
+     *
+     * @return Sequence name to execute
+     */
+    String getSequenceName();
 }

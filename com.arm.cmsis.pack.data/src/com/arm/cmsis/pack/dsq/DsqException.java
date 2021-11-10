@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2016 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -16,43 +16,41 @@ package com.arm.cmsis.pack.dsq;
  */
 public class DsqException extends RuntimeException {
 
-	protected static final long serialVersionUID = 3964836352901582595L;
+    protected static final long serialVersionUID = 3964836352901582595L;
 
+    public DsqException() {
+    }
 
-	public DsqException() {
-	}
+    /**
+     * @param message
+     */
+    public DsqException(String message) {
+        super(message);
+    }
 
-	/**
-	 * @param message
-	 */
-	public DsqException(String message) {
-		super(message);
-	}
+    /**
+     * @param cause
+     */
+    public DsqException(Throwable cause) {
+        super(cause);
+    }
 
-	/**
-	 * @param cause
-	 */
-	public DsqException(Throwable cause) {
-		super(cause);
-	}
+    /**
+     * @param message
+     * @param cause
+     */
+    public DsqException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-	/**
-	 * @param message
-	 * @param cause
-	 */
-	public DsqException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-	/**
-	 * @param message
-	 * @param cause
-	 * @param enableSuppression
-	 * @param writableStackTrace
-	 */
-	public DsqException(String message, Throwable cause, boolean enableSuppression,
-			boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
+    /**
+     * @param message
+     * @param cause
+     * @param enableSuppression
+     * @param writableStackTrace
+     */
+    public DsqException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 
 }

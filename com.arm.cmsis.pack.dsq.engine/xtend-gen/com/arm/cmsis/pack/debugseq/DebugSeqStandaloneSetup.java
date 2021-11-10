@@ -3,8 +3,6 @@
  */
 package com.arm.cmsis.pack.debugseq;
 
-import com.arm.cmsis.pack.debugseq.DebugSeqStandaloneSetupGenerated;
-
 /**
  * Initialization support for running Xtext languages without Equinox extension registry.
  */

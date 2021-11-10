@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
+<!DOCTYPE xml>
 <plugin>
    <extension
          point="com.arm.cmsis.pack.PackInstaller">
@@ -10,5 +11,4 @@
             name="Default CMSIS-Pack installer ">
       </PackInstaller>
    </extension>
-
 </plugin>

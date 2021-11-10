@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,23 +18,24 @@ import com.arm.cmsis.pack.dsq.IDsqClient;
 import com.arm.cmsis.pack.dsq.IDsqCommand;
 
 /**
- * Reference Debug Sequence Executor implementation, rotates command result for each execution
+ * Reference Debug Sequence Executor implementation, rotates command result for
+ * each execution
  */
 public class RefDebugSeqClient implements IDsqClient {
 
-	private long commandResult = 1;
+    private long commandResult = 1;
 
-	@Override
-	public void execute(List<IDsqCommand> commands, boolean atomic) throws DsqException {
-		for (IDsqCommand cmd : commands) {
-			cmd.setOutput(commandResult);
-			commandResult = Long.rotateLeft(commandResult, 1);
-		}
-	}
+    @Override
+    public void execute(List<IDsqCommand> commands, boolean atomic) throws DsqException {
+        for (IDsqCommand cmd : commands) {
+            cmd.setOutput(commandResult);
+            commandResult = Long.rotateLeft(commandResult, 1);
+        }
+    }
 
-	@Override
-	public long query(long type, String message, long defaultValue) throws DsqException {
-		return 1;
-	}
+    @Override
+    public long query(long type, String message, long defaultValue) throws DsqException {
+        return 1;
+    }
 
 }

@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Refclient
 Bundle-SymbolicName: com.arm.cmsis.pack.refclient;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.pack.refclient
-Bundle-Version: 2.6.0.qualifier
+Bundle-Version: 2.6.1.qualifier
 Bundle-Activator: com.arm.cmsis.pack.refclient.Activator
-Bundle-Vendor: ARM
+Bundle-Vendor: Arm Limited
 Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.console,
  org.eclipse.core.runtime,

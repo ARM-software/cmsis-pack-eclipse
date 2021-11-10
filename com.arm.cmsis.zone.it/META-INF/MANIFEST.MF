@@ -3,16 +3,15 @@ Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS-Zone unit tests
 Bundle-SymbolicName: com.arm.cmsis.zone.it;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.zone.it
-Bundle-Version: 1.1.0.qualifier
+Bundle-Version: 1.2.0.qualifier
 Bundle-Activator: com.arm.cmsis.zone.it.CmsisZoneTestsActivator
-Bundle-Vendor: ARM
+Bundle-Vendor: Arm Limited
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  com.arm.cmsis.zone.ui,
  org.eclipse.core.resources,
- com.arm.cmsis.pack.common;bundle-version="2.6.0",
- com.arm.cmsis.pack.project;bundle-version="2.6.0",
- javax.xml.bind
+ com.arm.cmsis.pack.common;bundle-version="2.6.1",
+ com.arm.cmsis.pack.project;bundle-version="2.6.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Import-Package: junit.framework;version="4.12.0",

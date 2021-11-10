@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -15,28 +15,29 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPackFilter;
 
 /**
- *  Interface to store/load pack filter
+ * Interface to store/load pack filter
  */
 public interface ICpPackFilterInfo extends ICpItem {
 
-	/**
-	 * Creates pack filter based on information stored in the info 
-	 * @return ICpPackFilter
-	 */
-	ICpPackFilter createPackFilter();
-	
-	/**
-	 * Check is to latest versions of all installed packs 
-	 * @return true if the latest versions of packs should be used
-	 */
-	boolean isUseAllLatestPacks();
-	
-	/**
-	 * Sets if to use only latest versions of all installed packs 
-	 * @param bUseLatest flag if to use latest 
-	 */
-	void setUseAllLatestPacks(boolean bUseLatest);
+    /**
+     * Creates pack filter based on information stored in the info
+     *
+     * @return ICpPackFilter
+     */
+    ICpPackFilter createPackFilter();
 
-	
-	
+    /**
+     * Check is to latest versions of all installed packs
+     *
+     * @return true if the latest versions of packs should be used
+     */
+    boolean isUseAllLatestPacks();
+
+    /**
+     * Sets if to use only latest versions of all installed packs
+     *
+     * @param bUseLatest flag if to use latest
+     */
+    void setUseAllLatestPacks(boolean bUseLatest);
+
 }

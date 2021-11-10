@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2019 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -18,35 +18,25 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.zone.data.ICpMemoryBlock;
 
 /**
- * 
+ *
  */
 public class MemoryMapEntry extends CpItem {
 
-	public MemoryMapEntry(ICpItem parent) {
-		super(parent);
-		// TODO Auto-generated constructor stub
-	}
+    public MemoryMapEntry(ICpItem parent) {
+        super(parent);
+        // TODO Auto-generated constructor stub
+    }
 
+    enum Type {
+        UNDEFINED, START, STOP
+    }
 
+    protected Long fAddress = null;
+    protected Type fType;
+    protected ArrayList<ICpMemoryBlock> fBlocks;
 
-	enum Type {
-		UNDEFINED,
-		START,
-		STOP
-	}
-	
-	protected Long fAddress = null;
-	protected Type fType;
-	protected ArrayList<ICpMemoryBlock> fBlocks;
-	
-	
-	
-	public void addBlock(ICpMemoryBlock block){
-		
-		
-		
-		
-	}
-	
-	
+    public void addBlock(ICpMemoryBlock block) {
+
+    }
+
 }

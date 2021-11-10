@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -12,17 +12,17 @@
 package com.arm.cmsis.pack.data;
 
 /**
- * 
+ *
  */
 public class CpTrace extends CpDeviceProperty implements ICpTrace {
 
-	public CpTrace(ICpItem parent, String tag) {
-		super(parent, tag);
-	}
+    public CpTrace(ICpItem parent, String tag) {
+        super(parent, tag);
+    }
 
-	@Override
-	public boolean isSupported() {
-		return hasChildren();
-	}
-	
+    @Override
+    public boolean isSupported() {
+        return hasChildren();
+    }
+
 }

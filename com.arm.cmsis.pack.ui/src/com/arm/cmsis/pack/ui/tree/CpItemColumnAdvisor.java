@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2019 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -16,32 +16,32 @@ import org.eclipse.jface.viewers.ColumnViewer;
 import com.arm.cmsis.pack.data.ICpItem;
 
 /**
- * 
+ *
  */
 public class CpItemColumnAdvisor extends ColumnAdvisor {
 
-	/**
-	 * Simple column advisor for ICpItem 
-	 * @param columnViewer
-	 */
-	public CpItemColumnAdvisor(ColumnViewer columnViewer) {
-		super(columnViewer);
-	}
+    /**
+     * Simple column advisor for ICpItem
+     *
+     * @param columnViewer
+     */
+    public CpItemColumnAdvisor(ColumnViewer columnViewer) {
+        super(columnViewer);
+    }
 
-	@Override
-	public String getString(Object obj, int columnIndex) {
-		ICpItem item = getItem(obj);
-		if(item == null)
-			return null;
-		if(columnIndex == 0) {
-			return item.getName();
-		}
-		return null;
-	}
+    @Override
+    public String getString(Object obj, int columnIndex) {
+        ICpItem item = getItem(obj);
+        if (item == null)
+            return null;
+        if (columnIndex == 0) {
+            return item.getName();
+        }
+        return null;
+    }
 
-	public ICpItem getItem(Object obj) {
-		return ICpItem.cast(obj);
-	}
-	
-	
+    public ICpItem getItem(Object obj) {
+        return ICpItem.cast(obj);
+    }
+
 }

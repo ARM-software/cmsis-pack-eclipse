@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2019 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -19,17 +19,18 @@ import com.arm.cmsis.pack.permissions.IMemorySecurity;
  */
 public interface ICpZoneCreator extends ICpZoneItem, IMemorySecurity, IMemoryPriviledge {
 
-	/**
-	 * Retrieves name of a tool created the zone
-	 * @return String
-	 */
-	String getTool();
-	
-	/**
-	 * Sets tool name  
-	 * @param tool tool name and version
-	 */
-	void setTool(String tool);
-	
-	
+    /**
+     * Retrieves name of a tool created the zone
+     *
+     * @return String
+     */
+    String getTool();
+
+    /**
+     * Sets tool name
+     *
+     * @param tool tool name and version
+     */
+    void setTool(String tool);
+
 }

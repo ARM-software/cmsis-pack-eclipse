@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2017 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -19,38 +19,37 @@ import com.arm.cmsis.pack.permissions.IMemoryAccess;
  */
 public class CpPeripheralItem extends CpMemoryBlock implements ICpPeripheralItem {
 
-	public CpPeripheralItem(ICpItem parent, String tag) {
-		super(parent, tag);
-	}
+    public CpPeripheralItem(ICpItem parent, String tag) {
+        super(parent, tag);
+    }
 
-	/**
-	 * Copy constructor
-	 * @param realItem item to copy
-	 */
-	public CpPeripheralItem(ICpPeripheralItem realItem) {
-		super(realItem);
-	}
+    /**
+     * Copy constructor
+     *
+     * @param realItem item to copy
+     */
+    public CpPeripheralItem(ICpPeripheralItem realItem) {
+        super(realItem);
+    }
 
+    @Override
+    public boolean isPeripheral() {
+        return true;
+    }
 
-	@Override
-	public boolean isPeripheral() {
-		return true;
-	}
+    @Override
+    public boolean isPeripheralAccess() {
+        return true;
+    }
 
-	@Override
-	public boolean isPeripheralAccess() {
-		return true;
-	}
-
-
-	@Override
-	public String getAccessString() {
-		String access = super.getAccessString();
-		if (access == null) {
-			access = DEFAULT_PERIPHERAL_ACCESS;
-		} else if (!IMemoryAccess.isAccessSet(PERIPHERAL_ACCESS, access)) {
-			access = IMemoryAccess.normalize(access+'p');
-		}
-		return access;
-	}
+    @Override
+    public String getAccessString() {
+        String access = super.getAccessString();
+        if (access == null) {
+            access = DEFAULT_PERIPHERAL_ACCESS;
+        } else if (!IMemoryAccess.isAccessSet(PERIPHERAL_ACCESS, access)) {
+            access = IMemoryAccess.normalize(access + 'p');
+        }
+        return access;
+    }
 }

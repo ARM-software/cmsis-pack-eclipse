@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -18,70 +18,67 @@ import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.utils.DeviceVendor;
 
 /**
- *  An artificial component that describes selected device. 
+ * An artificial component that describes selected device.
  */
 public class RteSelectedDeviceClass extends RteComponentClass {
 
-	ICpDeviceInfo fDeviceInfo = null;
-	String vendorName = null;
+    ICpDeviceInfo fDeviceInfo = null;
+    String vendorName = null;
 
-	public RteSelectedDeviceClass(IRteComponentItem parent, ICpDeviceInfo deviceInfo) {
-		super(parent, deviceInfo.getFullDeviceName());
-		fDeviceInfo = deviceInfo;
-	}
+    public RteSelectedDeviceClass(IRteComponentItem parent, ICpDeviceInfo deviceInfo) {
+        super(parent, deviceInfo.getFullDeviceName());
+        fDeviceInfo = deviceInfo;
+    }
 
-	@Override
-	public boolean purge() {
-		return false;
-	}
+    @Override
+    public boolean purge() {
+        return false;
+    }
 
-	@Override
-	public ICpItem getActiveCpItem() {
-		return fDeviceInfo;
-	}
+    @Override
+    public ICpItem getActiveCpItem() {
+        return fDeviceInfo;
+    }
 
-	@Override
-	public String getUrl() {
-		return fDeviceInfo.getUrl();
-	}
+    @Override
+    public String getUrl() {
+        return fDeviceInfo.getUrl();
+    }
 
-	@Override
-	public String getDescription() {
-		if(fDeviceInfo.getDevice() == null) {
-			return CpStrings.DeviceNotFound; 
-		}
-		return fDeviceInfo.getSummary();
-	}
+    @Override
+    public String getDescription() {
+        if (fDeviceInfo.getDevice() == null) {
+            return CpStrings.DeviceNotFound;
+        }
+        return fDeviceInfo.getSummary();
+    }
 
-	@Override
-	public String getActiveVendor() {
-		if(vendorName == null) {
-			vendorName = DeviceVendor.getOfficialVendorName(fDeviceInfo.getVendor());
-		}
-		return vendorName;
-	}
+    @Override
+    public String getActiveVendor() {
+        if (vendorName == null) {
+            vendorName = DeviceVendor.getOfficialVendorName(fDeviceInfo.getVendor());
+        }
+        return vendorName;
+    }
 
-	@Override
-	public String getActiveVersion() {
-		return fDeviceInfo.getVersion();
-	}
+    @Override
+    public String getActiveVersion() {
+        return fDeviceInfo.getVersion();
+    }
 
-	
-	@Override
-	public boolean isUseLatestVersion() {
-		return true;
-	}
+    @Override
+    public boolean isUseLatestVersion() {
+        return true;
+    }
 
+    @Override
+    public String getKey() {
+        return CmsisConstants.EMPTY_STRING;
+    }
 
-	@Override
-	public String getKey() {
-		return CmsisConstants.EMPTY_STRING;
-	}
+    @Override
+    public boolean isSelected() {
+        return true; // device is always selected
+    }
 
-
-	@Override
-	public boolean isSelected() {
-		return true; // device is always selected
-	}
-	
 }

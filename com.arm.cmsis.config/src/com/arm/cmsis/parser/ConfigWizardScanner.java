@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2018 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,386 +30,363 @@ import org.eclipse.jface.text.rules.Token;
  * Used as the lexer for config files
  */
 public class ConfigWizardScanner extends RuleBasedScanner {
-	public static final String CONFIG_BLOCK_COMMENT_START = "__config_block_comment_start"; //$NON-NLS-1$
-	public static final String CONFIG_BLOCK_COMMENT_END = "__config_block_comment_end"; //$NON-NLS-1$
-	public static final String CONFIG_COMMENT = "__config_comment"; //$NON-NLS-1$
-	public static final String CONFIG_TAG = "__config_tag"; //$NON-NLS-1$
-	public static final String CONFIG_MARK = "__config_mark"; //$NON-NLS-1$
-	public static final String CONFIG_NUMBER = "__config_number"; //$NON-NLS-1$
-	public static final String CONFIG_STRING = "__config_string"; //$NON-NLS-1$
-	public static final String CONFIG_DEFAULT = "__config_default"; //$NON-NLS-1$
+    public static final String CONFIG_BLOCK_COMMENT_START = "__config_block_comment_start"; //$NON-NLS-1$
+    public static final String CONFIG_BLOCK_COMMENT_END = "__config_block_comment_end"; //$NON-NLS-1$
+    public static final String CONFIG_COMMENT = "__config_comment"; //$NON-NLS-1$
+    public static final String CONFIG_TAG = "__config_tag"; //$NON-NLS-1$
+    public static final String CONFIG_MARK = "__config_mark"; //$NON-NLS-1$
+    public static final String CONFIG_NUMBER = "__config_number"; //$NON-NLS-1$
+    public static final String CONFIG_STRING = "__config_string"; //$NON-NLS-1$
+    public static final String CONFIG_DEFAULT = "__config_default"; //$NON-NLS-1$
 
-	private static final Pattern idModPattern = Pattern.compile("([_a-zA-Z][_a-zA-Z0-9]*)="); //$NON-NLS-1$
-	
-	enum ETokenType {
-		COMMENT,
-		BLOCK_COMMENT,
-		START,
-		HEADING,
-		HEADING_END,
-		HEADING_ENABLE,
-		HEADING_ENABLE_END,
-		CODE_ENABLE,
-		CODE_DISABLE,
-		CODE_END,
-		OPTION,
-		OPTION_CHECK,
-		OPTION_STRING,
-		NOTIFICATION,
-		TOOLTIP,
-		EOC,	// End of Config
-		VALUE,
-		NUMBER,
-		STRING,
-		DEFAULT,
-		UNKNOWN,
-	};
+    private static final Pattern idModPattern = Pattern.compile("([_a-zA-Z][_a-zA-Z0-9]*)="); //$NON-NLS-1$
 
-	private boolean checkId = false;
-	private boolean isAsm = false;
-	
-	// this value maintains the previous token's line number
-	private int prevLine;
+    enum ETokenType {
+        COMMENT, BLOCK_COMMENT, START, HEADING, HEADING_END, HEADING_ENABLE, HEADING_ENABLE_END, CODE_ENABLE,
+        CODE_DISABLE, CODE_END, OPTION, OPTION_CHECK, OPTION_STRING, NOTIFICATION, TOOLTIP, EOC, // End of Config
+        VALUE, NUMBER, STRING, DEFAULT, UNKNOWN,
+    };
 
-	private boolean startConfig;
+    private boolean checkId = false;
+    private boolean isAsm = false;
 
-	private boolean inBlockComment;
+    // this value maintains the previous token's line number
+    private int prevLine;
 
-	private final int mapSize = 7;
-	private Map<Integer, Boolean> commentStarted = new LinkedHashMap<Integer, Boolean>(mapSize*10/7, 0.7f, true) {
-		private static final long serialVersionUID = 1L;
+    private boolean startConfig;
 
-		@Override
-		protected boolean removeEldestEntry(Map.Entry<Integer, Boolean> eldest) {
-			return size() > mapSize;
-		}
-	};
+    private boolean inBlockComment;
 
-	public ConfigWizardScanner(boolean isAsmFile) {
-		isAsm = isAsmFile;
-		Collection<IRule> rules = new LinkedList<>();
+    private final int mapSize = 7;
+    private Map<Integer, Boolean> commentStarted = new LinkedHashMap<Integer, Boolean>(mapSize * 10 / 7, 0.7f, true) {
+        private static final long serialVersionUID = 1L;
 
-		// Comment rules
-		rules.add(new CommentRule("//", new Token(CONFIG_COMMENT))); //$NON-NLS-1$
-		if (isAsmFile) {
-			rules.add(new CommentRule(";", new Token(CONFIG_COMMENT))); //$NON-NLS-1$
-		}
-		rules.add(new CommentRule("/*", new Token(CONFIG_BLOCK_COMMENT_START))); //$NON-NLS-1$
-		rules.add(new CommentRule("*/", new Token(CONFIG_BLOCK_COMMENT_END))); //$NON-NLS-1$
-		// Tag rules
-		rules.add(new SingleLineRule("<<<", ">>>", new Token(CONFIG_MARK))); //$NON-NLS-1$ //$NON-NLS-2$
-		rules.add(new TagRule(new Token(CONFIG_TAG)));
-		// Value rules
-		rules.add(new SingleLineRule("\"", "\"", new Token(CONFIG_STRING), '\\')); //$NON-NLS-1$ //$NON-NLS-2$
-		rules.add(new NumberRule(new Token(CONFIG_NUMBER)));	// Set this to last !!!
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Integer, Boolean> eldest) {
+            return size() > mapSize;
+        }
+    };
 
-		setRules(rules.toArray(new IRule[rules.size()]));
+    public ConfigWizardScanner(boolean isAsmFile) {
+        isAsm = isAsmFile;
+        Collection<IRule> rules = new LinkedList<>();
 
-		setDefaultReturnToken(new Token(CONFIG_DEFAULT));
-	}
+        // Comment rules
+        rules.add(new CommentRule("//", new Token(CONFIG_COMMENT))); //$NON-NLS-1$
+        if (isAsmFile) {
+            rules.add(new CommentRule(";", new Token(CONFIG_COMMENT))); //$NON-NLS-1$
+        }
+        rules.add(new CommentRule("/*", new Token(CONFIG_BLOCK_COMMENT_START))); //$NON-NLS-1$
+        rules.add(new CommentRule("*/", new Token(CONFIG_BLOCK_COMMENT_END))); //$NON-NLS-1$
+        // Tag rules
+        rules.add(new SingleLineRule("<<<", ">>>", new Token(CONFIG_MARK))); //$NON-NLS-1$ //$NON-NLS-2$
+        rules.add(new TagRule(new Token(CONFIG_TAG)));
+        // Value rules
+        rules.add(new SingleLineRule("\"", "\"", new Token(CONFIG_STRING), '\\')); //$NON-NLS-1$ //$NON-NLS-2$
+        rules.add(new NumberRule(new Token(CONFIG_NUMBER))); // Set this to last !!!
 
-	public void clear() {
-		prevLine = 0;
-		startConfig = false;
-		inBlockComment = false;
-		commentStarted.clear();
-	}
+        setRules(rules.toArray(new IRule[rules.size()]));
 
-	@Override
-	public IToken nextToken() {
-		IToken token = super.nextToken();
-		// Find the starting mark
-		while (!startConfig && !token.isEOF()) {
-			int currLine = getCurrentLineNumber();
-			if (getTokenType(token) == ETokenType.COMMENT) {
-				commentStarted.put(currLine, true);
-			}
-			if (getTokenType(token) == ETokenType.START &&
-					commentStarted.containsKey(currLine) && commentStarted.get(currLine)) {
-				startConfig = true;
-				storeCurrentToken(token);
-				return token;
-			}
-			token = super.nextToken();
-		}
-		if (token.isEOF()) {
-			return token;
-		}
-		while (getTokenType(token) == ETokenType.DEFAULT) {
-			storeCurrentToken(token);
-			token = super.nextToken();
-		}
-		int currLine = getCurrentLineNumber();
-		if (!commentStarted.containsKey(currLine)) {
-			commentStarted.put(currLine, false);
-		}
-		if (getTokenType(token) == ETokenType.COMMENT) {
-			commentStarted.put(currLine, true);
-		}
+        setDefaultReturnToken(new Token(CONFIG_DEFAULT));
+    }
 
-		if (!commentStarted.get(currLine) && !inBlockComment &&
-				(getTokenType(token) == ETokenType.NUMBER || getTokenType(token) == ETokenType.STRING)) {
-			storeCurrentToken(token);
-			return token;
-		}
+    public void clear() {
+        prevLine = 0;
+        startConfig = false;
+        inBlockComment = false;
+        commentStarted.clear();
+    }
 
-		while (continueLoop(currLine, token)) {
-			if (token.isEOF() || getTokenType(token) == ETokenType.EOC) {
-				return token;
-			}
-			if (getTokenTag(token).equals(CONFIG_TAG)) {
-				if (commentStarted.get(currLine)) {
-					storeCurrentToken(token);
-					return token;
-				}
-			}
-			if (prevLine != currLine) {
-				commentStarted.put(currLine, false);
-				// Return the string and number token
-				if (!inBlockComment &&
-						(getTokenType(token) == ETokenType.STRING ||
-						getTokenType(token) == ETokenType.NUMBER ||
-						getTokenType(token) == ETokenType.START)) {
-					storeCurrentToken(token);
-					return token;
-				}
-			}
-			if (getTokenType(token) == ETokenType.COMMENT) {
-				commentStarted.put(currLine, true);
-			}
-			if (getTokenType(token) != ETokenType.DEFAULT) {
-				storeCurrentToken(token);
-			}
-			token = super.nextToken();
-			currLine = getCurrentLineNumber();
-		}
+    @Override
+    public IToken nextToken() {
+        IToken token = super.nextToken();
+        // Find the starting mark
+        while (!startConfig && !token.isEOF()) {
+            int currLine = getCurrentLineNumber();
+            if (getTokenType(token) == ETokenType.COMMENT) {
+                commentStarted.put(currLine, true);
+            }
+            if (getTokenType(token) == ETokenType.START && commentStarted.containsKey(currLine)
+                    && commentStarted.get(currLine)) {
+                startConfig = true;
+                storeCurrentToken(token);
+                return token;
+            }
+            token = super.nextToken();
+        }
+        if (token.isEOF()) {
+            return token;
+        }
+        while (getTokenType(token) == ETokenType.DEFAULT) {
+            storeCurrentToken(token);
+            token = super.nextToken();
+        }
+        int currLine = getCurrentLineNumber();
+        if (!commentStarted.containsKey(currLine)) {
+            commentStarted.put(currLine, false);
+        }
+        if (getTokenType(token) == ETokenType.COMMENT) {
+            commentStarted.put(currLine, true);
+        }
 
-		return token;
-	}
+        if (!commentStarted.get(currLine) && !inBlockComment
+                && (getTokenType(token) == ETokenType.NUMBER || getTokenType(token) == ETokenType.STRING)) {
+            storeCurrentToken(token);
+            return token;
+        }
 
-	public String getTokenTag(IToken token) {
-		Object obj = token.getData();
-		if (obj != null && obj instanceof String) {
-			return (String) obj;
-		}
-		return null;
-	}
+        while (continueLoop(currLine, token)) {
+            if (token.isEOF() || getTokenType(token) == ETokenType.EOC) {
+                return token;
+            }
+            if (getTokenTag(token).equals(CONFIG_TAG)) {
+                if (commentStarted.get(currLine)) {
+                    storeCurrentToken(token);
+                    return token;
+                }
+            }
+            if (prevLine != currLine) {
+                commentStarted.put(currLine, false);
+                // Return the string and number token
+                if (!inBlockComment && (getTokenType(token) == ETokenType.STRING
+                        || getTokenType(token) == ETokenType.NUMBER || getTokenType(token) == ETokenType.START)) {
+                    storeCurrentToken(token);
+                    return token;
+                }
+            }
+            if (getTokenType(token) == ETokenType.COMMENT) {
+                commentStarted.put(currLine, true);
+            }
+            if (getTokenType(token) != ETokenType.DEFAULT) {
+                storeCurrentToken(token);
+            }
+            token = super.nextToken();
+            currLine = getCurrentLineNumber();
+        }
 
-	public String getTokenContent(IToken token) {
-		if (token.isEOF()) {
-			return ""; //$NON-NLS-1$
-		}
-		int offset = getTokenOffset();
-		int length = getTokenLength();
-		String text;
-		try {
-			text = fDocument.get(offset, length);
-			if (CONFIG_STRING.equals(getTokenTag(token))) {
-				return text;
-			} else if (CONFIG_MARK.equals(getTokenTag(token))) {
-				return usePattern(ExtraWhitespacePattern, text.trim(), " "); //$NON-NLS-1$ 
-			} else {
-				// Get the pure text in the <>
-				return usePattern(WhitespaceAndDelimitersPattern, text, ""); //$NON-NLS-1$ 
-			}
-		} catch (BadLocationException e) {
-		}
+        return token;
+    }
 
-		return null;
-	}
+    public String getTokenTag(IToken token) {
+        Object obj = token.getData();
+        if (obj != null && obj instanceof String) {
+            return (String) obj;
+        }
+        return null;
+    }
 
-    static Pattern ExtraWhitespacePattern = Pattern.compile("\\s+");  //$NON-NLS-1$ 
-    static Pattern WhitespaceAndDelimitersPattern = Pattern.compile("[\\s<>]");  //$NON-NLS-1$ 
-	static String usePattern(Pattern p, String str, String replacement)
-	{
-	    return p.matcher(str).replaceAll(replacement);
-	}
-	
-	public ETokenType getTokenType(IToken token) {
-		if (token.isEOF()) {
-			return ETokenType.EOC;
-		}
-		String tokenContent = getTokenContent(token);
-		String tag = getTokenTag(token);
-		if (tag.equals(CONFIG_DEFAULT)) {
-			return ETokenType.DEFAULT;
-		} else if (tag.equals(CONFIG_MARK)) {
-			String[] startTokens = {"Use", "Configuration", "Wizard", "In", "Context", "Menu"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
-			String[] endTokens = {"End", "Of", "Configuration", "Section"}; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
-			
-			if (tokenMatch(tokenContent, startTokens)) {
-				return ETokenType.START;
-			} else if (tokenMatch(tokenContent, endTokens)) {
-				return ETokenType.EOC;
-			} else {
-				return ETokenType.DEFAULT;
-			}
-		} else if (tag.equals(CONFIG_TAG)) {
-			Assert.isTrue(tokenContent.length() > 0);
-			char type = Character.toLowerCase(tokenContent.charAt(0));
-			if (Character.isDigit(type)) {	// For Selection Token: <0=>
-				type = tokenContent.charAt(tokenContent.length()-1);
-			} else if (checkId) {
-				if (idModPattern.matcher(tokenContent).matches()) {	// for selection token <identifier=>
-					type = '=';
-				}
-			}
-			switch (type) {
-			case 'h':
-				return ETokenType.HEADING;
-			case 'e':
-				return ETokenType.HEADING_ENABLE;
-			case 'c':
-				return ETokenType.CODE_ENABLE;
-			case 'o':
-				return ETokenType.OPTION;
-			case 'q':
-				return ETokenType.OPTION_CHECK;
-			case 's':
-				return ETokenType.OPTION_STRING;
-			case 'n':
-				return ETokenType.NOTIFICATION;
-			case 'i':
-				return ETokenType.TOOLTIP;
-			case '/':
-				return getEndTokenType(tokenContent.charAt(1));
-			case '!':
-				return getNextTokenChar(tokenContent.charAt(1));
-			case '=':
-				return ETokenType.VALUE;
-			default:
-				return ETokenType.UNKNOWN;
-			}
-		} else if (tag.equals(CONFIG_BLOCK_COMMENT_START)) {
-			inBlockComment = true;
-			return ETokenType.BLOCK_COMMENT;
-		} else if (tag.equals(CONFIG_BLOCK_COMMENT_END)) {
-			inBlockComment = false;
-			return ETokenType.BLOCK_COMMENT;
-		} else if (tag.equals(CONFIG_COMMENT)) {
-			return ETokenType.COMMENT;
-		} else if (tag.equals(CONFIG_NUMBER)) {
-			return ETokenType.NUMBER;
-		} else if (tag.equals(CONFIG_STRING)) {
-			return ETokenType.STRING;
-		}
+    public String getTokenContent(IToken token) {
+        if (token.isEOF()) {
+            return ""; //$NON-NLS-1$
+        }
+        int offset = getTokenOffset();
+        int length = getTokenLength();
+        String text;
+        try {
+            text = fDocument.get(offset, length);
+            if (CONFIG_STRING.equals(getTokenTag(token))) {
+                return text;
+            } else if (CONFIG_MARK.equals(getTokenTag(token))) {
+                return usePattern(ExtraWhitespacePattern, text.trim(), " "); //$NON-NLS-1$
+            } else {
+                // Get the pure text in the <>
+                return usePattern(WhitespaceAndDelimitersPattern, text, ""); //$NON-NLS-1$
+            }
+        } catch (BadLocationException e) {
+        }
 
-		return ETokenType.UNKNOWN;
-	}
-	
-	private boolean tokenMatch(String tokenContent, String[] correctTokens) {
-		String[] tokens = tokenContent.trim().split("<<<|>>>| "); //$NON-NLS-1$
-		int j = 0;
-		for (int i = 0; i < tokens.length; i++) {
-			if (tokens[i].isEmpty()) {
-				continue;
-			}
-			if (j == correctTokens.length) {
-				return false;
-			}
-			if (tokens[i].equalsIgnoreCase(correctTokens[j])) {
-				j++;
-			} else {
-				return false;
-			}
-		}
-		return j == correctTokens.length;
-	}
+        return null;
+    }
 
-	private ETokenType getEndTokenType(char token) {
-		switch (token) {
-		case 'h':
-			return ETokenType.HEADING_END;
-		case 'e':
-			return ETokenType.HEADING_ENABLE_END;
-		case 'c':
-			return ETokenType.CODE_END;
-		default:
-			return ETokenType.UNKNOWN;
-		}
-	}
+    static Pattern ExtraWhitespacePattern = Pattern.compile("\\s+"); //$NON-NLS-1$
+    static Pattern WhitespaceAndDelimitersPattern = Pattern.compile("[\\s<>]"); //$NON-NLS-1$
 
-	private ETokenType getNextTokenChar(char token) {
-		switch (token) {
-		case 'c':
-			return ETokenType.CODE_DISABLE;
-		default:
-			return ETokenType.UNKNOWN;
-		}
-	}
+    static String usePattern(Pattern p, String str, String replacement) {
+        return p.matcher(str).replaceAll(replacement);
+    }
 
-	public String readString() {
-		StringBuilder sb = new StringBuilder();
-		int c;
-		do {
-			c = read();
-			sb.append((char) c);
-		} while (c != '<' && c != '\n');
-		if (c == '<') {
-			unread();
-		}
-		sb.deleteCharAt(sb.length() - 1);
-		return sb.toString().trim();
-	}
+    public ETokenType getTokenType(IToken token) {
+        if (token.isEOF()) {
+            return ETokenType.EOC;
+        }
+        String tokenContent = getTokenContent(token);
+        String tag = getTokenTag(token);
+        if (tag.equals(CONFIG_DEFAULT)) {
+            return ETokenType.DEFAULT;
+        } else if (tag.equals(CONFIG_MARK)) {
+            String[] startTokens = { "Use", "Configuration", "Wizard", "In", "Context", "Menu" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$
+            String[] endTokens = { "End", "Of", "Configuration", "Section" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
-	public String readLine() {
-		StringBuilder sb = new StringBuilder();
-		int c;
-		do {
-			c = read();
-			sb.append((char) c);
-		} while (c != '\n');
-		sb.deleteCharAt(sb.length() - 1);
-		return sb.toString().trim();
-	}
+            if (tokenMatch(tokenContent, startTokens)) {
+                return ETokenType.START;
+            } else if (tokenMatch(tokenContent, endTokens)) {
+                return ETokenType.EOC;
+            } else {
+                return ETokenType.DEFAULT;
+            }
+        } else if (tag.equals(CONFIG_TAG)) {
+            Assert.isTrue(tokenContent.length() > 0);
+            char type = Character.toLowerCase(tokenContent.charAt(0));
+            if (Character.isDigit(type)) { // For Selection Token: <0=>
+                type = tokenContent.charAt(tokenContent.length() - 1);
+            } else if (checkId) {
+                if (idModPattern.matcher(tokenContent).matches()) { // for selection token <identifier=>
+                    type = '=';
+                }
+            }
+            switch (type) {
+            case 'h':
+                return ETokenType.HEADING;
+            case 'e':
+                return ETokenType.HEADING_ENABLE;
+            case 'c':
+                return ETokenType.CODE_ENABLE;
+            case 'o':
+                return ETokenType.OPTION;
+            case 'q':
+                return ETokenType.OPTION_CHECK;
+            case 's':
+                return ETokenType.OPTION_STRING;
+            case 'n':
+                return ETokenType.NOTIFICATION;
+            case 'i':
+                return ETokenType.TOOLTIP;
+            case '/':
+                return getEndTokenType(tokenContent.charAt(1));
+            case '!':
+                return getNextTokenChar(tokenContent.charAt(1));
+            case '=':
+                return ETokenType.VALUE;
+            default:
+                return ETokenType.UNKNOWN;
+            }
+        } else if (tag.equals(CONFIG_BLOCK_COMMENT_START)) {
+            inBlockComment = true;
+            return ETokenType.BLOCK_COMMENT;
+        } else if (tag.equals(CONFIG_BLOCK_COMMENT_END)) {
+            inBlockComment = false;
+            return ETokenType.BLOCK_COMMENT;
+        } else if (tag.equals(CONFIG_COMMENT)) {
+            return ETokenType.COMMENT;
+        } else if (tag.equals(CONFIG_NUMBER)) {
+            return ETokenType.NUMBER;
+        } else if (tag.equals(CONFIG_STRING)) {
+            return ETokenType.STRING;
+        }
 
-	public int getCurrentLineNumber() {
-		try {
-			return fDocument.getLineOfOffset(getTokenOffset());
-		} catch (BadLocationException e) {
-			return -1;
-		}
-	}
+        return ETokenType.UNKNOWN;
+    }
 
-	private void storeCurrentToken(IToken token) {
-		prevLine = getCurrentLineNumber();
-	}
+    private boolean tokenMatch(String tokenContent, String[] correctTokens) {
+        String[] tokens = tokenContent.trim().split("<<<|>>>| "); //$NON-NLS-1$
+        int j = 0;
+        for (int i = 0; i < tokens.length; i++) {
+            if (tokens[i].isEmpty()) {
+                continue;
+            }
+            if (j == correctTokens.length) {
+                return false;
+            }
+            if (tokens[i].equalsIgnoreCase(correctTokens[j])) {
+                j++;
+            } else {
+                return false;
+            }
+        }
+        return j == correctTokens.length;
+    }
 
-	private boolean continueLoop(int currLine, IToken token) {
-		if (token.isEOF()) {
-			return false;
-		}
-		// newline started, or it is not a tag token
-		if(prevLine != currLine ||
-				getTokenType(token) == ETokenType.DEFAULT ||
-				getTokenType(token) == ETokenType.COMMENT ||
-				getTokenType(token) == ETokenType.BLOCK_COMMENT) {
-			return true;
-		}
-		// it is a tag/mark token but the line does not start with //
-		if ((getTokenTag(token).equals(CONFIG_TAG) || getTokenTag(token).equals(CONFIG_MARK))
-				&& !commentStarted.get(currLine)) {
-			return true;
-		}
-		// it is a number/string but it is behind a //
-		if (prevLine == currLine && commentStarted.get(currLine) &&
-				(getTokenType(token) == ETokenType.NUMBER || getTokenType(token) == ETokenType.STRING)) {
-			return true;
-		}
-		// it is a number/string but it is in a block comment
-		if (inBlockComment &&
-				(getTokenType(token) == ETokenType.NUMBER || getTokenType(token) == ETokenType.STRING)) {
-			return true;
-		}
-		return false;
-	}
+    private ETokenType getEndTokenType(char token) {
+        switch (token) {
+        case 'h':
+            return ETokenType.HEADING_END;
+        case 'e':
+            return ETokenType.HEADING_ENABLE_END;
+        case 'c':
+            return ETokenType.CODE_END;
+        default:
+            return ETokenType.UNKNOWN;
+        }
+    }
 
-	public void setCheckId(boolean b) {
-		// TODO Auto-generated method stub
-		checkId = b;
-	}
-	
-	public boolean isAsmFile() {
-		return isAsm;
-	}
+    private ETokenType getNextTokenChar(char token) {
+        switch (token) {
+        case 'c':
+            return ETokenType.CODE_DISABLE;
+        default:
+            return ETokenType.UNKNOWN;
+        }
+    }
+
+    public String readString() {
+        StringBuilder sb = new StringBuilder();
+        int c;
+        do {
+            c = read();
+            sb.append((char) c);
+        } while (c != '<' && c != '\n');
+        if (c == '<') {
+            unread();
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString().trim();
+    }
+
+    public String readLine() {
+        StringBuilder sb = new StringBuilder();
+        int c;
+        do {
+            c = read();
+            sb.append((char) c);
+        } while (c != '\n');
+        sb.deleteCharAt(sb.length() - 1);
+        return sb.toString().trim();
+    }
+
+    public int getCurrentLineNumber() {
+        try {
+            return fDocument.getLineOfOffset(getTokenOffset());
+        } catch (BadLocationException e) {
+            return -1;
+        }
+    }
+
+    private void storeCurrentToken(IToken token) {
+        prevLine = getCurrentLineNumber();
+    }
+
+    private boolean continueLoop(int currLine, IToken token) {
+        if (token.isEOF()) {
+            return false;
+        }
+        // newline started, or it is not a tag token
+        if (prevLine != currLine || getTokenType(token) == ETokenType.DEFAULT
+                || getTokenType(token) == ETokenType.COMMENT || getTokenType(token) == ETokenType.BLOCK_COMMENT) {
+            return true;
+        }
+        // it is a tag/mark token but the line does not start with //
+        if ((getTokenTag(token).equals(CONFIG_TAG) || getTokenTag(token).equals(CONFIG_MARK))
+                && !commentStarted.get(currLine)) {
+            return true;
+        }
+        // it is a number/string but it is behind a //
+        if (prevLine == currLine && commentStarted.get(currLine)
+                && (getTokenType(token) == ETokenType.NUMBER || getTokenType(token) == ETokenType.STRING)) {
+            return true;
+        }
+        // it is a number/string but it is in a block comment
+        if (inBlockComment && (getTokenType(token) == ETokenType.NUMBER || getTokenType(token) == ETokenType.STRING)) {
+            return true;
+        }
+        return false;
+    }
+
+    public void setCheckId(boolean b) {
+        // TODO Auto-generated method stub
+        checkId = b;
+    }
+
+    public boolean isAsmFile() {
+        return isAsm;
+    }
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,32 +18,35 @@ import org.eclipse.swt.graphics.RGB;
 
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 
-
 /**
  * Initializes UI preferences
  *
  */
 public class CpUIPreferenceInitializer extends AbstractPreferenceInitializer {
 
-	/**
-	 *  Default constructor
-	 */
-	public CpUIPreferenceInitializer() {
-	}
+    /**
+     * Default constructor
+     */
+    public CpUIPreferenceInitializer() {
+    }
 
-	@Override
-	public void initializeDefaultPreferences() {
-		IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE.getNode(CpPlugInUI.PLUGIN_ID);
+    @Override
+    public void initializeDefaultPreferences() {
+        IEclipsePreferences defaultPreferences = DefaultScope.INSTANCE.getNode(CpPlugInUI.PLUGIN_ID);
 
-		defaultPreferences.putBoolean(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT, true);
-		defaultPreferences.putBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT, true);
+        defaultPreferences.putBoolean(CpUIPreferenceConstants.CONSOLE_PRINT_IN_CDT, true);
+        defaultPreferences.putBoolean(CpUIPreferenceConstants.CONSOLE_OPEN_ON_OUT, true);
 
-		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_BG_COLOR, StringConverter.asString(new RGB(255, 255, 255)));
-		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_OUT_COLOR, StringConverter.asString(new RGB(0, 0, 0)));
-		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_ERROR_COLOR, StringConverter.asString(new RGB(255, 0, 0)));
-		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_INFO_COLOR, StringConverter.asString(new RGB(0, 0, 255)));
-		defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_WARNING_COLOR, StringConverter.asString(new RGB(255, 140, 0)));
+        defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_BG_COLOR,
+                StringConverter.asString(new RGB(255, 255, 255)));
+        defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_OUT_COLOR, StringConverter.asString(new RGB(0, 0, 0)));
+        defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_ERROR_COLOR,
+                StringConverter.asString(new RGB(255, 0, 0)));
+        defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_INFO_COLOR,
+                StringConverter.asString(new RGB(0, 0, 255)));
+        defaultPreferences.put(CpUIPreferenceConstants.CONSOLE_WARNING_COLOR,
+                StringConverter.asString(new RGB(255, 140, 0)));
 
-	}
+    }
 
 }

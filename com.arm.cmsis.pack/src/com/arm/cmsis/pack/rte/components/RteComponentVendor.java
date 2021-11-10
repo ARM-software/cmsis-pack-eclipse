@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -21,52 +21,51 @@ import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Class represent Cvendor hierarchy level, contains collection of variants.
- * Direct child for bundles and components   
+ * Direct child for bundles and components
  */
 public class RteComponentVendor extends RteComponentItem {
 
-	/**
-	 * @param parent
-	 */
-	public RteComponentVendor(IRteComponentItem parent, String name) {
-		super(parent, name);
-		fComponentAttribute = EComponentAttribute.CVERSION;
-	}
+    /**
+     * @param parent
+     */
+    public RteComponentVendor(IRteComponentItem parent, String name) {
+        super(parent, name);
+        fComponentAttribute = EComponentAttribute.CVERSION;
+    }
 
-	@Override
-	public Map<String, IRteComponentItem> createMap() {
-		// versions are sorted in descending order  
-		return new TreeMap<String, IRteComponentItem>(new VersionComparator());
-	}
+    @Override
+    public Map<String, IRteComponentItem> createMap() {
+        // versions are sorted in descending order
+        return new TreeMap<String, IRteComponentItem>(new VersionComparator());
+    }
 
-	@Override
-	public Collection<String> getVersionStrings() {
-		IRteComponent component = getParentComponent();
-		if(component != null && component.hasBundle() ) {
-			return null;
-		}
-		return getKeys();
-	}
+    @Override
+    public Collection<String> getVersionStrings() {
+        IRteComponent component = getParentComponent();
+        if (component != null && component.hasBundle()) {
+            return null;
+        }
+        return getKeys();
+    }
 
-	@Override
-	public String getDefaultChildName() {
-		return CpStrings.RteComponentVersionLatest;
-	}
+    @Override
+    public String getDefaultChildName() {
+        return CpStrings.RteComponentVersionLatest;
+    }
 
-	@Override
-	public String getActiveVersion() {
-		return getActiveChildName();
-	}
+    @Override
+    public String getActiveVersion() {
+        return getActiveChildName();
+    }
 
-	
-	@Override
-	public void setActiveVersion(String version) {
-		setActiveChild(version);
-	}
+    @Override
+    public void setActiveVersion(String version) {
+        setActiveChild(version);
+    }
 
-	@Override
-	public boolean isUseLatestVersion() {
-		return isActiveChildDefault();
-	}
-	
+    @Override
+    public boolean isUseLatestVersion() {
+        return isActiveChildDefault();
+    }
+
 }

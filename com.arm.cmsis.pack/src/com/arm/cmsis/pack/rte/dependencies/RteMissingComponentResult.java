@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 - 2019 ARM Ltd. and others
+ * Copyright (c) 2021 - 2019 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,113 +28,118 @@ import com.arm.cmsis.pack.utils.VersionComparator;
  */
 public class RteMissingComponentResult extends RteDependencyResult {
 
-	public RteMissingComponentResult(IRteComponentItem componentItem) {
-		super(componentItem);
-	}
+    public RteMissingComponentResult(IRteComponentItem componentItem) {
+        super(componentItem);
+    }
 
-	@Override
-	public String getDescription() {
-		ICpComponentInfo ci = fComponentItem.getActiveCpComponentInfo();
-		EEvaluationResult res = getEvaluationResult();
-		String descr = getElementType(ci, res) + CmsisConstants.SPACE;
+    @Override
+    public String getDescription() {
+        ICpComponentInfo ci = fComponentItem.getActiveCpComponentInfo();
+        EEvaluationResult res = getEvaluationResult();
+        String descr = getElementType(ci, res) + CmsisConstants.SPACE;
 
-		switch (res) {
-		case MISSING_API:
-		case MISSING_API_VERSION:
-			descr = getMissingApiDescription(ci, res);
-			break;
-		case MISSING:
-			descr += CpStrings.IsMissing + ". " + getPackReason(ci); //$NON-NLS-1$
-			break;
-		case UNAVAILABLE:
-			descr += CpStrings.IsNotAvailableForCurrentConfiguration + ". " + getPackReason(ci); //$NON-NLS-1$;
-			break;
-		case UNAVAILABLE_PACK:
-			descr += CpStrings.IsNotAvailableForCurrentConfiguration + ". " + getPackReason(ci); //$NON-NLS-1$
-			break;
-		default:
-			descr = super.getDescription();
-		}
+        switch (res) {
+        case MISSING_API:
+        case MISSING_API_VERSION:
+            descr = getMissingApiDescription(ci, res);
+            break;
+        case MISSING:
+            descr += CpStrings.IsMissing + ". " + getPackReason(ci); //$NON-NLS-1$
+            break;
+        case UNAVAILABLE:
+            descr += CpStrings.IsNotAvailableForCurrentConfiguration + ". " + getPackReason(ci); //$NON-NLS-1$ ;
+            break;
+        case UNAVAILABLE_PACK:
+            descr += CpStrings.IsNotAvailableForCurrentConfiguration + ". " + getPackReason(ci); //$NON-NLS-1$
+            break;
+        default:
+            descr = super.getDescription();
+        }
 
-		return descr;
-	}
+        return descr;
+    }
 
+    /**
+     * Returns reason for missing API
+     *
+     * @param ci  ICpComponentInfo
+     * @param res EEvaluationResult
+     * @return description string
+     */
+    private String getMissingApiDescription(ICpComponentInfo ci, EEvaluationResult res) {
 
-	/**
-	 * Returns reason for missing API
-	 * @param ci ICpComponentInfo
-	 * @param res EEvaluationResult
-	 * @return description string
-	 */
-	private String getMissingApiDescription(ICpComponentInfo ci, EEvaluationResult res) {
+        String requiredApiVersion = ci != null ? ci.getAttribute(CmsisConstants.CAPIVERSION)
+                : CmsisConstants.EMPTY_STRING;
+        ICpComponent availableApi = null;
+        if (res == EEvaluationResult.MISSING_API_VERSION) {
+            IRteComponentGroup g = getComponentItem().getParentGroup();
+            availableApi = g != null ? g.getApi() : null;
+        }
 
-		String requiredApiVersion = ci != null? ci.getAttribute(CmsisConstants.CAPIVERSION) : CmsisConstants.EMPTY_STRING;
-		ICpComponent availableApi = null;
-		if(res == EEvaluationResult.MISSING_API_VERSION) {
-			IRteComponentGroup g = getComponentItem().getParentGroup();
-			availableApi = g != null ? g.getApi() : null;
-		}
+        String description = CpStrings.APIversion;
+        description += " '" + requiredApiVersion + "' "; //$NON-NLS-1$ //$NON-NLS-2$
+        description += CpStrings.RteMissingComponentResult_orHigherIsRequired + ". "; //$NON-NLS-1$
+        if (availableApi == null) {
+            description += CpStrings.RteMissingComponentResult_APIDefIsMissingNoPack;
+        } else {
+            description += CpStrings.Version;
+            description += " '" + availableApi.getVersion() + "' "; //$NON-NLS-1$ //$NON-NLS-2$
+            description += CpStrings.RteMissingComponentResult_IsFoundInPack;
+            description += " '" + availableApi.getPackId() + "' "; //$NON-NLS-1$ //$NON-NLS-2$
+        }
+        return description;
+    }
 
-		String description = CpStrings.APIversion;
-	    description += " '" + requiredApiVersion + "' "; //$NON-NLS-1$ //$NON-NLS-2$
-	    description += CpStrings.RteMissingComponentResult_orHigherIsRequired + ". ";  //$NON-NLS-1$
-	    if(availableApi == null) {
-	    	description += CpStrings.RteMissingComponentResult_APIDefIsMissingNoPack;
-	    } else  {
-		    description += CpStrings.Version;
-		    description += " '" + availableApi.getVersion() + "' "; //$NON-NLS-1$ //$NON-NLS-2$
-		    description += CpStrings.RteMissingComponentResult_IsFoundInPack;
-		    description += " '" + availableApi.getPackId() + "' "; //$NON-NLS-1$ //$NON-NLS-2$
-	    }
-	    return description;
-	}
+    protected String getElementType(ICpComponentInfo ci, EEvaluationResult res) {
+        if (res.isMissingApi() || (ci != null && ci.isApi())) {
+            return CpStrings.API;
+        }
+        return CpStrings.Component;
+    }
 
-	protected String getElementType(ICpComponentInfo ci, EEvaluationResult res) {
-		if (res.isMissingApi() || (ci != null && ci.isApi())) {
-			return CpStrings.API;
-		}
-		return CpStrings.Component;
-	}
+    /**
+     * Reason for the missing result if any
+     *
+     * @return reason string
+     */
+    protected String getPackReason(ICpComponentInfo ci) {
+        if (ci == null) {
+            return CmsisConstants.EMPTY_STRING;
+        }
+        String reason = CpStrings.Pack + ' ';
+        ICpPackInfo pi = ci.getPackInfo();
+        boolean bReportPackVersion = pi.isVersionFixed();
+        ICpPack pack = ci.getPack();
+        if (getEvaluationResult() == EEvaluationResult.UNAVAILABLE_PACK) {
+            // as reason tells : pack is excluded (either certain version or the entire
+            // family)
+            reason += CpStrings.IsExcluded;
+        } else if (pack != null) {
+            // check if the installed version differs: it might explain why the the
+            // component is not found
+            int versionDiff = VersionComparator.versionCompare(pack.getVersion(), CpPack.versionFromId(pi.getId()));
+            if (versionDiff < 2 && versionDiff > -2) {
+                // almost the same pack => the component is probably filtered out by
+                // device/compiler configuration
+                return CpStrings.RteMissingComponentResult_NoComponentFoundMatchingDeviceCompiler;
+            } else {
+                // pack differs in minor or major version, report pack as not installed
+                bReportPackVersion = true;
+                reason += CpStrings.IsNotInstalled;
+            }
+        } else {
+            // pack was not resolved => it is not installed
+            reason += CpStrings.IsNotInstalled;
+        }
 
-	/**
-	 * Reason for the missing result if any
-	 * @return reason string
-	 */
-	protected String getPackReason(ICpComponentInfo ci) {
-		if (ci == null) {
-			return CmsisConstants.EMPTY_STRING;
-		}
-		String reason =  CpStrings.Pack + ' ';
-		ICpPackInfo pi = ci.getPackInfo();
-		boolean bReportPackVersion = pi.isVersionFixed();
-		ICpPack pack = ci.getPack();
-		if(getEvaluationResult() == EEvaluationResult.UNAVAILABLE_PACK) {
-			// as reason tells : pack is excluded (either certain version or the entire family)
-			reason += CpStrings.IsExcluded;
-		} else if (pack != null) {
-			// check if the installed version differs: it might explain why the the component is not found
-			int versionDiff = VersionComparator.versionCompare(pack.getVersion(), CpPack.versionFromId(pi.getId())); 
-			if (versionDiff < 2 && versionDiff > -2) {
-				// almost the same pack =>  the component is probably filtered out by device/compiler configuration
-				return CpStrings.RteMissingComponentResult_NoComponentFoundMatchingDeviceCompiler; 
-			} else {
-				// pack differs in minor or major version, report pack as not installed 
-				bReportPackVersion = true;
-				reason += CpStrings.IsNotInstalled; 
-			}
-		} else {
-			// pack was not resolved => it is not installed
-			reason += CpStrings.IsNotInstalled; 
-		}
-		
-		String packId = bReportPackVersion ? pi.getId() : pi.getPackFamilyId();
-		reason += ": " + packId; //$NON-NLS-1$
-		return reason;
-	}
+        String packId = bReportPackVersion ? pi.getId() : pi.getPackFamilyId();
+        reason += ": " + packId; //$NON-NLS-1$
+        return reason;
+    }
 
-	@Override
-	public boolean isMaster() {
-		return true;
-	}
+    @Override
+    public boolean isMaster() {
+        return true;
+    }
 
 }

@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Tests
 Bundle-SymbolicName: com.arm.cmsis.pack.common.tests
-Bundle-Version: 2.6.0.qualifier
-Bundle-Vendor: ARM
+Bundle-Version: 2.6.1.qualifier
+Bundle-Vendor: Arm Limited
 Automatic-Module-Name: com.arm.cmsis.pack.common.tests
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: com.arm.cmsis.pack.common;bundle-version="2.6.0",
+Require-Bundle: com.arm.cmsis.pack.common;bundle-version="2.6.1",
  org.junit;bundle-version="4.12.0"

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,62 +19,62 @@ import com.arm.cmsis.zone.data.ICpRootZone;
 import com.arm.cmsis.zone.ui.editors.CmsisZoneController;
 
 public abstract class CmsisZoneAbstractWizardPage<T extends ICpItem> extends WizardPage {
-	protected CmsisZoneController fController = null;
-	protected ICpRootZone fRootZone = null;
-	protected T fExistingItem = null;
-	
-	protected ECoreArchitecture fArchitecture = ECoreArchitecture.UNKNOWN;
-	protected boolean fMpuMode = false;
+    protected CmsisZoneController fController = null;
+    protected ICpRootZone fRootZone = null;
+    protected T fExistingItem = null;
 
-	
-	public CmsisZoneAbstractWizardPage(String pageName) {
-		super(pageName);
-	}
-	
-	public CmsisZoneAbstractWizardPage(String pageName, CmsisZoneController controller) {
-		this(pageName, controller, null);
-	}
-	
-	/**
-	 * Create the wizard page
-	 */
-	public CmsisZoneAbstractWizardPage(String pageName, CmsisZoneController controller, T existingItem) {
-		super(pageName);
-		fController = controller;
-		fRootZone = fController.getRootZone();
-		fExistingItem = existingItem;
-		if(fRootZone != null) { 
-			fMpuMode = CmsisConstants.MPU.equals(fRootZone.getZoneMode()); 
-			fArchitecture = fRootZone.getArchitecture();
-		}
+    protected ECoreArchitecture fArchitecture = ECoreArchitecture.UNKNOWN;
+    protected boolean fMpuMode = false;
 
-	}
-	
-	public CmsisZoneController getController() {
-		return fController;
-	}
+    public CmsisZoneAbstractWizardPage(String pageName) {
+        super(pageName);
+    }
 
-	public void setfController(CmsisZoneController controller) {
-		fController = controller;
-		if(fController != null) {
-			fRootZone = fController.getRootZone();
-			fMpuMode = fRootZone.getZoneMode() == CmsisConstants.MPU; 
-			fArchitecture = fRootZone.getArchitecture();
-		} else {
-			fRootZone = null;
-		}
-	}
+    public CmsisZoneAbstractWizardPage(String pageName, CmsisZoneController controller) {
+        this(pageName, controller, null);
+    }
 
-	public ICpRootZone getRootZone() {
-		return fRootZone;
-	}
+    /**
+     * Create the wizard page
+     */
+    public CmsisZoneAbstractWizardPage(String pageName, CmsisZoneController controller, T existingItem) {
+        super(pageName);
+        fController = controller;
+        fRootZone = fController.getRootZone();
+        fExistingItem = existingItem;
+        if (fRootZone != null) {
+            fMpuMode = CmsisConstants.MPU.equals(fRootZone.getZoneMode());
+            fArchitecture = fRootZone.getArchitecture();
+        }
 
-	public T getExistingItem() {
-		return fExistingItem;
-	}
-	public void setfExistingItem(T existingItem) {
-		fExistingItem = existingItem;
-	}
+    }
 
-	public abstract boolean apply();
+    public CmsisZoneController getController() {
+        return fController;
+    }
+
+    public void setfController(CmsisZoneController controller) {
+        fController = controller;
+        if (fController != null) {
+            fRootZone = fController.getRootZone();
+            fMpuMode = fRootZone.getZoneMode() == CmsisConstants.MPU;
+            fArchitecture = fRootZone.getArchitecture();
+        } else {
+            fRootZone = null;
+        }
+    }
+
+    public ICpRootZone getRootZone() {
+        return fRootZone;
+    }
+
+    public T getExistingItem() {
+        return fExistingItem;
+    }
+
+    public void setfExistingItem(T existingItem) {
+        fExistingItem = existingItem;
+    }
+
+    public abstract boolean apply();
 }

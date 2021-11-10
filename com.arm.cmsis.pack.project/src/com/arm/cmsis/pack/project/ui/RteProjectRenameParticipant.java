@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -31,74 +31,72 @@ import com.arm.cmsis.pack.project.Messages;
 import com.arm.cmsis.pack.project.RteProjectManager;
 import com.arm.cmsis.pack.project.utils.ProjectUtils;
 
-
 public class RteProjectRenameParticipant extends RenameParticipant {
 
-	IResource resource;
-	IProject  project;
-	IRteProject rteProject;
-	int type;
+    IResource resource;
+    IProject project;
+    IRteProject rteProject;
+    int type;
 
-	@Override
-	protected boolean initialize(Object element) {
+    @Override
+    protected boolean initialize(Object element) {
 
-		resource = ProjectUtils.getRteResource(element);
-		if (resource == null) {
-			return false;
-		}
+        resource = ProjectUtils.getRteResource(element);
+        if (resource == null) {
+            return false;
+        }
 
-		resource = (IResource)element;
-		type = resource.getType();
-		project = resource.getProject();
-		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
-		rteProject = rteProjectManager.getRteProject(project);
-		if (rteProject == null) {
-			return false;
-		}
+        resource = (IResource) element;
+        type = resource.getType();
+        project = resource.getProject();
+        RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
+        rteProject = rteProjectManager.getRteProject(project);
+        if (rteProject == null) {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
-	@Override
-	public String getName() {
-		return Messages.RteProjectRenameParticipant_CMSIS_RTE_project_rename_handler;
-	}
+    @Override
+    public String getName() {
+        return Messages.RteProjectRenameParticipant_CMSIS_RTE_project_rename_handler;
+    }
 
-	@Override
-	public RefactoringStatus checkConditions(IProgressMonitor pm,
-			CheckConditionsContext context) throws OperationCanceledException {
-		RefactoringStatus status = new RefactoringStatus();
-		try {
-			pm.beginTask(Messages.RteProjectRenameParticipant_CheckingPreconditions, 1);
-			IPath path = resource.getProjectRelativePath();
-			if(type != IResource.PROJECT && path.segment(0).equals(CmsisConstants.RTE)) {
-				String msg = Messages.RteProjectRenameParticipant_RenameOfRteFolderIsNotAllowed;
-				status.merge(RefactoringStatus.createFatalErrorStatus(msg));
-			}
-		} finally {
-			pm.done();
-		}
-		return status;
-	}
+    @Override
+    public RefactoringStatus checkConditions(IProgressMonitor pm, CheckConditionsContext context)
+            throws OperationCanceledException {
+        RefactoringStatus status = new RefactoringStatus();
+        try {
+            pm.beginTask(Messages.RteProjectRenameParticipant_CheckingPreconditions, 1);
+            IPath path = resource.getProjectRelativePath();
+            if (type != IResource.PROJECT && path.segment(0).equals(CmsisConstants.RTE)) {
+                String msg = Messages.RteProjectRenameParticipant_RenameOfRteFolderIsNotAllowed;
+                status.merge(RefactoringStatus.createFatalErrorStatus(msg));
+            }
+        } finally {
+            pm.done();
+        }
+        return status;
+    }
 
-	@Override
-	public Change createChange(IProgressMonitor pm) throws CoreException,
-			OperationCanceledException {
-		if (type != IResource.PROJECT) {
-			return null;
-		}
-		try {
-			pm.beginTask(Messages.RteProjectRenameParticipant_CreatingChange, 1);
-			String rteConfigName = project.getName() + CmsisConstants.DOT_RTECONFIG;
-			IFile iFile = project.getFile(rteConfigName);
-			RenameArguments args = getArguments();
-			String newProjectName = args.getNewName();
-			String newRteConfigName = newProjectName + CmsisConstants.DOT_RTECONFIG;
-			Change change = new  RenameResourceAfterProjectChange(iFile.getFullPath(), newProjectName, newRteConfigName);
-			return change;
-		} finally {
-			pm.done();
-		}
-	}
+    @Override
+    public Change createChange(IProgressMonitor pm) throws CoreException, OperationCanceledException {
+        if (type != IResource.PROJECT) {
+            return null;
+        }
+        try {
+            pm.beginTask(Messages.RteProjectRenameParticipant_CreatingChange, 1);
+            String rteConfigName = project.getName() + CmsisConstants.DOT_RTECONFIG;
+            IFile iFile = project.getFile(rteConfigName);
+            RenameArguments args = getArguments();
+            String newProjectName = args.getNewName();
+            String newRteConfigName = newProjectName + CmsisConstants.DOT_RTECONFIG;
+            Change change = new RenameResourceAfterProjectChange(iFile.getFullPath(), newProjectName, newRteConfigName);
+            return change;
+        } finally {
+            pm.done();
+        }
+    }
 
 }

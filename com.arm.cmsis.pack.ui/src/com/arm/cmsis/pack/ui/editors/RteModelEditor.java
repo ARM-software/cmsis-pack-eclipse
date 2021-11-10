@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,141 +41,139 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
  */
 public class RteModelEditor extends RteEditor<IRteModelController> {
 
-	private RteComponentPage rteComponentPage;
-	private RteDevicePage rteDevicePage;
-	private RtePackPage rtePackPage;
+    private RteComponentPage rteComponentPage;
+    private RteDevicePage rteDevicePage;
+    private RtePackPage rtePackPage;
 
-	private int componentPageIndex = 0;
-	private int devicePageIndex = 1;
-	private int packPageIndex = 2;
+    private int componentPageIndex = 0;
+    private int devicePageIndex = 1;
+    private int packPageIndex = 2;
 
+    public RteModelEditor() {
+        super();
+        CpPlugIn.addRteListener(this);
+    }
 
-	public RteModelEditor() {
-		super();
-		CpPlugIn.addRteListener(this);
-	}
+    @Override
+    public void dispose() {
+        CpPlugIn.removeRteListener(this);
+        rteComponentPage = null;
+        rtePackPage = null;
+        rteDevicePage = null;
+        super.dispose();
+    }
 
-	@Override
-	public void dispose() {
-		CpPlugIn.removeRteListener(this);
-		rteComponentPage = null;
-		rtePackPage = null;
-		rteDevicePage = null;
-		super.dispose();
-	}
+    @Override
+    protected ICpXmlParser createParser() {
+        return new CpConfigParser();
+    }
 
-	@Override
-	protected ICpXmlParser createParser() {
-		return new CpConfigParser();
-	}
+    @Override
+    protected IRteModelController createController() {
+        return new RteModelEditorController(new RteModel());
+    }
 
-	@Override
-	protected IRteModelController createController() {
-		return new RteModelEditorController(new RteModel());
-	}
-	void createRteManagerPage() {
-		rteComponentPage = new RteComponentPage();
-		Composite composite = rteComponentPage.createControl(getContainer());
-		componentPageIndex = addPage(composite);
-		setPageText(componentPageIndex, CpStringsUI.RteConfigurationEditor_ComponentsTab);
-	}
+    void createRteManagerPage() {
+        rteComponentPage = new RteComponentPage();
+        Composite composite = rteComponentPage.createControl(getContainer());
+        componentPageIndex = addPage(composite);
+        setPageText(componentPageIndex, CpStringsUI.RteConfigurationEditor_ComponentsTab);
+    }
 
-	void createPackSelectorPage() {
-		rtePackPage = new RtePackPage();
-		Composite composite = rtePackPage.createControl(getContainer());
+    void createPackSelectorPage() {
+        rtePackPage = new RtePackPage();
+        Composite composite = rtePackPage.createControl(getContainer());
 
-		packPageIndex = addPage(composite);
-		setPageText(packPageIndex, CpStringsUI.RteConfigurationEditor_PacksTab);
-	}
+        packPageIndex = addPage(composite);
+        setPageText(packPageIndex, CpStringsUI.RteConfigurationEditor_PacksTab);
+    }
 
-	void createDeviceSelectorPage() {
-		rteDevicePage = new RteDevicePage();
-		Composite composite = rteDevicePage.createControl(getContainer());
+    void createDeviceSelectorPage() {
+        rteDevicePage = new RteDevicePage();
+        Composite composite = rteDevicePage.createControl(getContainer());
 
-		devicePageIndex = addPage(composite);
-		setPageText(devicePageIndex, CpStringsUI.RteDevicePage_Device);
-	}
+        devicePageIndex = addPage(composite);
+        setPageText(devicePageIndex, CpStringsUI.RteDevicePage_Device);
+    }
 
+    @Override
+    protected void createPages() {
+        createRteManagerPage();
+        createDeviceSelectorPage();
+        createPackSelectorPage();
+        rteComponentPage.setModelController(fModelController);
+        rteDevicePage.setModelController(fModelController);
+        rtePackPage.setModelController(fModelController);
+    }
 
-	@Override
-	protected void createPages() {
-		createRteManagerPage();
-		createDeviceSelectorPage();
-		createPackSelectorPage();
-		rteComponentPage.setModelController(fModelController);
-		rteDevicePage.setModelController(fModelController);
-		rtePackPage.setModelController(fModelController);
-	}
+    @Override
+    public void gotoMarker(IMarker marker) {
+        try {
+            Object o = marker.getAttribute(CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM);
+            if (!(o instanceof IRteDependencyItem)) {
+                return;
+            }
+            IRteDependencyItem depItem = (IRteDependencyItem) o;
+            IRteComponentItem rteComponent = depItem.getComponentItem();
+            if (rteComponent == null) {
+                return;
+            }
 
+            ICpComponentInfo ci = rteComponent.getActiveCpComponentInfo();
+            boolean packInstalled = false;
+            String packId = CmsisConstants.EMPTY_STRING;
+            if (ci != null) {
+                packId = ci.getPackId();
+                packInstalled = ci.getPack() != null;
+            } else if (rteComponent.getActiveCpItem() != null) {
+                packId = rteComponent.getActiveCpItem().getPackId();
+                packInstalled = rteComponent.getActiveCpItem().getPack() != null;
+            }
+            IRtePackFamily packFamily = fModelController.getRtePackCollection()
+                    .getRtePackFamily(CpPack.familyFromId(packId));
 
-	@Override
-	public void gotoMarker(IMarker marker) {
-		try {
-			Object o = marker.getAttribute(CpPlugInUI.RTE_PROBLEM_MARKER_DEP_ITEM);
-			if (!(o instanceof IRteDependencyItem)) {
-				return;
-			}
-			IRteDependencyItem depItem = (IRteDependencyItem) o;
-			IRteComponentItem rteComponent = depItem.getComponentItem();
-			if (rteComponent == null) {
-				return;
-			}
+            if (depItem.getEvaluationResult() != EEvaluationResult.UNAVAILABLE &&
+            // if the pack isn't installed or the pack is excluded
+                    (!packInstalled || (packFamily != null && packFamily.getSelectedPacks().isEmpty()))) {
+                setActivePage(2);
+                fModelController.emitRteEvent(RteEvent.PACK_FAMILY_SHOW, packFamily);
+            } else {
+                setActivePage(0);
+                fModelController.emitRteEvent(RteEvent.COMPONENT_SHOW,
+                        fModelController.getComponents().findChild(rteComponent.getKeyPath(), false));
+            }
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+    }
 
-			ICpComponentInfo ci = rteComponent.getActiveCpComponentInfo();
-			boolean packInstalled = false;
-			String packId = CmsisConstants.EMPTY_STRING;
-			if (ci != null) {
-				packId = ci.getPackId();
-				packInstalled = ci.getPack() != null;
-			} else if (rteComponent.getActiveCpItem() != null) {
-				packId = rteComponent.getActiveCpItem().getPackId();
-				packInstalled = rteComponent.getActiveCpItem().getPack() != null;
-			}
-			IRtePackFamily packFamily = fModelController.getRtePackCollection().getRtePackFamily(CpPack.familyFromId(packId));
+    @Override
+    public void handle(RteEvent event) {
+        if (fModelController == null) {
+            return;
+        }
 
-			if (depItem.getEvaluationResult() != EEvaluationResult.UNAVAILABLE &&
-					// if the pack isn't installed or the pack is excluded
-					(!packInstalled || (packFamily != null && packFamily.getSelectedPacks().isEmpty()))) {
-				setActivePage(2);
-				fModelController.emitRteEvent(RteEvent.PACK_FAMILY_SHOW, packFamily);
-			} else {
-				setActivePage(0);
-				fModelController.emitRteEvent(RteEvent.COMPONENT_SHOW,
-						fModelController.getComponents().findChild(rteComponent.getKeyPath(), false));
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
-
-
-	@Override
-	public void handle(RteEvent event) {
-		if (fModelController == null) {
-			return;
-		}
-
-		switch (event.getTopic()) {
-		case RteEvent.CONFIGURATION_MODIFIED:
-		case RteEvent.COMPONENT_SELECTION_MODIFIED:
-		case RteEvent.FILTER_MODIFIED:
-			super.handle(event);
-			return;
-		case RteEvent.PACKS_RELOADED:
-		case RteEvent.PACKS_UPDATED:
-			if (fModelController != null) {
-				fModelController.reloadPacks();
-			}
-			break;
-		case RteEvent.GPDSC_CHANGED:
-			if (fModelController != null) {
-				if(fModelController.isGeneratedPackUsed((String)event.getData())){
-					fModelController.update();
-				}
-			}
-			break;
-		default:
-		}
-	}
+        switch (event.getTopic()) {
+        case RteEvent.CONFIGURATION_MODIFIED:
+        case RteEvent.COMPONENT_SELECTION_MODIFIED:
+        case RteEvent.FILTER_MODIFIED:
+            super.handle(event);
+            return;
+        case RteEvent.PACKS_RELOADED:
+        case RteEvent.PACKS_UPDATED:
+            if (fModelController != null) {
+                fModelController.reloadPacks();
+            }
+            break;
+        case RteEvent.GPDSC_CHANGED:
+            if (fModelController != null) {
+                if (fModelController.isGeneratedPackUsed((String) event.getData())) {
+                    fModelController.update();
+                }
+            }
+            break;
+        default:
+        }
+    }
 
 }

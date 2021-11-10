@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -15,8 +15,8 @@ import com.arm.cmsis.pack.generic.ITreeItem;
 import com.arm.cmsis.pack.generic.ITreeMapItem;
 
 /**
- * Basic generic interface for CMSIS items with String-to-Item map collections 
+ * Basic generic interface for CMSIS items with String-to-Item map collections
  */
-public interface ICmsisMapItem<T extends ITreeItem<T> & ICmsisItem> extends ICmsisTreeItem<T>, ITreeMapItem<String, T > {
-	 // Convenience synthetic interface without own methods
+public interface ICmsisMapItem<T extends ITreeItem<T> & ICmsisItem> extends ICmsisTreeItem<T>, ITreeMapItem<String, T> {
+    // Convenience synthetic interface without own methods
 }

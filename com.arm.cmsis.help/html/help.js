@@ -13,7 +13,7 @@ var collapseImg    = "minus.gif";
 
 // these variable are used in the meta header (code below) and in the copyright paragraph - see FixupTagClasses()
 var auth = "Ltd. and others";
-var copyr = "Copyright &copy; 2016, " + auth + ".  All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0  which accompanies this distribution, and is available at http://www.eclipse.org/legal/epl-v10.html"
+var copyr = "Copyright &copy; 2021, " + auth + ".  All rights reserved. This program and the accompanying materials are made available under the terms of the Eclipse Public License v1.0  which accompanies this distribution, and is available at http://www.eclipse.org/legal/epl-v10.html"
 
 /*---------------------------------------------------------
 The code below executes as soon as this .js file is loaded into a page

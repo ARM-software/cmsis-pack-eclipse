@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,46 +28,46 @@ import com.arm.cmsis.pack.installer.ui.views.PacksView;
  */
 public class PackManagerPerspective implements IPerspectiveFactory {
 
-	public static final String ID = "com.arm.cmsis.pack.installer.ui.perspectives.packmanager"; //$NON-NLS-1$
+    public static final String ID = "com.arm.cmsis.pack.installer.ui.perspectives.packmanager"; //$NON-NLS-1$
 
-	IPageLayout fLayout;
+    IPageLayout fLayout;
 
-	public PackManagerPerspective() {
-		super();
-	}
+    public PackManagerPerspective() {
+        super();
+    }
 
-	@Override
-	public void createInitialLayout(IPageLayout layout) {
-		fLayout = layout;
-		fLayout.setEditorAreaVisible(false);
-		addViews();
-	}
+    @Override
+    public void createInitialLayout(IPageLayout layout) {
+        fLayout = layout;
+        fLayout.setEditorAreaVisible(false);
+        addViews();
+    }
 
-	private void addViews() {
+    private void addViews() {
 
-		IFolderLayout bottom = fLayout.createFolder("Bottom", //$NON-NLS-1$
-				IPageLayout.BOTTOM, 0.8f, fLayout.getEditorArea());
-		bottom.addView(IConsoleConstants.ID_CONSOLE_VIEW);
-		bottom.addView(IProgressConstants.PROGRESS_VIEW_ID);
+        IFolderLayout bottom = fLayout.createFolder("Bottom", //$NON-NLS-1$
+                IPageLayout.BOTTOM, 0.8f, fLayout.getEditorArea());
+        bottom.addView(IConsoleConstants.ID_CONSOLE_VIEW);
+        bottom.addView(IProgressConstants.PROGRESS_VIEW_ID);
 
-		IFolderLayout topLeft = fLayout.createFolder("DevicesAndBoards", //$NON-NLS-1$
-				IPageLayout.LEFT, 0.35f, fLayout.getEditorArea());
-		topLeft.addView(DevicesView.ID);
-		fLayout.addShowViewShortcut(DevicesView.ID);
-		topLeft.addView(BoardsView.ID);
-		fLayout.addShowViewShortcut(BoardsView.ID);
+        IFolderLayout topLeft = fLayout.createFolder("DevicesAndBoards", //$NON-NLS-1$
+                IPageLayout.LEFT, 0.35f, fLayout.getEditorArea());
+        topLeft.addView(DevicesView.ID);
+        fLayout.addShowViewShortcut(DevicesView.ID);
+        topLeft.addView(BoardsView.ID);
+        fLayout.addShowViewShortcut(BoardsView.ID);
 
-		IFolderLayout right = fLayout.createFolder("Outline", //$NON-NLS-1$
-				IPageLayout.RIGHT, 0.75f, fLayout.getEditorArea());
-		right.addView(PackPropertyView.ID);
-		fLayout.addShowViewShortcut(PackPropertyView.ID);
+        IFolderLayout right = fLayout.createFolder("Outline", //$NON-NLS-1$
+                IPageLayout.RIGHT, 0.75f, fLayout.getEditorArea());
+        right.addView(PackPropertyView.ID);
+        fLayout.addShowViewShortcut(PackPropertyView.ID);
 
-		IFolderLayout topRight = fLayout.createFolder("PacksAndExamples", //$NON-NLS-1$
-				IPageLayout.TOP, 0.8f, fLayout.getEditorArea());
-		topRight.addView(PacksView.ID);
-		fLayout.addShowViewShortcut(PacksView.ID);
-		topRight.addView(ExamplesView.ID);
-		fLayout.addShowViewShortcut(ExamplesView.ID);
-	}
+        IFolderLayout topRight = fLayout.createFolder("PacksAndExamples", //$NON-NLS-1$
+                IPageLayout.TOP, 0.8f, fLayout.getEditorArea());
+        topRight.addView(PacksView.ID);
+        fLayout.addShowViewShortcut(PacksView.ID);
+        topRight.addView(ExamplesView.ID);
+        fLayout.addShowViewShortcut(ExamplesView.ID);
+    }
 
 }

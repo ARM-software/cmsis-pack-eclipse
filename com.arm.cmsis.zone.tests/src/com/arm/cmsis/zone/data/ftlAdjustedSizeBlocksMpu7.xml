@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<fzone xmlns:xs="http://www.w3.org/2001/XMLSchema-instance" xs:noNamespaceSchemaLocation="fzone.xsd">
+  <mpu_setup>
+    <type>v7M</type>
+    <region>
+      <start>0x00200000</start>
+      <end>0x0027FFFF</end>
+      <access>
+        <p>0</p>
+        <r>1</r>
+        <w>1</w>
+        <x>1</x>
+      </access>
+      <privileged>0</privileged>
+      <shared>0</shared>
+      <dma>0</dma>
+      <rom>0</rom>
+      <info>Mem521K-32, Mem32</info>
+      <addr_v7M>0x00200000</addr_v7M>
+      <size_v7M>0x12</size_v7M>
+      <srd_v7M>0x00</srd_v7M>
+    </region>
+  </mpu_setup>
+</fzone>

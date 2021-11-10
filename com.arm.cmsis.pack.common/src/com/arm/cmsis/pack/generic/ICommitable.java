@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -12,19 +12,21 @@
 package com.arm.cmsis.pack.generic;
 
 /**
- *  This interface defines an editable object where changes should be commit before save 
+ * This interface defines an editable object where changes should be commit
+ * before save
  */
 public interface ICommitable {
 
-	/**
-	 *  Commits object changes 
-	 */
-	void commit();
-	
-	/**
-	 * Check is the object has been modified since last commit 
-	 * @return true if modified 
-	 */
-	boolean isModified();
-	
+    /**
+     * Commits object changes
+     */
+    void commit();
+
+    /**
+     * Check is the object has been modified since last commit
+     *
+     * @return true if modified
+     */
+    boolean isModified();
+
 }

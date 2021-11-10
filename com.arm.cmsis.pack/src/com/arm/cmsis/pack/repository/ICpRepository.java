@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2016 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -16,28 +16,33 @@ package com.arm.cmsis.pack.repository;
  */
 public interface ICpRepository {
 
-	/**
-	 * Get the type of the repository's packs
-	 * @return type of the repository's packs
-	 */
-	String getType();
+    /**
+     * Get the type of the repository's packs
+     *
+     * @return type of the repository's packs
+     */
+    String getType();
 
-	/**
-	 * Get the name of the repository
-	 * @return name of the repository
-	 */
-	String getName();
+    /**
+     * Get the name of the repository
+     *
+     * @return name of the repository
+     */
+    String getName();
 
-	/**Get the URL of the repository
-	 * @return URL of the repository
-	 */
-	String getUrl();
+    /**
+     * Get the URL of the repository
+     *
+     * @return URL of the repository
+     */
+    String getUrl();
 
-	/**
-	 * Get the number of attributes this repository contains.
-	 * By default it is 3: type, name and url
-	 * @return number of attributes this repository contains
-	 */
-	int getAttrCount();
+    /**
+     * Get the number of attributes this repository contains. By default it is 3:
+     * type, name and url
+     *
+     * @return number of attributes this repository contains
+     */
+    int getAttrCount();
 
 }

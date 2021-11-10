@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014-2018  ARM Ltd, ARM Germany GmbH and others.
+ * Copyright (c) 2021  ARM Ltd, ARM Germany GmbH and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,16 +24,16 @@ import com.arm.cmsis.pack.ICpPackInstaller;
  */
 public class UpdatePacksHandler extends AbstractHandler {
 
-	public UpdatePacksHandler() {
-	}
+    public UpdatePacksHandler() {
+    }
 
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		final ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
-		if (packInstaller == null) {
-			return null;
-		}
-		packInstaller.updatePacksAsync();
-		return null;
-	}
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        final ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+        if (packInstaller == null) {
+            return null;
+        }
+        packInstaller.updatePacksAsync();
+        return null;
+    }
 }

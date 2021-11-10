@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -25,8 +25,8 @@ import com.arm.cmsis.pack.ui.IHelpContextIds;
 import com.arm.cmsis.pack.ui.widgets.RteDeviceInfoWidget;
 import com.arm.cmsis.pack.ui.widgets.RteDeviceInfoWidgetWrapper;
 import com.arm.cmsis.pack.ui.widgets.RteWidget;
-import com.arm.cmsis.pack.ui.wizards.RteDeviceSelectorWizard;
 import com.arm.cmsis.pack.ui.wizards.OkWizardDialog;
+import com.arm.cmsis.pack.ui.wizards.RteDeviceSelectorWizard;
 
 /**
  * Editor page that wraps RteManagerWidget
@@ -34,67 +34,62 @@ import com.arm.cmsis.pack.ui.wizards.OkWizardDialog;
  */
 public class RteDevicePage extends RteModelEditorPage {
 
-	public RteDevicePage() {
-	}
+    public RteDevicePage() {
+    }
 
+    @Override
+    protected RteWidget<IRteModelController> createContentWidget() {
+        return new RteDeviceInfoWidgetWrapper();
+    }
 
-	@Override
-	protected RteWidget<IRteModelController> createContentWidget() {
-		return new RteDeviceInfoWidgetWrapper();
-	}
+    @Override
+    protected String getHelpID() {
+        return IHelpContextIds.DEVICE_PAGE;
+    }
 
+    @Override
+    protected Image getImage() {
+        return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+    }
 
-	@Override
-	protected String getHelpID() {
-		return  IHelpContextIds.DEVICE_PAGE;
-	}
+    @Override
+    protected String getLabel() {
+        return CpStringsUI.RteDevicePage_Device;
+    }
 
+    @Override
+    public boolean isModified() {
+        if (getModelController() != null)
+            return getModelController().isDeviceModified();
+        return false;
+    }
 
-	@Override
-	protected Image getImage() {
-		return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
-	}
+    @Override
+    public void createPageContent(Composite parent) {
+        RteDeviceInfoWidgetWrapper wrapper = (RteDeviceInfoWidgetWrapper) getContentWidget();
+        wrapper.createControl(parent);
+        RteDeviceInfoWidget deviceWidget = wrapper.getDeviceInfoWidget();
+        deviceWidget.setSelectionAdapter(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                changeDevice();
+            }
+        });
+    }
 
+    protected void changeDevice() {
+        IRteModelController model = getModelController();
+        if (model != null) {
+            RteDeviceSelectorWizard wizard = new RteDeviceSelectorWizard(CpStringsUI.RteDeviceSelectorPage_SelectDevice,
+                    model.getDevices(), model.getDeviceInfo());
+            OkWizardDialog dlg = new OkWizardDialog(getFocusWidget().getShell(), wizard);
+            dlg.setPageSize(600, 400); // limit initial size
 
-	@Override
-	protected String getLabel() {
-		return CpStringsUI.RteDevicePage_Device;
-	}
-
-	@Override
-	public boolean isModified() {
-		if(getModelController() != null)
-			return getModelController().isDeviceModified();
-		return false;
-	}
-
-
-	@Override
-	public void createPageContent(Composite parent) {
-		RteDeviceInfoWidgetWrapper wrapper = (RteDeviceInfoWidgetWrapper) getContentWidget();
-		wrapper.createControl(parent);
-		RteDeviceInfoWidget deviceWidget = wrapper.getDeviceInfoWidget();
-		deviceWidget.setSelectionAdapter( new SelectionAdapter(){
-	    	 @Override
-	         public void widgetSelected(SelectionEvent e) {
-	    		 changeDevice();
-	    	}
-	    });
-	}
-
-	protected void changeDevice() {
-		IRteModelController model = getModelController();
-		if(model != null){
-			RteDeviceSelectorWizard wizard = 
-					new RteDeviceSelectorWizard(CpStringsUI.RteDeviceSelectorPage_SelectDevice, model.getDevices(), model.getDeviceInfo());
-			OkWizardDialog dlg = new OkWizardDialog(getFocusWidget().getShell(), wizard);
-			dlg.setPageSize(600, 400); // limit initial size 
-
-			if(dlg.open() == Window.OK) {
-				ICpDeviceInfo deviceInfo = wizard.getDeviceInfo();
-				//deviceWidget.setDeviceInfo(deviceInfo);
-				model.setDeviceInfo(deviceInfo);	
-			}
-		}
-	}
+            if (dlg.open() == Window.OK) {
+                ICpDeviceInfo deviceInfo = wizard.getDeviceInfo();
+                // deviceWidget.setDeviceInfo(deviceInfo);
+                model.setDeviceInfo(deviceInfo);
+            }
+        }
+    }
 }

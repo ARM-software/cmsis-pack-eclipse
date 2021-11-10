@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,200 +23,197 @@ import com.arm.cmsis.zone.data.ICpProcessorUnit;
 import com.arm.cmsis.zone.data.ICpZone;
 import com.arm.cmsis.zone.ui.Messages;
 
-
 /**
  * Widget to edit zone assignments
  *
  */
 public class CmsisZoneAssignWidget extends CmsisZoneTreeWidget {
-	protected ICpZone fZone = null;
-	private ICpProcessorUnit fProcessor = null;
-	private ICpDeviceUnit fDevice = null;
+    protected ICpZone fZone = null;
+    private ICpProcessorUnit fProcessor = null;
+    private ICpDeviceUnit fDevice = null;
 
+    public CmsisZoneAssignWidget(ICpZone zone) {
+        fZone = zone;
+    }
 
-	public CmsisZoneAssignWidget(ICpZone zone) {
-		fZone = zone;
-	}
+    @Override
+    public void destroy() {
+        fZone = null;
+        fProcessor = null;
+        fDevice = null;
+        super.destroy();
+    }
 
-	@Override
-	public void destroy(){
-		fZone = null;
-		fProcessor = null;
-		fDevice = null;
-		super.destroy();
-	}
+    @Override
+    public ICpProcessorUnit getTargetProcessor() {
+        if (getZone() == null)
+            return null;
+        if (fProcessor == null)
+            fProcessor = getZone().getTargetProcessor();
+        return fProcessor;
+    }
 
-	@Override
-	public ICpProcessorUnit getTargetProcessor() {
-		if(getZone() == null)
-			return null;
-		if(fProcessor == null)
-			fProcessor = getZone().getTargetProcessor();
-		return fProcessor;
-	}
-	@Override
-	public ICpDeviceUnit getTargetDevice() {
-		if(getZone() == null)
-			return null;
-		if(fDevice == null)
-			fDevice = getZone().getTargetDevice();
-		return fDevice;
-	}
+    @Override
+    public ICpDeviceUnit getTargetDevice() {
+        if (getZone() == null)
+            return null;
+        if (fDevice == null)
+            fDevice = getZone().getTargetDevice();
+        return fDevice;
+    }
 
+    @Override
+    public ICpZone getZone() {
+        return fZone;
+    }
 
-	@Override
-	public ICpZone getZone() {
-		return fZone;
-	}
+    @Override
+    public void setZone(ICpZone zone) {
+        if (fZone != zone) {
+            fZone = zone;
+            refresh();
+        }
+    }
 
-	@Override
-	public void setZone(ICpZone zone) {
-		if(fZone != zone) {
-			fZone = zone;
-			refresh();
-		}
-	}
+    /**
+     * Column label provider for RteComponentTreeWidget
+     */
+    public class CmsisZoneAssignmentColumnAdvisor extends CmsisZoneColumnAdvisor {
+        /**
+         * Constructs advisor for a viewer
+         *
+         * @param columnViewer ColumnViewer on which the advisor is installed
+         */
+        public CmsisZoneAssignmentColumnAdvisor(CmsisZoneTreeWidget treeWidget) {
+            super(treeWidget);
+        }
 
-	/**
-	 * Column label provider for RteComponentTreeWidget
-	 */
-	public class CmsisZoneAssignmentColumnAdvisor extends CmsisZoneColumnAdvisor {
-		/**
-		 * Constructs advisor for a viewer
-		 * @param columnViewer ColumnViewer on which the advisor is installed
-		 */
-		public CmsisZoneAssignmentColumnAdvisor(CmsisZoneTreeWidget treeWidget) {
-			super(treeWidget);
-		}
+        @Override
+        protected void createPrefixColumnInfos() {
+            addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneAssignWidget_Name, ColumnType.COLNAME, 200, false));
+            addColumnInfo(new CmsisColumnInfo(CmsisConstants.EMPTY_STRING, ColumnType.COLOP, 40, false));
+            addColumnInfo(
+                    new CmsisColumnInfo(Messages.CmsisZoneAssignWidget_Permissions, ColumnType.COLACCESS, 60, false));
+            addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneAssignWidget_Size, ColumnType.COLSIZE, 100, true));
+        }
 
+        @Override
+        public Color getBgColor(Object obj, int columnIndex) {
+            if (getColumnType(columnIndex) != ColumnType.COLOP)
+                return null;
 
-		@Override
-		protected void createPrefixColumnInfos() {
-			addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneAssignWidget_Name, ColumnType.COLNAME, 200, false));
-			addColumnInfo(new CmsisColumnInfo(CmsisConstants.EMPTY_STRING, ColumnType.COLOP, 40, false));
-			addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneAssignWidget_Permissions, ColumnType.COLACCESS, 60, false));
-			addColumnInfo(new CmsisColumnInfo(Messages.CmsisZoneAssignWidget_Size, ColumnType.COLSIZE, 100, true));
-		}
+            if (obj instanceof ICpDeviceUnit) {
+                ICpZone zone = getZone(columnIndex);
+                if (zone != null) {
+                    if (zone.hasWarning())
+                        return ColorConstants.YELLOW;
+                    if (zone.hasSevereErrors())
+                        return ColorConstants.RED;
+                }
+                return null;
+            }
 
+            ICpMemoryBlock block = getMemoryBlock(obj);
+            if (block == null)
+                return null;
 
-		@Override
-		public Color getBgColor(Object obj, int columnIndex) {
-			if(getColumnType(columnIndex) != ColumnType.COLOP)
-				return null;
+            if (block.isRemoved() || !block.isValid()) {
+                return ColorConstants.PALE_RED;
+            }
 
-			if(obj instanceof ICpDeviceUnit) {
-				ICpZone zone = getZone(columnIndex);
-				if(zone != null) {
-					if(zone.hasWarning())
-						return ColorConstants.YELLOW;
-					if(zone.hasSevereErrors())
-						return ColorConstants.RED;
-				}
-				return null;
-			}
+            int numAssigned = block.getAssignmentCount();
+            if (numAssigned <= 0)
+                return null;
+            boolean assigned = block.isAssigned(fZone.getName());
+            if (assigned) {
+                if (numAssigned == 1)
+                    return ColorConstants.GREEN;
+                return ColorConstants.YELLOW;
+            }
+            return ColorConstants.GRAY;
+        }
 
-			ICpMemoryBlock block = getMemoryBlock(obj);
-			if(block == null)
-				return null;
+        @Override
+        public CellControlType getCellControlType(Object obj, int columnIndex) {
+            ICpItem item = ICpItem.cast(obj);
+            if (item == null) {
+                return CellControlType.NONE;
+            }
 
-			if( block.isRemoved() || !block.isValid()) {
-				return ColorConstants.PALE_RED;
-			}
+            ICpMemoryBlock block = getMemoryBlock(obj);
+            if (block == null) {
+                return CellControlType.TEXT;
+            }
 
-			int numAssigned = block.getAssignmentCount();
-			if(numAssigned <= 0)
-				return null;
-			boolean assigned = block.isAssigned(fZone.getName());
-			if(assigned) {
-				if(numAssigned == 1)
-					return ColorConstants.GREEN;
-				return ColorConstants.YELLOW;
-			}
-			return ColorConstants.GRAY;
-		}
+            ColumnType colType = getColumnType(columnIndex);
+            if (colType == ColumnType.COLSTART && hasStrings(obj, columnIndex)) {
+                return CellControlType.MENU;
+            }
+            if (colType == ColumnType.COLOP) {
+                ICpMemoryBlock mappedBlock = getMemoryBlock(block, columnIndex);
+                if (fZone != null && fZone.canAssign(mappedBlock)) {
+                    return CellControlType.INPLACE_CHECK;
+                }
+                return CellControlType.NONE;
+            }
+            return CellControlType.TEXT;
+        }
 
-		@Override
-		public CellControlType getCellControlType(Object obj, int columnIndex) {
-			ICpItem item = ICpItem.cast(obj);
-			if(item == null) {
-				return CellControlType.NONE;
-			}
+        @Override
+        public boolean getCheck(Object obj, int columnIndex) {
+            if (getColumnType(columnIndex) != ColumnType.COLOP)
+                return false;
+            ICpMemoryBlock block = getMemoryBlock(obj);
+            if (block == null || getMemoryBlock(block, columnIndex) == null) {
+                return false;
+            }
+            ICpZone zone = getZone(columnIndex);
+            if (zone != null && zone.canAssign(block)) {
+                return block.isAssigned(zone.getName());
+            }
+            return false;
+        }
 
-			ICpMemoryBlock block = getMemoryBlock(obj);
-			if(block == null) {
-				return CellControlType.TEXT;
-			}
+        @Override
+        public void setCheck(Object element, int columnIndex, boolean newVal) {
+            if (getColumnType(columnIndex) != ColumnType.COLOP) {
+                return;
+            }
+            ICpMemoryBlock block = getMemoryBlock(element);
+            if (block == null || getMemoryBlock(block, columnIndex) == null) {
+                return;
+            }
+            if (getSelectionCount() > 1)
+                fKeyAdapter.assignBlocks(columnIndex);
+            else
+                getModelController().assignBlock(block, fZone.getName(), newVal);
+        }
 
-			ColumnType colType = getColumnType(columnIndex);
-			if(colType == ColumnType.COLSTART && hasStrings(obj, columnIndex)) {
-				return CellControlType.MENU;
-			}
-			if(colType == ColumnType.COLOP) {
-				ICpMemoryBlock mappedBlock = getMemoryBlock(block, columnIndex);
-				if(fZone != null && fZone.canAssign(mappedBlock)) {
-					return CellControlType.INPLACE_CHECK;
-				}
-				return CellControlType.NONE;
-			}
-			return CellControlType.TEXT;
-		}
+        @Override
+        public boolean canEdit(Object obj, int columnIndex) {
+            ColumnType colType = getColumnType(columnIndex);
+            if (colType != ColumnType.COLOP) {
+                return false;
+            }
+            ICpMemoryBlock block = getMemoryBlock(obj);
+            if (block == null || getMemoryBlock(block, columnIndex) == null) {
+                return false;
+            }
+            ICpZone zone = getZone(columnIndex);
 
-		@Override
-		public boolean getCheck(Object obj, int columnIndex) {
-			if(getColumnType(columnIndex) != ColumnType.COLOP)
-				return false;
-			ICpMemoryBlock block = getMemoryBlock(obj);
-			if(block == null || getMemoryBlock(block, columnIndex) == null) {
-				return false;
-			}
-			ICpZone zone = getZone(columnIndex);
-			if(zone != null && zone.canAssign(block)) {
-				return block.isAssigned(zone.getName());
-			}
-			return false;
-		}
+            return zone != null && zone.canAssign(block);
+        }
 
-		@Override
-		public void setCheck(Object element, int columnIndex, boolean newVal) {
-			if(getColumnType(columnIndex) != ColumnType.COLOP) {
-				return;
-			}
-			ICpMemoryBlock block = getMemoryBlock(element);
-			if(block == null || getMemoryBlock(block, columnIndex) == null) {
-				return;
-			}
-			if(getSelectionCount() > 1)
-				fKeyAdapter.assignBlocks(columnIndex);
-			else
-				getModelController().assignBlock(block, fZone.getName(), newVal);
-		}
+        @Override
+        public ICpZone getZone(int columnUndex) {
+            return fZone;
 
-		@Override
-		public boolean canEdit(Object obj, int columnIndex) {
-			ColumnType colType = getColumnType(columnIndex);
-			if(colType != ColumnType.COLOP) {
-				return false;
-			}
-			ICpMemoryBlock block = getMemoryBlock(obj);
-			if(block == null || getMemoryBlock(block, columnIndex) == null) {
-				return false;
-			}
-			ICpZone zone = getZone(columnIndex);
+        }
+    } /// end of CmsisZoneAssignmentColumnAdvisor
 
-			return zone != null && zone.canAssign(block);
-		}
-
-		@Override
-		public ICpZone getZone(int columnUndex) {
-			return fZone;
-
-		}
-	} /// end of CmsisZoneAssignmentColumnAdvisor
-
-	@Override
-	protected CmsisZoneColumnAdvisor createColumnAdvisor() {
-		return new CmsisZoneAssignmentColumnAdvisor(this);
-	}
-
+    @Override
+    protected CmsisZoneColumnAdvisor createColumnAdvisor() {
+        return new CmsisZoneAssignmentColumnAdvisor(this);
+    }
 
 }

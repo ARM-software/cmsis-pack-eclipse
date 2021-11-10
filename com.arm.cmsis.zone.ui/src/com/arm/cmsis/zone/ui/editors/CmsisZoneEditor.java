@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -46,194 +46,191 @@ import com.arm.cmsis.zone.ui.Messages;
  */
 public class CmsisZoneEditor extends RteEditor<CmsisZoneController> {
 
-	protected CmsisZoneResourceMapPage fResourceMapPage;
-	protected CmsisZoneMapPage fZoneMapPage;
-	protected CmsisZoneSetupPage fZoneSetupPage;
-	
-	public CmsisZoneEditor() {
-		super();
-	}
+    protected CmsisZoneResourceMapPage fResourceMapPage;
+    protected CmsisZoneMapPage fZoneMapPage;
+    protected CmsisZoneSetupPage fZoneSetupPage;
 
-	@Override
-	public void dispose() {
-		super.dispose();
-	}
+    public CmsisZoneEditor() {
+        super();
+    }
 
-	@Override
-	protected ICpXmlParser createParser() {
-		return new CpZoneParser();
-	}
+    @Override
+    public void dispose() {
+        super.dispose();
+    }
 
-	@Override
-	protected CmsisZoneController createController() {
-		return new CmsisZoneController();
-	}
+    @Override
+    protected ICpXmlParser createParser() {
+        return new CpZoneParser();
+    }
 
-	@Override
-	protected void createPages() {
-		createResourceMapPage();
-		createZoneMapPage();
-		createZoneSetupPage();
-	}
-	
+    @Override
+    protected CmsisZoneController createController() {
+        return new CmsisZoneController();
+    }
 
-	protected void createResourceMapPage() {
-		fResourceMapPage = new CmsisZoneResourceMapPage();
-		Composite composite = fResourceMapPage.createControl(getContainer());
-		int index = addPage(composite);
-		setPageText(index,Messages.CmsisZoneEditor_Resources);
-		fResourceMapPage.setModelController(fModelController);
-	}
+    @Override
+    protected void createPages() {
+        createResourceMapPage();
+        createZoneMapPage();
+        createZoneSetupPage();
+    }
 
-	protected void createZoneMapPage() {
-		fZoneMapPage = new CmsisZoneMapPage();
-		Composite composite = fZoneMapPage.createControl(getContainer());
-		int index = addPage(composite);
-		setPageText(index,Messages.CmsisZoneEditor_Zones);
-		fZoneMapPage.setModelController(fModelController);
-	}
+    protected void createResourceMapPage() {
+        fResourceMapPage = new CmsisZoneResourceMapPage();
+        Composite composite = fResourceMapPage.createControl(getContainer());
+        int index = addPage(composite);
+        setPageText(index, Messages.CmsisZoneEditor_Resources);
+        fResourceMapPage.setModelController(fModelController);
+    }
 
-	protected void createZoneSetupPage() {
-		fZoneSetupPage = new CmsisZoneSetupPage();
-		Composite composite = fZoneSetupPage.createControl(getContainer());
-		int index = addPage(composite);
-		setPageText(index,Messages.CmsisZoneEditor_Setup);
-		fZoneSetupPage.setModelController(fModelController);
-	}
+    protected void createZoneMapPage() {
+        fZoneMapPage = new CmsisZoneMapPage();
+        Composite composite = fZoneMapPage.createControl(getContainer());
+        int index = addPage(composite);
+        setPageText(index, Messages.CmsisZoneEditor_Zones);
+        fZoneMapPage.setModelController(fModelController);
+    }
 
-	
-	@Override
-	public void gotoMarker(IMarker marker) {
-			if(getModelController() == null)
-				return;
-			try {
-				if(!marker.getType().equals(CpZonePluginUI.CMSIS_ZONE_PROBLEM_MARKER))
-					return;
-				ICpZoneItem item = ITreeObject.castTo(marker.getAttribute(CpZonePluginUI.CMSIS_ZONE_PROBLEM_MARKER_ITEM), ICpZoneItem.class);
-				if(item == null)
-					return;
-				String id = item.getId();
-				ICpMemoryBlock block = getModelController().getResources().getMemoryBlock(id);
-				getModelController().emitRteEvent(CmsisZoneController.ZONE_ITEM_SHOW, block);
-				
-			} catch (CoreException e) {				
-				e.printStackTrace();
-			}
-	}
+    protected void createZoneSetupPage() {
+        fZoneSetupPage = new CmsisZoneSetupPage();
+        Composite composite = fZoneSetupPage.createControl(getContainer());
+        int index = addPage(composite);
+        setPageText(index, Messages.CmsisZoneEditor_Setup);
+        fZoneSetupPage.setModelController(fModelController);
+    }
 
+    @Override
+    public void gotoMarker(IMarker marker) {
+        if (getModelController() == null)
+            return;
+        try {
+            if (!marker.getType().equals(CpZonePluginUI.CMSIS_ZONE_PROBLEM_MARKER))
+                return;
+            ICpZoneItem item = ITreeObject.castTo(marker.getAttribute(CpZonePluginUI.CMSIS_ZONE_PROBLEM_MARKER_ITEM),
+                    ICpZoneItem.class);
+            if (item == null)
+                return;
+            String id = item.getId();
+            ICpMemoryBlock block = getModelController().getResources().getMemoryBlock(id);
+            getModelController().emitRteEvent(CmsisZoneController.ZONE_ITEM_SHOW, block);
 
-	@Override
-	public boolean isRelevantFile(String absFileName) {
-		if(absFileName == null) {
-			return false;
-		}
-		if(super.isRelevantFile(absFileName))
-			return true;
+        } catch (CoreException e) {
+            e.printStackTrace();
+        }
+    }
 
-		CmsisZoneController controller = getModelController(); 
-		if(controller == null)
-			return false;
-		ICpRootZone rootZone = controller.getRootZone();
-		if(rootZone == null)
-			return false;
+    @Override
+    public boolean isRelevantFile(String absFileName) {
+        if (absFileName == null) {
+            return false;
+        }
+        if (super.isRelevantFile(absFileName))
+            return true;
 
-		//Convert absFileName to Path
-		Path filePath = new Path(absFileName);
+        CmsisZoneController controller = getModelController();
+        if (controller == null)
+            return false;
+        ICpRootZone rootZone = controller.getRootZone();
+        if (rootZone == null)
+            return false;
 
-		//Get absolute rzone file's path
-		String rzoneFile = rootZone.getAbsolutePath(rootZone.getResourceFileName());
-		//Convert to File or Path
-		Path rzoneFilePath = new Path(rzoneFile);
+        // Convert absFileName to Path
+        Path filePath = new Path(absFileName);
 
-		//Check if both files are the same
-		if(filePath.equals(rzoneFilePath))
-			return true;
+        // Get absolute rzone file's path
+        String rzoneFile = rootZone.getAbsolutePath(rootZone.getResourceFileName());
+        // Convert to File or Path
+        Path rzoneFilePath = new Path(rzoneFile);
 
-		return false;           
-	}
+        // Check if both files are the same
+        if (filePath.equals(rzoneFilePath))
+            return true;
 
-	@Override
-	public void handle(RteEvent event) {
-		if(event.getData() instanceof ICpZone) {			
-			switch(event.getTopic()){
-			case CmsisZoneController.ZONE_MODIFIED:
-				break;
-			case CmsisZoneController.ZONE_ADDED:
-				break;
-			case CmsisZoneController.ZONE_DELETED:
-				break;
-			}
-			firePropertyChange(IEditorPart.PROP_DIRTY);
-			return;
-		}
-		super.handle(event);
-	}
-	
-	@Override
-	protected boolean checkInputChanged(ICpItem root) {
-		if(super.checkInputChanged(root)) {
-			return true;
-		}
-		if(getModelController() == null)
-			return true;
-		// it could be that rzone file has changed, perform full check
-		ICpItem curRoot = fModelController.getDataInfo();
-		if(curRoot == null)
-			return true;
-		CpZoneParser zoneParser = new CpZoneParser();
-		String curXmlString = zoneParser.writeToFullXmlString(curRoot);
-		String xmlString = zoneParser.writeToFullXmlString(root);
-		if(curXmlString == null || xmlString == null)
-			return true;
-		
-		return !curXmlString.equals(xmlString);
-	}
-	
-	@Override
-	protected void saveXml(IProgressMonitor monitor) throws CoreException {
-		super.saveXml(monitor);	
-				
-		IProject project = null;
-		IFile iFile = CpPlugInUI.getFileForLocation(fAbsFileName);
-		if(iFile != null) {
-			project = iFile.getProject();
-		}
+        return false;
+    }
 
-		ICpRootZone rootZone = fModelController.getRootZone();		
-		CmsisZoneProjectCreator.createZoneFiles(rootZone, RteConsole.openConsole(project), monitor);
-	}
+    @Override
+    public void handle(RteEvent event) {
+        if (event.getData() instanceof ICpZone) {
+            switch (event.getTopic()) {
+            case CmsisZoneController.ZONE_MODIFIED:
+                break;
+            case CmsisZoneController.ZONE_ADDED:
+                break;
+            case CmsisZoneController.ZONE_DELETED:
+                break;
+            }
+            firePropertyChange(IEditorPart.PROP_DIRTY);
+            return;
+        }
+        super.handle(event);
+    }
 
-	@Override
-	protected void loadData(String absFileName) {
+    @Override
+    protected boolean checkInputChanged(ICpItem root) {
+        if (super.checkInputChanged(root)) {
+            return true;
+        }
+        if (getModelController() == null)
+            return true;
+        // it could be that rzone file has changed, perform full check
+        ICpItem curRoot = fModelController.getDataInfo();
+        if (curRoot == null)
+            return true;
+        CpZoneParser zoneParser = new CpZoneParser();
+        String curXmlString = zoneParser.writeToFullXmlString(curRoot);
+        String xmlString = zoneParser.writeToFullXmlString(root);
+        if (curXmlString == null || xmlString == null)
+            return true;
 
-		if(absFileName == null) {
-			return;
-		}
-		//Validate if input is a .rzone file		
-		String ext = Utils.extractFileExtension(absFileName);
+        return !curXmlString.equals(xmlString);
+    }
 
-		//Create azone file name
-		String azoneFileName = Utils.removeFileExtension(absFileName) + CmsisConstants.DOT_AZONE;
+    @Override
+    protected void saveXml(IProgressMonitor monitor) throws CoreException {
+        super.saveXml(monitor);
 
-		if(ext.equals(CmsisConstants.RZONE)) {			
-			//Check if file exists
-			File file = new File(azoneFileName); 			
-			if(!file.exists()) { //Create azone file
-				try {
-					IProgressMonitor monitor = new NullProgressMonitor();
-					ICpZone zone = null;	
-					CmsisZoneProjectCreator.saveAZoneFile(azoneFileName, zone, absFileName, monitor); 
-					//Refresh project's content
-					CpPlugInUI.refreshFile(azoneFileName);
-				} catch (CoreException e) {					
-					e.printStackTrace();
-				}
-			}
-		}
+        IProject project = null;
+        IFile iFile = CpPlugInUI.getFileForLocation(fAbsFileName);
+        if (iFile != null) {
+            project = iFile.getProject();
+        }
 
-		//Load azone file's data
-		super.loadData(azoneFileName);				
-	}
-	
+        ICpRootZone rootZone = fModelController.getRootZone();
+        CmsisZoneProjectCreator.createZoneFiles(rootZone, RteConsole.openConsole(project), monitor);
+    }
+
+    @Override
+    protected void loadData(String absFileName) {
+
+        if (absFileName == null) {
+            return;
+        }
+        // Validate if input is a .rzone file
+        String ext = Utils.extractFileExtension(absFileName);
+
+        // Create azone file name
+        String azoneFileName = Utils.removeFileExtension(absFileName) + CmsisConstants.DOT_AZONE;
+
+        if (ext.equals(CmsisConstants.RZONE)) {
+            // Check if file exists
+            File file = new File(azoneFileName);
+            if (!file.exists()) { // Create azone file
+                try {
+                    IProgressMonitor monitor = new NullProgressMonitor();
+                    ICpZone zone = null;
+                    CmsisZoneProjectCreator.saveAZoneFile(azoneFileName, zone, absFileName, monitor);
+                    // Refresh project's content
+                    CpPlugInUI.refreshFile(azoneFileName);
+                } catch (CoreException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        // Load azone file's data
+        super.loadData(azoneFileName);
+    }
 
 }

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
+<!DOCTYPE xml>
 <plugin>
-
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
@@ -65,5 +65,4 @@
             name="com.arm.cmsis.pack.ui.rteproblemmarker.dependencyitem">
       </attribute>
    </extension>
-
 </plugin>

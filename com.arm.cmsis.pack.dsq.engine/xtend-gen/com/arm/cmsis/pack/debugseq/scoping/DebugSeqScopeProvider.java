@@ -12,7 +12,6 @@ import com.arm.cmsis.pack.debugseq.debugSeq.Expression;
 import com.arm.cmsis.pack.debugseq.debugSeq.Sequence;
 import com.arm.cmsis.pack.debugseq.debugSeq.Statement;
 import com.arm.cmsis.pack.debugseq.debugSeq.VariableDeclaration;
-import com.arm.cmsis.pack.debugseq.scoping.AbstractDebugSeqScopeProvider;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import java.util.Arrays;

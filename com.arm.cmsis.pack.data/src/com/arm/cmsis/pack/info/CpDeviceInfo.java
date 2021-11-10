@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -30,315 +30,303 @@ import com.arm.cmsis.pack.utils.Utils;
  */
 public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
 
-	protected ICpDeviceItem fDevice = null;
-	protected ICpPackInfo   fPackInfo = null;
-	protected String 		fPname =  CmsisConstants.EMPTY_STRING;
-	protected EEvaluationResult fResolveResult = EEvaluationResult.UNDEFINED;
-	
-	/**
-	 * Constructs CpDeviceInfo from supplied ICpDeviceItem
-	 * @param parent parent ICpItem
-	 * @param device ICpDeviceItem to construct from
-	 * @param fullDeviceName devise name in form Dname:Pname
-	 */
-	public CpDeviceInfo(ICpItem parent, ICpDeviceItem device, String fullDeviceName) {
-		super(parent, CmsisConstants.DEVICE_TAG);
-		setDevice(device, fullDeviceName);
-	}
+    protected ICpDeviceItem fDevice = null;
+    protected ICpPackInfo fPackInfo = null;
+    protected String fPname = CmsisConstants.EMPTY_STRING;
+    protected EEvaluationResult fResolveResult = EEvaluationResult.UNDEFINED;
 
-	/**
-	 * Default constructor
-	 * @param parent parent ICpItem
-	 */
-	public CpDeviceInfo(ICpItem parent) {
-		super(parent, CmsisConstants.DEVICE_TAG);
-	}
+    /**
+     * Constructs CpDeviceInfo from supplied ICpDeviceItem
+     *
+     * @param parent         parent ICpItem
+     * @param device         ICpDeviceItem to construct from
+     * @param fullDeviceName devise name in form Dname:Pname
+     */
+    public CpDeviceInfo(ICpItem parent, ICpDeviceItem device, String fullDeviceName) {
+        super(parent, CmsisConstants.DEVICE_TAG);
+        setDevice(device, fullDeviceName);
+    }
 
-	
-	
-	
-	@Override
-	protected ICpItem createChildItem(String tag) {
-		return CpConfigurationInfo.createChildItem(this, tag);
-	}
+    /**
+     * Default constructor
+     *
+     * @param parent parent ICpItem
+     */
+    public CpDeviceInfo(ICpItem parent) {
+        super(parent, CmsisConstants.DEVICE_TAG);
+    }
 
-	
-	/**
-	 * Constructs CpDeviceInfo from parent and tag
-	 * @param parent parent ICpItem
-	 * @param tag
-	 */
-	public CpDeviceInfo(ICpItem parent, String tag) {
-		super(parent, tag);
-	}
+    @Override
+    protected ICpItem createChildItem(String tag) {
+        return CpConfigurationInfo.createChildItem(this, tag);
+    }
 
-	@Override
-	public ICpDeviceItem getDevice() {
-		return fDevice;
-	}
+    /**
+     * Constructs CpDeviceInfo from parent and tag
+     *
+     * @param parent parent ICpItem
+     * @param tag
+     */
+    public CpDeviceInfo(ICpItem parent, String tag) {
+        super(parent, tag);
+    }
 
+    @Override
+    public ICpDeviceItem getDevice() {
+        return fDevice;
+    }
 
-	@Override
-	public ICpPack getPack() {
-		if(fDevice != null) {
-			return fDevice.getPack();
-		}
-		if(fPackInfo != null) {
-			return fPackInfo.getPack();
-		}
-		return null;
-	}
+    @Override
+    public ICpPack getPack() {
+        if (fDevice != null) {
+            return fDevice.getPack();
+        }
+        if (fPackInfo != null) {
+            return fPackInfo.getPack();
+        }
+        return null;
+    }
 
+    @Override
+    public ICpPackInfo getPackInfo() {
+        return fPackInfo;
+    }
 
-	@Override
-	public ICpPackInfo getPackInfo() {
-		return fPackInfo;
-	}
+    @Override
+    public void setDevice(ICpDeviceItem device) {
+        fDevice = device;
+    }
 
-	@Override
-	public void setDevice(ICpDeviceItem device) {
-		fDevice = device;
-	}
+    @Override
+    public void setDevice(ICpDeviceItem device, String fullDeviceName) {
+        setDevice(device);
+        if (device != null) {
+            fName = fullDeviceName;
+            fPname = CmsisConstants.EMPTY_STRING;
+            int i = fName.indexOf(':');
+            if (i >= 0) {
+                fPname = fName.substring(i + 1);
+            } else if (fDevice == null || fDevice.getProcessorCount() == 1) {
+                fPname = CmsisConstants.EMPTY_STRING;
+            }
+        }
+        updateInfo();
+    }
 
-	@Override
-	public void setDevice(ICpDeviceItem device, String fullDeviceName) {
-		setDevice(device);
-		if(device != null) {
-			fName = fullDeviceName;
-			fPname =  CmsisConstants.EMPTY_STRING;
-			int i = fName.indexOf(':');
-			if (i >= 0) {
-				fPname = fName.substring(i + 1);
-			} else if(fDevice == null || fDevice.getProcessorCount() == 1) {
-				fPname = CmsisConstants.EMPTY_STRING;
-			}
-		} 
-		updateInfo();
-	}
+    @Override
+    public String getProcessorName() {
+        return attributes().getAttribute(CmsisConstants.PNAME, fPname);
+    }
 
-	
-	@Override
-	public String getProcessorName() {
-		return attributes().getAttribute(CmsisConstants.PNAME, fPname);
-	}
+    @Override
+    public void updateInfo() {
+        if (fDevice != null) {
+            ICpPack pack = fDevice.getPack();
+            fPackInfo = new CpPackInfo(this, pack);
+            fPackInfo.attributes().setAttribute(CmsisConstants.INFO, pack.getDescription());
+            replaceChild(fPackInfo);
+            String processorName = getProcessorName();
+            if (!attributes().hasAttributes()) {
+                attributes().setAttributes(fDevice.getEffectiveAttributes(null));
+                String url = fDevice.getUrl();
+                if (url != null && !url.isEmpty()) {
+                    attributes().setAttribute(CmsisConstants.URL, url);
+                }
+                String info = getSummary();
+                if (info != null && !info.isEmpty()) {
+                    attributes().setAttribute(CmsisConstants.INFO, info);
+                }
+            }
+            // always update processor attributes
+            if (isMergeProcessorAttributes()) {
+                if (!processorName.isEmpty()) {
+                    attributes().setAttribute(CmsisConstants.PNAME, processorName);
+                }
+                ICpItem proc = fDevice.getProcessor(processorName);
+                if (proc != null) {
+                    attributes().mergeAttributes(proc.attributes());
+                }
+            }
+        } else {
+            if (fPackInfo != null) {
+                fPackInfo.setPack(null);
+            }
+        }
+    }
 
+    protected boolean isMergeProcessorAttributes() {
+        return true;
+    }
 
-	@Override
-	public void updateInfo() {
-		if(fDevice != null) {
-			ICpPack pack = fDevice.getPack();
-			fPackInfo = new CpPackInfo(this, pack);
-			fPackInfo.attributes().setAttribute(CmsisConstants.INFO, pack.getDescription());
-			replaceChild(fPackInfo);
-			String processorName = getProcessorName();
-			if(!attributes().hasAttributes()) {
-				attributes().setAttributes(fDevice.getEffectiveAttributes(null));
-				String url = fDevice.getUrl();
-				if(url != null && !url.isEmpty()) {
-					attributes().setAttribute(CmsisConstants.URL, url);
-				}
-				String info = getSummary();
-				if(info != null && !info.isEmpty()) {
-					attributes().setAttribute(CmsisConstants.INFO, info);
-				}
-			} 
-			// always update processor attributes
-			if(isMergeProcessorAttributes()) {
-				if(!processorName.isEmpty()) {
-					attributes().setAttribute(CmsisConstants.PNAME, processorName);
-				}
-				ICpItem proc = fDevice.getProcessor(processorName);
-				if(proc != null) {
-					attributes().mergeAttributes(proc.attributes());
-				}
-			}
-		} else {
-			if(fPackInfo != null) {
-				fPackInfo.setPack(null);
-			}
-		}
-	}
+    @Override
+    public void addChild(ICpItem item) {
+        if (item instanceof ICpPackInfo) {
+            fPackInfo = (ICpPackInfo) item;
+        }
+        super.addChild(item);
+    }
 
-	protected boolean isMergeProcessorAttributes() {
-		return true;
-	}
-	
+    @Override
+    public String getName() {
+        if (fName == null || fName.isEmpty()) {
+            fName = getFullDeviceName();
+        }
+        return fName;
+    }
 
-	@Override
-	public void addChild(ICpItem item) {
-		if(item instanceof ICpPackInfo) {
-			fPackInfo = (ICpPackInfo)item;
-		}
-		super.addChild(item);
-	}
+    @Override
+    protected String constructName() {
+        return getFullDeviceName();
+    }
 
+    @Override
+    public String getVersion() {
+        return CmsisConstants.EMPTY_STRING;
+    }
 
-	@Override
-	public String getName() {
-		if(fName == null || fName.isEmpty()) {
-			fName = getFullDeviceName();
-		}
-		return fName;
-	}
+    @Override
+    public String getDescription() {
+        ICpItem effectiveProps = getEffectiveProperties();
+        if (effectiveProps != null) {
+            return effectiveProps.getDescription();
+        }
+        return getAttribute(CmsisConstants.INFO);
+    }
 
-	@Override
-	protected String constructName() {
-		return getFullDeviceName();
-	}
-	
-	@Override
-	public String getVersion() {
-		return CmsisConstants.EMPTY_STRING;
-	}
+    @Override
+    public synchronized String getUrl() {
+        if (fDevice != null) {
+            return fDevice.getUrl();
+        }
+        return getAttribute(CmsisConstants.URL);
+    }
 
-	@Override
-	public String getDescription() {
-		ICpItem effectiveProps = getEffectiveProperties();
-		if(effectiveProps != null) {
-			return effectiveProps.getDescription();
-		}
-		return getAttribute(CmsisConstants.INFO);
-	}
+    @Override
+    public EEvaluationResult getEvaluationResult() {
+        return fResolveResult;
+    }
 
+    @Override
+    public void setEvaluationResult(EEvaluationResult result) {
+        fResolveResult = result;
+    }
 
-	@Override
-	public synchronized String getUrl() {
-		if(fDevice != null) {
-			return fDevice.getUrl();
-		}
-		return getAttribute(CmsisConstants.URL);
-	}
+    @Override
+    public ICpItem getEffectiveProperties() {
+        if (fDevice != null) {
+            return fDevice.getEffectiveProperties(getProcessorName());
+        }
+        return null;
+    }
 
-	@Override
-	public EEvaluationResult getEvaluationResult() {
-		return fResolveResult;
-	}
+    @Override
+    public ICpDebugConfiguration getDebugConfiguration() {
+        if (fDevice != null) {
+            return fDevice.getDebugConfiguration(getProcessorName());
+        }
+        return null;
+    }
 
-	@Override
-	public void setEvaluationResult(EEvaluationResult result) {
-		fResolveResult = result;
-	}
+    @Override
+    public String getSummary() {
+        String summary = CmsisConstants.EMPTY_STRING;
+        if (getProcessorName() != null) {
+            summary += CmsisConstants.ARM + ' ' + getAttribute(CmsisConstants.DCORE);
+            String clock = getClockSummary();
+            if (!clock.isEmpty()) {
+                summary += ' ' + clock;
+            }
+        } else if (fDevice != null) {
+            Map<String, ICpItem> processors = fDevice.getProcessors();
+            for (ICpItem p : processors.values()) {
+                if (!summary.isEmpty()) {
+                    summary += ", "; //$NON-NLS-1$
+                }
+                summary += CmsisConstants.ARM + ' ' + p.getAttribute(CmsisConstants.DCORE);
+                String clock = Utils.getScaledClockFrequency(p.getAttribute(CmsisConstants.DCLOCK));
+                if (!clock.isEmpty()) {
+                    summary += ' ' + clock;
+                }
+            }
+        }
+        String memory = getMemorySummary();
+        if (!memory.isEmpty()) {
+            summary += ", " + memory; //$NON-NLS-1$
+        }
+        return summary;
+    }
 
-	@Override
-	public ICpItem getEffectiveProperties() {
-		if(fDevice != null) {
-			return fDevice.getEffectiveProperties(getProcessorName());
-		}
-		return null;
-	}
+    @Override
+    public String getClockSummary() {
+        return Utils.getScaledClockFrequency(getAttribute(CmsisConstants.DCLOCK));
+    }
 
-	@Override
-	public ICpDebugConfiguration getDebugConfiguration() {
-		if(fDevice != null) {
-			return fDevice.getDebugConfiguration(getProcessorName());
-		}
-		return null;
-	}
+    @Override
+    public String getMemorySummary() {
+        ICpItem effectiveProps = getEffectiveProperties();
+        if (effectiveProps == null) {
+            return CmsisConstants.EMPTY_STRING;
+        }
 
-	@Override
-	public String getSummary() {
-		String summary = CmsisConstants.EMPTY_STRING;
-		if(getProcessorName() != null ) {
-			summary += CmsisConstants.ARM + ' ' + getAttribute(CmsisConstants.DCORE);
-			String clock = getClockSummary();
-			if (!clock.isEmpty()) {
-				summary += ' ' + clock;
-			}
-		} else if(fDevice != null){
-			Map<String, ICpItem> processors = fDevice.getProcessors();
-			for(ICpItem p : processors.values()) {
-				if(!summary.isEmpty())
-				 {
-					summary += ", "; //$NON-NLS-1$
-				}
-				summary += CmsisConstants.ARM + ' ' + p.getAttribute(CmsisConstants.DCORE);
-				String clock = Utils.getScaledClockFrequency(p.getAttribute(CmsisConstants.DCLOCK));
-				if (!clock.isEmpty()) {
-					summary += ' ' + clock;
-				}
-			}
-		}
-		String memory = getMemorySummary();
-		if(!memory.isEmpty()) {
-			summary += ", " + memory; //$NON-NLS-1$
-		}
-		return summary;
-	}
+        Collection<ICpItem> mems = effectiveProps.getChildren(CmsisConstants.MEMORY_TAG);
+        if (mems == null || mems.isEmpty()) {
+            return CmsisConstants.EMPTY_STRING;
+        }
 
-	@Override
-	public String getClockSummary() {
-		return Utils.getScaledClockFrequency(getAttribute(CmsisConstants.DCLOCK));
-	}
+        long ramSize = 0;
+        long romSize = 0;
+        for (ICpItem item : mems) {
+            if (!(item instanceof ICpMemory)) {
+                continue;
+            }
+            ICpMemory m = (ICpMemory) item;
+            long size = m.attributes().getAttributeAsLong(CmsisConstants.SIZE, 0);
+            if (size == 0) {
+                continue;
+            }
+            if (m.isRAM()) {
+                ramSize += size;
+            } else if (m.isROM()) {
+                romSize += size;
+            }
+        }
 
+        String summary = CmsisConstants.EMPTY_STRING;
+        if (ramSize > 0) {
+            summary += Utils.getMemorySizeString(ramSize) + ' ' + CmsisConstants.RAM;
+        }
+        if (romSize > 0) {
+            if (!summary.isEmpty()) {
+                summary += ", "; //$NON-NLS-1$
+            }
+            summary += Utils.getMemorySizeString(romSize) + ' ' + CmsisConstants.ROM;
+        }
+        return summary;
+    }
 
-	@Override
-	public String getMemorySummary() {
-		ICpItem effectiveProps = getEffectiveProperties();
-		if(effectiveProps == null) {
-			return CmsisConstants.EMPTY_STRING;
-		}
+    @Override
+    public Collection<ICpItem> getBooks() {
+        ICpItem effectiveProps = getEffectiveProperties();
+        if (effectiveProps == null) {
+            return null;
+        }
+        return effectiveProps.getBooks();
+    }
 
-		Collection<ICpItem> mems = effectiveProps.getChildren(CmsisConstants.MEMORY_TAG);
-		if(mems == null || mems.isEmpty()) {
-			return CmsisConstants.EMPTY_STRING;
-		}
+    @Override
+    public String getDgbConfFileName() {
+        ICpDebugConfiguration dconf = getDebugConfiguration();
+        if (dconf == null)
+            return CmsisConstants.EMPTY_STRING;
+        ICpDebugVars dv = dconf.getDebugVars();
+        if (dv == null)
+            return CmsisConstants.EMPTY_STRING;
+        String dgbConfgFileName = dv.getName();
+        if (dgbConfgFileName == null || dgbConfgFileName.isEmpty())
+            return CmsisConstants.EMPTY_STRING;
 
-		long ramSize = 0;
-		long romSize = 0;
-		for(ICpItem item : mems) {
-			if(!(item instanceof ICpMemory)) {
-				continue;
-			}
-			ICpMemory m = (ICpMemory)item;
-			long size = m.attributes().getAttributeAsLong(CmsisConstants.SIZE, 0);
-			if(size == 0) {
-				continue;
-			}
-			if(m.isRAM()) {
-				ramSize += size;
-			} else if(m.isROM()) {
-				romSize += size;
-			}
-		}
+        String relPath = CmsisConstants.RTE + '/' + Utils.extractFileName(dgbConfgFileName);
+        return getAbsolutePath(relPath);
+    }
 
-		String summary = CmsisConstants.EMPTY_STRING;
-		if (ramSize > 0) {
-			summary += Utils.getMemorySizeString(ramSize) + ' ' + CmsisConstants.RAM;
-		}
-		if (romSize > 0) {
-			if (!summary.isEmpty())
-			 {
-				summary += ", "; //$NON-NLS-1$
-			}
-			summary += Utils.getMemorySizeString(romSize) + ' ' + CmsisConstants.ROM;
-		}
-		return summary;
-	}
-
-	@Override
-	public Collection<ICpItem> getBooks() {
-		ICpItem effectiveProps = getEffectiveProperties();
-		if(effectiveProps == null) {
-			return null;
-		}
-		return effectiveProps.getBooks();
-	}
-	
-
-	@Override
-	public String getDgbConfFileName() {
-		ICpDebugConfiguration dconf = getDebugConfiguration();
-		if(dconf == null)
-			return CmsisConstants.EMPTY_STRING;
-		ICpDebugVars dv = dconf.getDebugVars();
-		if(dv == null)
-			return CmsisConstants.EMPTY_STRING;
-		String dgbConfgFileName = dv.getName();
-		if(dgbConfgFileName == null || dgbConfgFileName.isEmpty())
-			return CmsisConstants.EMPTY_STRING;
-		
-		String relPath = CmsisConstants.RTE + '/' + Utils.extractFileName(dgbConfgFileName);
-		return getAbsolutePath(relPath);
-	} 
-	
 }

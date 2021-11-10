@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -25,128 +25,131 @@ import com.arm.cmsis.pack.ui.widgets.RteDeviceSelectorWidget;
 /**
  * Wizard page that wraps device selector widget
  */
-public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageListener  {
+public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageListener {
 
-	private RteDeviceSelectorWidget fDeviceWidget = null;
-	private IRteDeviceItem fDevices = null;
-	private ICpDeviceInfo fDeviceInfo = null;
-	private boolean fbInitialized = false;
-	protected boolean fbShowProcessors = true;
+    private RteDeviceSelectorWidget fDeviceWidget = null;
+    private IRteDeviceItem fDevices = null;
+    private ICpDeviceInfo fDeviceInfo = null;
+    private boolean fbInitialized = false;
+    protected boolean fbShowProcessors = true;
 
+    /**
+     * @wbp.parser.constructor
+     */
+    public RteDeviceSelectorPage() {
+        this(true);
+    }
 
-	/**
-	 * @wbp.parser.constructor
-	 */
-	public RteDeviceSelectorPage() {
-		this(true);
-	}
+    public RteDeviceSelectorPage(boolean bShowProcessors) {
+        this(CpStringsUI.RteDeviceWizard_PageName, CpStringsUI.RteDeviceWizard_SelectDevice,
+                CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_CHIP_48), bShowProcessors);
+    }
 
-	public RteDeviceSelectorPage(boolean bShowProcessors) {
-		this(CpStringsUI.RteDeviceWizard_PageName,
-				CpStringsUI.RteDeviceWizard_SelectDevice,
-				CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_CHIP_48), bShowProcessors);
-	}
+    /**
+     * @param pageName
+     * @param title
+     * @param titleImage
+     */
+    public RteDeviceSelectorPage(String pageName, String title, ImageDescriptor titleImage, boolean bShowProcessors) {
+        super(pageName, title, titleImage);
+        fbShowProcessors = bShowProcessors;
+        setPageComplete(false);
+    }
 
-	/**
-	 * @param pageName
-	 * @param title
-	 * @param titleImage
-	 */
-	public RteDeviceSelectorPage(String pageName, String title,	ImageDescriptor titleImage, boolean bShowProcessors) {
-		super(pageName, title, titleImage);
-		fbShowProcessors = bShowProcessors;
-		setPageComplete(false);
-	}
+    @Override
+    public void createControl(Composite parent) {
+        fDeviceWidget = new RteDeviceSelectorWidget(parent, fbShowProcessors);
+        fDeviceWidget.addListener(this);
+        fDeviceWidget.setDevices(fDevices);
 
-	@Override
-	public void createControl(Composite parent) {
-		fDeviceWidget = new RteDeviceSelectorWidget(parent, fbShowProcessors);
-		fDeviceWidget.addListener(this);
-		fDeviceWidget.setDevices(fDevices);
+        setControl(fDeviceWidget);
+        updateStatus(CpStringsUI.RteDeviceSelectorPage_SelectDevice);
+    }
 
-		setControl(fDeviceWidget);
-		updateStatus(CpStringsUI.RteDeviceSelectorPage_SelectDevice);
-	}
+    /**
+     * Returns internal device tree
+     *
+     * @return the devices
+     */
+    public IRteDeviceItem getDevices() {
+        return fDevices;
+    }
 
-	/**
-	 * Returns internal device tree
-	 * @return the devices
-	 */
-	public IRteDeviceItem getDevices() {
-		return fDevices;
-	}
+    /**
+     * Assigns device tree
+     *
+     * @param devices the devices to set
+     */
+    public void setDevices(IRteDeviceItem devices) {
+        fDevices = devices;
+        if (fDeviceWidget != null) {
+            fDeviceWidget.setDevices(fDevices);
+        }
+    }
 
-	/**
-	 * Assigns device tree
-	 * @param devices the devices to set
-	 */
-	public void setDevices(IRteDeviceItem devices) {
-		fDevices = devices;
-		if(fDeviceWidget != null) {
-			fDeviceWidget.setDevices(fDevices);
-		}
-	}
+    @Override
+    public void setVisible(boolean visible) {
+        if (!fbInitialized) {
+            fDeviceWidget.setDeviceInfo(fDeviceInfo);
+            fbInitialized = true;
+        }
+        super.setVisible(visible);
+    }
 
-	@Override
-	public void setVisible(boolean visible) {
-		if(!fbInitialized) {
-			fDeviceWidget.setDeviceInfo(fDeviceInfo);
-			fbInitialized = true;
-		}
-		super.setVisible(visible);
-	}
+    @Override
+    public void dispose() {
+        super.dispose();
+        fDevices = null;
+        fDeviceWidget = null;
+        fDeviceInfo = null;
+    }
 
-	@Override
-	public void dispose() {
-		super.dispose();
-		fDevices = null;
-		fDeviceWidget = null;
-		fDeviceInfo = null;
-	}
+    @Override
+    public void handle(String message) {
+        updateStatus(message);
+    }
 
-	@Override
-	public void handle(String message) {
-		updateStatus(message);
-	}
+    public void updateStatus(String message) {
+        setErrorMessage(message);
+        if (fbInitialized) {
+            fDeviceInfo = fDeviceWidget.getDeviceInfo();
+        }
+        setPageComplete(fDeviceInfo != null);
+    }
 
-	public void updateStatus(String message) {
-		setErrorMessage(message);
-		if (fbInitialized) {
-			fDeviceInfo = fDeviceWidget.getDeviceInfo();
-		}
-		setPageComplete(fDeviceInfo!= null);
-	}
+    /**
+     * Returns selected device if any
+     *
+     * @return the selected device
+     */
+    public IRteDeviceItem getDevice() {
+        if (fDeviceWidget != null) {
+            return fDeviceWidget.getSelectedDeviceItem();
+        }
+        return null;
+    }
 
-	/**
-	 * Returns selected device if any
-	 * @return the selected device
-	 */
-	public IRteDeviceItem getDevice() {
-		if(fDeviceWidget != null) {
-			return fDeviceWidget.getSelectedDeviceItem();
-		}
-		return null;
-	}
+    /**
+     * Returns selected device info
+     *
+     * @return
+     */
+    public ICpDeviceInfo getDeviceInfo() {
+        if (fbInitialized) {
+            fDeviceInfo = fDeviceWidget.getDeviceInfo();
+        }
+        return fDeviceInfo;
+    }
 
-	/**
-	 * Returns selected device info
-	 * @return
-	 */
-	public ICpDeviceInfo getDeviceInfo() {
-		if(fbInitialized ) {
-			fDeviceInfo = fDeviceWidget.getDeviceInfo();
-		}
-		return fDeviceInfo;
-	}
-
-	/**
-	 * Makes initial device selection
-	 * @param deviceInfo ICpDeviceInfo to make initial selection
-	 */
-	public void setDeviceInfo(ICpDeviceInfo deviceInfo) {
-		fDeviceInfo = deviceInfo;
-		if(fDeviceWidget != null) {
-			fDeviceWidget.setDeviceInfo(deviceInfo);
-		}
-	}
+    /**
+     * Makes initial device selection
+     *
+     * @param deviceInfo ICpDeviceInfo to make initial selection
+     */
+    public void setDeviceInfo(ICpDeviceInfo deviceInfo) {
+        fDeviceInfo = deviceInfo;
+        if (fDeviceWidget != null) {
+            fDeviceWidget.setDeviceInfo(deviceInfo);
+        }
+    }
 }

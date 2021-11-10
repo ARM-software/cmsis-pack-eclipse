@@ -9,15 +9,15 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 
 public class ManLocalRepoHandler extends AbstractHandler {
-	
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 
-		PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(shell,
-				"com.arm.cmsis.pack.ui.CpManLocalRepoPage", null, null); //$NON-NLS-1$
-		dialog.open();
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        Shell shell = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell();
 
-		return null;
-	}
+        PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(shell,
+                "com.arm.cmsis.pack.ui.CpManLocalRepoPage", null, null); //$NON-NLS-1$
+        dialog.open();
+
+        return null;
+    }
 }

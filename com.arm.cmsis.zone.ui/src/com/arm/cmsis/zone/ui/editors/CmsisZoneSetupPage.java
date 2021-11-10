@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,38 +25,34 @@ import com.arm.cmsis.zone.widgets.CmsisZoneSetupWidget;
  */
 public class CmsisZoneSetupPage extends CmsisZonePage {
 
-	public CmsisZoneSetupPage() {
-		super(Messages.CmsisZoneSetupPage_ZoneSetup);
-	}
-	
-	@Override
-	protected CmsisZoneSetupWidget createContentWidget() {
-		return new CmsisZoneSetupWidget();
-	}
+    public CmsisZoneSetupPage() {
+        super(Messages.CmsisZoneSetupPage_ZoneSetup);
+    }
 
-	@Override
-	public void createPageContent(Composite parent) {
-		CmsisZoneSetupWidget widget = (CmsisZoneSetupWidget) getContentWidget();
-		widget.createControl(parent);
-	}
-	
-	
-	@Override
-	protected String getHelpID() {
-		return IZoneHelpContextIds.SETUP_PAGE;
-	}
+    @Override
+    protected CmsisZoneSetupWidget createContentWidget() {
+        return new CmsisZoneSetupWidget();
+    }
 
-	@Override
-	protected Image getImage() {
-		return CpPlugInUI.getImage(CpPlugInUI.ICON_CMSIS_ZONE);
-	}
+    @Override
+    public void createPageContent(Composite parent) {
+        CmsisZoneSetupWidget widget = (CmsisZoneSetupWidget) getContentWidget();
+        widget.createControl(parent);
+    }
 
-	@Override
-	protected void createShowActions() {
-		// do nothing
-	}
-	
-	
-	
-	
+    @Override
+    protected String getHelpID() {
+        return IZoneHelpContextIds.SETUP_PAGE;
+    }
+
+    @Override
+    protected Image getImage() {
+        return CpPlugInUI.getImage(CpPlugInUI.ICON_CMSIS_ZONE);
+    }
+
+    @Override
+    protected void createShowActions() {
+        // do nothing
+    }
+
 }

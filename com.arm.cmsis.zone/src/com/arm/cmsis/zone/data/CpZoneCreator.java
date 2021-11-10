@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2019 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -15,24 +15,22 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
 
 /**
- *  Element describing creator properties 
+ * Element describing creator properties
  */
 public class CpZoneCreator extends CpZoneItem implements ICpZoneCreator {
 
-	
-	public CpZoneCreator(ICpItem parent, String tag) {
-		super(parent, tag);
-	}
+    public CpZoneCreator(ICpItem parent, String tag) {
+        super(parent, tag);
+    }
 
-	
-	@Override
-	public String getTool() { 
-		return getAttribute(CmsisConstants.TOOL);
-	}
+    @Override
+    public String getTool() {
+        return getAttribute(CmsisConstants.TOOL);
+    }
 
-	@Override
-	public void setTool(String tool) {
-		setAttribute(CmsisConstants.TOOL, tool);
-	}
+    @Override
+    public void setTool(String tool) {
+        setAttribute(CmsisConstants.TOOL, tool);
+    }
 
 }

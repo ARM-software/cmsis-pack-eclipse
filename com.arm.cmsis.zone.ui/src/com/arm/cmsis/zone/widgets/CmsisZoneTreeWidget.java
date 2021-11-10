@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -56,469 +56,468 @@ import com.arm.cmsis.zone.ui.wizards.CpPeripheralSlotSetupDlg;
 import com.arm.cmsis.zone.ui.wizards.MemoryBlockWizard;
 
 public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneController> {
-	protected Action propertiesAction = null;
-	protected Action deleteBlockAction = null;
-	protected Action addBlockAction = null;
-	protected Action arrangeBlocksAction = null;
-	protected Action deleteZoneAction = null;
-	protected Action configureSlotseAction = null;
+    protected Action propertiesAction = null;
+    protected Action deleteBlockAction = null;
+    protected Action addBlockAction = null;
+    protected Action arrangeBlocksAction = null;
+    protected Action deleteZoneAction = null;
+    protected Action configureSlotseAction = null;
 
-	protected CmsisZoneKeyAdapter fKeyAdapter;
-	protected ICpItem contextMenuItem = null;
+    protected CmsisZoneKeyAdapter fKeyAdapter;
+    protected ICpItem contextMenuItem = null;
 
-	@Override
-	public void destroy(){
-		super.destroy();
-		propertiesAction = null;
-		deleteBlockAction = null;
-		addBlockAction = null;
-		arrangeBlocksAction = null;
-		configureSlotseAction = null;
-	}
+    @Override
+    public void destroy() {
+        super.destroy();
+        propertiesAction = null;
+        deleteBlockAction = null;
+        addBlockAction = null;
+        arrangeBlocksAction = null;
+        configureSlotseAction = null;
+    }
 
+    public ICpProcessorUnit getTargetProcessor() {
+        return null;
+    }
 
-	public ICpProcessorUnit getTargetProcessor() {
-		return null;
-	}
+    public ICpDeviceUnit getTargetDevice() {
+        return null;
+    }
 
-	public ICpDeviceUnit getTargetDevice() {
-		return null;
-	}
+    /**
+     * Returns ICpZone currently managed by the widget
+     *
+     * @return ICpZone or null if none
+     */
+    public ICpZone getZone() {
+        if (contextMenuItem instanceof ICpZone)
+            return (ICpZone) contextMenuItem;
+        return null; // default returns null
+    }
 
-	/**
-	 * Returns ICpZone currently managed by the widget
-	 * @return ICpZone or null if none
-	 */
-	public ICpZone getZone() {
-		if(contextMenuItem instanceof ICpZone)
-			return 	(ICpZone)contextMenuItem;
-		return null; // default returns null
-	}
+    public void setZone(ICpZone zone) {
+        // default does nothing
+    }
 
-	public void setZone(ICpZone zone) {
-		// default does nothing
-	}
+    public boolean isShowList() {
+        return getAttributeAsBoolean(CmsisConstants.LIST, false);
+    }
 
-	public boolean isShowList() {
-		return getAttributeAsBoolean(CmsisConstants.LIST, false);
-	}
+    @Override
+    protected void fillContextMenu(IMenuManager manager) {
+        ICpItem selItem = getSelectedItem();
+        contextMenuItem = selItem;
+        if (getZone() != null) {
+            manager.add(new Separator());
+            manager.add(deleteZoneAction);
+            manager.add(new Separator());
+            manager.add(propertiesAction);
+            return;
+        }
+        if (tContextMenuPoint.y < 0) // on header or outside
+            return;
 
-	@Override
-	protected void fillContextMenu(IMenuManager manager) {
-		ICpItem selItem = getSelectedItem();
-		contextMenuItem = selItem;
-		if(getZone() != null) {
-			manager.add(new Separator());
-			manager.add(deleteZoneAction);
-			manager.add(new Separator());
-			manager.add(propertiesAction);
-			return;
-		}
-		if(tContextMenuPoint.y < 0 ) // on header or outside
-			return;
+        super.fillContextMenu(manager);
+        if (canAddBlock(selItem)) {
+            manager.add(new Separator());
+            manager.add(addBlockAction);
+            // manager.add(arrangeBlocksAction);
+        }
+        if (canDeleteBlock(selItem)) {
+            manager.add(new Separator());
+            manager.add(deleteBlockAction);
+        }
 
-		super.fillContextMenu(manager);
-		if(canAddBlock(selItem)) {
-			manager.add(new Separator());
-			manager.add(addBlockAction);
-			//manager.add(arrangeBlocksAction);
-		}
-		if(canDeleteBlock(selItem)) {
-			manager.add(new Separator());
-			manager.add(deleteBlockAction);
-		}
+        if (hasSlots(selItem)) {
+            manager.add(new Separator());
+            manager.add(configureSlotseAction);
+        }
+        if (hasProperties(selItem)) {
+            manager.add(new Separator());
+            manager.add(propertiesAction);
+        }
+    }
 
-		if(hasSlots(selItem)) {
-			manager.add(new Separator());
-			manager.add(configureSlotseAction);
-		}
-		if(hasProperties(selItem)) {
-			manager.add(new Separator());
-			manager.add(propertiesAction);
-		}
-	}
+    @Override
+    protected void makeActions() {
+        super.makeActions();
 
+        propertiesAction = new Action() {
+            @Override
+            public void run() {
+                properties();
+            }
+        };
+        propertiesAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_PROPERTIES));
+        propertiesAction.setText(Messages.CmsisZoneTreeWidget_Properties);
 
-	@Override
-	protected void makeActions() {
-		super.makeActions();
+        configureSlotseAction = new Action() {
+            @Override
+            public void run() {
+                configureSlots();
+            }
+        };
+        configureSlotseAction.setText(Messages.CmsisZoneTreeWidget_Configure);
 
-		propertiesAction = new Action() {
-			@Override
-			public void run() {
-				properties();
-			}
-		};
-		propertiesAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_PROPERTIES));
-		propertiesAction.setText(Messages.CmsisZoneTreeWidget_Properties);
+        deleteBlockAction = new Action() {
+            @Override
+            public void run() {
+                deleteSelectedBlocks();
+            }
+        };
+        deleteBlockAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_DELETE));
+        deleteBlockAction.setText(Messages.CmsisZoneTreeWidget_DeleteMemoryRegion);
 
-		configureSlotseAction = new Action() {
-			@Override
-			public void run() {
-				configureSlots();
-			}
-		};
-		configureSlotseAction.setText(Messages.CmsisZoneTreeWidget_Configure);
+        addBlockAction = new Action() {
+            @Override
+            public void run() {
+                addBlock();
+            }
+        };
+        addBlockAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_BLOCK_NEW));
+        addBlockAction.setText(Messages.CmsisZoneTreeWidget_AddMemoryRegion);
 
+        arrangeBlocksAction = new Action() {
+            @Override
+            public void run() {
+                arrangeBlocks();
+            }
+        };
+        arrangeBlocksAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_ARRANGE));
+        arrangeBlocksAction.setText(Messages.CmsisZoneTreeWidget_ArrangeMemoryRegions);
+        arrangeBlocksAction
+                .setToolTipText(Messages.CmsisZoneTreeWidget_ArrangeMemoryRegionsAccordingToSizesAndPermissions);
 
-		deleteBlockAction = new Action() {
-			@Override
-			public void run() {
-				deleteSelectedBlocks();
-			}
-		};
-		deleteBlockAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_DELETE));
-		deleteBlockAction.setText(Messages.CmsisZoneTreeWidget_DeleteMemoryRegion);
+        String text = Messages.CmsisZoneTreeWidget_DeleteZone;
+        deleteZoneAction = new Action(text, IAction.AS_PUSH_BUTTON) {
+            @Override
+            public void run() {
+                ICpZone zone = getZone();
+                if (zone == null)
+                    return;
+                String msg = text + Messages.CmsisZoneTreeWidget_SimpleQuotationMark + zone.getName()
+                        + Messages.CmsisZoneTreeWidget_SimpleQuotationMarkWithQuestionSymbol;
+                boolean yes = MessageDialog.openQuestion(getFocusWidget().getShell(), msg, msg);
+                if (yes) {
+                    // run async as we will remove this page /column
+                    Display.getDefault().asyncExec(() -> getModelController().deleteZone(zone));
+                }
+            }
+        };
+        deleteZoneAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_DELETE));
+    }
 
-		addBlockAction = new Action() {
-			@Override
-			public void run() {
-				addBlock();
-			}
-		};
-		addBlockAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_BLOCK_NEW));
-		addBlockAction.setText(Messages.CmsisZoneTreeWidget_AddMemoryRegion);
+    protected void arrangeBlocks() {
+        getModelController().arrangeBlocks();
 
-		arrangeBlocksAction = new Action() {
-			@Override
-			public void run() {
-				arrangeBlocks();
-			}
-		};
-		arrangeBlocksAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_ARRANGE));
-		arrangeBlocksAction.setText(Messages.CmsisZoneTreeWidget_ArrangeMemoryRegions);
-		arrangeBlocksAction.setToolTipText(Messages.CmsisZoneTreeWidget_ArrangeMemoryRegionsAccordingToSizesAndPermissions);
+    }
 
-		String text = Messages.CmsisZoneTreeWidget_DeleteZone;
-		deleteZoneAction = new Action(text, IAction.AS_PUSH_BUTTON){
-			@Override
-			public void run() {
-				ICpZone zone = getZone();
-				if(zone == null)
-					return;
-				String msg = text + Messages.CmsisZoneTreeWidget_SimpleQuotationMark + zone.getName() + Messages.CmsisZoneTreeWidget_SimpleQuotationMarkWithQuestionSymbol;
-				boolean yes = MessageDialog.openQuestion(getFocusWidget().getShell(),
-						msg, msg);
-				if(yes) {
-					// run async as we will remove this page /column
-					Display.getDefault().asyncExec(()->getModelController().deleteZone(zone));
-				}
-			}
-		};
-		deleteZoneAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_DELETE));
-	}
+    protected void deleteSelectedBlocks() {
+        fKeyAdapter.processDeletePressed();
+    }
 
-	protected void arrangeBlocks() {
-		getModelController().arrangeBlocks();
+    public static boolean canDeleteBlock(ICpItem selItem) {
+        if (selItem == null)
+            return false;
+        if (selItem instanceof ICpMemoryBlock) {
+            ICpMemoryBlock block = (ICpMemoryBlock) selItem;
+            return block.isDeletable();
+        }
+        return false;
+    }
 
-	}
+    protected void addBlock() {
+        ICpItem selItem = getSelectedItem();
+        if (selItem == null)
+            return;
+        if (!canAddBlock(selItem))
+            return;
+        if (!(selItem instanceof ICpMemoryBlock))
+            return;
+        ICpMemoryBlock parentBlock = (ICpMemoryBlock) selItem;
+        MemoryBlockWizard newWizard = new MemoryBlockWizard(getModelController(), parentBlock);
+        newWizard.execute(getFocusWidget().getShell());
+    }
 
-	protected void deleteSelectedBlocks() {
-		fKeyAdapter.processDeletePressed();
-	}
+    protected boolean canAddBlock(ICpItem selItem) {
+        if (selItem == null)
+            return false;
+        if (selItem instanceof ICpPeripheral)
+            return false;
+        if (selItem instanceof ICpPeripheralGroup)
+            return false;
+        if (selItem instanceof ICpMemoryBlock) {
+            ICpMemoryBlock r = (ICpMemoryBlock) selItem;
+            return r.getParentBlock() == null;
+        }
+        return false;
+    }
 
-	public static boolean canDeleteBlock(ICpItem selItem) {
-		if(selItem == null)
-			return false;
-		if(selItem instanceof ICpMemoryBlock) {
-			ICpMemoryBlock block = (ICpMemoryBlock)selItem;
-			return block.isDeletable();
-		}
-		return false;
-	}
+    protected boolean hasProperties(ICpItem selItem) {
+        if (selItem == null)
+            return false;
+        if (selItem instanceof ICpZone)
+            return true;
+        if (selItem instanceof ICpPeripheralGroup) {
+            return false;
+        }
+        if (selItem instanceof ICpMemoryBlock) {
+            return true;
+        }
+        return false;
+    }
 
-	protected void addBlock() {
-		ICpItem selItem = getSelectedItem();
-		if(selItem == null)
-			return;
-		if(!canAddBlock(selItem))
-			return;
-		if(!(selItem instanceof ICpMemoryBlock))
-			return;
-		ICpMemoryBlock parentBlock = (ICpMemoryBlock)selItem;
-		MemoryBlockWizard newWizard = new MemoryBlockWizard(getModelController(), parentBlock);
-		newWizard.execute(getFocusWidget().getShell());
-	}
+    protected void properties() {
+        OkWizard wizard = getPropertiesWizard();
+        if (wizard != null)
+            wizard.execute(getFocusWidget().getShell());
+    }
 
-	protected boolean canAddBlock(ICpItem selItem) {
-		if(selItem == null)
-			return false;
-		if(selItem instanceof ICpPeripheral)
-			return false;
-		if(selItem instanceof ICpPeripheralGroup)
-			return false;
-		if(selItem instanceof ICpMemoryBlock) {
-			ICpMemoryBlock r= (ICpMemoryBlock)selItem;
-			return r.getParentBlock() == null;
-		}
-		return false;
-	}
+    protected OkWizard getPropertiesWizard() {
+        ICpItem selItem = contextMenuItem != null ? contextMenuItem : getSelectedItem();
+        contextMenuItem = null;
+        if (!hasProperties(selItem))
+            return null;
+        if (selItem instanceof ICpZone) {
+            return new CmsisZoneWizard(getModelController(), (ICpZone) selItem);
+        }
+        if (selItem instanceof ICpMemoryBlock) {
+            ICpMemoryBlock block = (ICpMemoryBlock) selItem;
+            ICpMemoryBlock parentBlock = block.getParentBlock();
+            return new MemoryBlockWizard(getModelController(), parentBlock, block);
+        }
+        return null;
+    }
 
-	protected boolean hasProperties(ICpItem selItem) {
-		if(selItem == null)
-			return false;
-		if(selItem instanceof ICpZone)
-			return true;
-		if(selItem instanceof ICpPeripheralGroup) {
-			return false;
-		}
-		if(selItem instanceof ICpMemoryBlock) {
-			return true;
-		}
-		return false;
-	}
+    protected boolean hasSlots(ICpItem selItem) {
+        if (selItem instanceof ICpPeripheral) {
+            ICpPeripheral p = (ICpPeripheral) selItem;
+            Collection<ICpSlot> slots = p.getSlots();
+            if (slots != null && !slots.isEmpty()) {
+                if (configureSlotseAction != null) {
+                    configureSlotseAction
+                            .setText(Messages.CmsisZoneTreeWidget_Configure + CmsisConstants.SPACE + p.getSlotName());
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 
-	protected void properties() {
-		OkWizard wizard = getPropertiesWizard();
-		if(wizard != null)
-			wizard.execute(getFocusWidget().getShell());
-	}
+    protected void configureSlots() {
+        ICpItem selItem = contextMenuItem != null ? contextMenuItem : getSelectedItem();
+        contextMenuItem = null;
+        if (!hasSlots(selItem)) {
+            return;
+        }
+        ICpPeripheral p = (ICpPeripheral) selItem;
 
-	protected OkWizard getPropertiesWizard() {
-		ICpItem selItem = contextMenuItem != null ? contextMenuItem : getSelectedItem();
-		contextMenuItem = null;
-		if(!hasProperties(selItem))
-			return null;
-		if(selItem instanceof ICpZone) {
-			return new CmsisZoneWizard(getModelController(), (ICpZone)selItem);
-		}
-		if(selItem instanceof ICpMemoryBlock) {
-			ICpMemoryBlock block = (ICpMemoryBlock)selItem;
-			ICpMemoryBlock parentBlock = block.getParentBlock();
-			return new MemoryBlockWizard(getModelController(), parentBlock, block);
-		}
-		return null;
-	}
+        CpPeripheralSlotSetupDlg dlg = new CpPeripheralSlotSetupDlg(getFocusWidget().getShell(), p);
+        if (dlg.open() == Window.OK) {
+            if (dlg.apply()) {
+                getModelController().setModified(true);
+            }
+        }
+    }
 
-	protected boolean hasSlots(ICpItem selItem) {
-		if(selItem instanceof ICpPeripheral) {
-			ICpPeripheral p = (ICpPeripheral)selItem;
-			Collection<ICpSlot> slots = p.getSlots();
-			if(slots != null && !slots.isEmpty()) {
-				if(configureSlotseAction != null) {
-					configureSlotseAction.setText(Messages.CmsisZoneTreeWidget_Configure+ CmsisConstants.SPACE + p.getSlotName());
-				}
-				return true;
-			}
-		}
-		return false;
-	}
+    protected ICpItem getSelectedItem() {
+        if (getViewer() != null) {
+            if (tContextMenuColumn > 0) {
+                CmsisZoneColumnAdvisor advisor = (CmsisZoneColumnAdvisor) getColumnAdvisor();
+                ICpZone zone = advisor.getZone(tContextMenuColumn);
+                if (zone != null)
+                    return zone;
+            }
 
+            IStructuredSelection sel = (IStructuredSelection) getViewer().getSelection();
+            if (sel != null) {
+                Object element = sel.getFirstElement();
+                return ICpItem.cast(element);
+            }
+        }
+        return null;
+    }
 
-	protected void configureSlots() {
-		ICpItem selItem = contextMenuItem != null ? contextMenuItem : getSelectedItem();
-		contextMenuItem = null;
-		if(!hasSlots(selItem)) {
-			return;
-		}
-		ICpPeripheral p = (ICpPeripheral)selItem;
+    public Collection<ICpItem> getSelectedItems() {
+        List<ICpItem> selectedItems = new LinkedList<>();
+        if (getViewer() != null) {
+            IStructuredSelection sel = getViewer().getStructuredSelection();
+            if (sel != null) {
+                for (Object element : sel.toList()) {
+                    if (element instanceof ICpItem)
+                        selectedItems.add((ICpItem) element);
+                }
+            }
+        }
+        return selectedItems;
+    }
 
-		CpPeripheralSlotSetupDlg dlg = new CpPeripheralSlotSetupDlg(getFocusWidget().getShell(), p);
-		if(dlg.open() == Window.OK) {
-			if(dlg.apply()) {
-				getModelController().setModified(true);
-			}
-		}
-	}
+    public <T> Collection<T> getSelectedItemsOfType(Class<T> type) {
+        List<T> selectedItems = new LinkedList<>();
+        if (getViewer() != null) {
+            IStructuredSelection sel = (IStructuredSelection) getViewer().getSelection();
+            if (sel != null) {
+                for (Object element : sel.toList()) {
+                    if (type.isInstance(element))
+                        selectedItems.add(type.cast(element));
+                }
+            }
+        }
+        return selectedItems;
+    }
 
-	protected ICpItem getSelectedItem() {
-		if (getViewer() != null) {
-			if(tContextMenuColumn > 0 ) {
-				CmsisZoneColumnAdvisor advisor = (CmsisZoneColumnAdvisor)getColumnAdvisor();
-				ICpZone zone = advisor.getZone(tContextMenuColumn);
-				if(zone != null)
-					return zone;
-			}
+    @Override
+    public void handle(RteEvent event) {
+        switch (event.getTopic()) {
+        case CmsisZoneController.ZONE_MODIFIED:
+            asyncUpdate();
+            return;
+        case CmsisZoneController.ZONE_ITEM_SHOW:
+            showItem(ITreeObject.castTo(event.getData(), ICpItem.class));
+        }
+        super.handle(event);
+    }
 
-			IStructuredSelection sel = (IStructuredSelection)getViewer().getSelection();
-			if(sel != null) {
-				Object element = sel.getFirstElement();
-				return ICpItem.cast(element);
-			}
-		}
-		return null;
-	}
+    /**
+     * Highlights given item expanding parent nodes if needed
+     *
+     * @param item Component item to select
+     */
+    public void showItem(ICpItem item) {
+        if (fTreeViewer == null) {
+            return;
+        }
+        if (item == null) {
+            return;
+        }
 
-	public Collection<ICpItem> getSelectedItems() {
-		List<ICpItem> selectedItems = new LinkedList<>();
-		if (getViewer() != null) {
-			IStructuredSelection sel = getViewer().getStructuredSelection();
-			if(sel != null) {
-				for(Object element : sel.toList()) {
-				if(element instanceof ICpItem )
-					selectedItems.add((ICpItem) element);
-				}
-			}
-		}
-		return selectedItems;
-	}
+        if (item == getSelectedItem()) {
+            return;
+        }
 
-	public <T> Collection<T> getSelectedItemsOfType(Class<T> type) {
-		List<T> selectedItems = new LinkedList<>();
-		if (getViewer() != null) {
-			IStructuredSelection sel = (IStructuredSelection)getViewer().getSelection();
-			if(sel != null) {
-				for(Object element : sel.toList()) {
-				if(type.isInstance(element))
-					selectedItems.add(type.cast(element));
-				}
-			}
-		}
-		return selectedItems;
-	}
+        Object[] path = item.getEffectiveHierachyPath();
+        if (path.length == 0) {
+            return;
+        }
+        TreePath tp = new TreePath(path);
+        TreeSelection ts = new TreeSelection(tp);
+        fTreeViewer.setSelection(ts, true);
+    }
 
+    protected abstract CmsisZoneColumnAdvisor createColumnAdvisor();
 
-	@Override
-	public void handle(RteEvent event) {
-		switch(event.getTopic()){
-			case CmsisZoneController.ZONE_MODIFIED:
-				asyncUpdate();
-				return;
-			case CmsisZoneController.ZONE_ITEM_SHOW:
-				showItem(ITreeObject.castTo(event.getData(),ICpItem.class));
-		}
-		super.handle(event);
-	}
+    protected CmsisZoneColumnAdvisor getCmsisZoneColumnAdvisor() {
+        return (CmsisZoneColumnAdvisor) fColumnAdvisor;
+    }
 
-	/**
-	 * Highlights given item expanding parent nodes if needed
-	 * @param item Component item to select
-	 */
-	public void showItem(ICpItem item) {
-		if(fTreeViewer == null) {
-			return;
-		}
-		if(item == null) {
-			return;
-		}
+    protected ITreeContentProvider createContentProvider() {
+        return new CmsisZoneContentProvider(this);
+    }
 
-		if(item == getSelectedItem()) {
-			return;
-		}
+    @Override
+    public void setModelController(CmsisZoneController controller) {
+        super.setModelController(controller);
+        if (fTreeViewer != null && controller != null) {
+            ICpRootZone rootZone = getModelController().getRootZone();
+            createColumns();
+            fTreeViewer.setInput(rootZone);
+            fTreeViewer.expandToLevel(2);
+            if (isExpandAllSelectedSupported())
+                expandAllSelected();
 
-		Object[] path = item.getEffectiveHierachyPath();
-		if(path.length == 0) {
-			return;
-		}
-		TreePath tp = new TreePath(path);
-		TreeSelection ts = new TreeSelection(tp);
-		fTreeViewer.setSelection(ts, true);
-	}
+        }
+        update();
+    }
 
-	protected abstract CmsisZoneColumnAdvisor createColumnAdvisor();
+    @Override
+    public Composite createControl(Composite parent) {
 
-	protected CmsisZoneColumnAdvisor getCmsisZoneColumnAdvisor() {
-		return (CmsisZoneColumnAdvisor) fColumnAdvisor;
-	}
+        Tree tree = new Tree(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        tree.setHeaderVisible(true);
+        tree.setLinesVisible(true);
+        fTreeViewer = new TreeViewer(tree);
+        ColumnViewerToolTipSupport.enableFor(fTreeViewer);
+        CmsisZoneColumnAdvisor advisor = createColumnAdvisor();
+        fColumnAdvisor = advisor;
 
-	protected ITreeContentProvider createContentProvider() {
-		return new CmsisZoneContentProvider(this);
-	}
-	@Override
-	public void setModelController(CmsisZoneController controller) {
-		super.setModelController(controller);
-		if (fTreeViewer != null && controller != null) {
-			ICpRootZone rootZone = getModelController().getRootZone();
-			createColumns();
-			fTreeViewer.setInput(rootZone);
-			fTreeViewer.expandToLevel(2);
-			if(isExpandAllSelectedSupported())
-				expandAllSelected();
+        fKeyAdapter = new CmsisZoneKeyAdapter(advisor, tree);
 
-		}
-		update();
-	}
+        ITreeContentProvider contentProvider = createContentProvider();
+        fTreeViewer.setContentProvider(contentProvider);
 
-	@Override
-	public Composite createControl(Composite parent) {
+        GridData gridData = new GridData();
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.verticalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        gridData.grabExcessVerticalSpace = true;
+        gridData.horizontalSpan = 2;
+        tree.setLayoutData(gridData);
 
-		Tree tree = new Tree(parent, SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL|SWT.BORDER);
-		tree.setHeaderVisible(true);
-		tree.setLinesVisible(true);
-		fTreeViewer = new TreeViewer(tree);
-		ColumnViewerToolTipSupport.enableFor(fTreeViewer);
-		CmsisZoneColumnAdvisor advisor = createColumnAdvisor();
-		fColumnAdvisor = advisor;
+        hookContextMenu();
+        return tree;
+    }
 
-		fKeyAdapter = new CmsisZoneKeyAdapter(advisor, tree);
+    protected void createColumns() {
+        CmsisZoneColumnAdvisor advisor = (CmsisZoneColumnAdvisor) getColumnAdvisor();
+        advisor.createColumns();
+    }
 
-		ITreeContentProvider contentProvider = createContentProvider();
-		fTreeViewer.setContentProvider(contentProvider);
+    @Override
+    public void refresh() {
+        if (fTreeViewer == null || fTreeViewer.getControl() == null || fTreeViewer.getControl().isDisposed())
+            return;
+        // restore selection if possible
+        fTreeViewer.refresh();
+    }
 
-		GridData gridData = new GridData();
-		gridData.horizontalAlignment = SWT.FILL;
-		gridData.verticalAlignment = SWT.FILL;
-		gridData.grabExcessHorizontalSpace = true;
-		gridData.grabExcessVerticalSpace = true;
-		gridData.horizontalSpan = 2;
-		tree.setLayoutData(gridData);
+    /**
+     * Refresh completely the tree viewer.
+     */
+    @Override
+    public void update() {
+        if (fTreeViewer == null || fTreeViewer.getControl() == null || fTreeViewer.getControl().isDisposed())
+            return;
+        CmsisZoneController controller = getModelController();
+        if (controller != null) {
+            ICpRootZone systemInfo = controller.getRootZone();
+            ICpZone zone = getZone();
+            if (zone != null) {
+                zone = systemInfo.getZone(zone.getName());
+                setZone(zone);
+            }
+            if (fTreeViewer.getInput() != systemInfo) {
+                fTreeViewer.setInput(systemInfo);
+                fTreeViewer.expandToLevel(2);
+            }
+        }
+        refresh();
+    }
 
-		hookContextMenu();
-		return tree;
-	}
+    @Override
+    protected void expandAllSelected() {
+        if (fTreeViewer == null) {
+            return;
+        }
+        if (getModelController() == null) {
+            return;
+        }
+        if (getModelController().getRootZone() == null) {
+            return;
+        }
 
-	protected void createColumns(){
-		CmsisZoneColumnAdvisor advisor = (CmsisZoneColumnAdvisor)getColumnAdvisor();
-		advisor.createColumns();
-	}
+        fTreeViewer.getTree().setRedraw(false);
+        ISelection prevSel = fTreeViewer.getSelection();
+        Collection<ICpMemoryBlock> assignedBlocks = getModelController().getAssignedBlocks(getZone());
+        for (ICpMemoryBlock block : assignedBlocks) {
+            fTreeViewer.expandToLevel(block, AbstractTreeViewer.ALL_LEVELS);
+        }
+        fTreeViewer.setSelection(prevSel, true);
+        fTreeViewer.getTree().setRedraw(true);
+    }
 
-	@Override
-	public void refresh() {
-		if(fTreeViewer == null || fTreeViewer.getControl() == null || fTreeViewer.getControl().isDisposed())
-			return;
-		// restore selection if possible
-		fTreeViewer.refresh();
-	}
-
-	/**
-	 * Refresh completely the tree viewer.
-	 */
-	@Override
-	public void update() {
-		if(fTreeViewer == null || fTreeViewer.getControl() == null || fTreeViewer.getControl().isDisposed())
-			return;
-		CmsisZoneController controller = getModelController();
-		if(controller != null) {
-			ICpRootZone systemInfo = controller.getRootZone();
-			ICpZone zone = getZone();
-			if(zone != null) {
-				zone = systemInfo.getZone(zone.getName());
-				setZone(zone);
-			}
-			if(fTreeViewer.getInput() != systemInfo) {
-				fTreeViewer.setInput(systemInfo);
-				fTreeViewer.expandToLevel(2);
-			}
-		}
-		refresh();
-	}
-
-	@Override
-	protected void expandAllSelected() {
-		if(fTreeViewer == null) {
-			return;
-		}
-		if(getModelController() == null) {
-			return;
-		}
-		if(getModelController().getRootZone() == null) {
-			return;
-		}
-
-		fTreeViewer.getTree().setRedraw(false);
-		ISelection prevSel = fTreeViewer.getSelection();
-		Collection<ICpMemoryBlock> assignedBlocks = getModelController().getAssignedBlocks(getZone());
-		for (ICpMemoryBlock block: assignedBlocks) {
-			fTreeViewer.expandToLevel(block, AbstractTreeViewer.ALL_LEVELS);
-		}
-		fTreeViewer.setSelection(prevSel, true);
-		fTreeViewer.getTree().setRedraw(true);
-	}
-
-	@Override
-	public boolean isExpandAllSelectedSupported() {
-		return !isShowList();
-	}
-
+    @Override
+    public boolean isExpandAllSelectedSupported() {
+        return !isShowList();
+    }
 
 }

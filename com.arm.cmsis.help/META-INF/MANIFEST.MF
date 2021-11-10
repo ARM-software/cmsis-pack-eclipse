@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Help
 Bundle-SymbolicName: com.arm.cmsis.help;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.help
-Bundle-Version: 2.6.0.qualifier
+Bundle-Version: 2.6.1.qualifier
 Bundle-Activator: com.arm.cmsis.help.HelpPlugIn
-Bundle-Vendor: ARM
+Bundle-Vendor: Arm Limited
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.cheatsheets

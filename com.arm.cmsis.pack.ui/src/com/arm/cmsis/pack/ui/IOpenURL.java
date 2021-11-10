@@ -1,6 +1,6 @@
 package com.arm.cmsis.pack.ui;
 /*******************************************************************************
-* Copyright (c) 2016 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -11,15 +11,16 @@ package com.arm.cmsis.pack.ui;
 *******************************************************************************/
 
 /**
- *  An interface to open an URL in browser or editor    
+ * An interface to open an URL in browser or editor
  */
 public interface IOpenURL {
-	
-	/**
-	 * Opens an URL in browser or editor     
-	 * @param url URL to open
-	 * @return error message or null if successful
-	 */
-	String openUrl(String url);
+
+    /**
+     * Opens an URL in browser or editor
+     *
+     * @param url URL to open
+     * @return error message or null if successful
+     */
+    String openUrl(String url);
 
 }

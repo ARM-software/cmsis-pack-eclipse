@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2018 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,31 +20,31 @@ import com.arm.cmsis.pack.project.utils.ProjectUtils;
 
 public class RteUpdateConfigFileTester extends PropertyTester {
 
-	@Override
-	public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
-		if (property.equalsIgnoreCase("canupdate") || //$NON-NLS-1$
-				property.equalsIgnoreCase("canmerge")) { //$NON-NLS-1$
-			IFile file = ProjectUtils.getRteFileResource(receiver);
-			if (file == null || file.isLinked()) {
-				return false;
-			}
-			if(CmsisConstants.RTECONFIG.equals(file.getFileExtension()) ||
-					CmsisConstants.RTE_RTE_Components_h.equals(file.getProjectRelativePath().toString())) {
-				return false;
-			}
-			ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
-			if (fi == null) {
-				return false;
-			}
-			if (property.equalsIgnoreCase("canmerge") && fi.getRole() != EFileRole.CONFIG) { //$NON-NLS-1$
-				return false;
-			}
-			int versionDiff = fi.getVersionDiff();
-			if (versionDiff > 2 || versionDiff < 0) {
-				return true;
-			}
-		}
-		return false;
-	}
+    @Override
+    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+        if (property.equalsIgnoreCase("canupdate") || //$NON-NLS-1$
+                property.equalsIgnoreCase("canmerge")) { //$NON-NLS-1$
+            IFile file = ProjectUtils.getRteFileResource(receiver);
+            if (file == null || file.isLinked()) {
+                return false;
+            }
+            if (CmsisConstants.RTECONFIG.equals(file.getFileExtension())
+                    || CmsisConstants.RTE_RTE_Components_h.equals(file.getProjectRelativePath().toString())) {
+                return false;
+            }
+            ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
+            if (fi == null) {
+                return false;
+            }
+            if (property.equalsIgnoreCase("canmerge") && fi.getRole() != EFileRole.CONFIG) { //$NON-NLS-1$
+                return false;
+            }
+            int versionDiff = fi.getVersionDiff();
+            if (versionDiff > 2 || versionDiff < 0) {
+                return true;
+            }
+        }
+        return false;
+    }
 
 }

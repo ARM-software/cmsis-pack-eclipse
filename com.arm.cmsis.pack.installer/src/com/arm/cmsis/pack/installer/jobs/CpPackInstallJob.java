@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,58 +33,62 @@ import com.arm.cmsis.pack.installer.Messages;
  */
 public class CpPackInstallJob extends CpPackUnpackJob {
 
-	protected String fPackDestFile;
-	protected String fPackUrl;
-	boolean wait;
+    protected String fPackDestFile;
+    protected String fPackUrl;
+    boolean wait;
 
+    /**
+     * Constructor for install pack
+     *
+     * @param name          name of the job
+     * @param packInstaller the pack installer for callback
+     * @param packId        pack's ID
+     * @param url           pack's download URL
+     */
+    public CpPackInstallJob(String name, ICpPackInstaller packInstaller, String packId, String url,
+            boolean installRequiredPacks) {
+        super(name, packInstaller, packId, installRequiredPacks);
+        fPackDestFile = packId + CmsisConstants.EXT_PACK;
+        fDownloadedPackPath = createDownloadFolder().append(fPackDestFile);
+        fPackUrl = url;
+    }
 
-	/**
-	 * Constructor for install pack
-	 * @param name name of the job
-	 * @param packInstaller the pack installer for callback
-	 * @param packId pack's ID
-	 * @param url pack's download URL
-	 */
-	public CpPackInstallJob(String name, ICpPackInstaller packInstaller, String packId, String url, boolean installRequiredPacks) {
-		super(name, packInstaller, packId, installRequiredPacks);
-		fPackDestFile = packId + CmsisConstants.EXT_PACK;
-		fDownloadedPackPath = createDownloadFolder().append(fPackDestFile);
-		fPackUrl = url;
-	}
+    @Override
+    protected boolean copyToDownloadFolder(IProgressMonitor monitor) {
+        while (true) {
+            try {
+                File downloadFile = fPackInstaller.getRepoServiceProvider().getPackFile(fPackUrl, fPackDestFile,
+                        monitor);
+                if (downloadFile != null && downloadFile.exists()) {
+                    return true;
+                }
+                return false;
 
-	@Override
-	protected boolean copyToDownloadFolder(IProgressMonitor monitor) {
-		while (true) {
-			try {
-				File downloadFile = fPackInstaller.getRepoServiceProvider().getPackFile(fPackUrl, fPackDestFile, monitor);
-				if (downloadFile != null && downloadFile.exists()) {
-					return true;
-				}
-				return false;
-
-			} catch (MalformedURLException e) {
-				fResult.setErrorString(Messages.CpPackInstallJob_MalformedURL + fPackUrl);
-				return false;
-			} catch (UnknownHostException e) {
-				fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_UnknownHostException, e.getMessage()));
-				return false;
-			} catch (SocketTimeoutException e) {
-				Display.getDefault().syncExec(() -> wait = MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
-						Messages.CpPackInstaller_Timout,
-						NLS.bind(Messages.CpPackInstallJob_InstallTimeoutMessage, fPackUrl, CpPackInstaller.TIME_OUT / 1000)));
-				if (!wait) {
-					fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_TimeoutConsoleMessage, fJobId, fPackUrl));
-					return false;
-				}
-				continue;
-			} catch (InterruptedIOException e) {
-				fResult.setErrorString(e.getMessage());
-				return false;
-			} catch (IOException e) {
-				fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_FileNotFound, fPackUrl));
-				return false;
-			}
-		}
-	}
+            } catch (MalformedURLException e) {
+                fResult.setErrorString(Messages.CpPackInstallJob_MalformedURL + fPackUrl);
+                return false;
+            } catch (UnknownHostException e) {
+                fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_UnknownHostException, e.getMessage()));
+                return false;
+            } catch (SocketTimeoutException e) {
+                Display.getDefault()
+                        .syncExec(() -> wait = MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
+                                Messages.CpPackInstaller_Timout,
+                                NLS.bind(Messages.CpPackInstallJob_InstallTimeoutMessage, fPackUrl,
+                                        CpPackInstaller.TIME_OUT / 1000)));
+                if (!wait) {
+                    fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_TimeoutConsoleMessage, fJobId, fPackUrl));
+                    return false;
+                }
+                continue;
+            } catch (InterruptedIOException e) {
+                fResult.setErrorString(e.getMessage());
+                return false;
+            } catch (IOException e) {
+                fResult.setErrorString(NLS.bind(Messages.CpPackInstallJob_FileNotFound, fPackUrl));
+                return false;
+            }
+        }
+    }
 
 }

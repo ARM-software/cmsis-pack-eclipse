@@ -52,7 +52,6 @@ import com.arm.cmsis.pack.debugseq.debugSeq.WriteDP;
 import com.arm.cmsis.pack.debugseq.typing.DebugSeqType;
 import com.arm.cmsis.pack.debugseq.typing.DebugSeqTypeProvider;
 import com.arm.cmsis.pack.debugseq.util.DebugSeqUtil;
-import com.arm.cmsis.pack.debugseq.validation.AbstractDebugSeqValidator;
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;

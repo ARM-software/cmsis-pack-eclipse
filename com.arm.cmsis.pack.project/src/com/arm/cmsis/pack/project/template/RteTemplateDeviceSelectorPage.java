@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -32,66 +32,66 @@ import com.arm.cmsis.pack.ui.wizards.RteDeviceSelectorPage;
  */
 public class RteTemplateDeviceSelectorPage extends RteDeviceSelectorPage implements IWizardDataPage {
 
-	protected IWizardPage next;
+    protected IWizardPage next;
 
-	public RteTemplateDeviceSelectorPage() {
-		super(true);
-	}
+    public RteTemplateDeviceSelectorPage() {
+        super(true);
+    }
 
-	@Override
-	public Map<String, String> getPageData() {
-		Map<String, String> data = null;
+    @Override
+    public Map<String, String> getPageData() {
+        Map<String, String> data = null;
 
-		ICpDeviceInfo deviceInfo = getDeviceInfo();
-		if (deviceInfo != null) {
-			data = deviceInfo.attributes().getAttributesAsMap();
-			RteProjectTemplate.setSelectedDeviceInfo(deviceInfo);
-		}
-		if (data == null) {
-			data = new HashMap<String, String>();
-		}
-		return data;
-	}
+        ICpDeviceInfo deviceInfo = getDeviceInfo();
+        if (deviceInfo != null) {
+            data = deviceInfo.attributes().getAttributesAsMap();
+            RteProjectTemplate.setSelectedDeviceInfo(deviceInfo);
+        }
+        if (data == null) {
+            data = new HashMap<String, String>();
+        }
+        return data;
+    }
 
-	@Override
-	public void createControl(Composite parent) {
+    @Override
+    public void createControl(Composite parent) {
 
-		ICpPackManager packManager = CpPlugIn.getPackManager();
-		if (packManager == null) {
-			updateStatus(Messages.RteTemplateDeviceSelectorPage_NoPackManagerIsAvailble);
-			return;
-		}
+        ICpPackManager packManager = CpPlugIn.getPackManager();
+        if (packManager == null) {
+            updateStatus(Messages.RteTemplateDeviceSelectorPage_NoPackManagerIsAvailble);
+            return;
+        }
 
-		IRteDeviceItem devices = packManager.getInstalledDevices();
-		setDevices(devices);
-		// always clear the device info in a new wizard
-		RteProjectTemplate.setSelectedDeviceInfo(null);
-		// this will update status
-		setDeviceInfo(RteProjectTemplate.getSelectedDeviceInfo());
+        IRteDeviceItem devices = packManager.getInstalledDevices();
+        setDevices(devices);
+        // always clear the device info in a new wizard
+        RteProjectTemplate.setSelectedDeviceInfo(null);
+        // this will update status
+        setDeviceInfo(RteProjectTemplate.getSelectedDeviceInfo());
 
-		super.createControl(parent);
-		if (devices == null || !devices.hasChildren()) {
-			updateStatus(Messages.RteTemplateDeviceSelectorPage_NoDevicesAreAvailable);
-		} else if (getWizard() instanceof IDeviceInfoProvider) {	// the wizard already provides the device info
-			IDeviceInfoProvider dp = (IDeviceInfoProvider) getWizard();
-			setDeviceInfo(dp.getDeviceInfo());
-		}
+        super.createControl(parent);
+        if (devices == null || !devices.hasChildren()) {
+            updateStatus(Messages.RteTemplateDeviceSelectorPage_NoDevicesAreAvailable);
+        } else if (getWizard() instanceof IDeviceInfoProvider) { // the wizard already provides the device info
+            IDeviceInfoProvider dp = (IDeviceInfoProvider) getWizard();
+            setDeviceInfo(dp.getDeviceInfo());
+        }
 
-		// add context-sensitive help
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IHelpContextIds.CMSIS_DEVICE_SELECT_WIZARD);
-	}
+        // add context-sensitive help
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), IHelpContextIds.CMSIS_DEVICE_SELECT_WIZARD);
+    }
 
-	@Override
-	public void setNextPage(IWizardPage next) {
-		this.next = next;
-	}
+    @Override
+    public void setNextPage(IWizardPage next) {
+        this.next = next;
+    }
 
-	@Override
-	public IWizardPage getNextPage() {
-		if (next != null) {
-			return next;
-		}
-		return super.getNextPage();
-	}
+    @Override
+    public IWizardPage getNextPage() {
+        if (next != null) {
+            return next;
+        }
+        return super.getNextPage();
+    }
 
 }

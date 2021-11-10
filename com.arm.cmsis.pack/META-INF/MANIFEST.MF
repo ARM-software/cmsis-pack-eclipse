@@ -3,9 +3,9 @@ Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS-Pack
 Bundle-SymbolicName: com.arm.cmsis.pack;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.pack
-Bundle-Version: 2.6.0.qualifier
+Bundle-Version: 2.6.1.qualifier
 Bundle-Activator: com.arm.cmsis.pack.CpPlugIn
-Bundle-Vendor: ARM
+Bundle-Vendor: Arm Limited
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack,

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2016 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -16,26 +16,29 @@ package com.arm.cmsis.pack.data;
  */
 public interface ICpCodeTemplate extends ICpItem {
 
-	/**
-	 * Returns the component name
-	 * @return component name
-	 */
-	String getComponentName();
-	
-	/**
-	 * Return's the selection name
-	 * @return selection name
-	 */
-	String getSelectionName();
+    /**
+     * Returns the component name
+     *
+     * @return component name
+     */
+    String getComponentName();
 
-	/**
-	 * Some code template item contains multiple templates
-	 * @return code templates
-	 */
-	String[] getCodeTemplates();
-	
-	/**
-	 * @param filePath the file's path to this code template
-	 */
-	void addCodeTemplate(String filePath);
+    /**
+     * Return's the selection name
+     *
+     * @return selection name
+     */
+    String getSelectionName();
+
+    /**
+     * Some code template item contains multiple templates
+     *
+     * @return code templates
+     */
+    String[] getCodeTemplates();
+
+    /**
+     * @param filePath the file's path to this code template
+     */
+    void addCodeTemplate(String filePath);
 }

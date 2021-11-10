@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2018 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -29,93 +29,94 @@ import com.arm.cmsis.zone.ui.Messages;
 import com.arm.cmsis.zone.ui.editors.CmsisZoneController;
 
 /**
- *  Key adapter for CmsisZoneTreeWidget
- *  TODO: move this class to com.arm.cmsis.pack.ui
+ * Key adapter for CmsisZoneTreeWidget TODO: move this class to
+ * com.arm.cmsis.pack.ui
  */
 public class CmsisZoneKeyAdapter extends KeyAdapter {
 
-	protected CmsisZoneColumnAdvisor fAdvisor = null;
-	protected Tree fTree = null;
-	public CmsisZoneKeyAdapter(CmsisZoneColumnAdvisor columnAdvisor, Tree tree) {
-		fAdvisor = columnAdvisor;
-		fTree = tree;
-		fTree.addKeyListener(this);
-	}
+    protected CmsisZoneColumnAdvisor fAdvisor = null;
+    protected Tree fTree = null;
 
-	@Override
-	public void keyPressed(KeyEvent event) {
-		switch(event.keyCode) {
-		case SWT.SPACE:
-			processSpacePressed();
-			break;
-		case SWT.DEL:
-			processDeletePressed();
-			break;
-		default:
-			break;
-		}
-	}
+    public CmsisZoneKeyAdapter(CmsisZoneColumnAdvisor columnAdvisor, Tree tree) {
+        fAdvisor = columnAdvisor;
+        fTree = tree;
+        fTree.addKeyListener(this);
+    }
 
-	public void processDeletePressed() {
-		if(fTree.getSelectionCount() < 1)
-			return;
-		List<ICpMemoryBlock> selectedBlocks = getSelectedBlocks(true);
-		if(selectedBlocks.isEmpty())
-			return;
-		String msg = Messages.CmsisZoneKeyAdapter_DeleteSelectedMemoryRegions;  
-		boolean yes = MessageDialog.openQuestion(fTree.getShell(), 	Messages.CmsisZoneKeyAdapter_DeleteMemoryRegions, msg);
-		if(yes) {
-			CmsisZoneController controller = fAdvisor.getModelController();
-			// run async as we will remove the tree
-			Display.getDefault().asyncExec(()->controller.deleteMemoryBlocks(selectedBlocks));
-		}
-	}
+    @Override
+    public void keyPressed(KeyEvent event) {
+        switch (event.keyCode) {
+        case SWT.SPACE:
+            processSpacePressed();
+            break;
+        case SWT.DEL:
+            processDeletePressed();
+            break;
+        default:
+            break;
+        }
+    }
 
-	public void processSpacePressed() {
-		if(fTree.getSelectionCount() < 1)
-			return;
-		assignBlocks(0);
-	}
-	
-	public List<ICpMemoryBlock> getSelectedBlocks(boolean bDeletable) {
-		List<ICpMemoryBlock> selectedBlocks = new LinkedList<>(); 
-		TreeItem[] selection = fTree.getSelection();
-		for(TreeItem item: selection) {
-			Object obj = item.getData();
-			ICpMemoryBlock b = CmsisZoneColumnAdvisor.getMemoryBlock(obj);
-			if(b == null)
-				continue;
-			if(bDeletable && !b.isDeletable())
-				continue;
-			selectedBlocks.add(b);
-		}
-		return selectedBlocks;
-	}
-	
+    public void processDeletePressed() {
+        if (fTree.getSelectionCount() < 1)
+            return;
+        List<ICpMemoryBlock> selectedBlocks = getSelectedBlocks(true);
+        if (selectedBlocks.isEmpty())
+            return;
+        String msg = Messages.CmsisZoneKeyAdapter_DeleteSelectedMemoryRegions;
+        boolean yes = MessageDialog.openQuestion(fTree.getShell(), Messages.CmsisZoneKeyAdapter_DeleteMemoryRegions,
+                msg);
+        if (yes) {
+            CmsisZoneController controller = fAdvisor.getModelController();
+            // run async as we will remove the tree
+            Display.getDefault().asyncExec(() -> controller.deleteMemoryBlocks(selectedBlocks));
+        }
+    }
 
-	public void assignBlocks(int columntIndex) {
-		ICpZone zone = fAdvisor.getZone(columntIndex);
-		if(zone == null)
-			return;
-		List<ICpMemoryBlock> selectedBlocks = new LinkedList<>(); 
-		TreeItem[] selection = fTree.getSelection();
-		int nChecked = 0;
-		for(TreeItem item: selection) {
-			Object obj = item.getData();
-			ICpMemoryBlock b = CmsisZoneColumnAdvisor.getMemoryBlock(obj);
-			if(b == null)
-				continue;
-			CellControlType type = fAdvisor.getCellControlType(obj, columntIndex);
-			if(type != CellControlType.INPLACE_CHECK)
-				continue;
-			if(fAdvisor.getCheck(obj, columntIndex))
-				nChecked++;
-			selectedBlocks.add(b);
-		}
-		if(selectedBlocks.isEmpty()) 
-			return;
-		boolean bAssign = selectedBlocks.size() != nChecked;
-		fAdvisor.getModelController().assignBlocks(selectedBlocks, zone.getName(), bAssign);
-	}
+    public void processSpacePressed() {
+        if (fTree.getSelectionCount() < 1)
+            return;
+        assignBlocks(0);
+    }
+
+    public List<ICpMemoryBlock> getSelectedBlocks(boolean bDeletable) {
+        List<ICpMemoryBlock> selectedBlocks = new LinkedList<>();
+        TreeItem[] selection = fTree.getSelection();
+        for (TreeItem item : selection) {
+            Object obj = item.getData();
+            ICpMemoryBlock b = CmsisZoneColumnAdvisor.getMemoryBlock(obj);
+            if (b == null)
+                continue;
+            if (bDeletable && !b.isDeletable())
+                continue;
+            selectedBlocks.add(b);
+        }
+        return selectedBlocks;
+    }
+
+    public void assignBlocks(int columntIndex) {
+        ICpZone zone = fAdvisor.getZone(columntIndex);
+        if (zone == null)
+            return;
+        List<ICpMemoryBlock> selectedBlocks = new LinkedList<>();
+        TreeItem[] selection = fTree.getSelection();
+        int nChecked = 0;
+        for (TreeItem item : selection) {
+            Object obj = item.getData();
+            ICpMemoryBlock b = CmsisZoneColumnAdvisor.getMemoryBlock(obj);
+            if (b == null)
+                continue;
+            CellControlType type = fAdvisor.getCellControlType(obj, columntIndex);
+            if (type != CellControlType.INPLACE_CHECK)
+                continue;
+            if (fAdvisor.getCheck(obj, columntIndex))
+                nChecked++;
+            selectedBlocks.add(b);
+        }
+        if (selectedBlocks.isEmpty())
+            return;
+        boolean bAssign = selectedBlocks.size() != nChecked;
+        fAdvisor.getModelController().assignBlocks(selectedBlocks, zone.getName(), bAssign);
+    }
 
 }

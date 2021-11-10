@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2006 IBM Corporation and others.
+ * Copyright (c) 2021 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,137 +35,137 @@ import com.arm.cmsis.pack.ui.CpPlugInUI;
 
 /**
  * Class to decorate RTE items in Project explorer for RTE projects
- * 
+ *
  * @see ILightweightLabelDecorator
  */
 public class RteProjectDecorator implements ILightweightLabelDecorator {
 
-	public static final String ID = "com.arm.cmsis.pack.project.decorators.RteProjectDecorator"; //$NON-NLS-1$
+    public static final String ID = "com.arm.cmsis.pack.project.decorators.RteProjectDecorator"; //$NON-NLS-1$
 
-	@Override
-	public void decorate(Object element, IDecoration decoration) {
-		IResource resource = ProjectUtils.getRteResource(element);
-		if (resource == null) {
-			return;
-		}
-		int type = resource.getType();
-		if (type != IResource.FOLDER && type != IResource.FILE) {
-			return;
-		}
+    @Override
+    public void decorate(Object element, IDecoration decoration) {
+        IResource resource = ProjectUtils.getRteResource(element);
+        if (resource == null) {
+            return;
+        }
+        int type = resource.getType();
+        if (type != IResource.FOLDER && type != IResource.FILE) {
+            return;
+        }
 
-		IPath path = resource.getProjectRelativePath();
-		IProject project = resource.getProject();
-		RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
-		IRteProject rteProject = rteProjectManager.getRteProject(project);
-		if (rteProject == null) {
-			return;
-		}
+        IPath path = resource.getProjectRelativePath();
+        IProject project = resource.getProject();
+        RteProjectManager rteProjectManager = CpProjectPlugIn.getRteProjectManager();
+        IRteProject rteProject = rteProjectManager.getRteProject(project);
+        if (rteProject == null) {
+            return;
+        }
 
-		String ext = resource.getFileExtension();
-		if (type == IResource.FOLDER || (ext != null && ext.equals(CmsisConstants.RTECONFIG))) {
-			if (path.segmentCount() == 1) { // RTE folder itself
-				IRteConfiguration rteConf = rteProject.getRteConfiguration();
-				if (rteConf == null || !rteConf.isValid()) {
-					addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
-				} else if (type == IResource.FOLDER) {
-					addOverlay(decoration, CpPlugInUI.ICON_RTE_OVR);
-				}
-			} else if (type == IResource.FOLDER) {
-				int overlayType = getOverlayType(rteProject, path);
-				if (overlayType == -1) {
-					addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
-				} else if (overlayType == 0) {
-					addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
-				}
-			}
-		}
+        String ext = resource.getFileExtension();
+        if (type == IResource.FOLDER || (ext != null && ext.equals(CmsisConstants.RTECONFIG))) {
+            if (path.segmentCount() == 1) { // RTE folder itself
+                IRteConfiguration rteConf = rteProject.getRteConfiguration();
+                if (rteConf == null || !rteConf.isValid()) {
+                    addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
+                } else if (type == IResource.FOLDER) {
+                    addOverlay(decoration, CpPlugInUI.ICON_RTE_OVR);
+                }
+            } else if (type == IResource.FOLDER) {
+                int overlayType = getOverlayType(rteProject, path);
+                if (overlayType == -1) {
+                    addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
+                } else if (overlayType == 0) {
+                    addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
+                }
+            }
+        }
 
-		if (type == IResource.FILE) {
-			ICpFileInfo fi = rteProject.getProjectFileInfo(path.toString());
-			if (fi == null)
-				return;
+        if (type == IResource.FILE) {
+            ICpFileInfo fi = rteProject.getProjectFileInfo(path.toString());
+            if (fi == null)
+                return;
 
-			ICpItemInfo parentInfo = fi.getParentInfo();
-			if(parentInfo != null) {
-				String suffix = " [" + parentInfo.getName() + "]"; //$NON-NLS-1$//$NON-NLS-2$
-				decoration.addSuffix(suffix);
-				if (parentInfo instanceof ICpComponentInfo) {
-					ICpComponentInfo ci = (ICpComponentInfo)parentInfo;
-					if(ci.getComponent() == null) {
-						addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
-						return;
-					}
-				}
-			}
-			int versionDiff = fi.getVersionDiff();
-			if (versionDiff > 2 || versionDiff < 0) {
-				addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
-			}
-		}
-	}
+            ICpItemInfo parentInfo = fi.getParentInfo();
+            if (parentInfo != null) {
+                String suffix = " [" + parentInfo.getName() + "]"; //$NON-NLS-1$//$NON-NLS-2$
+                decoration.addSuffix(suffix);
+                if (parentInfo instanceof ICpComponentInfo) {
+                    ICpComponentInfo ci = (ICpComponentInfo) parentInfo;
+                    if (ci.getComponent() == null) {
+                        addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
+                        return;
+                    }
+                }
+            }
+            int versionDiff = fi.getVersionDiff();
+            if (versionDiff > 2 || versionDiff < 0) {
+                addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
+            }
+        }
+    }
 
-	/**
-	 * return -1 if error, 0 if warning, 1 if correct
-	 */
-	private int getOverlayType(IRteProject rteProject, IPath path) {
-		ICpFileInfo[] fileInfos = rteProject.getProjectFileInfos(path.toString() + ".*"); //$NON-NLS-1$
-		if(fileInfos == null)
-			return 1;
-		for (ICpFileInfo fileInfo : fileInfos) {
-			if(fileInfo.isGenerated())
-				continue;
-			if (fileInfo.getComponentInfo().getComponent() == null) {
-				return -1;
-			}
-			int versionDiff = fileInfo.getVersionDiff();
-			if (versionDiff > 2 || versionDiff < 0) {
-				return 0;
-			}
-		}
-		return 1;
-	}
+    /**
+     * return -1 if error, 0 if warning, 1 if correct
+     */
+    private int getOverlayType(IRteProject rteProject, IPath path) {
+        ICpFileInfo[] fileInfos = rteProject.getProjectFileInfos(path.toString() + ".*"); //$NON-NLS-1$
+        if (fileInfos == null)
+            return 1;
+        for (ICpFileInfo fileInfo : fileInfos) {
+            if (fileInfo.isGenerated())
+                continue;
+            if (fileInfo.getComponentInfo().getComponent() == null) {
+                return -1;
+            }
+            int versionDiff = fileInfo.getVersionDiff();
+            if (versionDiff > 2 || versionDiff < 0) {
+                return 0;
+            }
+        }
+        return 1;
+    }
 
-	private void addOverlay(IDecoration decoration, String iconFile) {
-		ImageDescriptor descriptor = CpPlugInUI.getImageDescriptor(iconFile);
-		if (descriptor == null) {
-			return;
-		}
-		decoration.addOverlay(descriptor, IDecoration.TOP_LEFT);
-	}
+    private void addOverlay(IDecoration decoration, String iconFile) {
+        ImageDescriptor descriptor = CpPlugInUI.getImageDescriptor(iconFile);
+        if (descriptor == null) {
+            return;
+        }
+        decoration.addOverlay(descriptor, IDecoration.TOP_LEFT);
+    }
 
-	@Override
-	public void addListener(ILabelProviderListener listener) {
-		// does nothing
-	}
+    @Override
+    public void addListener(ILabelProviderListener listener) {
+        // does nothing
+    }
 
-	@Override
-	public void dispose() {
-		// does nothing
-	}
+    @Override
+    public void dispose() {
+        // does nothing
+    }
 
-	@Override
-	public boolean isLabelProperty(Object element, String property) {
-		return false;
-	}
+    @Override
+    public boolean isLabelProperty(Object element, String property) {
+        return false;
+    }
 
-	@Override
-	public void removeListener(ILabelProviderListener listener) {
-		// does nothing
-	}
+    @Override
+    public void removeListener(ILabelProviderListener listener) {
+        // does nothing
+    }
 
-	/**
-	 * Refreshes decoration of all RTE resources
-	 */
-	public static void refresh() {
-		// Decorate using current UI thread
-		Display.getDefault().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				IDecoratorManager decoratorManager = PlatformUI.getWorkbench().getDecoratorManager();
-				if (decoratorManager != null) {
-					decoratorManager.update(ID);
-				}
-			}
-		});
-	}
+    /**
+     * Refreshes decoration of all RTE resources
+     */
+    public static void refresh() {
+        // Decorate using current UI thread
+        Display.getDefault().asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                IDecoratorManager decoratorManager = PlatformUI.getWorkbench().getDecoratorManager();
+                if (decoratorManager != null) {
+                    decoratorManager.update(ID);
+                }
+            }
+        });
+    }
 }

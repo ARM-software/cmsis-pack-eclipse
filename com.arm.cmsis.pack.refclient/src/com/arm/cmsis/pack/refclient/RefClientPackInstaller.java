@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2016 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -14,10 +14,10 @@ package com.arm.cmsis.pack.refclient;
 import com.arm.cmsis.pack.installer.CpPackInstaller;
 
 /**
- *  Sample custom pack installer
+ * Sample custom pack installer
  */
 public class RefClientPackInstaller extends CpPackInstaller {
 
-// actually changes nothing to compare to super class  
-	
+// actually changes nothing to compare to super class
+
 }

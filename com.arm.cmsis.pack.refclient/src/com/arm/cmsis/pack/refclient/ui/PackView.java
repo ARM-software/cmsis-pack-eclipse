@@ -1,12 +1,12 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
 * http://www.eclipse.org/legal/epl-v10.html
 *
 * Contributors:
-* Eclipse Project - generation from template   
+* Eclipse Project - generation from template
 * ARM Ltd and ARM Germany GmbH - application-specific implementation
 *******************************************************************************/
 package com.arm.cmsis.pack.refclient.ui;
@@ -57,298 +57,307 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 
 /**
- * This sample view class is an example how to show raw data of installed packs  
+ * This sample view class is an example how to show raw data of installed packs
  * <p>
  */
 
 public class PackView extends ViewPart implements IRteEventListener {
 
-	/**
-	 * The ID of the view as specified by the extension.
-	 */
-	public static final String ID = "com.arm.cmsis.pack.refclient.ui.PackView"; //$NON-NLS-1$
+    /**
+     * The ID of the view as specified by the extension.
+     */
+    public static final String ID = "com.arm.cmsis.pack.refclient.ui.PackView"; //$NON-NLS-1$
 
-	TreeViewer viewer;
-	private DrillDownAdapter drillDownAdapter;
-	private Action expandAction;
-	private Action collapseAction;
-	Action doubleClickAction;
-	
-	class PackViewContentProvider extends TreeObjectContentProvider {
+    TreeViewer viewer;
+    private DrillDownAdapter drillDownAdapter;
+    private Action expandAction;
+    private Action collapseAction;
+    Action doubleClickAction;
 
-		public Object getParent(Object child) {
-			ICpItem item = ICpItem.cast(child); 
-			if(item != null) {
-				return item.getParent();
-			}
-			return null;
-		}
-		public Object [] getChildren(Object parent) {
-			if (parent instanceof ICpDeviceItem) {
-				ICpDeviceItem item = (ICpDeviceItem)parent;
-				if(item.getDeviceItems() != null)
-					return item.getDeviceItems().toArray();
-				ICpItem props = item.getEffectiveProperties(""); //$NON-NLS-1$
-				if(props != null) 
-					return props.getChildArray(); 
-			} 
+    class PackViewContentProvider extends TreeObjectContentProvider {
 
-			return super.getChildren(parent);
-		}
-		public boolean hasChildren(Object parent) {
-			if (parent instanceof ICpDeviceItem) {
-				ICpDeviceItem item = (ICpDeviceItem)parent;
-				if(item.getDeviceItems() != null)
-					return !item.getDeviceItems().isEmpty();
-				ICpItem props = item.getEffectiveProperties(""); //$NON-NLS-1$
-				if(props != null) 
-					return props.hasChildren(); 
-			} 
-			return super.hasChildren(parent);
-		}
-	}
+        @Override
+        public Object getParent(Object child) {
+            ICpItem item = ICpItem.cast(child);
+            if (item != null) {
+                return item.getParent();
+            }
+            return null;
+        }
 
-	class ViewLabelProvider extends LabelProvider implements ITableLabelProvider{
-	
-		@Override
-		public String getColumnText(Object obj, int index){
-			ICpItem item = ICpItem.cast(obj); 
-			if(item != null) {
-				switch(index) {
-				case 0:
-					return item.getTag();
-				case 1:
-					return item.attributes().toString();
-				case 2: 
-					return item.getText();
-				default:
-					break;
-				}
-			}
-			return CmsisConstants.EMPTY_STRING;
-		}
+        @Override
+        public Object[] getChildren(Object parent) {
+            if (parent instanceof ICpDeviceItem) {
+                ICpDeviceItem item = (ICpDeviceItem) parent;
+                if (item.getDeviceItems() != null)
+                    return item.getDeviceItems().toArray();
+                ICpItem props = item.getEffectiveProperties(""); //$NON-NLS-1$
+                if (props != null)
+                    return props.getChildArray();
+            }
 
-		@Override
-		public Image getColumnImage(Object obj, int index){
-			if(index == 0)
-				return getImage(obj);
-			return null;
-		}
+            return super.getChildren(parent);
+        }
 
-		@Override
-		public Image getImage(Object obj){
-			ICpItem item = ICpItem.cast(obj);
-			if(item == null) {
-				return null;
-			}
-			if (obj instanceof ICpPack) {
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
-			} else if (obj instanceof ICpPackFamily) {
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES);
-			} else if (obj instanceof ICpComponent) {
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
-			} else if (obj instanceof ICpFile) {
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
-			} else if (obj instanceof ICpBoard) {
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
-			} else if (obj instanceof ICpDeviceItem) {
-				ICpDeviceItem di = (ICpDeviceItem)obj;
-				if(di.getDeviceItems() == null) {
-					return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
-				}
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
-			}
-			switch(item.getTag()) {
-			case CmsisConstants.COMPONENTS_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
-			case CmsisConstants.DEVICES_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
-			case CmsisConstants.ALGORITHM_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
-			case CmsisConstants.BOOK_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_BOOK);
-			case CmsisConstants.COMPATIBLE_DEVICE_TAG:
-			case CmsisConstants.MOUNTED_DEVICE_TAG:
-				return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
-			default:
-				break;
-			}
-			
-			return CpPlugInUI.getImage(CpPlugInUI.ICON_ITEM);
-		}
-	}
+        @Override
+        public boolean hasChildren(Object parent) {
+            if (parent instanceof ICpDeviceItem) {
+                ICpDeviceItem item = (ICpDeviceItem) parent;
+                if (item.getDeviceItems() != null)
+                    return !item.getDeviceItems().isEmpty();
+                ICpItem props = item.getEffectiveProperties(""); //$NON-NLS-1$
+                if (props != null)
+                    return props.hasChildren();
+            }
+            return super.hasChildren(parent);
+        }
+    }
 
-	/**
-	 * The constructor.
-	 */
-	public PackView() {
-	}
+    class ViewLabelProvider extends LabelProvider implements ITableLabelProvider {
 
-	/**
-	 * This is a callback that will allow us
-	 * to create the viewer and initialize it.
-	 */
-	public void createPartControl(Composite parent) {
+        @Override
+        public String getColumnText(Object obj, int index) {
+            ICpItem item = ICpItem.cast(obj);
+            if (item != null) {
+                switch (index) {
+                case 0:
+                    return item.getTag();
+                case 1:
+                    return item.attributes().toString();
+                case 2:
+                    return item.getText();
+                default:
+                    break;
+                }
+            }
+            return CmsisConstants.EMPTY_STRING;
+        }
 
-		Tree tree = new Tree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-		tree.setHeaderVisible(true);
-		tree.setLinesVisible(true);
-		viewer = new TreeViewer(tree);
+        @Override
+        public Image getColumnImage(Object obj, int index) {
+            if (index == 0)
+                return getImage(obj);
+            return null;
+        }
 
-		TreeColumn column0 = new TreeColumn(tree, SWT.LEFT);
-		tree.setLinesVisible(true);
-		column0.setText(CpStringsUI.PackView_Tag);
-		column0.setWidth(300);
-		
-		TreeColumn column1 = new TreeColumn(tree, SWT.LEFT);
-		tree.setLinesVisible(true);
-		column1.setText(CpStringsUI.PackView_Attributes);
-		column1.setWidth(200);
+        @Override
+        public Image getImage(Object obj) {
+            ICpItem item = ICpItem.cast(obj);
+            if (item == null) {
+                return null;
+            }
+            if (obj instanceof ICpPack) {
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGE);
+            } else if (obj instanceof ICpPackFamily) {
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_PACKAGES);
+            } else if (obj instanceof ICpComponent) {
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
+            } else if (obj instanceof ICpFile) {
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
+            } else if (obj instanceof ICpBoard) {
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
+            } else if (obj instanceof ICpDeviceItem) {
+                ICpDeviceItem di = (ICpDeviceItem) obj;
+                if (di.getDeviceItems() == null) {
+                    return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+                }
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
+            }
+            switch (item.getTag()) {
+            case CmsisConstants.COMPONENTS_TAG:
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_CLASS);
+            case CmsisConstants.DEVICES_TAG:
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_FOLDER);
+            case CmsisConstants.ALGORITHM_TAG:
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_FILE);
+            case CmsisConstants.BOOK_TAG:
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_BOOK);
+            case CmsisConstants.COMPATIBLE_DEVICE_TAG:
+            case CmsisConstants.MOUNTED_DEVICE_TAG:
+                return CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
+            default:
+                break;
+            }
 
-		TreeColumn column2 = new TreeColumn(tree, SWT.LEFT);
-		column2.setText(CpStringsUI.PackView_Text);
-		column2.setWidth(500);
+            return CpPlugInUI.getImage(CpPlugInUI.ICON_ITEM);
+        }
+    }
 
-		drillDownAdapter = new DrillDownAdapter(viewer);
+    /**
+     * The constructor.
+     */
+    public PackView() {
+    }
 
-		viewer.setContentProvider(new TreeObjectContentProvider());//new PackViewContentProvider());
-		viewer.setLabelProvider(new ViewLabelProvider());
-		refresh();
-		
-		// Create the help context id for the viewer's control
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), ID);
-		makeActions();
-		hookContextMenu();
-		hookDoubleClickAction();
-		contributeToActionBars();
-		
-		CpPlugIn.addRteListener(this);
-	}
+    /**
+     * This is a callback that will allow us to create the viewer and initialize it.
+     */
+    @Override
+    public void createPartControl(Composite parent) {
 
-	
-	protected void refresh() {
-		if(CpPlugIn.getDefault() == null)
-			return;
-		ICpPackManager packManager = CpPlugIn.getPackManager();
-		if(packManager != null)
-			viewer.setInput(packManager.getInstalledPacks());
-		else 
-			viewer.setInput(null);
-	}
-	
-	private void hookContextMenu() {
-		MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
-		menuMgr.setRemoveAllWhenShown(true);
-		menuMgr.addMenuListener(new IMenuListener() {
-			public void menuAboutToShow(IMenuManager manager) {
-				PackView.this.fillContextMenu(manager);
-			}
-		});
-		Menu menu = menuMgr.createContextMenu(viewer.getControl());
-		viewer.getControl().setMenu(menu);
-		getSite().registerContextMenu(menuMgr, viewer);
-	}
+        Tree tree = new Tree(parent, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        tree.setHeaderVisible(true);
+        tree.setLinesVisible(true);
+        viewer = new TreeViewer(tree);
 
-	private void contributeToActionBars() {
-		IActionBars bars = getViewSite().getActionBars();
-		fillLocalPullDown(bars.getMenuManager());
-		fillLocalToolBar(bars.getToolBarManager());
-	}
+        TreeColumn column0 = new TreeColumn(tree, SWT.LEFT);
+        tree.setLinesVisible(true);
+        column0.setText(CpStringsUI.PackView_Tag);
+        column0.setWidth(300);
 
-	private void fillLocalPullDown(IMenuManager manager) {
-		manager.add(expandAction);
-		manager.add(collapseAction);
-	}
+        TreeColumn column1 = new TreeColumn(tree, SWT.LEFT);
+        tree.setLinesVisible(true);
+        column1.setText(CpStringsUI.PackView_Attributes);
+        column1.setWidth(200);
 
-	void fillContextMenu(IMenuManager manager) {
-		manager.add(expandAction);
-		manager.add(collapseAction);
-		manager.add(new Separator());
-		drillDownAdapter.addNavigationActions(manager);
-		// Other plug-ins can contribute there actions here
-		manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
-	}
-	
-	private void fillLocalToolBar(IToolBarManager manager) {
-		manager.add(expandAction);
-		manager.add(collapseAction);
-		manager.add(new Separator());
-		drillDownAdapter.addNavigationActions(manager);
-	}
+        TreeColumn column2 = new TreeColumn(tree, SWT.LEFT);
+        column2.setText(CpStringsUI.PackView_Text);
+        column2.setWidth(500);
 
-	private void makeActions() {
-		expandAction = new Action() {
-			public void run() {
-				if(viewer == null)
-					return;
-				viewer.expandAll();
-			}
-		};
+        drillDownAdapter = new DrillDownAdapter(viewer);
 
-		expandAction.setText(CpStringsUI.ExpandAll);
-		expandAction.setToolTipText(CpStringsUI.ExpandAllNodes);
-		expandAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL));
-		
-		collapseAction = new Action() {
-			public void run() {
-				if(viewer == null)
-					return;
-				viewer.collapseAll();
-			}
-		};
-		collapseAction.setText(CpStringsUI.CollapseAll);
-		collapseAction.setToolTipText(CpStringsUI.CollapseAllNodes);
-		collapseAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
-		
-		doubleClickAction = new Action() {
-			public void run() {
-				ISelection selection = viewer.getSelection();
-				Object obj = ((IStructuredSelection)selection).getFirstElement();
-				if(obj instanceof ICpItem) {
-					ICpItem item = (ICpItem)obj;
-					String s = item.getName();
-					s += "\n"; //$NON-NLS-1$
-					Attributes a = new Attributes();
-					Map<String, String> m = item.getEffectiveAttributes(null); 
-					a.setAttributes(m);
-					s += a.toString(); 
-					showMessage(s);
-				}
-			}
-		};
-	}
+        viewer.setContentProvider(new TreeObjectContentProvider());// new PackViewContentProvider());
+        viewer.setLabelProvider(new ViewLabelProvider());
+        refresh();
 
-	private void hookDoubleClickAction() {
-		viewer.addDoubleClickListener(new IDoubleClickListener() {
-			public void doubleClick(DoubleClickEvent event) {
-				doubleClickAction.run();
-			}
-		});
-	}
-	void showMessage(String message) {
-		MessageDialog.openInformation(
-			viewer.getControl().getShell(),
-			"PackView", //$NON-NLS-1$
-			message);
-	}
+        // Create the help context id for the viewer's control
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(viewer.getControl(), ID);
+        makeActions();
+        hookContextMenu();
+        hookDoubleClickAction();
+        contributeToActionBars();
 
-	/**
-	 * Passing the focus request to the viewer's control.
-	 */
-	public void setFocus() {
-		viewer.getControl().setFocus();
-	}
+        CpPlugIn.addRteListener(this);
+    }
 
-	@Override
-	public void handle(RteEvent event) {
-		if(event.getTopic().equals(RteEvent.PACKS_RELOADED)) 
-			refresh();
-	}
+    protected void refresh() {
+        if (CpPlugIn.getDefault() == null)
+            return;
+        ICpPackManager packManager = CpPlugIn.getPackManager();
+        if (packManager != null)
+            viewer.setInput(packManager.getInstalledPacks());
+        else
+            viewer.setInput(null);
+    }
 
-	@Override
-	public void dispose() {
-		CpPlugIn.removeRteListener(this);
-		super.dispose();
-	}
-	
+    private void hookContextMenu() {
+        MenuManager menuMgr = new MenuManager("#PopupMenu"); //$NON-NLS-1$
+        menuMgr.setRemoveAllWhenShown(true);
+        menuMgr.addMenuListener(new IMenuListener() {
+            @Override
+            public void menuAboutToShow(IMenuManager manager) {
+                PackView.this.fillContextMenu(manager);
+            }
+        });
+        Menu menu = menuMgr.createContextMenu(viewer.getControl());
+        viewer.getControl().setMenu(menu);
+        getSite().registerContextMenu(menuMgr, viewer);
+    }
+
+    private void contributeToActionBars() {
+        IActionBars bars = getViewSite().getActionBars();
+        fillLocalPullDown(bars.getMenuManager());
+        fillLocalToolBar(bars.getToolBarManager());
+    }
+
+    private void fillLocalPullDown(IMenuManager manager) {
+        manager.add(expandAction);
+        manager.add(collapseAction);
+    }
+
+    void fillContextMenu(IMenuManager manager) {
+        manager.add(expandAction);
+        manager.add(collapseAction);
+        manager.add(new Separator());
+        drillDownAdapter.addNavigationActions(manager);
+        // Other plug-ins can contribute there actions here
+        manager.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+    }
+
+    private void fillLocalToolBar(IToolBarManager manager) {
+        manager.add(expandAction);
+        manager.add(collapseAction);
+        manager.add(new Separator());
+        drillDownAdapter.addNavigationActions(manager);
+    }
+
+    private void makeActions() {
+        expandAction = new Action() {
+            @Override
+            public void run() {
+                if (viewer == null)
+                    return;
+                viewer.expandAll();
+            }
+        };
+
+        expandAction.setText(CpStringsUI.ExpandAll);
+        expandAction.setToolTipText(CpStringsUI.ExpandAllNodes);
+        expandAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_EXPAND_ALL));
+
+        collapseAction = new Action() {
+            @Override
+            public void run() {
+                if (viewer == null)
+                    return;
+                viewer.collapseAll();
+            }
+        };
+        collapseAction.setText(CpStringsUI.CollapseAll);
+        collapseAction.setToolTipText(CpStringsUI.CollapseAllNodes);
+        collapseAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_COLLAPSE_ALL));
+
+        doubleClickAction = new Action() {
+            @Override
+            public void run() {
+                ISelection selection = viewer.getSelection();
+                Object obj = ((IStructuredSelection) selection).getFirstElement();
+                if (obj instanceof ICpItem) {
+                    ICpItem item = (ICpItem) obj;
+                    String s = item.getName();
+                    s += "\n"; //$NON-NLS-1$
+                    Attributes a = new Attributes();
+                    Map<String, String> m = item.getEffectiveAttributes(null);
+                    a.setAttributes(m);
+                    s += a.toString();
+                    showMessage(s);
+                }
+            }
+        };
+    }
+
+    private void hookDoubleClickAction() {
+        viewer.addDoubleClickListener(new IDoubleClickListener() {
+            @Override
+            public void doubleClick(DoubleClickEvent event) {
+                doubleClickAction.run();
+            }
+        });
+    }
+
+    void showMessage(String message) {
+        MessageDialog.openInformation(viewer.getControl().getShell(), "PackView", //$NON-NLS-1$
+                message);
+    }
+
+    /**
+     * Passing the focus request to the viewer's control.
+     */
+    @Override
+    public void setFocus() {
+        viewer.getControl().setFocus();
+    }
+
+    @Override
+    public void handle(RteEvent event) {
+        if (event.getTopic().equals(RteEvent.PACKS_RELOADED))
+            refresh();
+    }
+
+    @Override
+    public void dispose() {
+        CpPlugIn.removeRteListener(this);
+        super.dispose();
+    }
+
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -23,50 +23,49 @@ import com.arm.cmsis.pack.data.ICpMemory;
  */
 public class MemorySettings implements IMemorySettings {
 
-	protected Map<String, ICpMemory> fRegions = null;
-	protected String fStartupId = CmsisConstants.EMPTY_STRING;
+    protected Map<String, ICpMemory> fRegions = null;
+    protected String fStartupId = CmsisConstants.EMPTY_STRING;
 
-	public MemorySettings() {
-	}
-	
-	
-	public MemorySettings(Map<String, ICpMemory> regions) {
-		setRegions(regions);
-	}
+    public MemorySettings() {
+    }
 
-	@Override
-	public Map<String, ICpMemory> getRegions() {
-		return fRegions;
-	}
+    public MemorySettings(Map<String, ICpMemory> regions) {
+        setRegions(regions);
+    }
 
-	@Override
-	public void setRegions(Map<String, ICpMemory> regions) {
-		fRegions = regions;
-		if(fRegions == null) {
-			fRegions = new HashMap<>();
-		}
-		fStartupId = CmsisConstants.EMPTY_STRING;
-		if(fRegions.isEmpty()) 
-			return;
-		for(Entry<String, ICpMemory> e : fRegions.entrySet()){
-			String id = e.getKey(); 
-			ICpMemory m = e.getValue();
-			if(m.isStartup()){
-				fStartupId = id;
-			} 
-		}
-	}
+    @Override
+    public Map<String, ICpMemory> getRegions() {
+        return fRegions;
+    }
 
-	@Override
-	public ICpMemory getRegion(String id) {
-		if(fRegions != null && id != null)
-			return fRegions.get(id);
-		return null;
-	}
+    @Override
+    public void setRegions(Map<String, ICpMemory> regions) {
+        fRegions = regions;
+        if (fRegions == null) {
+            fRegions = new HashMap<>();
+        }
+        fStartupId = CmsisConstants.EMPTY_STRING;
+        if (fRegions.isEmpty())
+            return;
+        for (Entry<String, ICpMemory> e : fRegions.entrySet()) {
+            String id = e.getKey();
+            ICpMemory m = e.getValue();
+            if (m.isStartup()) {
+                fStartupId = id;
+            }
+        }
+    }
 
-	@Override
-	public String getStartupRegionId() {
-		return fStartupId;
-	}
+    @Override
+    public ICpMemory getRegion(String id) {
+        if (fRegions != null && id != null)
+            return fRegions.get(id);
+        return null;
+    }
+
+    @Override
+    public String getStartupRegionId() {
+        return fStartupId;
+    }
 
 }

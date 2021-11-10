@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,114 +32,113 @@ import com.arm.cmsis.pack.ui.console.RteConsole;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchListener, IPerspectiveListener  {
+public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchListener, IPerspectiveListener {
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "com.arm.cmsis.pack.installer.ui"; //$NON-NLS-1$
+    // The plug-in ID
+    public static final String PLUGIN_ID = "com.arm.cmsis.pack.installer.ui"; //$NON-NLS-1$
 
-	// The shared instance
-	private static CpInstallerPlugInUI plugin;
+    // The shared instance
+    private static CpInstallerPlugInUI plugin;
 
-	static PackInstallerViewController viewController = null;
+    static PackInstallerViewController viewController = null;
 
-	/**
-	 * The constructor
-	 */
-	public CpInstallerPlugInUI() {
-	}
+    /**
+     * The constructor
+     */
+    public CpInstallerPlugInUI() {
+    }
 
-	@Override
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
 
-		ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
-		if(envProvider != null) {
-			viewController = envProvider.getAdapter(PackInstallerViewController.class);
-		}
-		if(viewController == null) {
-			viewController = new PackInstallerViewController();
-		}
+        ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
+        if (envProvider != null) {
+            viewController = envProvider.getAdapter(PackInstallerViewController.class);
+        }
+        if (viewController == null) {
+            viewController = new PackInstallerViewController();
+        }
 
-		CpPlugIn.addRteListener(viewController);
-		RteConsole.openGlobalConsole();
+        CpPlugIn.addRteListener(viewController);
+        RteConsole.openGlobalConsole();
 
-		IWorkbench wb = PlatformUI.getWorkbench();
-		if(wb != null) {
-			wb.addWorkbenchListener(this);
-			if(wb.getActiveWorkbenchWindow() != null) {
-				wb.getActiveWorkbenchWindow().addPerspectiveListener(this);
-			}
-		}
-	}
+        IWorkbench wb = PlatformUI.getWorkbench();
+        if (wb != null) {
+            wb.addWorkbenchListener(this);
+            if (wb.getActiveWorkbenchWindow() != null) {
+                wb.getActiveWorkbenchWindow().addPerspectiveListener(this);
+            }
+        }
+    }
 
-	@Override
-	public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		CpPlugIn.removeRteListener(viewController);
-		viewController.clear();
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        plugin = null;
+        CpPlugIn.removeRteListener(viewController);
+        viewController.clear();
 
-		IWorkbench wb = PlatformUI.getWorkbench();
-		if(wb != null ) {
-			wb.removeWorkbenchListener(this);
-			if(wb.getActiveWorkbenchWindow() != null) {
-				wb.getActiveWorkbenchWindow().removePerspectiveListener(this);
-			}
-		}
-		super.stop(context);
-	}
+        IWorkbench wb = PlatformUI.getWorkbench();
+        if (wb != null) {
+            wb.removeWorkbenchListener(this);
+            if (wb.getActiveWorkbenchWindow() != null) {
+                wb.getActiveWorkbenchWindow().removePerspectiveListener(this);
+            }
+        }
+        super.stop(context);
+    }
 
-	public static PackInstallerViewController getViewController() {
-		return viewController;
-	}
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static CpInstallerPlugInUI getDefault() {
-		return plugin;
-	}
+    public static PackInstallerViewController getViewController() {
+        return viewController;
+    }
 
-	@Override
-	public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
-		if (PackManagerPerspective.ID.equals(page.getPerspective().getId())) {
-			page.setEditorAreaVisible(false);
-		}
-	}
+    /**
+     * Returns the shared instance
+     *
+     * @return the shared instance
+     */
+    public static CpInstallerPlugInUI getDefault() {
+        return plugin;
+    }
 
-	@Override
-	public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
-		// does nothing
-	}
+    @Override
+    public void perspectiveActivated(IWorkbenchPage page, IPerspectiveDescriptor perspective) {
+        if (PackManagerPerspective.ID.equals(page.getPerspective().getId())) {
+            page.setEditorAreaVisible(false);
+        }
+    }
 
-	@Override
-	public boolean preShutdown(IWorkbench workbench, boolean forced) {
-		if(CpPlugIn.getPackManager() == null || forced) {
-			return true;
-		}
-		ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
-		if (packInstaller != null && packInstaller.isBusy()) {
-			boolean exit = MessageDialog.openQuestion(
-					Display.getDefault().getActiveShell(),
-					Messages.CpInstallerPlugInUI_ExitEclipse,
-					Messages.CpInstallerPlugInUI_ExitEclipseMessage);
-			if (exit) {
-				packInstaller.reset();
-				try {
-					Thread.sleep(500); // wait for the cancel
-				} catch (InterruptedException e) {
-					// ignore the exception
-				}
-			}
-			return exit;
-		}
-		return true;
-	}
+    @Override
+    public void perspectiveChanged(IWorkbenchPage page, IPerspectiveDescriptor perspective, String changeId) {
+        // does nothing
+    }
 
-	@Override
-	public void postShutdown(IWorkbench workbench) {
-		//does nothing
-	}
+    @Override
+    public boolean preShutdown(IWorkbench workbench, boolean forced) {
+        if (CpPlugIn.getPackManager() == null || forced) {
+            return true;
+        }
+        ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+        if (packInstaller != null && packInstaller.isBusy()) {
+            boolean exit = MessageDialog.openQuestion(Display.getDefault().getActiveShell(),
+                    Messages.CpInstallerPlugInUI_ExitEclipse, Messages.CpInstallerPlugInUI_ExitEclipseMessage);
+            if (exit) {
+                packInstaller.reset();
+                try {
+                    Thread.sleep(500); // wait for the cancel
+                } catch (InterruptedException e) {
+                    // ignore the exception
+                }
+            }
+            return exit;
+        }
+        return true;
+    }
+
+    @Override
+    public void postShutdown(IWorkbench workbench) {
+        // does nothing
+    }
 
 }

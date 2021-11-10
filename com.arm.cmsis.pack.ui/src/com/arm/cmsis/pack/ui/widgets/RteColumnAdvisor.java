@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -19,44 +19,46 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.ui.tree.ColumnAdvisor;
 
 /**
- *  Extends ColumnAdvisor with IRteCobdelController support
+ * Extends ColumnAdvisor with IRteCobdelController support
  */
-public abstract class RteColumnAdvisor<TController extends IRteController> extends ColumnAdvisor implements IRteColumnAdvisor<TController> {
+public abstract class RteColumnAdvisor<TController extends IRteController> extends ColumnAdvisor
+        implements IRteColumnAdvisor<TController> {
 
-	private TController fRteModelController = null;
-	
-	public RteColumnAdvisor(ColumnViewer columnViewer) {
-		super(columnViewer);
-	}
+    private TController fRteModelController = null;
 
-	public RteColumnAdvisor(ColumnViewer columnViewer, TController modelController) {
-		this(columnViewer);
-		fRteModelController = modelController;
-	}
+    public RteColumnAdvisor(ColumnViewer columnViewer) {
+        super(columnViewer);
+    }
 
-	@Override
-	public void setModelController(TController modelController) {
-		fRteModelController = modelController;
-	}
+    public RteColumnAdvisor(ColumnViewer columnViewer, TController modelController) {
+        this(columnViewer);
+        fRteModelController = modelController;
+    }
 
-	@Override
-	public TController getModelController() {
-		return fRteModelController;
-	}
+    @Override
+    public void setModelController(TController modelController) {
+        fRteModelController = modelController;
+    }
 
-	@Override
-	public void openUrl(String url) {
-		if(fRteModelController != null) {
-			String msg = fRteModelController.openUrl(url); 
-			if(msg != null) {
-				String message = CpStringsUI.CannotOpenURL + url; 
-				message += "\n"; //$NON-NLS-1$
-				message += msg;
-				MessageDialog.openError(this.control != null ? this.control.getShell() : null, CpStringsUI.CannotOpenURL, message);
-			}			
-		} else {
-		super.openUrl(url);
-		}
-	}
-	
+    @Override
+    public TController getModelController() {
+        return fRteModelController;
+    }
+
+    @Override
+    public void openUrl(String url) {
+        if (fRteModelController != null) {
+            String msg = fRteModelController.openUrl(url);
+            if (msg != null) {
+                String message = CpStringsUI.CannotOpenURL + url;
+                message += "\n"; //$NON-NLS-1$
+                message += msg;
+                MessageDialog.openError(this.control != null ? this.control.getShell() : null,
+                        CpStringsUI.CannotOpenURL, message);
+            }
+        } else {
+            super.openUrl(url);
+        }
+    }
+
 }

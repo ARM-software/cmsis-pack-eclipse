@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -62,7 +62,6 @@ import com.arm.cmsis.pack.debugseq.debugSeq.Write64;
 import com.arm.cmsis.pack.debugseq.debugSeq.Write8;
 import com.arm.cmsis.pack.debugseq.debugSeq.WriteAP;
 import com.arm.cmsis.pack.debugseq.debugSeq.WriteDP;
-import com.arm.cmsis.pack.debugseq.generator.IDsqScriptGenerator;
 import com.arm.cmsis.pack.debugseq.util.DebugSeqUtil;
 import com.arm.cmsis.pack.dsq.IDsqClient;
 import com.arm.cmsis.pack.dsq.IDsqContext;
@@ -90,6 +89,7 @@ public class DsqPythonScriptGenerator extends AbstractGenerator implements IDsqS
   private boolean generateFile = false;
   
   private static final String predefinedVars = new Function0<String>() {
+    @Override
     public String apply() {
       StringConcatenation _builder = new StringConcatenation();
       _builder.append("(");

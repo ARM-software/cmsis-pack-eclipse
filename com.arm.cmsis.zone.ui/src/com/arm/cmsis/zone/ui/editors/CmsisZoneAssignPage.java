@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,58 +21,57 @@ import com.arm.cmsis.zone.widgets.CmsisZoneAssignWidget;
  */
 public class CmsisZoneAssignPage extends CmsisZonePage {
 
-	private ICpZone fZone = null;
+    private ICpZone fZone = null;
 
-	public CmsisZoneAssignPage(ICpZone zone) {
-		super(zone.getName());
-		fZone = zone;
-	}
+    public CmsisZoneAssignPage(ICpZone zone) {
+        super(zone.getName());
+        fZone = zone;
+    }
 
-	@Override
-	public ICpZone getZone() {
-		return fZone; 
-	}
-	
-	public void setZone(ICpZone zone) {
-		if(fZone == zone)
-			return;
-		fZone = zone;
-		RteWidget<CmsisZoneController> w = getContentWidget();
-		if(w != null) {
-			CmsisZoneAssignWidget assignWidget = (CmsisZoneAssignWidget)w;
-			assignWidget.setZone(zone);	
-		}
-	}
-	
-	@Override
-	public boolean isSingleZonePage() {
-		return true; 
-	}
+    @Override
+    public ICpZone getZone() {
+        return fZone;
+    }
 
-	@Override
-	public void destroy(){
-		if(fZone != null) {
-			fZone = null;
-		}
-		super.destroy();
-	}
-	
-	@Override
-	protected RteWidget<CmsisZoneController> createContentWidget() {
-		return new CmsisZoneAssignWidget(getZone());
-	}
+    public void setZone(ICpZone zone) {
+        if (fZone == zone)
+            return;
+        fZone = zone;
+        RteWidget<CmsisZoneController> w = getContentWidget();
+        if (w != null) {
+            CmsisZoneAssignWidget assignWidget = (CmsisZoneAssignWidget) w;
+            assignWidget.setZone(zone);
+        }
+    }
 
-	@Override
-	public void update() {
-		if(fZone != null) {
-			CmsisZoneController controller = getModelController();
-			if(controller != null) {
-				ICpZone zone = controller.getRootZone().getZone(fZone.getName());
-				setZone(zone);
-			}
-		}
-		super.update();
-	}
-	
-	
+    @Override
+    public boolean isSingleZonePage() {
+        return true;
+    }
+
+    @Override
+    public void destroy() {
+        if (fZone != null) {
+            fZone = null;
+        }
+        super.destroy();
+    }
+
+    @Override
+    protected RteWidget<CmsisZoneController> createContentWidget() {
+        return new CmsisZoneAssignWidget(getZone());
+    }
+
+    @Override
+    public void update() {
+        if (fZone != null) {
+            CmsisZoneController controller = getModelController();
+            if (controller != null) {
+                ICpZone zone = controller.getRootZone().getZone(fZone.getName());
+                setZone(zone);
+            }
+        }
+        super.update();
+    }
+
 }

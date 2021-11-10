@@ -3,17 +3,16 @@ Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS-Pack Installer
 Bundle-SymbolicName: com.arm.cmsis.pack.installer;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.pack.installer
-Bundle-Version: 2.6.0.qualifier
+Bundle-Version: 2.6.1.qualifier
 Bundle-Activator: com.arm.cmsis.pack.installer.CpInstallerPlugIn
-Bundle-Vendor: ARM
+Bundle-Vendor: Arm Limited
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.ui,
  org.eclipse.ui.ide,
  com.arm.cmsis.pack.common,
  com.arm.cmsis.pack.data,
- com.arm.cmsis.pack,
- javax.xml.bind
+ com.arm.cmsis.pack
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack.installer,

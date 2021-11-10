@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,25 +23,24 @@ import com.arm.cmsis.zone.widgets.CmsisZoneMapWidget;
  * Editor page that wraps RteManagerWidget
  *
  */
-public class CmsisZoneMapPage extends CmsisZonePage{
+public class CmsisZoneMapPage extends CmsisZonePage {
 
-	public CmsisZoneMapPage() {
-		super(Messages.CmsisZoneMapPage_ZoneMap);
-	}
+    public CmsisZoneMapPage() {
+        super(Messages.CmsisZoneMapPage_ZoneMap);
+    }
 
-	@Override
-	protected RteWidget<CmsisZoneController> createContentWidget() {
-		return new CmsisZoneMapWidget();
-	}
+    @Override
+    protected RteWidget<CmsisZoneController> createContentWidget() {
+        return new CmsisZoneMapWidget();
+    }
 
+    @Override
+    protected String getHelpID() {
+        return IZoneHelpContextIds.ZONE_MAP_PAGE;
+    }
 
-	@Override
-	protected String getHelpID() {
-		return IZoneHelpContextIds.ZONE_MAP_PAGE;
-	}
-
-	@Override
-	protected Image getImage() {
-		return CpPlugInUI.getImage(CpPlugInUI.ICON_CMSIS_ZONE);
-	}
+    @Override
+    protected Image getImage() {
+        return CpPlugInUI.getImage(CpPlugInUI.ICON_CMSIS_ZONE);
+    }
 }

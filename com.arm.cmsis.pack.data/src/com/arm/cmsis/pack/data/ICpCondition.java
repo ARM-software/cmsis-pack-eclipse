@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -12,8 +12,8 @@
 package com.arm.cmsis.pack.data;
 
 /**
- * Interface represent condition that is used to describe item dependencies 
+ * Interface represent condition that is used to describe item dependencies
  */
 public interface ICpCondition extends ICpItem {
-	 // currently is only used for type matching
+    // currently is only used for type matching
 }

@@ -3,7 +3,6 @@
  */
 package com.arm.cmsis.pack.debugseq;
 
-import com.arm.cmsis.pack.debugseq.AbstractDebugSeqRuntimeModule;
 import com.arm.cmsis.pack.debugseq.converter.DebugSeqTerminalConverters;
 import com.arm.cmsis.pack.debugseq.lexer.DebugSeqLexer;
 import com.google.inject.Binder;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -56,385 +55,386 @@ import com.arm.cmsis.pack.ui.CpStringsUI;
 import com.arm.cmsis.pack.utils.Utils;
 
 /**
- * An abstract multi-page editor for IRteCondroller-backed models. 
+ * An abstract multi-page editor for IRteCondroller-backed models.
  */
-public abstract class RteEditor<TController extends IRteController> extends MultiPageEditorPart implements IResourceChangeListener, IRteEventListener, IGotoMarker {
+public abstract class RteEditor<TController extends IRteController> extends MultiPageEditorPart
+        implements IResourceChangeListener, IRteEventListener, IGotoMarker {
 
-	protected int activePageIndex = 0; // initially the page with index 0 is activated
-	protected TController fModelController = null;
-	protected ICpXmlParser fParser = null;
-	protected boolean fbSaving = false;
-	protected String fXmlString = CmsisConstants.EMPTY_STRING; // saved XML string for modification comparison
+    protected int activePageIndex = 0; // initially the page with index 0 is activated
+    protected TController fModelController = null;
+    protected ICpXmlParser fParser = null;
+    protected boolean fbSaving = false;
+    protected String fXmlString = CmsisConstants.EMPTY_STRING; // saved XML string for modification comparison
 
-	protected String fAbsFileName = null;
-	abstract protected ICpXmlParser createParser();
-	abstract protected TController createController();
-	
-	public RteEditor() {
-		super();
-		ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
-	}
+    protected String fAbsFileName = null;
 
-	
-	/**
-	 * Returns primary file being edited 
-	 * @return String
-	 */
-	public String getFile() {
-		return fAbsFileName; 
-	}
-	
-	/**
-	 * Check if file is relevant to this editor 
-	 * @return boolean
-	 */
-	public boolean isRelevantFile(String absFileName) {
-		return absFileName != null && absFileName.equals(getFile()); 
-	}
-	
-	
-	@Override
-	public void dispose() {
-		ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
-		fParser = null;
-		fModelController = null;
-		fXmlString = null;
-		super.dispose();
-	}
+    abstract protected ICpXmlParser createParser();
 
-	
-	@Override
-	protected void setInput(IEditorInput input) {
-		super.setInput(input);					
-		
-		String absFileName = CmsisConstants.EMPTY_STRING;
-		if(input instanceof IURIEditorInput) {
-			IURIEditorInput uriInput = (IURIEditorInput)input;
-			File f = new File(uriInput.getURI());
-			absFileName = f.getAbsolutePath();
-		} else {
-			IFile file = ResourceUtil.getFile(input);		
-			if(file!= null) {
-				absFileName = file.getLocation().toPortableString();
-			}
-		}
-		
-		if(absFileName.isEmpty())
-			return;
+    abstract protected TController createController();
 
-		//Show change dialog if file was changed
-		if(isDirty()) {
-			//Standardize file's path 
-			String filePath = absFileName;
-			if(filePath.startsWith(CmsisConstants.SLASH) || filePath.startsWith(CmsisConstants.BACKSLASH)) {
-				filePath = filePath.substring(1,filePath.length());
-			}
+    public RteEditor() {
+        super();
+        ResourcesPlugin.getWorkspace().addResourceChangeListener(this);
+    }
 
-			String msgTitle= CpStringsUI.RteEditor_ChangeDialogMsgTitle;
-			String msg= NLS.bind(CpStringsUI.RteEditor_ChangeDialogMsg, filePath);
-			MessageDialog msgDlg = new MessageDialog(getSite().getShell(), msgTitle, null, msg, MessageDialog.QUESTION, 0,
-					new String[] { CpStringsUI.RteEditor_ChangeDialogReplaceButton, CpStringsUI.RteEditor_ChangeDialogNoReplaceButton});
-			if(msgDlg.open() != 0) {
-				return;
-			}
-		}
-		loadData(absFileName);
-	}
+    /**
+     * Returns primary file being edited
+     *
+     * @return String
+     */
+    public String getFile() {
+        return fAbsFileName;
+    }
 
+    /**
+     * Check if file is relevant to this editor
+     *
+     * @return boolean
+     */
+    public boolean isRelevantFile(String absFileName) {
+        return absFileName != null && absFileName.equals(getFile());
+    }
 
-	protected ICpXmlParser getParser() {
-		if(fParser == null) {
-			fParser = createParser();			
-		}
-		return fParser;
-	}
+    @Override
+    public void dispose() {
+        ResourcesPlugin.getWorkspace().removeResourceChangeListener(this);
+        fParser = null;
+        fModelController = null;
+        fXmlString = null;
+        super.dispose();
+    }
 
-	protected void loadData(String absFileName ) {
-		if(absFileName == null || absFileName.isEmpty()) {
-			fAbsFileName = CmsisConstants.EMPTY_STRING;
-			return;
-		}
+    @Override
+    protected void setInput(IEditorInput input) {
+        super.setInput(input);
 
-		fAbsFileName = new Path(absFileName).toPortableString();
-		
-		//Create model controller
-		if(fModelController == null) {
-			fModelController = createController();
-			fModelController.addListener(this);
-		}	
-		//fAbsFileName  = absFileName;
-		String title= Utils.extractFileName(absFileName);
-		setPartName(title);
-		
-		ICpXmlParser parser = getParser();
-		if(parser == null)
-			return;
-		ICpItem root = parser.parseFile(absFileName);
-		if(!checkInputChanged(root))
-			return; // nothing has changed
-		 
-		fModelController.setDataInfo(root);
-		
-	}
-	
-	/**
-	 * Checks input and updates fXmlString if changed 
-	 * @param root item to check 
-	 * @return true if changed
-	 */
-	protected boolean checkInputChanged(ICpItem root) {
-		String xmlString = getXmlString(root);
-		if(xmlString.equals(fXmlString))
-			return false; // nothing has changed
-		fXmlString = xmlString;
-		return true;
-	}
-	
-	/**
-	 * Saves editor XML content to file
-	 * @param monitor IProgressMonitor
-	 * @throws CoreException 
-	 */
-	protected void saveXml(IProgressMonitor monitor) throws CoreException{
-		fXmlString = getXmlString();			
-		CpXmlParser.saveXmlToFile(fXmlString, fAbsFileName);
-		CpPlugInUI.refreshFile(fAbsFileName);
-	}
+        String absFileName = CmsisConstants.EMPTY_STRING;
+        if (input instanceof IURIEditorInput) {
+            IURIEditorInput uriInput = (IURIEditorInput) input;
+            File f = new File(uriInput.getURI());
+            absFileName = f.getAbsolutePath();
+        } else {
+            IFile file = ResourceUtil.getFile(input);
+            if (file != null) {
+                absFileName = file.getLocation().toPortableString();
+            }
+        }
 
-		
-	/**
-	 * Generates XML string from editor's datata
-	 * root ICpItem representing data root
-	 * @return generated XML String
-	 */
-	protected String getXmlString(ICpItem root) {
-		if (root != null && getParser()!= null) {
-			return fParser.writeToXmlString(root);
-		}
-		return CmsisConstants.EMPTY_STRING;
-	}
+        if (absFileName.isEmpty())
+            return;
 
-	/**
-	 * Generates XML string from editor's datata
-	 * @return generated XML String
-	 */
-	protected String getXmlString() {
-		if (fModelController != null) {
-			ICpItem info = fModelController.getDataInfo();
-			return getXmlString(info);
-		}
-		return CmsisConstants.EMPTY_STRING;
-	}
+        // Show change dialog if file was changed
+        if (isDirty()) {
+            // Standardize file's path
+            String filePath = absFileName;
+            if (filePath.startsWith(CmsisConstants.SLASH) || filePath.startsWith(CmsisConstants.BACKSLASH)) {
+                filePath = filePath.substring(1, filePath.length());
+            }
 
-	
-	protected synchronized boolean isSaving() {
-		return fbSaving;
-	}
-	
-	protected synchronized void setSaving(boolean bSaving) {
-		fbSaving = bSaving;
-	}
-	
-	@Override
-	public void doSave(IProgressMonitor monitor) {
-		if(isSaving())
-			return;
-		setSaving(true);
-		fModelController.commit();
-		try {
-			saveXml(monitor);
-			fModelController.emitRteEvent(RteEvent.CONFIGURATION_COMMITED, fModelController);
-			firePropertyChange(IEditorPart.PROP_DIRTY);
-		} catch (CoreException e) {	
-			e.printStackTrace();
-		} finally{ 
-			setSaving(false);
-		}
-	}
-	
+            String msgTitle = CpStringsUI.RteEditor_ChangeDialogMsgTitle;
+            String msg = NLS.bind(CpStringsUI.RteEditor_ChangeDialogMsg, filePath);
+            MessageDialog msgDlg = new MessageDialog(getSite().getShell(), msgTitle, null, msg, MessageDialog.QUESTION,
+                    0, new String[] { CpStringsUI.RteEditor_ChangeDialogReplaceButton,
+                            CpStringsUI.RteEditor_ChangeDialogNoReplaceButton });
+            if (msgDlg.open() != 0) {
+                return;
+            }
+        }
+        loadData(absFileName);
+    }
 
-	/**
-	 * Saves XML string to file
-	 * @param xml XML string to save
-	 * @param file destination IFile
-	 * @param monitor IProgressMonitor
-	 * @throws CoreException 
-	 */
-	protected void saveXmlToFile(String xml, IFile file, IProgressMonitor monitor) throws CoreException{
-		file.setContents(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())),
-				true, true, monitor);
-		file.refreshLocal(IResource.DEPTH_ZERO, monitor);
-	}
-	
-	
-	@Override
-	public void doSaveAs() {
-		doSave( new NullProgressMonitor());
-	}
+    protected ICpXmlParser getParser() {
+        if (fParser == null) {
+            fParser = createParser();
+        }
+        return fParser;
+    }
 
-	@Override
-	public void gotoMarker(IMarker marker) {
-		// default does nothing
-	}
+    protected void loadData(String absFileName) {
+        if (absFileName == null || absFileName.isEmpty()) {
+            fAbsFileName = CmsisConstants.EMPTY_STRING;
+            return;
+        }
 
-	/**
-	 * The <code>MultiPageEditorExample</code> implementation of this method
-	 * checks that the input is an instance of <code>IFileEditorInput</code>.
-	 */
-	@Override
-	public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
-		super.init(site, editorInput);
-	}
+        fAbsFileName = new Path(absFileName).toPortableString();
 
-	@Override
-	public boolean isSaveAsAllowed() {
-		return false;
-	}
+        // Create model controller
+        if (fModelController == null) {
+            fModelController = createController();
+            fModelController.addListener(this);
+        }
+        // fAbsFileName = absFileName;
+        String title = Utils.extractFileName(absFileName);
+        setPartName(title);
 
-	@Override
-	protected void pageChange(int newPageIndex) {
-		super.pageChange(newPageIndex);
-		if (activePageIndex == newPageIndex) {
-			return;
-		}
-		activePageIndex = newPageIndex;
-		if (fModelController != null) {
-			fModelController.updateDataInfo();
-		}
-	}
+        ICpXmlParser parser = getParser();
+        if (parser == null)
+            return;
+        ICpItem root = parser.parseFile(absFileName);
+        if (!checkInputChanged(root))
+            return; // nothing has changed
 
-	@Override
-	public void handle(RteEvent event) {
-		if (fModelController == null) {
-			return;
-		}
-		switch (event.getTopic()) {
-		case RteEvent.CONFIGURATION_MODIFIED:
-		case RteEvent.COMPONENT_SELECTION_MODIFIED:
-		case RteEvent.FILTER_MODIFIED:			
-			Display.getDefault().asyncExec(() -> {
-				firePropertyChange(IEditorPart.PROP_DIRTY);
-			});			
-			return;
-		default:
-		}
-	}
+        fModelController.setDataInfo(root);
 
-	@Override
-	public boolean isDirty() {
-		if (fModelController != null) {
-			return fModelController.isModified();
-		}
-		return false;
-	}
+    }
 
-	public TController getModelController() {
-		return fModelController;
-	}
+    /**
+     * Checks input and updates fXmlString if changed
+     *
+     * @param root item to check
+     * @return true if changed
+     */
+    protected boolean checkInputChanged(ICpItem root) {
+        String xmlString = getXmlString(root);
+        if (xmlString.equals(fXmlString))
+            return false; // nothing has changed
+        fXmlString = xmlString;
+        return true;
+    }
 
-	
-	/**
-	 * Processes file change (modify, rename, delete) 
-	 * @param file changed IFile  
-	 * @param delta IResourceDelta describing change
-	 * @return returns true if file is relevant and the change is processed
-	 */
-	protected boolean processFileChange(IFile file, IResourceDelta delta) {
+    /**
+     * Saves editor XML content to file
+     *
+     * @param monitor IProgressMonitor
+     * @throws CoreException
+     */
+    protected void saveXml(IProgressMonitor monitor) throws CoreException {
+        fXmlString = getXmlString();
+        CpXmlParser.saveXmlToFile(fXmlString, fAbsFileName);
+        CpPlugInUI.refreshFile(fAbsFileName);
+    }
 
-		if (file == null) {
-			return false;
-		}
-		IPath path = file.getLocation();
-		if(path == null)
-			return false;
-		if(!isRelevantFile(path.toPortableString())) {
-			return false;
-		}
-		
-		int kind = delta.getKind();
-		int flags = delta.getFlags();
-		if ( kind == IResourceDelta.REMOVED) {
-			if (flags == 0) { // project or folder or file deleted 
-				Display.getDefault().asyncExec(() -> {
-					// close editor if still open
-					IEditorSite site = getEditorSite();
-					if(site == null)
-						return;
-					IWorkbenchPage page = site.getPage();
-					if(page == null)
-						return;
-					page.closeEditor(this, true);
-				});
-				return true;
-			}
-			if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
-				// renamed
-				IPath newPath = delta.getMovedToPath();
-				IFile r = (IFile) ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
-				
-				final FileEditorInput fileEditorInput = new FileEditorInput(r);
-				Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
-				return true;
-			} 
-		} else if ( kind == IResourceDelta.CHANGED && (flags & IResourceDelta.CONTENT) == IResourceDelta.CONTENT ) {
-			if(isSaving())
-				return false;
-			
-			IFile iFile = CpPlugInUI.getFileForLocation(fAbsFileName);
-			if(iFile != null) {
-				final FileEditorInput fileEditorInput = new FileEditorInput(iFile); // reload
-				Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
-			}			
-			return true;
-		}
-		
-		return false;
-	}
-	
-	/**
-	 * Closes all project files on project close.
-	 */
-	@Override
-	public void resourceChanged(final IResourceChangeEvent event) {
-		if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
-			Display.getDefault().asyncExec(() -> {				
-				IFile iFile = CpPlugInUI.getFileForLocation(fAbsFileName);
-				if(iFile != null) {
-					IProject project = iFile.getProject();
-					IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
-					for (int i = 0; i < pages.length; i++) {
-						if (project.equals(event.getResource())) {
-							IEditorPart editorPart = ResourceUtil.findEditor(pages[i], iFile);
-							pages[i].closeEditor(editorPart, true);
-						}
-					}
-				}				
-			});
-			return;
-		}
-		if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
-			IResourceDelta resourseDelta = event.getDelta();
-			IResourceDeltaVisitor deltaVisitor = new IResourceDeltaVisitor() {
-				@Override
-				public boolean visit(IResourceDelta delta) {
-					IResource resource = delta.getResource();
-					int type = resource.getType();
-					if (type == IResource.ROOT || type == IResource.PROJECT) {
-						return true; // workspace or project => visit children
-					}
-					if (type == IResource.FILE ) {
-						if(processFileChange((IFile)resource, delta))
-							return false; // processed, no more change
-					}
-					return true;
-				}
-			};
-			try {
-				resourseDelta.accept(deltaVisitor);
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
-		}
-	}
-	
+    /**
+     * Generates XML string from editor's datata root ICpItem representing data root
+     *
+     * @return generated XML String
+     */
+    protected String getXmlString(ICpItem root) {
+        if (root != null && getParser() != null) {
+            return fParser.writeToXmlString(root);
+        }
+        return CmsisConstants.EMPTY_STRING;
+    }
+
+    /**
+     * Generates XML string from editor's datata
+     *
+     * @return generated XML String
+     */
+    protected String getXmlString() {
+        if (fModelController != null) {
+            ICpItem info = fModelController.getDataInfo();
+            return getXmlString(info);
+        }
+        return CmsisConstants.EMPTY_STRING;
+    }
+
+    protected synchronized boolean isSaving() {
+        return fbSaving;
+    }
+
+    protected synchronized void setSaving(boolean bSaving) {
+        fbSaving = bSaving;
+    }
+
+    @Override
+    public void doSave(IProgressMonitor monitor) {
+        if (isSaving())
+            return;
+        setSaving(true);
+        fModelController.commit();
+        try {
+            saveXml(monitor);
+            fModelController.emitRteEvent(RteEvent.CONFIGURATION_COMMITED, fModelController);
+            firePropertyChange(IEditorPart.PROP_DIRTY);
+        } catch (CoreException e) {
+            e.printStackTrace();
+        } finally {
+            setSaving(false);
+        }
+    }
+
+    /**
+     * Saves XML string to file
+     *
+     * @param xml     XML string to save
+     * @param file    destination IFile
+     * @param monitor IProgressMonitor
+     * @throws CoreException
+     */
+    protected void saveXmlToFile(String xml, IFile file, IProgressMonitor monitor) throws CoreException {
+        file.setContents(new ByteArrayInputStream(xml.getBytes(Charset.defaultCharset())), true, true, monitor);
+        file.refreshLocal(IResource.DEPTH_ZERO, monitor);
+    }
+
+    @Override
+    public void doSaveAs() {
+        doSave(new NullProgressMonitor());
+    }
+
+    @Override
+    public void gotoMarker(IMarker marker) {
+        // default does nothing
+    }
+
+    /**
+     * The <code>MultiPageEditorExample</code> implementation of this method checks
+     * that the input is an instance of <code>IFileEditorInput</code>.
+     */
+    @Override
+    public void init(IEditorSite site, IEditorInput editorInput) throws PartInitException {
+        super.init(site, editorInput);
+    }
+
+    @Override
+    public boolean isSaveAsAllowed() {
+        return false;
+    }
+
+    @Override
+    protected void pageChange(int newPageIndex) {
+        super.pageChange(newPageIndex);
+        if (activePageIndex == newPageIndex) {
+            return;
+        }
+        activePageIndex = newPageIndex;
+        if (fModelController != null) {
+            fModelController.updateDataInfo();
+        }
+    }
+
+    @Override
+    public void handle(RteEvent event) {
+        if (fModelController == null) {
+            return;
+        }
+        switch (event.getTopic()) {
+        case RteEvent.CONFIGURATION_MODIFIED:
+        case RteEvent.COMPONENT_SELECTION_MODIFIED:
+        case RteEvent.FILTER_MODIFIED:
+            Display.getDefault().asyncExec(() -> {
+                firePropertyChange(IEditorPart.PROP_DIRTY);
+            });
+            return;
+        default:
+        }
+    }
+
+    @Override
+    public boolean isDirty() {
+        if (fModelController != null) {
+            return fModelController.isModified();
+        }
+        return false;
+    }
+
+    public TController getModelController() {
+        return fModelController;
+    }
+
+    /**
+     * Processes file change (modify, rename, delete)
+     *
+     * @param file  changed IFile
+     * @param delta IResourceDelta describing change
+     * @return returns true if file is relevant and the change is processed
+     */
+    protected boolean processFileChange(IFile file, IResourceDelta delta) {
+
+        if (file == null) {
+            return false;
+        }
+        IPath path = file.getLocation();
+        if (path == null)
+            return false;
+        if (!isRelevantFile(path.toPortableString())) {
+            return false;
+        }
+
+        int kind = delta.getKind();
+        int flags = delta.getFlags();
+        if (kind == IResourceDelta.REMOVED) {
+            if (flags == 0) { // project or folder or file deleted
+                Display.getDefault().asyncExec(() -> {
+                    // close editor if still open
+                    IEditorSite site = getEditorSite();
+                    if (site == null)
+                        return;
+                    IWorkbenchPage page = site.getPage();
+                    if (page == null)
+                        return;
+                    page.closeEditor(this, true);
+                });
+                return true;
+            }
+            if ((flags & IResourceDelta.MOVED_TO) == IResourceDelta.MOVED_TO) {
+                // renamed
+                IPath newPath = delta.getMovedToPath();
+                IFile r = (IFile) ResourcesPlugin.getWorkspace().getRoot().findMember(newPath);
+
+                final FileEditorInput fileEditorInput = new FileEditorInput(r);
+                Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
+                return true;
+            }
+        } else if (kind == IResourceDelta.CHANGED && (flags & IResourceDelta.CONTENT) == IResourceDelta.CONTENT) {
+            if (isSaving())
+                return false;
+
+            IFile iFile = CpPlugInUI.getFileForLocation(fAbsFileName);
+            if (iFile != null) {
+                final FileEditorInput fileEditorInput = new FileEditorInput(iFile); // reload
+                Display.getDefault().asyncExec(() -> setInput(fileEditorInput));
+            }
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Closes all project files on project close.
+     */
+    @Override
+    public void resourceChanged(final IResourceChangeEvent event) {
+        if (event.getType() == IResourceChangeEvent.PRE_CLOSE) {
+            Display.getDefault().asyncExec(() -> {
+                IFile iFile = CpPlugInUI.getFileForLocation(fAbsFileName);
+                if (iFile != null) {
+                    IProject project = iFile.getProject();
+                    IWorkbenchPage[] pages = getSite().getWorkbenchWindow().getPages();
+                    for (int i = 0; i < pages.length; i++) {
+                        if (project.equals(event.getResource())) {
+                            IEditorPart editorPart = ResourceUtil.findEditor(pages[i], iFile);
+                            pages[i].closeEditor(editorPart, true);
+                        }
+                    }
+                }
+            });
+            return;
+        }
+        if (event.getType() == IResourceChangeEvent.POST_CHANGE) {
+            IResourceDelta resourseDelta = event.getDelta();
+            IResourceDeltaVisitor deltaVisitor = new IResourceDeltaVisitor() {
+                @Override
+                public boolean visit(IResourceDelta delta) {
+                    IResource resource = delta.getResource();
+                    int type = resource.getType();
+                    if (type == IResource.ROOT || type == IResource.PROJECT) {
+                        return true; // workspace or project => visit children
+                    }
+                    if (type == IResource.FILE) {
+                        if (processFileChange((IFile) resource, delta))
+                            return false; // processed, no more change
+                    }
+                    return true;
+                }
+            };
+            try {
+                resourseDelta.accept(deltaVisitor);
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

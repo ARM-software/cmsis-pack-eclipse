@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -42,229 +42,234 @@ import com.arm.cmsis.pack.ui.tree.TreeObjectContentProvider;
 
 public class RteValidateWidget extends RteModelTreeWidget {
 
-	/** Column label provider for RteComponentTreeWidget
-	 *
-	 */
-	IRteDependencyItem getDependencyItem(Object element){
-		if(element instanceof IRteDependencyItem) {
-			return (IRteDependencyItem)element;
-		}
-		return null;
-	}
+    /**
+     * Column label provider for RteComponentTreeWidget
+     *
+     */
+    IRteDependencyItem getDependencyItem(Object element) {
+        if (element instanceof IRteDependencyItem) {
+            return (IRteDependencyItem) element;
+        }
+        return null;
+    }
 
-	/**
-	 * Set current configuration for this component tree widget
-	 * @param configuration A RTE configuration that contains RTE component
-	 */
-	@Override
-	public void setModelController(IRteModelController model) {
-		super.setModelController(model);
-		if (fTreeViewer != null) {
-			fTreeViewer.setInput(model);
-			refresh();
-		}
-	}
+    /**
+     * Set current configuration for this component tree widget
+     *
+     * @param configuration A RTE configuration that contains RTE component
+     */
+    @Override
+    public void setModelController(IRteModelController model) {
+        super.setModelController(model);
+        if (fTreeViewer != null) {
+            fTreeViewer.setInput(model);
+            refresh();
+        }
+    }
 
-	public class RteValidateColumnAdvisor extends RteColumnAdvisor<IRteModelController> {
-		/**
-		 * Constructs advisor for a viewer
-		 * @param columnViewer ColumnViewer on which the advisor is installed
-		 */
-		public RteValidateColumnAdvisor(ColumnViewer columnViewer) {
-			super(columnViewer);
-		}
+    public class RteValidateColumnAdvisor extends RteColumnAdvisor<IRteModelController> {
+        /**
+         * Constructs advisor for a viewer
+         *
+         * @param columnViewer ColumnViewer on which the advisor is installed
+         */
+        public RteValidateColumnAdvisor(ColumnViewer columnViewer) {
+            super(columnViewer);
+        }
 
-		@Override
-		public String getString(Object obj, int index) {
-			IRteDependencyItem item = getDependencyItem(obj);
-			if(item != null) {
-				switch(index) {
-				case 0 : return item.getName();
-				case 1 : return item.getDescription();
-				default:
-					break;
-				}
-			}
-			return CmsisConstants.EMPTY_STRING;
-		}
+        @Override
+        public String getString(Object obj, int index) {
+            IRteDependencyItem item = getDependencyItem(obj);
+            if (item != null) {
+                switch (index) {
+                case 0:
+                    return item.getName();
+                case 1:
+                    return item.getDescription();
+                default:
+                    break;
+                }
+            }
+            return CmsisConstants.EMPTY_STRING;
+        }
 
+        @Override
+        public Image getImage(Object obj, int columnIndex) {
+            if (columnIndex == 0) {
+                IRteDependencyItem item = getDependencyItem(obj);
+                if (item != null) {
+                    if (item.isMaster()) {
+                        EEvaluationResult res = item.getEvaluationResult();
+                        switch (res) {
+                        case IGNORED:
+                        case UNDEFINED:
+                        case FULFILLED:
+                            break;
+                        case CONFLICT:
+                        case ERROR:
+                        case FAILED:
+                        case INCOMPATIBLE:
+                        case INCOMPATIBLE_API:
+                        case INCOMPATIBLE_BUNDLE:
+                        case INCOMPATIBLE_VARIANT:
+                        case INCOMPATIBLE_VENDOR:
+                        case INCOMPATIBLE_VERSION:
+                        case MISSING:
+                        case MISSING_API:
+                        case MISSING_API_VERSION:
+                        case MISSING_BUNDLE:
+                        case MISSING_VARIANT:
+                        case MISSING_VENDOR:
+                        case MISSING_VERSION:
+                        case MISSING_GPDSC:
+                        case UNAVAILABLE:
+                        case UNAVAILABLE_PACK:
+                            return CpPlugInUI.getImage(CpPlugInUI.ICON_ERROR);
 
-		@Override
-		public Image getImage(Object obj, int columnIndex) {
-			if(columnIndex == 0) {
-				IRteDependencyItem item = getDependencyItem(obj);
-				if(item != null) {
-					if(item.isMaster()) {
-						EEvaluationResult res = item.getEvaluationResult();
-						switch(res) {
-						case IGNORED:
-						case UNDEFINED:
-						case FULFILLED:
-							break;
-						case CONFLICT:
-						case ERROR:
-						case FAILED:
-						case INCOMPATIBLE:
-						case INCOMPATIBLE_API:
-						case INCOMPATIBLE_BUNDLE:
-						case INCOMPATIBLE_VARIANT:
-						case INCOMPATIBLE_VENDOR:
-						case INCOMPATIBLE_VERSION:
-						case MISSING:
-						case MISSING_API:
-						case MISSING_API_VERSION:
-						case MISSING_BUNDLE:
-						case MISSING_VARIANT:
-						case MISSING_VENDOR:
-						case MISSING_VERSION:
-						case MISSING_GPDSC:
-						case UNAVAILABLE:
-						case UNAVAILABLE_PACK:
-							return CpPlugInUI.getImage(CpPlugInUI.ICON_ERROR);
+                        case INACTIVE:
+                        case INSTALLED:
+                        case SELECTABLE:
+                            return CpPlugInUI.getImage(CpPlugInUI.ICON_WARNING);
+                        default:
+                            break;
+                        }
+                        return null;
+                    } else if (item.getComponentItem() != null) {
+                        IRteComponent component = item.getComponentItem().getParentComponent();
+                        if (component != null) {
+                            ICpComponentInfo ci = component.getActiveCpComponentInfo();
+                            int instances = component.getMaxInstanceCount();
+                            if (ci != null && ci.getComponent() == null) {
+                                if (instances > 1) {
+                                    return CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT_ERROR);
+                                }
+                                return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_ERROR);
+                            }
+                            if (instances > 1) {
+                                return CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT);
+                            }
+                            return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+    }
 
-						case INACTIVE:
-						case INSTALLED:
-						case SELECTABLE:
-							return CpPlugInUI.getImage(CpPlugInUI.ICON_WARNING);
-						default:
-							break;
-						}
-						return null;
-					} else if( item.getComponentItem() != null) {
-						IRteComponent component = item.getComponentItem().getParentComponent();
-						if(component != null) {
-							ICpComponentInfo ci = component.getActiveCpComponentInfo();
-							int instances = component.getMaxInstanceCount();
-							if(ci != null && ci.getComponent() == null) {
-								if(instances > 1) {
-									return CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT_ERROR);
-								}
-								return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT_ERROR);
-							}
-							if(instances > 1) {
-								return CpPlugInUI.getImage(CpPlugInUI.ICON_MULTICOMPONENT);
-							}
-							return CpPlugInUI.getImage(CpPlugInUI.ICON_COMPONENT);
-						}
-					}
-				}
-			}
-			return null;
-		}
-	}
+    /**
+     * Content provider for RteValidateWidget tree
+     */
+    public class RteValidateContentProvider extends TreeObjectContentProvider {
+        @Override
+        public Object[] getElements(Object inputElement) {
+            if (inputElement == getModelController()) {
+                Collection<? extends IRteDependencyItem> depItems = getModelController().getDependencyItems();
+                if (depItems != null) {
+                    return depItems.toArray();
+                }
+                return ITreeObject.EMPTY_OBJECT_ARRAY;
+            }
+            return getChildren(inputElement);
+        }
+    }
 
-	/**
-	 * 	Content provider for RteValidateWidget tree
-	 */
-	public class RteValidateContentProvider extends TreeObjectContentProvider {
-		@Override
-		public Object[] getElements(Object inputElement) {
-			if(inputElement == getModelController()) {
-				Collection<? extends IRteDependencyItem> depItems = getModelController().getDependencyItems();
-				if(depItems != null) {
-					return depItems.toArray();
-				}
-				return ITreeObject.EMPTY_OBJECT_ARRAY;
-			}
-			return getChildren(inputElement);
-		}
-	}
-
-	@Override
+    @Override
     public Composite createControl(Composite parent) {
 
-		Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL|SWT.BORDER);
-		tree.setHeaderVisible(true);
-		fTreeViewer = new TreeViewer(tree);
-		ColumnViewerToolTipSupport.enableFor(fTreeViewer);
-		fColumnAdvisor = new RteValidateColumnAdvisor(fTreeViewer);
+        Tree tree = new Tree(parent, SWT.FULL_SELECTION | SWT.MULTI | SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER);
+        tree.setHeaderVisible(true);
+        fTreeViewer = new TreeViewer(tree);
+        ColumnViewerToolTipSupport.enableFor(fTreeViewer);
+        fColumnAdvisor = new RteValidateColumnAdvisor(fTreeViewer);
 
-		TreeViewerColumn column0 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
-		tree.setLinesVisible(true);
-		column0.getColumn().setText(CpStringsUI.RteValidateWidget_ValidationOutput);
-		column0.getColumn().setWidth(400);
-		column0.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 0));
+        TreeViewerColumn column0 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
+        tree.setLinesVisible(true);
+        column0.getColumn().setText(CpStringsUI.RteValidateWidget_ValidationOutput);
+        column0.getColumn().setWidth(400);
+        column0.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 0));
 
-		fTreeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-			@Override
-			public void selectionChanged(SelectionChangedEvent event) {
-				handleTreeSelectionChanged(event);
-			}
-		});
+        fTreeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
+            @Override
+            public void selectionChanged(SelectionChangedEvent event) {
+                handleTreeSelectionChanged(event);
+            }
+        });
 
-		AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, 0);
-		// workaround jface bug: first owner-draw column is not correctly painted when column is resized
-		col0LabelProvider.setOwnerDrawEnabled(false);
-		column0.setLabelProvider(col0LabelProvider);
+        AdvisedCellLabelProvider col0LabelProvider = new AdvisedCellLabelProvider(fColumnAdvisor, 0);
+        // workaround jface bug: first owner-draw column is not correctly painted when
+        // column is resized
+        col0LabelProvider.setOwnerDrawEnabled(false);
+        column0.setLabelProvider(col0LabelProvider);
 
-		TreeViewerColumn column1 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
-		column1.getColumn().setText(CpStringsUI.RteValidateWidget_Description);
-		column1.getColumn().setWidth(500);
-		column1.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 1));
-		column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 1));
+        TreeViewerColumn column1 = new TreeViewerColumn(fTreeViewer, SWT.LEFT);
+        column1.getColumn().setText(CpStringsUI.RteValidateWidget_Description);
+        column1.getColumn().setWidth(500);
+        column1.setEditingSupport(new AdvisedEditingSupport(fTreeViewer, fColumnAdvisor, 1));
+        column1.setLabelProvider(new AdvisedCellLabelProvider(fColumnAdvisor, 1));
 
-		RteValidateContentProvider validateProvider = new RteValidateContentProvider();
-		fTreeViewer.setContentProvider(validateProvider);
+        RteValidateContentProvider validateProvider = new RteValidateContentProvider();
+        fTreeViewer.setContentProvider(validateProvider);
 
-    	GridData gridData = new GridData();
-    	gridData.horizontalAlignment = SWT.FILL;
-    	gridData.verticalAlignment = SWT.FILL;
-    	gridData.grabExcessHorizontalSpace = true;
-    	gridData.grabExcessVerticalSpace = true;
-    	tree.setLayoutData(gridData);
+        GridData gridData = new GridData();
+        gridData.horizontalAlignment = SWT.FILL;
+        gridData.verticalAlignment = SWT.FILL;
+        gridData.grabExcessHorizontalSpace = true;
+        gridData.grabExcessVerticalSpace = true;
+        tree.setLayoutData(gridData);
 
-    	if (getModelController() != null) {
-			fTreeViewer.setInput(getModelController());
-		}
-    	return tree;
+        if (getModelController() != null) {
+            fTreeViewer.setInput(getModelController());
+        }
+        return tree;
     }
 
     private IRteDependencyItem getSelectedDependencyItem() {
-		IStructuredSelection sel= (IStructuredSelection)fTreeViewer.getSelection();
-		if(sel.size() == 1) {
-			Object o = sel.getFirstElement();
-			if(o instanceof IRteDependencyItem ){
-				return (IRteDependencyItem)o;
-			}
-		}
-		return null;
-	}
+        IStructuredSelection sel = (IStructuredSelection) fTreeViewer.getSelection();
+        if (sel.size() == 1) {
+            Object o = sel.getFirstElement();
+            if (o instanceof IRteDependencyItem) {
+                return (IRteDependencyItem) o;
+            }
+        }
+        return null;
+    }
 
-	/**
-	 * @param event
-	 */
-	protected void handleTreeSelectionChanged(SelectionChangedEvent event) {
-		if(getModelController() == null) {
-			return;
-		}
+    /**
+     * @param event
+     */
+    protected void handleTreeSelectionChanged(SelectionChangedEvent event) {
+        if (getModelController() == null) {
+            return;
+        }
 
-		IRteDependencyItem d = getSelectedDependencyItem();
-		if(d == null) {
-			return;
-		}
+        IRteDependencyItem d = getSelectedDependencyItem();
+        if (d == null) {
+            return;
+        }
 
-		IRteComponentItem item = d.getComponentItem();
-		if(item != null) {
-			getModelController().emitRteEvent(RteEvent.COMPONENT_SHOW, item);
-		}
-	}
+        IRteComponentItem item = d.getComponentItem();
+        if (item != null) {
+            getModelController().emitRteEvent(RteEvent.COMPONENT_SHOW, item);
+        }
+    }
 
-	@Override
-	public void handle(RteEvent event) {
-		switch(event.getTopic()) {
-		case RteEvent.COMPONENT_SELECTION_MODIFIED:
-			update();
-			return;
-		}
-		super.handle(event);
-	}
+    @Override
+    public void handle(RteEvent event) {
+        switch (event.getTopic()) {
+        case RteEvent.COMPONENT_SELECTION_MODIFIED:
+            update();
+            return;
+        }
+        super.handle(event);
+    }
 
-	@Override
-	public void update() {
-		refresh();
-		if(fTreeViewer != null) {
-			fTreeViewer.expandAll();
-		}
-	}
+    @Override
+    public void update() {
+        refresh();
+        if (fTreeViewer != null) {
+            fTreeViewer.expandAll();
+        }
+    }
 
 }

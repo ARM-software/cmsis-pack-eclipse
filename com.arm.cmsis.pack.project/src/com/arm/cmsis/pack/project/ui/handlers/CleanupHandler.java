@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2018 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,23 +26,23 @@ import com.arm.cmsis.pack.project.IRteProject;
  */
 public class CleanupHandler extends AbstractHandler {
 
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ISelection selection = HandlerUtil.getCurrentSelection(event);
-		if (!(selection instanceof IStructuredSelection)) {
-			return null;
-		}
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        ISelection selection = HandlerUtil.getCurrentSelection(event);
+        if (!(selection instanceof IStructuredSelection)) {
+            return null;
+        }
 
-		IStructuredSelection sel = (IStructuredSelection) selection;
-		for (Object obj : sel.toArray()) {
-			IRteProject project = CpProjectPlugIn.getRteProjectManager().getRteProject((IProject) obj);
-			if (project == null) {
-				continue;
-			}
-			project.cleanup();
-		}
+        IStructuredSelection sel = (IStructuredSelection) selection;
+        for (Object obj : sel.toArray()) {
+            IRteProject project = CpProjectPlugIn.getRteProjectManager().getRteProject((IProject) obj);
+            if (project == null) {
+                continue;
+            }
+            project.cleanup();
+        }
 
-		return null;
-	}
+        return null;
+    }
 
 }

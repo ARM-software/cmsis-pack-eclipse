@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -12,15 +12,15 @@
 package com.arm.cmsis.pack.data;
 
 /**
- * Convenience interface to access "trace" device property 
+ * Convenience interface to access "trace" device property
  */
 public interface ICpTrace extends ICpDeviceProperty {
-	
-	/**
-	 * Check if trace capabilities are available
-	 * @return true if supported 
-	 */
-	boolean isSupported();
-	
+
+    /**
+     * Check if trace capabilities are available
+     *
+     * @return true if supported
+     */
+    boolean isSupported();
 
 }

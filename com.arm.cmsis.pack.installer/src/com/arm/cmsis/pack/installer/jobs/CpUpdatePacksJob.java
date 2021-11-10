@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,17 +24,17 @@ import com.arm.cmsis.pack.repository.RtePackJobResult;
  */
 public class CpUpdatePacksJob extends CpPackJob {
 
-	public CpUpdatePacksJob(String name, ICpPackInstaller packInstaller, String jobId) {
-		super(name, packInstaller, jobId);
-	}
+    public CpUpdatePacksJob(String name, ICpPackInstaller packInstaller, String jobId) {
+        super(name, packInstaller, jobId);
+    }
 
-	@Override
-	protected IStatus run(IProgressMonitor monitor) {
-		fPackInstaller.updatePacks(monitor);
-		RtePackJobResult jobResult = new RtePackJobResult(null);
-		jobResult.setSuccess(true);
-		fPackInstaller.jobFinished(fJobId, null, jobResult);
-		return Status.OK_STATUS;
-	}
+    @Override
+    protected IStatus run(IProgressMonitor monitor) {
+        fPackInstaller.updatePacks(monitor);
+        RtePackJobResult jobResult = new RtePackJobResult(null);
+        jobResult.setSuccess(true);
+        fPackInstaller.jobFinished(fJobId, null, jobResult);
+        return Status.OK_STATUS;
+    }
 
 }

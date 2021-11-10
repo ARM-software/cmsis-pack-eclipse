@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -20,335 +20,324 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.utils.WildCards;
 
 /**
- *  Generic tree of Cmsis items
+ * Generic tree of Cmsis items
  */
-public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implements  ICmsisTreeItem<T> {
+public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implements ICmsisTreeItem<T> {
 
-	protected T fParent = null;
-	protected String fName = null;
-	protected Collection<T> fChildren = null;
+    protected T fParent = null;
+    protected String fName = null;
+    protected Collection<T> fChildren = null;
 
-	/**
-	 *  Default constructor
-	 */
-	public CmsisTreeItem() {
-	}
+    /**
+     * Default constructor
+     */
+    public CmsisTreeItem() {
+    }
 
+    /**
+     * Hierarchical constructor
+     *
+     * @param parent parent item in the hierarchy
+     */
+    public CmsisTreeItem(T parent) {
+        fParent = parent;
+    }
 
-	/**
-	 * Hierarchical constructor
-	 * @param parent parent item in the hierarchy
-	 */
-	public CmsisTreeItem(T parent) {
-		fParent = parent;
-	}
+    /**
+     * Hierarchical constructor
+     *
+     * @param parent parent item in the hierarchy
+     * @param name   item name
+     */
+    public CmsisTreeItem(T parent, String name) {
+        fParent = parent;
+        fName = name;
+    }
 
-	/**
-	 * Hierarchical constructor
-	 * @param parent parent item in the hierarchy
-	 * @param name item name
-	 */
-	public CmsisTreeItem(T parent, String name) {
-		fParent = parent;
-		fName = name;
-	}
+    @Override
+    public void clear() {
+        super.clear();
+        fChildren = null;
+    }
 
+    @Override
+    public void invalidateAll() {
+        invalidate();
+        Collection<? extends T> children = getChildren();
+        if (children == null || children.isEmpty())
+            return;
+        for (T item : children) {
+            item.invalidateAll();
+        }
+    }
 
-	@Override
-	public void clear() {
-		super.clear();
-		fChildren = null;
-	}
+    @Override
+    public void destroy() {
+        super.destroy();
+        fParent = null;
+        fName = null;
+    }
 
-	@Override
-	public void invalidateAll() {
-		invalidate();
-		Collection<? extends T> children = getChildren();
-		if(children == null || children.isEmpty())
-			return;
-		for(T item : children) {
-			item.invalidateAll();
-		}
-	}
+    @Override
+    public boolean purge() {
+        if (isRemoved())
+            return true;
 
-	@Override
-	public void destroy() {
-		super.destroy();
-		fParent = null;
-		fName = null;
-	}
+        Collection<? extends T> children = getChildren();
+        if (children == null) {
+            return false;
+        }
 
-	@Override
-	public boolean purge() {
-		if(isRemoved())
-			return true;
+        for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
+            T child = iterator.next();
+            if (child.purge()) {
+                iterator.remove();
+                cachedChildArray = null;
+            }
+        }
+        return false;
+    }
 
-		Collection<? extends T> children = getChildren();
-		if(children == null) {
-			return false;
-		}
+    @Override
+    public void setParent(T parent) {
+        if (fParent == parent) {
+            return;
+        }
+        if (fParent != null) {
+            fParent.removeChild(getThisItem());
+        }
+        fParent = parent;
+    }
 
-		for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
-			T child = iterator.next();
-			if(child.purge()) {
-				iterator.remove();
-				cachedChildArray = null;
-			}
-		}
-		return false;
-	}
+    @Override
+    public String getName() {
+        if (fName == null) {
+            fName = constructName();
+            if (fName == null || fName.isEmpty()) {
+                fName = super.getName();
+            }
+        }
+        return fName;
+    }
 
+    /**
+     * Constructs item name
+     *
+     * @return constructed item name
+     */
+    protected String constructName() {
+        return CmsisConstants.EMPTY_STRING;
+    }
 
-	@Override
-	public void setParent(T parent) {
-		if(fParent == parent) {
-			return;
-		}
-		if(fParent != null) {
-			fParent.removeChild(getThisItem());
-		}
-		fParent = parent;
-	}
+    @Override
+    public T getParent() {
+        return fParent;
+    }
 
-	@Override
-	public String getName() {
-		if(fName == null) {
-			fName = constructName();
-			if(fName == null || fName.isEmpty()) {
-				fName = super.getName();
-			}
-		}
-		return fName;
-	}
+    @Override
+    public Collection<? extends T> getChildren() {
+        if (fChildren != null)
+            return fChildren;
+        return Collections.emptyList();
+    }
 
-	/**
-	 * Constructs item name
-	 * @return constructed item name
-	 */
-	protected String constructName() {
-		return CmsisConstants.EMPTY_STRING;
-	}
+    @Override
+    public void addChild(T item) {
+        if (item != null) {
+            invalidate();
+            children().add(item);
+        }
+    }
 
-	@Override
-	public T getParent() {
-		return fParent;
-	}
+    /**
+     * Returns child collection, creates one if not created yet
+     *
+     * @return child
+     */
+    protected Collection<T> children() {
+        if (fChildren == null) {
+            fChildren = createCollection();
+        }
+        return fChildren;
+    }
 
+    /**
+     * Creates collection suitable to store child items. Implementation can use
+     * List, Set or their descendants
+     *
+     * @return created child collection
+     */
+    protected Collection<T> createCollection() {
+        // default creates linkedList
+        return new LinkedList<>();
+    }
 
-	@Override
-	public Collection<? extends T> getChildren() {
-		if(fChildren != null)
-			return fChildren;
-		return Collections.emptyList();
-	}
+    @Override
+    public boolean hasChildren() {
+        Collection<? extends T> children = getChildren();
+        return children != null && !children.isEmpty();
+    }
 
+    @Override
+    public int getChildCount() {
+        Collection<? extends T> children = getChildren();
+        if (children != null) {
+            return children.size();
+        }
+        return 0;
+    }
 
-	@Override
-	public void addChild(T item) {
-		if(item != null) {
-			invalidate();
-			children().add(item);
-		}
-	}
+    @Override
+    public Collection<? extends T> getEffectiveChildren() {
+        return getEffectiveItem().getChildren();
+    }
 
-	/**
-	 * Returns child collection, creates one if not created yet
-	 * @return child
-	 */
-	protected Collection<T> children() {
-		if(fChildren == null ) {
-			fChildren = createCollection();
-		}
-		return fChildren;
-	}
+    @Override
+    public int getEffectiveChildCount() {
+        Collection<? extends T> children = getEffectiveChildren();
+        if (children != null) {
+            return children.size();
+        }
+        return 0;
+    }
 
-	/**
-	 * Creates collection suitable to store child items.
-	 * Implementation can use List, Set or their descendants
-	 * @return created child collection
-	 */
-	protected Collection<T> createCollection(){
-		// default creates linkedList
-		return new LinkedList<>();
-	}
+    @Override
+    public boolean hasEffectiveChildren() {
+        Collection<? extends T> children = getEffectiveChildren();
+        return children != null && !children.isEmpty();
+    }
 
+    @Override
+    public String getItemKey(T item) {
+        if (item == null) {
+            return null;
+        }
+        return item.getName(); // default returns item name
+    }
 
-	@Override
-	public boolean hasChildren() {
-		Collection<? extends T> children = getChildren();
-		return children != null && !children.isEmpty();
-	}
+    @Override
+    public T getFirstChild() {
+        Collection<? extends T> children = getChildren();
+        if (children != null && !children.isEmpty()) {
+            return children.iterator().next();
+        }
+        return null;
+    }
 
-	@Override
-	public int getChildCount() {
-		Collection<? extends T> children = getChildren();
-		if(children != null) {
-			return children.size();
-		}
-		return 0;
-	}
+    @Override
+    public String getFirstChildKey() {
+        return getItemKey(getFirstChild());
+    }
 
+    @Override
+    public T getFirstChild(String key) {
+        if (key == null) {
+            return null;
+        }
+        Collection<? extends T> children = getChildren();
+        if (children != null) {
+            for (T child : children) {
+                if (getItemKey(child).equals(key)) {
+                    return child;
+                }
+            }
+        }
+        return null;
+    }
 
-	@Override
-	public Collection<? extends T> getEffectiveChildren() {
-		return getEffectiveItem().getChildren();
-	}
+    @Override
+    public String getFirstChildText(String key) {
+        T item = getFirstChild(key);
+        if (item != null) {
+            return item.getText();
+        }
+        return null;
+    }
 
-	@Override
-	public int getEffectiveChildCount() {
-		Collection<? extends T> children = getEffectiveChildren();
-		if(children != null) {
-			return children.size();
-		}
-		return 0;
-	}
+    @Override
+    public void removeChild(T childToRemove) {
+        Collection<? extends T> children = getChildren();
+        if (children == null) {
+            return;
+        }
+        for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
+            T child = iterator.next();
+            if (child.equals(childToRemove)) {
+                iterator.remove();
+                invalidate();
+            }
+        }
+    }
 
-	@Override
-	public boolean hasEffectiveChildren() {
-		Collection<? extends T> children = getEffectiveChildren();
-		return children != null && !children.isEmpty();
-	}
+    @Override
+    public T removeFirstChild(String key) {
+        if (key == null) {
+            return null;
+        }
+        Collection<? extends T> children = getChildren();
+        if (children != null) {
+            for (T child : children) {
+                if (getItemKey(child).equals(key)) {
+                    children.remove(child);
+                    invalidate();
+                    return child;
+                }
+            }
+        }
+        return null;
+    }
 
+    @Override
+    public T removeAllChildren(String key) {
+        if (key == null) {
+            return null;
+        }
+        Collection<? extends T> children = getChildren();
+        if (children == null) {
+            return null;
+        }
+        T firstRemovedChild = null;
+        for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
+            T child = iterator.next();
+            if (getItemKey(child).equals(key)) {
+                if (firstRemovedChild == null) {
+                    firstRemovedChild = child;
+                }
+                iterator.remove();
+                cachedChildArray = null;
+            }
+        }
+        return firstRemovedChild;
+    }
 
-	@Override
-	public String getItemKey(T item) {
-		if(item == null) {
-			return null;
-		}
-		return item.getName(); // default returns item name
-	}
+    @Override
+    public void replaceChild(T item) {
+        if (item == null) {
+            return;
+        }
+        if (item == this) {
+            return;
+        }
+        removeAllChildren(getItemKey(item));
+        addChild(item);
+    }
 
+    @Override
+    public T getFirstItem(String pattern) {
+        if (WildCards.matchNoCase(pattern, getName())) {
+            return getThisItem();
+        }
 
-	@Override
-	public T getFirstChild() {
-		Collection<? extends T> children = getChildren();
-		if(children != null && !children.isEmpty()) {
-			return children.iterator().next();
-		}
-		return null;
-	}
-
-
-	@Override
-	public String getFirstChildKey() {
-		return getItemKey(getFirstChild());
-	}
-
-
-	@Override
-	public T getFirstChild(String key) {
-		if(key == null) {
-			return null;
-		}
-		Collection<? extends T> children = getChildren();
-		if(children != null) {
-			for(T child : children) {
-				if(getItemKey(child).equals(key)) {
-					return child;
-				}
-			}
-		}
-		return null;
-	}
-
-
-	@Override
-	public String getFirstChildText(String key) {
-		T item = getFirstChild(key);
-		if(item != null) {
-			return item.getText();
-		}
-		return null;
-	}
-
-
-	@Override
-	public void removeChild(T childToRemove) {
-		Collection<? extends T> children = getChildren();
-		if(children == null) {
-			return;
-		}
-		for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
-			T child = iterator.next();
-			if(child.equals(childToRemove)) {
-				iterator.remove();
-				invalidate();
-			}
-		}
-	}
-
-
-	@Override
-	public T removeFirstChild(String key) {
-		if(key == null) {
-			return null;
-		}
-		Collection<? extends T> children = getChildren();
-		if(children != null) {
-			for(T child : children) {
-				if(getItemKey(child).equals(key)) {
-					children.remove(child);
-					invalidate();
-					return child;
-				}
-			}
-		}
-		return null;
-	}
-
-
-	@Override
-	public T removeAllChildren(String key) {
-		if(key == null) {
-			return null;
-		}
-		Collection<? extends T> children = getChildren();
-		if(children == null) {
-			return null;
-		}
-		T firstRemovedChild = null;
-		for (Iterator<? extends T> iterator = children.iterator(); iterator.hasNext();) {
-			T child = iterator.next();
-			if(getItemKey(child).equals(key)) {
-				if(firstRemovedChild == null) {
-					firstRemovedChild = child;
-				}
-				iterator.remove();
-				cachedChildArray = null;
-			}
-		}
-		return firstRemovedChild;
-	}
-
-
-	@Override
-	public void replaceChild(T item) {
-		if(item == null) {
-			return;
-		}
-		if(item == this) {
-			return;
-		}
-		removeAllChildren(getItemKey(item));
-		addChild(item);
-	}
-
-	@Override
-	public T getFirstItem(String pattern) {
-		if(WildCards.matchNoCase(pattern, getName())) {
-			return getThisItem();
-		}
-
-		Collection<? extends T> children = getChildren();
-		if(children == null) {
-			return null;
-		}
-		for(T item : children) {
-			T matchingItem = item.getFirstItem(pattern);
-			if(matchingItem != null) {
-				return matchingItem;
-			}
-		}
-		return null;
-	}
+        Collection<? extends T> children = getChildren();
+        if (children == null) {
+            return null;
+        }
+        for (T item : children) {
+            T matchingItem = item.getFirstItem(pattern);
+            if (matchingItem != null) {
+                return matchingItem;
+            }
+        }
+        return null;
+    }
 }

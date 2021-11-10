@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,10 +18,10 @@ import org.eclipse.ui.console.IConsoleFactory;
  */
 public class SequenceConsoleFactory implements IConsoleFactory {
 
-	@Override
-	public void openConsole() {
-		SequenceConsole seqConsole = SequenceConsole.openConsole(SequenceConsole.BASE_NAME);
-		SequenceConsole.showConsole(seqConsole);
-	}
+    @Override
+    public void openConsole() {
+        SequenceConsole seqConsole = SequenceConsole.openConsole(SequenceConsole.BASE_NAME);
+        SequenceConsole.showConsole(seqConsole);
+    }
 
 }

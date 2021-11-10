@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,298 +19,296 @@ import java.util.Map;
  */
 public interface IConfigWizardItem {
 
-	enum EItemType {
-		HEADING,
-		HEADING_ENABLE,
-		CODE_ENABLE,
-		CODE_DISABLE,
-		OPTION,
-		OPTION_CHECK,
-		OPTION_SELECT,
-		OPTION_STRING,
-		NOTIFICATION,
-		ROOT
-	};
+    enum EItemType {
+        HEADING, HEADING_ENABLE, CODE_ENABLE, CODE_DISABLE, OPTION, OPTION_CHECK, OPTION_SELECT, OPTION_STRING,
+        NOTIFICATION, ROOT
+    };
 
-	enum EItemErrorType {
-		NO_ERROR,
-		NUMBER_PARSE_ERROR,	// number parse error
-		LOCATE_POSITION_ERROR,	// unable to locate position
-	}
+    enum EItemErrorType {
+        NO_ERROR, NUMBER_PARSE_ERROR, // number parse error
+        LOCATE_POSITION_ERROR, // unable to locate position
+    }
 
-	EItemType getItemType();
+    EItemType getItemType();
 
-	void setItemType(EItemType type);
+    void setItemType(EItemType type);
 
-	EItemErrorType getItemErrorType();
+    EItemErrorType getItemErrorType();
 
-	void setItemErrorType(EItemErrorType errorType);
+    void setItemErrorType(EItemErrorType errorType);
 
-	IConfigWizardItem getParent();
+    IConfigWizardItem getParent();
 
-	/**
-	 * get the item's starting line in the text
-	 * @return
-	 */
-	int getStartLine();
+    /**
+     * get the item's starting line in the text
+     *
+     * @return
+     */
+    int getStartLine();
 
-	/**
-	 * get the item's ending line in the text
-	 * @return
-	 */
-	int getEndLine();
+    /**
+     * get the item's ending line in the text
+     *
+     * @return
+     */
+    int getEndLine();
 
-	/**
-	 * @param line
-	 */
-	void setEndLine(int line);
+    /**
+     * @param line
+     */
+    void setEndLine(int line);
 
-	/**
-	 * @return item name
-	 */
-	String getName();
+    /**
+     * @return item name
+     */
+    String getName();
 
-	/**
-	 * @param name
-	 */
-	void setName(String name);
+    /**
+     * @param name
+     */
+    void setName(String name);
 
-	/**
-	 * @return tooltip
-	 */
-	String getTooltip();
+    /**
+     * @return tooltip
+     */
+    String getTooltip();
 
-	/**
-	 * @param moreTooltip
-	 */
-	void extendTooltip(String moreTooltip);
+    /**
+     * @param moreTooltip
+     */
+    void extendTooltip(String moreTooltip);
 
-	/**
-	 * @return skip number
-	 */
-	int getSkipNumber();
+    /**
+     * @return skip number
+     */
+    int getSkipNumber();
 
-	/**
-	 * @param skipNumber
-	 */
-	void setSkipNumber(int skipNumber);
+    /**
+     * @param skipNumber
+     */
+    void setSkipNumber(int skipNumber);
 
-	/**
-	 * @return minimum bit
-	 */
-	int getMinBit();
+    /**
+     * @return minimum bit
+     */
+    int getMinBit();
 
-	/**
-	 * @param minBit
-	 */
-	void setMinBit(int minBit);
+    /**
+     * @param minBit
+     */
+    void setMinBit(int minBit);
 
-	/**
-	 * @return maximum bit
-	 */
-	int getMaxBit();
+    /**
+     * @return maximum bit
+     */
+    int getMaxBit();
 
-	/**
-	 * @param maxBit
-	 */
-	void setMaxBit(int maxBit);
+    /**
+     * @param maxBit
+     */
+    void setMaxBit(int maxBit);
 
-	/**
-	 * @return
-	 */
-	boolean isSelection();
+    /**
+     * @return
+     */
+    boolean isSelection();
 
-	/**
-	 * @param isSelection
-	 */
-	void setIsSelection(boolean isSelection);
+    /**
+     * @param isSelection
+     */
+    void setIsSelection(boolean isSelection);
 
-	/**
-	 * @return modified minimum value
-	 */
-	long getMinValue();
+    /**
+     * @return modified minimum value
+     */
+    long getMinValue();
 
-	/**
-	 * @param minValue
-	 */
-	void setMinValue(long minValue);
+    /**
+     * @param minValue
+     */
+    void setMinValue(long minValue);
 
-	/**
-	 * @return modified maximum value
-	 */
-	long getMaxValue();
+    /**
+     * @return modified maximum value
+     */
+    long getMaxValue();
 
-	/**
-	 * @param maxValue
-	 */
-	void setMaxValue(long maxValue);
+    /**
+     * @param maxValue
+     */
+    void setMaxValue(long maxValue);
 
-	/**
-	 * @return this item's value
-	 */
-	long getValue();
+    /**
+     * @return this item's value
+     */
+    long getValue();
 
-	/**
-	 * @param value
-	 */
-	void setValue(long value);
+    /**
+     * @param value
+     */
+    void setValue(long value);
 
-	/**
-	 * @return the string, only valid for string item
-	 */
-	String getString();
+    /**
+     * @return the string, only valid for string item
+     */
+    String getString();
 
-	/**
-	 * @param string for the string item
-	 */
-	void setString(String string);
+    /**
+     * @param string for the string item
+     */
+    void setString(String string);
 
-	/**
-	 * @return string length
-	 */
-	int getStringLength();
+    /**
+     * @return string length
+     */
+    int getStringLength();
 
-	/**
-	 * @param stringLength
-	 */
-	void setStringLength(int stringLength);
+    /**
+     * @param stringLength
+     */
+    void setStringLength(int stringLength);
 
-	/**
-	 * @return base
-	 */
-	int getBase();
+    /**
+     * @return base
+     */
+    int getBase();
 
-	/**
-	 * @param base
-	 */
-	void setBase(int base);
+    /**
+     * @param base
+     */
+    void setBase(int base);
 
-	/**
-	 * @return modified spin step
-	 */
-	long getSpinStep();
+    /**
+     * @return modified spin step
+     */
+    long getSpinStep();
 
-	/**
-	 * @param spinStep
-	 */
-	void setSpinStep(long spinStep);
+    /**
+     * @param spinStep
+     */
+    void setSpinStep(long spinStep);
 
-	/**
-	 * @return modification operator
-	 */
-	char getModification();
+    /**
+     * @return modification operator
+     */
+    char getModification();
 
-	/**
-	 * @param modification the operator
-	 */
-	void setModification(char modification);
+    /**
+     * @param modification the operator
+     */
+    void setModification(char modification);
 
-	/**
-	 * @return modifier of the operator
-	 */
-	long getModifier();
+    /**
+     * @return modifier of the operator
+     */
+    long getModifier();
 
-	/**
-	 * @param modifier
-	 */
-	void setModifier(long modifier);
+    /**
+     * @param modifier
+     */
+    void setModifier(long modifier);
 
-	/**
-	 * @return select items
-	 */
-	Map<Long, String> getItems();
+    /**
+     * @return select items
+     */
+    Map<Long, String> getItems();
 
-	/**
-	 * @return select string items
-	 */
-	Map<String, String> getStrItems();
-	
-	/**
-	 * @param string
-	 * @param value
-	 */
-	void addItem(long key, String value);
+    /**
+     * @return select string items
+     */
+    Map<String, String> getStrItems();
 
-	/**
-	 * 
-	 * @param key
-	 * @param value
-	 */
-	void addStrItem(String key, String value);
-	
-	/**
-	 * @return children
-	 */
-	Collection<IConfigWizardItem> getChildren();
+    /**
+     * @param string
+     * @param value
+     */
+    void addItem(long key, String value);
 
-	/**
-	 * @return last child
-	 */
-	IConfigWizardItem getLastChild();
+    /**
+     *
+     * @param key
+     * @param value
+     */
+    void addStrItem(String key, String value);
 
-	/**
-	 * @param child
-	 */
-	void addChild(IConfigWizardItem child);
+    /**
+     * @return children
+     */
+    Collection<IConfigWizardItem> getChildren();
 
-	/**
-	 * @return true if this item has children
-	 */
-	boolean hasChildren();
+    /**
+     * @return last child
+     */
+    IConfigWizardItem getLastChild();
 
-	/**
-	 * @return true if the comment is inconsistent
-	 */
-	boolean isInconsistent();
+    /**
+     * @param child
+     */
+    void addChild(IConfigWizardItem child);
 
-	/**
-	 * @param inconsistent
-	 */
-	void setInconsistent(boolean inconsistent);
+    /**
+     * @return true if this item has children
+     */
+    boolean hasChildren();
 
-	/**
-	 * @return true if the boolean value is inverted
-	 */
-	boolean invertValue();
+    /**
+     * @return true if the comment is inconsistent
+     */
+    boolean isInconsistent();
 
-	/**
-	 * @param invertValue
-	 */
-	void setInvertValue(boolean invertValue);
+    /**
+     * @param inconsistent
+     */
+    void setInconsistent(boolean inconsistent);
 
-	/**
-	 * Return true if this item can be modified
-	 * @return true if this item can be modified
-	 */
-	boolean canModify();
+    /**
+     * @return true if the boolean value is inverted
+     */
+    boolean invertValue();
 
-	/**
-	 * Set fStrVal to strVal 
-	 * @param strVal new value for fStrVal
-	 */
-	void setStrVal(String strVal);
-	
-	/**
-	 * return fStrVal
-	 * @return fStrVal
-	 */
-	String getStrVal();
-	
-	/**
-	 * Return true if fStrVal is not null.
-	 * @return
-	 */
-	boolean isStringOption();
-	
-	/**
-	 * Set fSelStr to str
-	 * @param str new value for fSelStr
-	 */
-	void setSelStr(String str);
-	
-	/**
-	 * 
-	 * @return fSelStr
-	 */
-	String getSelStr();
+    /**
+     * @param invertValue
+     */
+    void setInvertValue(boolean invertValue);
+
+    /**
+     * Return true if this item can be modified
+     *
+     * @return true if this item can be modified
+     */
+    boolean canModify();
+
+    /**
+     * Set fStrVal to strVal
+     *
+     * @param strVal new value for fStrVal
+     */
+    void setStrVal(String strVal);
+
+    /**
+     * return fStrVal
+     *
+     * @return fStrVal
+     */
+    String getStrVal();
+
+    /**
+     * Return true if fStrVal is not null.
+     *
+     * @return
+     */
+    boolean isStringOption();
+
+    /**
+     * Set fSelStr to str
+     *
+     * @param str new value for fSelStr
+     */
+    void setSelStr(String str);
+
+    /**
+     *
+     * @return fSelStr
+     */
+    String getSelStr();
 }

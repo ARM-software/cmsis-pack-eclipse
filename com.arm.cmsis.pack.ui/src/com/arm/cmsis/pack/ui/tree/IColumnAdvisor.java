@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -19,375 +19,422 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Menu;
 
 /**
- * This class defines interfaces for a column label provider used in a TreeViewerColumn
+ * This class defines interfaces for a column label provider used in a
+ * TreeViewerColumn
  */
 public interface IColumnAdvisor {
 
-	public static final int SPINNER_WIDTH = 16;
-	public static final int SUFFIX_BUTTON_WIDTH = 16;	// width and height of the button in INPLACE_CHECK cell
-	public static final int CHAR_WIDTH = 5;
+    public static final int SPINNER_WIDTH = 16;
+    public static final int SUFFIX_BUTTON_WIDTH = 16; // width and height of the button in INPLACE_CHECK cell
+    public static final int CHAR_WIDTH = 5;
 
-	/**
-	 * possible types of cells in a table
-	 */
-	enum CellControlType { NONE, INPLACE_CHECK, CHECK, COMBO, INPLACE_SPIN, SPIN, MENU, URL, TEXT, BUTTON }
+    /**
+     * possible types of cells in a table
+     */
+    enum CellControlType {
+        NONE, INPLACE_CHECK, CHECK, COMBO, INPLACE_SPIN, SPIN, MENU, URL, TEXT, BUTTON
+    }
 
-	/**
-	 * Returns the viewer on which this advisor is installed on
-	 * @return the viewer on which this advisor is installed installed on or <code>null</code>
-	 */
-	ColumnViewer getViewer();
+    /**
+     * Returns the viewer on which this advisor is installed on
+     *
+     * @return the viewer on which this advisor is installed installed on or
+     *         <code>null</code>
+     */
+    ColumnViewer getViewer();
 
-	/**
-	 * Return the control type of a cell
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return the control type of a cell
-	 */
-	CellControlType getCellControlType(Object obj, int columnIndex);
+    /**
+     * Return the control type of a cell
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return the control type of a cell
+     */
+    CellControlType getCellControlType(Object obj, int columnIndex);
 
-	/**
-	 * Return true if the object is from type CHECK and is checked
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true if the object is from type CHECK and is checked
-	 */
-	boolean getCheck(Object obj, int columnIndex);
+    /**
+     * Return true if the object is from type CHECK and is checked
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true if the object is from type CHECK and is checked
+     */
+    boolean getCheck(Object obj, int columnIndex);
 
-	/**
-	 * Returns tree-state check as integer, default implementation calls getCheck() and returns 1 or 0
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return 1 - checked, 0 - unchecked, -1 - undefined
-	 */
-	default int getTriState(Object obj, int columnIndex) {
-		// default implementation returns only two states : checked or unchecked 
-		return getCheck(obj, columnIndex) ? 1 : 0;
-	}
-	
-	/**
-	 * Changes object checked state
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @param newVal new value
-	 */
-	void setCheck(Object obj, int columnIndex, boolean newVal);
+    /**
+     * Returns tree-state check as integer, default implementation calls getCheck()
+     * and returns 1 or 0
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return 1 - checked, 0 - unchecked, -1 - undefined
+     */
+    default int getTriState(Object obj, int columnIndex) {
+        // default implementation returns only two states : checked or unchecked
+        return getCheck(obj, columnIndex) ? 1 : 0;
+    }
 
-	
-	/**
-	 * Return true if the object is from type BUTTON and is pressed
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true if the button is pressed
-	 */
-	boolean isButtonPressed(Object obj, int columnIndex);
+    /**
+     * Changes object checked state
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @param newVal      new value
+     */
+    void setCheck(Object obj, int columnIndex, boolean newVal);
 
-	/**
-	 * Changes object pressed state
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @param newVal newly selected item that the button associates with
-	 */
-	void setButtonPressed(Object obj, int columnIndex, Object newVal);
+    /**
+     * Return true if the object is from type BUTTON and is pressed
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true if the button is pressed
+     */
+    boolean isButtonPressed(Object obj, int columnIndex);
 
-	/**
-	 * Return true if the object is from type upper SPINNER and is pressed
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true if the up spinner pressed
-	 */
-	boolean isUpSpinnerPressed(Object obj, int columnIndex);
+    /**
+     * Changes object pressed state
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @param newVal      newly selected item that the button associates with
+     */
+    void setButtonPressed(Object obj, int columnIndex, Object newVal);
 
-	/**
-	 * Changes object pressed state
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @param newVal newly selected item that the upper spinner associates with
-	 */
-	void setUpSpinnerPressed(Object obj, int columnIndex, Object newVal);
+    /**
+     * Return true if the object is from type upper SPINNER and is pressed
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true if the up spinner pressed
+     */
+    boolean isUpSpinnerPressed(Object obj, int columnIndex);
 
-	/**
-	 * Return true if the object is from type down SPINNER and is pressed
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true if the up spinner pressed
-	 */
-	boolean isDownSpinnerPressed(Object obj, int columnIndex);
+    /**
+     * Changes object pressed state
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @param newVal      newly selected item that the upper spinner associates with
+     */
+    void setUpSpinnerPressed(Object obj, int columnIndex, Object newVal);
 
-	/**
-	 * Changes object pressed state
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @param newVal newly selected item that the down spinner associates with
-	 */
-	void setDownSpinnerPressed(Object obj, int columnIndex, Object newVal);
+    /**
+     * Return true if the object is from type down SPINNER and is pressed
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true if the up spinner pressed
+     */
+    boolean isDownSpinnerPressed(Object obj, int columnIndex);
 
-	/**
-	 * Get the width of the spinner in the cell
-	 * @param cellBounds the cell's bound excluding suffix button if it exits
-	 * @param obj cell's object
-	 * @param columnIndex cell's column index
-	 * @return
-	 */
-	int getSpinnerWidth(Rectangle cellBounds, Object obj, int columnIndex);
+    /**
+     * Changes object pressed state
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @param newVal      newly selected item that the down spinner associates with
+     */
+    void setDownSpinnerPressed(Object obj, int columnIndex, Object newVal);
 
-	/**
-	 * Return true if the cell has a suffix button
-	 * @param obj the cell's object
-	 * @param columnIndex the cell's column index
-	 * @return true if the cell has a suffix button
-	 */
-	boolean hasSuffixButton(Object obj, int columnIndex);
+    /**
+     * Get the width of the spinner in the cell
+     *
+     * @param cellBounds  the cell's bound excluding suffix button if it exits
+     * @param obj         cell's object
+     * @param columnIndex cell's column index
+     * @return
+     */
+    int getSpinnerWidth(Rectangle cellBounds, Object obj, int columnIndex);
 
-	/**
-	 * Return true if the right aligned button in the object's cell is pressed
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true if the right aligned button is pressed
-	 */
-	boolean isSuffixButtonPressed(Object obj, int columnIndex);
+    /**
+     * Return true if the cell has a suffix button
+     *
+     * @param obj         the cell's object
+     * @param columnIndex the cell's column index
+     * @return true if the cell has a suffix button
+     */
+    boolean hasSuffixButton(Object obj, int columnIndex);
 
-	/**
-	 * Changes object's right aligned button's pressed state
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @param newVal newly selected item that the right aligned button associates with
-	 */
-	void setSuffixButtonPressed(Object obj, int columnIndex, Object newVal);
+    /**
+     * Return true if the right aligned button in the object's cell is pressed
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true if the right aligned button is pressed
+     */
+    boolean isSuffixButtonPressed(Object obj, int columnIndex);
 
-	/**
-	 * Get the bounds of the button in the cell
-	 * @param cellBounds the cell's bounds
-	 * @param obj the cell's object
-	 * @param columnIndex the cell's column index
-	 * @return The bounds of the button in the cell, or an empty bound if the button does not exist
-	 */
-	Rectangle getSuffixButtonBounds(Rectangle cellBounds, Object obj, int columnIndex);
+    /**
+     * Changes object's right aligned button's pressed state
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @param newVal      newly selected item that the right aligned button
+     *                    associates with
+     */
+    void setSuffixButtonPressed(Object obj, int columnIndex, Object newVal);
 
-	/**
-	 * Returns true if the cell's suffix button is enabled
-	 * @param obj the cell's object
-	 * @param columnIndex the cell's column index
-	 * @return true if the cell's suffix button is enabled
-	 */
-	boolean isSuffixButtonEnabled(Object obj, int columnIndex);
+    /**
+     * Get the bounds of the button in the cell
+     *
+     * @param cellBounds  the cell's bounds
+     * @param obj         the cell's object
+     * @param columnIndex the cell's column index
+     * @return The bounds of the button in the cell, or an empty bound if the button
+     *         does not exist
+     */
+    Rectangle getSuffixButtonBounds(Rectangle cellBounds, Object obj, int columnIndex);
 
-	/**
-	 * Returns string representing the object.<br>
-	 * Return null if the object is of type CHECK, return current selected string if the object is of type COMBO
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return string representing the object
-	 */
-	String getString(Object obj, int columnIndex);
+    /**
+     * Returns true if the cell's suffix button is enabled
+     *
+     * @param obj         the cell's object
+     * @param columnIndex the cell's column index
+     * @return true if the cell's suffix button is enabled
+     */
+    boolean isSuffixButtonEnabled(Object obj, int columnIndex);
 
-	/**
-	 * Sets new String value for object
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @param newVal new String value
-	 */
-	void setString(Object obj, int columnIndex, String newVal);
+    /**
+     * Returns string representing the object.<br>
+     * Return null if the object is of type CHECK, return current selected string if
+     * the object is of type COMBO
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return string representing the object
+     */
+    String getString(Object obj, int columnIndex);
 
-	/**
-	 * Returns URL associated with object for current column if the cell if any
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return URL string
-	 */
-	String getUrl(Object obj, int columnIndex);
+    /**
+     * Sets new String value for object
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @param newVal      new String value
+     */
+    void setString(Object obj, int columnIndex, String newVal);
 
-	/**
-	 * Opens URL in an external browser or editor
-	 * @param url URL to open
-	 */
-	void openUrl(String url);
+    /**
+     * Returns URL associated with object for current column if the cell if any
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return URL string
+     */
+    String getUrl(Object obj, int columnIndex);
 
-	/**
-	 * Return default object string for given column if any
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return string representing the object
-	 */
-	String getDefaultString(Object obj, int columnIndex);
+    /**
+     * Opens URL in an external browser or editor
+     *
+     * @param url URL to open
+     */
+    void openUrl(String url);
 
-	/**
-	 * Checks if the object is in default state for given column
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true if the object can have a default state and is in the default state
-	 * @see #getDefaultString(Object, int)
-	 */
-	boolean isDefault(Object obj, int columnIndex);
+    /**
+     * Return default object string for given column if any
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return string representing the object
+     */
+    String getDefaultString(Object obj, int columnIndex);
 
-	/**
-	 * Return current selected index of the object of type COMBO, MENU or SPIN
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return current selected index of the object of type COMBO, MENU or SPIN
-	 */
-	long getCurrentSelectedIndex(Object obj, int columnIndex);
+    /**
+     * Checks if the object is in default state for given column
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true if the object can have a default state and is in the default
+     *         state
+     * @see #getDefaultString(Object, int)
+     */
+    boolean isDefault(Object obj, int columnIndex);
 
-	/**
-	 * Return current selected string of the object of type COMBO, MENU or SPIN
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return current selected string
-	 */
-	String getCurrentSelectedString(Object obj, int columnIndex);
+    /**
+     * Return current selected index of the object of type COMBO, MENU or SPIN
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return current selected index of the object of type COMBO, MENU or SPIN
+     */
+    long getCurrentSelectedIndex(Object obj, int columnIndex);
 
-	
-	/**
-	 * Sets current selected index for COMBO or SPIN editor types
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @param newVal current select index to set
-	 */
-	void setCurrentSelectedIndex(Object obj, int columnIndex, long newVal);
+    /**
+     * Return current selected string of the object of type COMBO, MENU or SPIN
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return current selected string
+     */
+    String getCurrentSelectedString(Object obj, int columnIndex);
 
-	/**
-	 * Return max count for SPIN editor
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return max count of the object of type COMBO
-	 */
-	long getMaxCount(Object obj, int columnIndex);
+    /**
+     * Sets current selected index for COMBO or SPIN editor types
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @param newVal      current select index to set
+     */
+    void setCurrentSelectedIndex(Object obj, int columnIndex, long newVal);
 
-	/**
-	 * Return min count for SPIN editor
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return min count of the object of type COMBO
-	 */
-	long getMinCount(Object obj, int columnIndex);
+    /**
+     * Return max count for SPIN editor
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return max count of the object of type COMBO
+     */
+    long getMaxCount(Object obj, int columnIndex);
 
-	/**
-	 * Return spin step for SPIN editor
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return spin step of this item
-	 */
-	long getSpinStep(Object obj, int columnIndex);
+    /**
+     * Return min count for SPIN editor
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return min count of the object of type COMBO
+     */
+    long getMinCount(Object obj, int columnIndex);
 
-	/**
-	 * Returns base for the item's value. now only used for spinner
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return radix of the object of type COMBO
-	 */
-	int getItemBase(Object obj, int columnIndex);
+    /**
+     * Return spin step for SPIN editor
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return spin step of this item
+     */
+    long getSpinStep(Object obj, int columnIndex);
 
-	/**
-	 * Return an array of strings for the cell, needed by menu control 
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return an array of string
-	 */
-	String[] getStringArray(Object obj, int columnIndex);
+    /**
+     * Returns base for the item's value. now only used for spinner
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return radix of the object of type COMBO
+     */
+    int getItemBase(Object obj, int columnIndex);
 
-	/**
-	 * Returns an instance of Menu which describes a popup menu
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return an instance of Menu which describes a popup menu
-	 */
-	Menu getMenu(Object obj, int columnIndex);
+    /**
+     * Return an array of strings for the cell, needed by menu control
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return an array of string
+     */
+    String[] getStringArray(Object obj, int columnIndex);
 
-	/**
-	 * Checks if object is enabled and that should be reflected in the cell
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true if the object is enabled, false otherwise
-	 */
-	boolean isEnabled(Object obj, int columnIndex);
+    /**
+     * Returns an instance of Menu which describes a popup menu
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return an instance of Menu which describes a popup menu
+     */
+    Menu getMenu(Object obj, int columnIndex);
 
-	
-	/**
-	 * Checks if object is valid and that should be reflected in the cell
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true if the object is enabled, false otherwise
-	 */
-	default boolean isValid(Object obj, int columnIndex) { return true;}
-	
-	/**
-	 * Return true of the object can be modified
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return true of the object can be modified
-	 */
-	boolean canEdit(Object obj, int columnIndex);
+    /**
+     * Checks if object is enabled and that should be reflected in the cell
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true if the object is enabled, false otherwise
+     */
+    boolean isEnabled(Object obj, int columnIndex);
 
-	/**
-	 * Returns the final image for the object
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return the final image for the object
-	 */
-	Image getImage(Object obj, int columnIndex);
+    /**
+     * Checks if object is valid and that should be reflected in the cell
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true if the object is enabled, false otherwise
+     */
+    default boolean isValid(Object obj, int columnIndex) {
+        return true;
+    }
 
-	/**
-	 * Returns the check box image for the object
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return the final image for the object
-	 */
-	Image getCheckboxImage(Object obj, int columnIndex);
+    /**
+     * Return true of the object can be modified
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return true of the object can be modified
+     */
+    boolean canEdit(Object obj, int columnIndex);
 
-	
-	/**
-	 * Returns an image to draw in a suffix button
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return the final image for the object
-	 */
-	Image getSuffixButtonImage(Object obj, int columnIndex);
+    /**
+     * Returns the final image for the object
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return the final image for the object
+     */
+    Image getImage(Object obj, int columnIndex);
 
+    /**
+     * Returns the check box image for the object
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return the final image for the object
+     */
+    Image getCheckboxImage(Object obj, int columnIndex);
 
-	/**
-	 * Returns cell background color
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return background color or null to use default color
-	 */
-	Color getBgColor(Object obj, int columnIndex);
+    /**
+     * Returns an image to draw in a suffix button
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return the final image for the object
+     */
+    Image getSuffixButtonImage(Object obj, int columnIndex);
 
-	
-	/**
-	 * Returns cell foreground color
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return background color or null to use default color
-	 */
-	Color getFgColor(Object obj, int columnIndex);
+    /**
+     * Returns cell background color
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return background color or null to use default color
+     */
+    Color getBgColor(Object obj, int columnIndex);
 
-	
-	/**
-	 * Returns cell font color
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return cell font or null to use default one
-	 */
-	Font getFont(Object obj, int columnIndex);
-	
-	/**
-	 * Returns the tool tip text of the object
-	 * @param obj cell object
-	 * @param columnIndex column index of the cell
-	 * @return  tool tip text for the object if any
-	 */
-	String getTooltipText(Object obj, int columnIndex);
+    /**
+     * Returns cell foreground color
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return background color or null to use default color
+     */
+    Color getFgColor(Object obj, int columnIndex);
 
-	/**
-	 * Check if sell is empty: does not have any image, text or control.
-	 * @return true if cell is empty
-	 */
-	boolean isEmpty(Object obj, int columnIndex);
+    /**
+     * Returns cell font color
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return cell font or null to use default one
+     */
+    Font getFont(Object obj, int columnIndex);
 
+    /**
+     * Returns the tool tip text of the object
+     *
+     * @param obj         cell object
+     * @param columnIndex column index of the cell
+     * @return tool tip text for the object if any
+     */
+    String getTooltipText(Object obj, int columnIndex);
 
-	/**
-	 * Returns column under mouse position 
-	 * @return column index or -1 if outside
-	 */
-	int getMouseColumn(); 
+    /**
+     * Check if sell is empty: does not have any image, text or control.
+     *
+     * @return true if cell is empty
+     */
+    boolean isEmpty(Object obj, int columnIndex);
+
+    /**
+     * Returns column under mouse position
+     *
+     * @return column index or -1 if outside
+     */
+    int getMouseColumn();
 }

@@ -8,37 +8,37 @@ import org.osgi.framework.BundleContext;
  */
 public class CmsisZoneTestsActivator extends AbstractUIPlugin {
 
-	// The plug-in ID
-	public static final String PLUGIN_ID = "com.arm.cmsis.zone.it"; //$NON-NLS-1$
+    // The plug-in ID
+    public static final String PLUGIN_ID = "com.arm.cmsis.zone.it"; //$NON-NLS-1$
 
-	// The shared instance
-	private static CmsisZoneTestsActivator plugin;
-	
-	/**
-	 * The constructor
-	 */
-	public CmsisZoneTestsActivator() {
-	}
+    // The shared instance
+    private static CmsisZoneTestsActivator plugin;
 
-	@Override
-	public void start(BundleContext context) throws Exception {
-		super.start(context);
-		plugin = this;
-	}
+    /**
+     * The constructor
+     */
+    public CmsisZoneTestsActivator() {
+    }
 
-	@Override
-	public void stop(BundleContext context) throws Exception {
-		plugin = null;
-		super.stop(context);
-	}
+    @Override
+    public void start(BundleContext context) throws Exception {
+        super.start(context);
+        plugin = this;
+    }
 
-	/**
-	 * Returns the shared instance
-	 *
-	 * @return the shared instance
-	 */
-	public static CmsisZoneTestsActivator getDefault() {
-		return plugin;
-	}
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        plugin = null;
+        super.stop(context);
+    }
+
+    /**
+     * Returns the shared instance
+     *
+     * @return the shared instance
+     */
+    public static CmsisZoneTestsActivator getDefault() {
+        return plugin;
+    }
 
 }

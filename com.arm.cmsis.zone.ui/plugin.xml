@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
+<!DOCTYPE xml>
 <plugin>
    <extension
          id="CmsisZoneProjectNature"
@@ -20,8 +21,8 @@
             properties="zoneNature"
             type="org.eclipse.core.runtime.IAdaptable">
       </propertyTester>
-      
-      
+
+
    </extension>
    <extension
          point="org.eclipse.ui.editors">
@@ -56,7 +57,7 @@
             id="com.arm.cmsis.zone.ui.wizards.CMSISZoneAzoneFileWizard"
             name="%wizard.name.0">
       </wizard>
-      
+
    </extension>
    <extension
          point="org.eclipse.ui.ide.projectNatureImages">
@@ -84,15 +85,15 @@
       <handler
             class="com.arm.cmsis.zone.ui.handlers.GenerateHandler"
             commandId="com.arm.cmsis.zone.ui.commands.GenerateCommand">
-			<enabledWhen>
-			    <with variable="selection">
-			        <iterate ifEmpty="false">
-			            <adapt type="org.eclipse.core.resources.IResource">
-			                <test property="com.arm.cmsis.zone.project.property.zoneNature"/>
-			            </adapt>
-			        </iterate>
-			    </with>
-			</enabledWhen>            
+            <enabledWhen>
+                <with variable="selection">
+                    <iterate ifEmpty="false">
+                        <adapt type="org.eclipse.core.resources.IResource">
+                            <test property="com.arm.cmsis.zone.project.property.zoneNature"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
       </handler>
    </extension>
    <extension
@@ -146,5 +147,4 @@
             </with></enablement>
       </commonWizard>
    </extension>
-
 </plugin>

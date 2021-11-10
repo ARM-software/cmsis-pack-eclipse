@@ -11,45 +11,45 @@ import com.arm.cmsis.pack.generic.IAttributes;
  */
 public class CpPeripheralSetup extends CpResourceItem implements ICpPeripheralSetup {
 
-	public CpPeripheralSetup(ICpItem parent) {
-		super(parent, CmsisConstants.SETUP);
-	}
+    public CpPeripheralSetup(ICpItem parent) {
+        super(parent, CmsisConstants.SETUP);
+    }
 
-	public CpPeripheralSetup(ICpItem parent, String tag) {
-		super(parent, tag);
-	}
+    public CpPeripheralSetup(ICpItem parent, String tag) {
+        super(parent, tag);
+    }
 
-	@Override
-	public String getIndexString() {
-		return getAttribute(CmsisConstants.INDEX);
-	}
-	
-	@Override
-	public Long getIndex() {
-		return IAttributes.stringToLong(getIndexString(), 0);
-	}
-	
-	@Override
-	public String constructId() {
-		return getName() + "[" + getIndex() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
-	}
+    @Override
+    public String getIndexString() {
+        return getAttribute(CmsisConstants.INDEX);
+    }
 
-	@Override
-	public boolean matchesPermissions() {
-		EMemorySecurity security = getSecurity();
-		EMemoryPrivilege privilege = getPrivilege();
-		ICpSlot slot = getParentSlot();
-		if(slot != null) {
-			return (!security.isSpecified() || security.isSecure() == slot.isSecure()) && 
-				   (!privilege.isSpecified() || privilege.isPrivileged() == slot.isPrivileged());
-		}
-		
-		ICpPeripheralItem pItem = getParentPeripheralItem();
-		if(pItem != null) {
-			return (!security.isSpecified() || security.isSecure() == pItem.isSecure()) && 
-		  	       (!privilege.isSpecified() || privilege.isPrivileged() == pItem.isPrivilegedAccess());
-		}
+    @Override
+    public Long getIndex() {
+        return IAttributes.stringToLong(getIndexString(), 0);
+    }
 
-		return true; // should be unreachable 
-	}
+    @Override
+    public String constructId() {
+        return getName() + "[" + getIndex() + "]"; //$NON-NLS-1$ //$NON-NLS-2$
+    }
+
+    @Override
+    public boolean matchesPermissions() {
+        EMemorySecurity security = getSecurity();
+        EMemoryPrivilege privilege = getPrivilege();
+        ICpSlot slot = getParentSlot();
+        if (slot != null) {
+            return (!security.isSpecified() || security.isSecure() == slot.isSecure())
+                    && (!privilege.isSpecified() || privilege.isPrivileged() == slot.isPrivileged());
+        }
+
+        ICpPeripheralItem pItem = getParentPeripheralItem();
+        if (pItem != null) {
+            return (!security.isSpecified() || security.isSecure() == pItem.isSecure())
+                    && (!privilege.isSpecified() || privilege.isPrivileged() == pItem.isPrivilegedAccess());
+        }
+
+        return true; // should be unreachable
+    }
 }

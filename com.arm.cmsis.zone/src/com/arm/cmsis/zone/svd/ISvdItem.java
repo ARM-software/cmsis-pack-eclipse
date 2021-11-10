@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2017 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -13,16 +13,16 @@ package com.arm.cmsis.zone.svd;
 import com.arm.cmsis.pack.data.ICpItem;
 
 /**
- * Base item for SVD file parser  
- *   
+ * Base item for SVD file parser
+ *
  */
 public interface ISvdItem extends ICpItem {
 
-	/**
-	 * Returns SVD root item 
-	 * @return ISvdRoot
-	 */
-	ISvdRoot getSvdRoot();
-	
-	
+    /**
+     * Returns SVD root item
+     *
+     * @return ISvdRoot
+     */
+    ISvdRoot getSvdRoot();
+
 }

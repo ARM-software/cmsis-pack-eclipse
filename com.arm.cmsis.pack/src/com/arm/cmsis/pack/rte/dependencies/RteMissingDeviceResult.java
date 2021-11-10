@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2015 ARM Ltd. and others
+* Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -19,51 +19,50 @@ import com.arm.cmsis.pack.info.ICpPackInfo;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 
 /**
- *  The class represent a result of missing device description  
+ * The class represent a result of missing device description
  */
 public class RteMissingDeviceResult extends RteDependencyResult {
-	protected ICpDeviceInfo fDeviceInfo = null; 
-	
-	public RteMissingDeviceResult(IRteComponentItem componentItem, ICpDeviceInfo deviceInfo) {
-		super(componentItem);
-		fDeviceInfo = deviceInfo;
-		setEvaluationResult(deviceInfo.getEvaluationResult());
-	}
+    protected ICpDeviceInfo fDeviceInfo = null;
 
-	@Override
-	public String getDescription() {
-		EEvaluationResult res = fDeviceInfo.getEvaluationResult();
+    public RteMissingDeviceResult(IRteComponentItem componentItem, ICpDeviceInfo deviceInfo) {
+        super(componentItem);
+        fDeviceInfo = deviceInfo;
+        setEvaluationResult(deviceInfo.getEvaluationResult());
+    }
 
-		String state; 
-		switch(res){
-		case FAILED:
-		case MISSING:
-			state = CpStrings.IsMissing;
-			break;
-		case UNAVAILABLE_PACK:
-			state = CpStrings.IsNotAvailableForCurrentConfiguration;
-			break;
-		default:
-			return super.getDescription();
-		}
-		String reason = CmsisConstants.EMPTY_STRING;
-		reason = CpStrings.Pack + " "; //$NON-NLS-1$
-		ICpPackInfo pi = fDeviceInfo.getPackInfo();
-		String packId = pi.isVersionFixed() ? pi.getId() : pi.getPackFamilyId();
-		if(pi.getPack() == null) {
-			reason += CpStrings.IsNotInstalled;  
-		} else {
-			reason += CpStrings.IsExcluded;
-		}
-		reason += ": " + packId; //$NON-NLS-1$
-		String s = CpStrings.Device + " " + state + ". " +reason;  //$NON-NLS-1$//$NON-NLS-2$
-		return s;
-	}
+    @Override
+    public String getDescription() {
+        EEvaluationResult res = fDeviceInfo.getEvaluationResult();
 
-	@Override
-	public boolean isMaster() {
-		return true;
-	}
-	
-	
+        String state;
+        switch (res) {
+        case FAILED:
+        case MISSING:
+            state = CpStrings.IsMissing;
+            break;
+        case UNAVAILABLE_PACK:
+            state = CpStrings.IsNotAvailableForCurrentConfiguration;
+            break;
+        default:
+            return super.getDescription();
+        }
+        String reason = CmsisConstants.EMPTY_STRING;
+        reason = CpStrings.Pack + " "; //$NON-NLS-1$
+        ICpPackInfo pi = fDeviceInfo.getPackInfo();
+        String packId = pi.isVersionFixed() ? pi.getId() : pi.getPackFamilyId();
+        if (pi.getPack() == null) {
+            reason += CpStrings.IsNotInstalled;
+        } else {
+            reason += CpStrings.IsExcluded;
+        }
+        reason += ": " + packId; //$NON-NLS-1$
+        String s = CpStrings.Device + " " + state + ". " + reason; //$NON-NLS-1$//$NON-NLS-2$
+        return s;
+    }
+
+    @Override
+    public boolean isMaster() {
+        return true;
+    }
+
 }

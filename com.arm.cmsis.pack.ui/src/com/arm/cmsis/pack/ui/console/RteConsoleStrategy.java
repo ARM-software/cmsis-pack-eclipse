@@ -4,13 +4,13 @@ import com.arm.cmsis.pack.error.CmsisConsoleStrategy;
 import com.arm.cmsis.pack.error.ICmsisConsole;
 
 /**
- *  Strategy for RteConsole
+ * Strategy for RteConsole
  */
 public class RteConsoleStrategy extends CmsisConsoleStrategy {
 
-	@Override
-	public ICmsisConsole createDefaultCmsisConsole() {
-		return RteConsole.openConsole();
-	}
-	
+    @Override
+    public ICmsisConsole createDefaultCmsisConsole() {
+        return RteConsole.openConsole();
+    }
+
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2018 ARM Ltd. and others
+ * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -54,178 +54,178 @@ import com.arm.cmsis.pack.utils.Utils;
 
 public class MergeConfigFileHandler extends AbstractHandler implements IElementUpdater {
 
-	class CompareConfigFileInput extends CompareEditorInput {
+    class CompareConfigFileInput extends CompareEditorInput {
 
-		private DiffNode fRoot;
-		private CompareItem fLeft;
-		private CompareItem fRight;
+        private DiffNode fRoot;
+        private CompareItem fLeft;
+        private CompareItem fRight;
 
-		private class CompareItem extends BufferedContent implements IEditableContent, ITypedElement {
+        private class CompareItem extends BufferedContent implements IEditableContent, ITypedElement {
 
-			protected IStorage fContent;
+            protected IStorage fContent;
 
-			public CompareItem(IStorage storage) {
-				fContent = storage;
-			}
+            public CompareItem(IStorage storage) {
+                fContent = storage;
+            }
 
-			@Override
-			public boolean isEditable() {
-				return true;
-			}
+            @Override
+            public boolean isEditable() {
+                return true;
+            }
 
-			@Override
-			public ITypedElement replace(ITypedElement dest, ITypedElement src) {
-				return dest;
-			}
+            @Override
+            public ITypedElement replace(ITypedElement dest, ITypedElement src) {
+                return dest;
+            }
 
-			@Override
-			public String getName() {
-				return Utils.extractBaseFileName(fContent.getName());
-			}
+            @Override
+            public String getName() {
+                return Utils.extractBaseFileName(fContent.getName());
+            }
 
-			@Override
-			public Image getImage() {
-				return null;
-			}
+            @Override
+            public Image getImage() {
+                return null;
+            }
 
-			@Override
-			public String getType() {
-				return Utils.extractFileExtension(fContent.getName());
-			}
+            @Override
+            public String getType() {
+                return Utils.extractFileExtension(fContent.getName());
+            }
 
-			@Override
-			protected InputStream createStream() throws CoreException {
-				return fContent.getContents();
-			}
+            @Override
+            protected InputStream createStream() throws CoreException {
+                return fContent.getContents();
+            }
 
-		}
+        }
 
-		/**
-		 * @param configuration
-		 */
-		public CompareConfigFileInput(IFile currentFile, IFileState previousFile, String currentVersion, String previousVersion) {
-			super(new CompareConfiguration());
-			setTitle("Compare " + currentFile.getLocation().toOSString() + " previous and current revision"); //$NON-NLS-1$ //$NON-NLS-2$
-			getCompareConfiguration().setLeftEditable(true);
-			getCompareConfiguration().setRightEditable(false);
-			getCompareConfiguration().setLeftLabel("Local: " + currentFile.getName() + " (" + currentVersion + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			getCompareConfiguration().setRightLabel("Previous version (" + previousVersion + ")"); //$NON-NLS-1$ //$NON-NLS-2$
-			fLeft = new CompareItem(currentFile);
-			fRight = new CompareItem(previousFile);
-		}
+        /**
+         * @param configuration
+         */
+        public CompareConfigFileInput(IFile currentFile, IFileState previousFile, String currentVersion,
+                String previousVersion) {
+            super(new CompareConfiguration());
+            setTitle("Compare " + currentFile.getLocation().toOSString() + " previous and current revision"); //$NON-NLS-1$ //$NON-NLS-2$
+            getCompareConfiguration().setLeftEditable(true);
+            getCompareConfiguration().setRightEditable(false);
+            getCompareConfiguration().setLeftLabel("Local: " + currentFile.getName() + " (" + currentVersion + ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            getCompareConfiguration().setRightLabel("Previous version (" + previousVersion + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+            fLeft = new CompareItem(currentFile);
+            fRight = new CompareItem(previousFile);
+        }
 
-		@Override
-		protected Object prepareInput(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-			fRoot = new DiffNode(fLeft, fRight);
-			return fRoot;
-		}
+        @Override
+        protected Object prepareInput(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            fRoot = new DiffNode(fLeft, fRight);
+            return fRoot;
+        }
 
-		@Override
-		public void saveChanges(IProgressMonitor pm) throws CoreException {
-			super.saveChanges(pm);
-			IStorage resource = fLeft.fContent;
-			if (resource instanceof IFile) {
-				byte[] bytes = fLeft.getContent();
-				ByteArrayInputStream is = new ByteArrayInputStream(bytes);
-				IFile file = (IFile) resource;
-				try {
-					if (file.exists()) {
-						file.setContents(is, true, true, pm);
-					} else {
-						file.create(is, true, pm);
-					}
-				} finally {
-					if (is != null) {
-						try {
-							is.close();
-						} catch (IOException ex) {
-							ex.printStackTrace();
-						}
-					}
-				}
-			}
-		}
+        @Override
+        public void saveChanges(IProgressMonitor pm) throws CoreException {
+            super.saveChanges(pm);
+            IStorage resource = fLeft.fContent;
+            if (resource instanceof IFile) {
+                byte[] bytes = fLeft.getContent();
+                ByteArrayInputStream is = new ByteArrayInputStream(bytes);
+                IFile file = (IFile) resource;
+                try {
+                    if (file.exists()) {
+                        file.setContents(is, true, true, pm);
+                    } else {
+                        file.create(is, true, pm);
+                    }
+                } finally {
+                    if (is != null) {
+                        try {
+                            is.close();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }
 
-	}
+    }
 
+    @Override
+    public Object execute(ExecutionEvent event) throws ExecutionException {
+        ISelection selection = HandlerUtil.getCurrentSelection(event);
+        if (!(selection instanceof IStructuredSelection)) {
+            return null;
+        }
+        Object obj = ((IStructuredSelection) selection).getFirstElement();
+        IFile file = ProjectUtils.getRteFileResource(obj);
+        String dstFile = file.getProjectRelativePath().toString();
 
-	@Override
-	public Object execute(ExecutionEvent event) throws ExecutionException {
-		ISelection selection = HandlerUtil.getCurrentSelection(event);
-		if (!(selection instanceof IStructuredSelection)) {
-			return null;
-		}
-		Object obj = ((IStructuredSelection) selection).getFirstElement();
-		IFile file = ProjectUtils.getRteFileResource(obj);
-		String dstFile = file.getProjectRelativePath().toString();
+        ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
+        ICpFile f = fi.getFile();
+        String srcFile = f.getAbsolutePath(f.getName());
 
-		ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
-		ICpFile f = fi.getFile();
-		String srcFile = f.getAbsolutePath(f.getName());
+        EFileRole role = fi.getRole();
+        if (role == EFileRole.CONFIG || role == EFileRole.COPY) {
+            int index = -1;
+            EFileCategory cat = fi.getCategory();
+            if (cat.isHeader() || cat.isSource()) {
+                String baseSrc = Utils.extractBaseFileName(srcFile);
+                String baseDst = Utils.extractBaseFileName(dstFile);
+                int len = baseSrc.length() + 1;
+                if (baseDst.length() > len) {
+                    String instance = baseDst.substring(len);
+                    try {
+                        index = Integer.decode(instance);
+                    } catch (NumberFormatException e) {
+                        // do nothing, use -1
+                    }
+                }
+            }
+            try {
+                int bCopied = ProjectUtils.copyFile(file.getProject(), srcFile, dstFile, index, null, true);
+                if (bCopied == 1) {
+                    String previousVersion = fi.getVersion();
 
-		EFileRole role = fi.getRole();
-		if (role == EFileRole.CONFIG || role == EFileRole.COPY) {
-			int index = -1;
-			EFileCategory cat = fi.getCategory();
-			if (cat.isHeader() || cat.isSource()) {
-				String baseSrc = Utils.extractBaseFileName(srcFile);
-				String baseDst = Utils.extractBaseFileName(dstFile);
-				int len = baseSrc.length() + 1;
-				if (baseDst.length() > len) {
-					String instance = baseDst.substring(len);
-					try {
-						index = Integer.decode(instance);
-					} catch (NumberFormatException e) {
-						// do nothing, use -1
-					}
-				}
-			}
-			try {
-				int bCopied = ProjectUtils.copyFile(file.getProject(), srcFile, dstFile, index, null, true);
-				if (bCopied == 1) {
-					String previousVersion = fi.getVersion();
+                    // do the version update and save it in the .cproject file
+                    fi.setVersion(f.getVersion());
+                    IRteProject rteProject = CpProjectPlugIn.getRteProjectManager().getRteProject(file.getProject());
+                    RteProjectStorage projectStorage = rteProject.getProjectStorage();
+                    projectStorage.setConfigFileVersion(dstFile, f.getVersion());
+                    projectStorage.save(CoreModel.getDefault().getProjectDescription(file.getProject()));
+                    rteProject.save();
 
-					// do the version update and save it in the .cproject file
-					fi.setVersion(f.getVersion());
-					IRteProject rteProject = CpProjectPlugIn.getRteProjectManager().getRteProject(file.getProject());
-					RteProjectStorage projectStorage = rteProject.getProjectStorage();
-					projectStorage.setConfigFileVersion(dstFile, f.getVersion());
-					projectStorage.save(CoreModel.getDefault().getProjectDescription(file.getProject()));
-					rteProject.save();
+                    if (role == EFileRole.CONFIG) {
+                        IFileState fileState = file.getHistory(null)[0];
+                        CompareConfigFileInput compareInput = new CompareConfigFileInput(file, fileState,
+                                fi.getVersion(), previousVersion);
+                        CompareUI.openCompareEditorOnPage(compareInput,
+                                PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage());
+                    }
+                }
+            } catch (CoreException e) {
+                e.printStackTrace();
+            }
+        }
 
-					if (role == EFileRole.CONFIG) {
-						IFileState fileState = file.getHistory(null)[0];
-						CompareConfigFileInput compareInput = new CompareConfigFileInput(file, fileState,
-								fi.getVersion(), previousVersion);
-						CompareUI.openCompareEditorOnPage(compareInput,
-								PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage());
-					}
-				}
-			} catch (CoreException e) {
-				e.printStackTrace();
-			}
-		}
+        return null;
+    }
 
-		return null;
-	}
-
-	@Override
-	public void updateElement(UIElement element, @SuppressWarnings("rawtypes") Map parameters) {
-		ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-		ISelection selection = selectionService.getSelection("org.eclipse.ui.navigator.ProjectExplorer"); //$NON-NLS-1$
-		if (selection instanceof IStructuredSelection) {
-			Object obj = ((IStructuredSelection) selection).getFirstElement();
-			IFile file = ProjectUtils.getRteFileResource(obj);
-			ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
-			if (fi == null || fi.getFile() == null) {
-				return;
-			}
-			int versionDiff = fi.getVersionDiff();
-			String versionText = " (" + fi.getVersion() + " -> " + fi.getFile().getVersion() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-			if (versionDiff < 0 || versionDiff > 2) {
-				element.setText(Messages.MergeConfigFileHandler_Merge + file.getName() + versionText);
-			}
-		}
-	}
+    @Override
+    public void updateElement(UIElement element, @SuppressWarnings("rawtypes") Map parameters) {
+        ISelectionService selectionService = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+        ISelection selection = selectionService.getSelection("org.eclipse.ui.navigator.ProjectExplorer"); //$NON-NLS-1$
+        if (selection instanceof IStructuredSelection) {
+            Object obj = ((IStructuredSelection) selection).getFirstElement();
+            IFile file = ProjectUtils.getRteFileResource(obj);
+            ICpFileInfo fi = ProjectUtils.getCpFileInfo(file);
+            if (fi == null || fi.getFile() == null) {
+                return;
+            }
+            int versionDiff = fi.getVersionDiff();
+            String versionText = " (" + fi.getVersion() + " -> " + fi.getFile().getVersion() + ")"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+            if (versionDiff < 0 || versionDiff > 2) {
+                element.setText(Messages.MergeConfigFileHandler_Merge + file.getName() + versionText);
+            }
+        }
+    }
 
 }
