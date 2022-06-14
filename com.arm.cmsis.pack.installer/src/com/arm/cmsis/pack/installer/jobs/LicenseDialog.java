@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -20,7 +20,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -37,9 +36,7 @@ public class LicenseDialog extends Dialog {
 
     private String fPackName;
     private String fLicencseText;
-    private Text fText;
-    private Button fCheckAgreed;
-    Button okButton;
+    private Button fOkButton;
 
     /**
      * Constructor for License Dialog
@@ -67,55 +64,53 @@ public class LicenseDialog extends Dialog {
 
     @Override
     protected Control createDialogArea(Composite parent) {
+        Composite container = (Composite) super.createDialogArea(parent);
+        createControls(container);
+        return container;
+    }
 
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
+    private void createControls(Composite container) {
+        createLabels(container);
+        createText(container);
+        createCheckBoxButton(container);
+    }
 
-        GridData layoutData = new GridData();
-        layoutData.widthHint = 510;
-        layoutData.verticalAlignment = SWT.FILL;
-        layoutData.horizontalAlignment = SWT.FILL;
-        layoutData.grabExcessHorizontalSpace = true;
-        composite.setLayoutData(layoutData);
-
-        Label licenseAgreement = new Label(composite, SWT.NONE);
+    private void createLabels(Composite container) {
+        Label licenseAgreement = new Label(container, SWT.NONE);
         Font boldFont = JFaceResources.getFontRegistry().getBold(JFaceResources.TEXT_FONT);
         licenseAgreement.setFont(boldFont);
         licenseAgreement
                 .setText(Messages.LicenseDialog_LicenseAgreement + System.lineSeparator() + System.lineSeparator());
-
-        Label guidanceText = new Label(composite, SWT.BOLD);
+        Label guidanceText = new Label(container, SWT.BOLD);
         guidanceText.setText(Messages.LicenseDialog_GuidanceText);
+    }
 
-        fText = new Text(composite, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
-        layoutData = new GridData();
+    private void createText(Composite container) {
+        GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true);
         layoutData.widthHint = 500;
         layoutData.heightHint = 250;
-        layoutData.verticalAlignment = SWT.FILL;
-        layoutData.horizontalAlignment = SWT.FILL;
-        layoutData.grabExcessHorizontalSpace = true;
+        Text fText = new Text(container, SWT.MULTI | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         fText.setLayoutData(layoutData);
         fText.setText(fLicencseText);
+    }
 
-        fCheckAgreed = new Button(composite, SWT.CHECK);
+    private void createCheckBoxButton(Composite container) {
+        Button fCheckAgreed = new Button(container, SWT.CHECK);
         fCheckAgreed.setText(Messages.LicenseDialog_AgreeText);
         fCheckAgreed.addSelectionListener(new SelectionAdapter() {
-
             @Override
             public void widgetSelected(SelectionEvent event) {
                 Button button = ((Button) event.widget);
-                okButton.setEnabled(button.getSelection());
+                fOkButton.setEnabled(button.getSelection());
             }
         });
-
-        return composite;
     }
 
     @Override
     protected void createButtonsForButtonBar(Composite parent) {
         super.createButtonsForButtonBar(parent);
-        okButton = getButton(IDialogConstants.OK_ID);
-        okButton.setEnabled(false);
+        fOkButton = getButton(IDialogConstants.OK_ID);
+        fOkButton.setEnabled(false);
     }
 
 }

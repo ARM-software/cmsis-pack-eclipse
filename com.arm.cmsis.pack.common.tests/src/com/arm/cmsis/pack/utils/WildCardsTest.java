@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 ARM Ltd and others.
+ * Copyright (c) 2022 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,59 +18,93 @@ import org.junit.Test;
 
 public class WildCardsTest {
 
-    private String[] baseStrings = new String[] { "a*d", "STM32F10[123]?[CDE]", "*", "a*", "a*d", "*d", "abcd", "abcd",
-            "abcd", "ab?d", "abc?", "abc[XY]-[12]", "abc[XY]-[12]", "abc[XY]-[12]" };
-    private String[] matchedStrings = new String[] { "a.d", "STM32F103ZE", "x", "ab", "axd", "xd", "abcd", "abcd",
-            "?bcd", "ab??", "abcx", "abcX-1", "abcY-1", "abcY-1" };
-    private String[] noMatchedStrings = new String[] { "a.d.d", "STM32F103ZF", "", "bb", "axe", "xf", "abxx", "abxyz",
-            "xycd", "?bce", "abc??", "abcX-13", "abcY-13", "abcZ-1" };
-    private String[] matchedStringsNoCase = new String[] { "a.D", "STM32F103Ze", "X", "Ab", "Axd", "Xd", "Abcd", "Abcd",
-            "?Bcd", "Ab??", "Abcx", "AbcX-1", "AbcY-1", "AbcY-1" };
-    private String[] noMatchedStringsNoCase = new String[] { "a.D.d", "STM32F103Zf", "", "Bb", "Axe", "Xf", "Abxx",
-            "Abxyz", "Xycd", "?Bce", "Abc??", "AbcX-13", "AbcY-13", "AbcZ-1" };
+    private String[] baseStrings = new String[] { "STM32F10[123]?[CDE]", "*", "?*", "*?*", "**?" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+    private String[] matchedStrings = new String[] { "STM32F103ZE", "*?", "?*?", "**", "**" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 
     @Test
     public void testMatch() {
-        boolean result = false;
-        String msg = null;
         for (int i = 0; i < baseStrings.length; i++) {
-            result = WildCards.match(baseStrings[i], matchedStrings[i]);
-            msg = result ? "Strings match" : "Strings do not match";
-            assertTrue(msg, result);
+            assertTrue(WildCards.match(baseStrings[i], matchedStrings[i]));
         }
     }
 
     @Test
-    public void testNoMatch() {
-        boolean result = false;
-        String msg = null;
-        for (int i = 0; i < baseStrings.length; i++) {
-            result = WildCards.match(baseStrings[i], noMatchedStrings[i]);
-            msg = result ? "Strings match" : "Strings do not match";
-            assertFalse(msg, result);
-        }
+    public void testMatchStrings() {
+        assertTrue(WildCards.match("a", "a")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("a", "")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("", "d")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("", "*")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("a*", "a*d")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("a*", "*d")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("a*", "abcd")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("a*", "xycd")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("a*d", "*d")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("a*d", "abcd")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("a*d", "abxx")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("a*d", "abxyz")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("a*d", "xycd")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("*d", "abcd")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("*d", "d")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("*c*", "abcd")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abcd", "a**d")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abcd", "a??d")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abcd", "?bc?")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abc?", "abc*")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("ab?d", "ab??")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("ab?d", "abc??")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("?bcd", "abc??")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("?bcd", "*bcd")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("?bcd", "abc???")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abc?", "ab??")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("abc?", "abc??")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("ab??", "abc??")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abc*", "ab*?")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abc*", "abc?*")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("ab*?", "abc?*")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("abcX-1", "abcX-2")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("abcX-1", "abcX-3")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("abcX-1", "abcY-1")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("abcX-1", "abcY-2")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abcX-1", "abc[XY]-[12]")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("abcZ-1", "abc[XY]-[12]")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("abcY-2", "abc[XY]-[12]")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*_Suffix", "Prefix_Mid_Suffix")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*_Suffix", "Prefix_Mid_V_Suffix")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*_Suffix", "Prefix_Mid_Suffix_Suffix")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix*_Suffix", "Prefix_Mid_Suffix")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix*Suffix", "Prefix_Mid_Suffix")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix*Suffix", "Prefix_Mid_Suffix_Suffix")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*Suffix", "Prefix_Mid_Suffix")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix.*.Suffix", "Prefix.Mid.Suffix")); //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Test
-    public void testMatchNoCase() {
-        boolean result = false;
-        String msg = null;
-        for (int i = 0; i < baseStrings.length; i++) {
-            result = WildCards.matchNoCase(baseStrings[i], matchedStringsNoCase[i]);
-            msg = result ? "Strings match (no case)" : "Strings do not match";
-            assertTrue(msg, result);
-        }
+    public void testMatchStringsNoCase() {
+        assertTrue(WildCards.match("a", "A", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("a", "A", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("a*", "A*?", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("a*", "A*?", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("?*a", "?*?A", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("?*a", "?*?A", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("*?*a", "**A", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("*?*a", "**A", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("**?a", "**A", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("**?a", "**A", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*_Suffix", "PREFIX_Mid_SUFFIX", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("Prefix_*_Suffix", "PREFIX_MID_SUFFIX", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*_Suffix", "PREFIX_Mid_SUFFIX", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("Prefix_*_Suffix", "PREFIX_MID_SUFFIX", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*_Suffix", "PREFIX_MID_V_SUFFIX", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("Prefix_*_Suffix", "PREFIX_MID_V_SUFFIX", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*_Suffix", "PREFIX_MID_SUFFIX_SUFFIX", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("Prefix_*_Suffix", "PREFIX_MID_SUFFIX_SUFFIX", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix*_Suffix", "PREFIX_MID_SUFFIX", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("Prefix*_Suffix", "PREFIX_MID_SUFFIX", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix*Suffix", "PREFIX_MID_SUFFIX_SUFFIX", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("Prefix*Suffix", "PREFIX_MID_SUFFIX_SUFFIX", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix_*Suffix", "PREFIX_MID_SUFFIX", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("Prefix_*Suffix", "PREFIX_MID_SUFFIX", false)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("Prefix.*.Suffix", "PREFIX.MID.SUFFIX", true)); //$NON-NLS-1$ //$NON-NLS-2$
+        assertFalse(WildCards.match("Prefix.*.Suffix", "PREFIX.MID.SUFFIX", false)); //$NON-NLS-1$ //$NON-NLS-2$
     }
-
-    @Test
-    public void testNoMatchNoCase() {
-        boolean result = false;
-        String msg = null;
-        for (int i = 0; i < baseStrings.length; i++) {
-            result = WildCards.matchNoCase(baseStrings[i], noMatchedStringsNoCase[i]);
-            msg = result ? "Strings match (no case)" : "Strings do not match";
-            assertFalse(msg, result);
-        }
-    }
-
 }

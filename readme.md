@@ -4,7 +4,7 @@ The **CMSIS-Pack Management for Eclipse** is created by ARM to provide a open-so
 
 ARM is commited to maintain this **CMSIS-Pack Management for Eclipse** to ensure consistency with future extensions and modifications to the [CMSIS-Pack Specification].  
 
-This release 2.6.1 provides the following functionality:
+This release 2.7.0 provides the following functionality:
 * CMSIS Zone plug-ins to support [CMSIS-Zone](https://arm-software.github.io/CMSIS_5/Zone/html/index.html) functionality 
 * CMSIS Pack manager to install, remove, delete Packs as well as to import examples
 * creation and management of an CDT-based C/C++ projects
@@ -115,7 +115,7 @@ You may change the component selection and use the **Resolve** toolbar button.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-_Copyright (c) 2014-2021, ARM Limited and Contributors. All rights reserved._
+_Copyright (c) 2014-2022, ARM Limited and Contributors. All rights reserved._
 
 
 [Eclipse Public License]:   ./license.md "Eclipse Public License for CMSIS-Pack Management for Eclipse"

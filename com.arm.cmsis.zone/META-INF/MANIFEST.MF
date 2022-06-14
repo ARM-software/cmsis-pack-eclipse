@@ -3,10 +3,10 @@ Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS-Zone framework
 Bundle-SymbolicName: com.arm.cmsis.zone
 Automatic-Module-Name: com.arm.cmsis.zone
-Bundle-Version: 1.2.0.qualifier
+Bundle-Version: 1.2.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-11
-Require-Bundle: com.arm.cmsis.pack.common;bundle-version="2.6.1";visibility:=reexport,
- com.arm.cmsis.pack.data;bundle-version="2.6.1";visibility:=reexport
+Require-Bundle: com.arm.cmsis.pack.common;bundle-version="2.7.0";visibility:=reexport,
+ com.arm.cmsis.pack.data;bundle-version="2.7.0";visibility:=reexport
 Export-Package: com.arm.cmsis.zone.data,
  com.arm.cmsis.zone.error,
  com.arm.cmsis.zone.model,

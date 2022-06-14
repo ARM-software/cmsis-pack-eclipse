@@ -76,6 +76,7 @@
 18 = Nuvoton
 11|78 = NXP|NXP (founded by Philips)|Freescale|Freescale Semiconductor|Freescale Semiconductors
 108 = OKI SEMICONDUCTOR CO.,LTD.
+141 = onsemi|ONSemiconductor
 44 = Oregano Systems
 105= PalmChip
 79 = Philips

@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -31,17 +31,14 @@ package com.arm.cmsis.pack.utils;
  * CMSIS-Packs. It is optimized for small strings, primary for device names like
  * <b>"STM32F4[23]9??</b>".
  * <p/>
- * The method has some limitations:
+ * The method has a limitation:
  * <ul>
  * <li>there is no escape for *, ? [ and ] characters
- * <li>"*?" is equivalent to "*" => <code>"a*?d"</code> and <code>"a*d"</code>
- * are equivalent
- * <li>* match is performed until first matching on character followed after *
- * is found, therefore pattern <code>"a*d"</code> will match <code>"a.d"</code>
- * or <code>"a.c.d"</code>, but not <code>"a.d.d"</code>"
  * </ul>
  */
 public class WildCards {
+
+    protected static final String[] WILDCARDS_CHARS = new String[] { ".", "?", "*", "[", "]" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
 
     /**
      * Private constructor to prevent instantiating the utility class
@@ -58,18 +55,57 @@ public class WildCards {
      * @return <b>true</b> if strings match, <b>false</b> otherwise
      */
     public static boolean match(final String str1, final String str2) {
-        return match(str1, str2, true);
+        // check for empty and null strings
+        if (str1 == null || str1.isEmpty()) {
+            return (str2 == null || str2.isEmpty()); // return true if both strings are empty or null
+        } else if (str2 == null || str2.isEmpty()) { // return false if one of the strings is empty or null
+            return false;
+        }
+        // return true if strings are equal
+        if (str1.equals(str2)) {
+            return true;
+        }
+        // check if str1 contains wildcard
+        if (isWildCard(str1) && str2.matches(toRegEx(str1))) {
+            return true;
+        }
+        // check if str2 contains wildcard
+        if (isWildCard(str2) && str1.matches(toRegEx(str2))) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean isWildCard(String str) {
+        for (int i = 0; i < WILDCARDS_CHARS.length; i++) {
+            if (str.indexOf(WILDCARDS_CHARS[i]) >= 0) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
-     * Match two strings containing wild cards ignoring case
+     * Converts wild card string to regular expression
+     *
+     * @param str string to convert
+     * @return regular expression string
+     */
+    public static String toRegEx(String str) {
+        return str.replace(".", "\\.").replace('?', '.').replace("*", ".*"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+    }
+
+    /**
+     * Matches strings ignoring cases
      *
      * @param str1 first string argument
      * @param str2 second string argument
      * @return <b>true</b> if strings match, <b>false</b> otherwise
      */
     public static boolean matchNoCase(final String str1, final String str2) {
-        return match(str1, str2, false);
+        String lcstr1 = (str1 == null) ? null : str1.toLowerCase();
+        String lcstr2 = (str2 == null) ? null : str2.toLowerCase();
+        return match(lcstr1, lcstr2);
     }
 
     /**
@@ -81,172 +117,10 @@ public class WildCards {
      * @return <b>true</b> if strings match, <b>false</b> otherwise
      */
     public static boolean match(final String str1, final String str2, boolean cs) {
-        // check for empty and null strings
-        if (str1 == null || str1.isEmpty()) {
-            return (str2 == null || str2.isEmpty());
-        } else if (str2 == null || str2.isEmpty()) {
-            return false;
+        if (cs) {
+            return matchNoCase(str1, str2);
+        } else {
+            return match(str1, str2);
         }
-
-        WildcardState ws1 = new WildcardState(str1, cs);
-        if (ws1.isAsterisk() && ws1.isEnd())
-            return true;
-
-        WildcardState ws2 = new WildcardState(str2, cs);
-        if (ws2.isAsterisk() && ws2.isEnd())
-            return true;
-
-        boolean result = wildCardMatch(ws1, ws2);
-
-        // we need a symmetric comparison in case both strings contain '*' :
-        // a*d and a*cd should be treated as equal
-        if (!result && ws1.containsAsterisk() && ws2.containsAsterisk()) {
-            ws1.init();
-            ws2.init();
-            return wildCardMatch(ws2, ws1);
-        }
-        return result;
-    }
-
-    private static boolean wildCardMatch(WildcardState ws1, WildcardState ws2) {
-        while (true) {
-            if (ws1.isAsterisk()) {
-                if (ws1.isEnd())
-                    return true; // end of str2 is irrelevant
-                ws2.skip(ws1);
-                if (ws2.isEnd()) {
-                    return ws2.isAsterisk() || ws2.isQuestion();
-                }
-            }
-
-            if (ws2.isAsterisk()) {
-                if (ws2.isEnd())
-                    return true; // end of str1 is irrelevant
-                ws1.skip(ws2);
-                if (ws1.isEnd()) {
-                    return ws1.isAsterisk() || ws1.isQuestion();
-                }
-            }
-
-            if (ws1.isEnd() || ws2.isEnd())
-                break;
-
-            if (!ws1.compare(ws2)) {
-                return false;
-            }
-            ws1.next();
-            ws2.next();
-        }
-        return ws1.isEnd() && ws2.isEnd();
-    }
-
-    private static class WildcardState {
-        private String s;
-        private boolean cs = true;
-        private int index = 0;
-        private int rangeFrom = -1;
-        private int rangeTo = -1;
-        private boolean asterisk = false;
-        private boolean containsAsterisk = false;
-
-        public WildcardState(String s, boolean cs) {
-            this.s = s;
-            this.cs = cs;
-            init();
-        }
-
-        void init() {
-            asterisk = false;
-            containsAsterisk = false;
-            index = 0;
-            createRange();
-        }
-
-        public boolean containsAsterisk() {
-            return containsAsterisk;
-        }
-
-        boolean isEnd() {
-            return index >= s.length();
-        }
-
-        boolean isAsterisk() {
-            return asterisk;
-        }
-
-        boolean isQuestion() {
-            return rangeFrom >= 0 && s.charAt(rangeFrom) == '?';
-        }
-
-        void next() {
-            if (isEnd())
-                return;
-            index++;
-            createRange();
-        }
-
-        void skip(WildcardState ws) {
-            while (!isEnd() && !compare(ws)) {
-                next();
-            }
-        }
-
-        boolean compare(WildcardState ws) {
-            if (isQuestion() || ws.isQuestion())
-                return true;
-            if (rangeFrom < 0 && ws.rangeFrom < 0)
-                return true;
-
-            for (int i = rangeFrom; i < rangeTo; i++) {
-                char ch = s.charAt(i);
-                if (!cs)
-                    ch = Character.toUpperCase(ch);
-                for (int j = ws.rangeFrom; j < ws.rangeTo; j++) {
-                    char otherCh = ws.s.charAt(j);
-                    if (!cs)
-                        otherCh = Character.toUpperCase(otherCh);
-                    if (ch == otherCh)
-                        return true;
-                }
-            }
-            return false;
-        }
-
-        void createRange() {
-            rangeFrom = rangeTo = -1;
-            asterisk = false;
-            if (isEnd())
-                return;
-            char ch = s.charAt(index);
-            if (ch == '*') {
-                containsAsterisk = asterisk = true;
-                // skip all asterisks and questions
-                index++;
-                while (!isEnd()) {
-                    ch = s.charAt(index);
-                    if (ch != '*' && ch != '?')
-                        break;
-                }
-            }
-            if (isEnd())
-                return;
-            if (ch == '[') {
-                index++;
-                if (isEnd())
-                    return;
-                rangeTo = rangeFrom = index;
-                while (!isEnd()) {
-                    ch = s.charAt(index);
-                    if (ch == ']')
-                        break;
-                    index++;
-                    rangeTo = index;
-                }
-            } else {
-                rangeTo = rangeFrom = index;
-                rangeTo++;
-            }
-        }
-
     }
 }

@@ -8,7 +8,7 @@
 	<parent>
 		<groupId>com.arm.cmsis</groupId>
 		<artifactId>com.arm.cmsis.parent</artifactId>
-		<version>2.6.1-SNAPSHOT</version>
+		<version>2.7.0-SNAPSHOT</version>
 		<relativePath>../com.arm.cmsis.parent</relativePath>
 	</parent>
 	<properties>
@@ -34,7 +34,7 @@
 						<artifact>
 							<groupId>com.arm.cmsis</groupId>
 							<artifactId>com.arm.cmsis.tests.target</artifactId>
-							<version>2.6.1-SNAPSHOT</version>
+							<version>2.7.0-SNAPSHOT</version>
 						</artifact>
 					</target>
 					<environments>

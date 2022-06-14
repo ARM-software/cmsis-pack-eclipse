@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/com.arm.cmsis.pack.feature_2.6.1.qualifier.jar" id="com.arm.cmsis.pack.feature" version="2.6.1.qualifier">
+   <feature url="features/com.arm.cmsis.pack.feature_2.7.0.qualifier.jar" id="com.arm.cmsis.pack.feature" version="2.7.0.qualifier">
       <category name="cmsis-eclipse"/>
    </feature>
-   <feature url="features/com.arm.cmsis.zone.feature_1.2.0.qualifier.jar" id="com.arm.cmsis.zone.feature" version="1.2.0.qualifier">
+   <feature url="features/com.arm.cmsis.zone.feature_1.2.1.qualifier.jar" id="com.arm.cmsis.zone.feature" version="1.2.1.qualifier">
       <category name="cmsis-eclipse"/>
    </feature>
    <category-def name="cmsis-eclipse" label="CMSIS Eclipse plug-ins">

@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Arm GCC Toolchain Adapter
 Bundle-SymbolicName: com.arm.cmsis.pack.build.armgcc;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.pack.build.armgcc
-Bundle-Version: 2.6.1.qualifier
+Bundle-Version: 2.7.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.build.armgcc.Activator
 Bundle-Vendor: Arm Limited
 Require-Bundle: org.eclipse.core.runtime,

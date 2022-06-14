@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -742,6 +742,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
             bMve = true;
             break;
         case "Cortex-M55": //$NON-NLS-1$
+        case "Cortex-M85": //$NON-NLS-1$
             bMve = true;
             break;
         default:
@@ -768,7 +769,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
      *
      * @param cpu device info's Dcore attribute
      * @param fpu device info's Dfpu attribute
-     * @param mve device info's Ddsp attribute
+     * @param dsp device info's Ddsp attribute
      * @param mve device info's Dmve attribute
      * @return resulting FPU string
      */
@@ -777,7 +778,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
             if (CmsisConstants.FP_MVE.equals(mve)) {
                 return "FP16.FP32"; //$NON-NLS-1$
             }
-            if ("Cortex-M33".equals(cpu)) { //$NON-NLS-1$
+            if ("Cortex-M33".equals(cpu) || "Star-MC1".equals(cpu)) { //$NON-NLS-1$
                 if (!CmsisConstants.DSP.equals(dsp)) {
                     return NoDSP_NoFPU;
                 }
@@ -835,12 +836,13 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
         case "ARMV81MML": //$NON-NLS-1$
             return dp ? "FP16.FP32.FP64" : "FP16.FP32"; //$NON-NLS-1$ //$NON-NLS-2$
         case "Cortex-M55": //$NON-NLS-1$
+        case "Cortex-M85": //$NON-NLS-1$
             return "FP16.FP32.FP64"; // $NON-NLS-2$
 
         case "Cortex-M35P": //$NON-NLS-1$
         case "Cortex-M33": //$NON-NLS-1$
+        case "Star-MC1": //$NON-NLS-1$
             return "FPv5_SP_D16"; //$NON-NLS-1$
-
         }
         return NoFPU;
     }

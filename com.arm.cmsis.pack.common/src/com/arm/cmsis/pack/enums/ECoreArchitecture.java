@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -57,11 +57,13 @@ public enum ECoreArchitecture {
 
         case CmsisConstants.V81M:
         case "Cortex-M55": //$NON-NLS-1$
+        case "Cortex-M85": //$NON-NLS-1$
             return ARMv81;
 
         case CmsisConstants.V8M:
         case "Cortex-M23": //$NON-NLS-1$
         case "Cortex-M33": //$NON-NLS-1$
+        case "Star-MC1": //$NON-NLS-1$
         default:
             break;
         }
