@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS-Pack Project
 Bundle-SymbolicName: com.arm.cmsis.pack.project;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.pack.project
-Bundle-Version: 2.7.0.qualifier
+Bundle-Version: 2.8.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.project.CpProjectPlugIn
 Bundle-Vendor: Arm Limited
 Require-Bundle: org.eclipse.core.runtime,

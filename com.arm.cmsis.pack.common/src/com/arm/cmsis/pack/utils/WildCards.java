@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.utils;
 
+import java.util.regex.PatternSyntaxException;
+
 /**
  * Utility class provides method to compare two string that can contain wild
  * cards
@@ -38,7 +40,7 @@ package com.arm.cmsis.pack.utils;
  */
 public class WildCards {
 
-    protected static final String[] WILDCARDS_CHARS = new String[] { ".", "?", "*", "[", "]" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$
+    protected static final String[] WILDCARDS_CHARS = new String[] { "?", "*", "[", "]" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
 
     /**
      * Private constructor to prevent instantiating the utility class
@@ -65,13 +67,17 @@ public class WildCards {
         if (str1.equals(str2)) {
             return true;
         }
-        // check if str1 contains wildcard
-        if (isWildCard(str1) && str2.matches(toRegEx(str1))) {
-            return true;
-        }
-        // check if str2 contains wildcard
-        if (isWildCard(str2) && str1.matches(toRegEx(str2))) {
-            return true;
+        try {
+            // check if str1 contains wildcard
+            if (isWildCard(str1) && str2.matches(toRegEx(str1))) {
+                return true;
+            }
+            // check if str2 contains wildcard
+            if (isWildCard(str2) && str1.matches(toRegEx(str2))) {
+                return true;
+            }
+        } catch (PatternSyntaxException e) {
+            return false; // invalid expression cannot be matched
         }
         return false;
     }
@@ -92,7 +98,12 @@ public class WildCards {
      * @return regular expression string
      */
     public static String toRegEx(String str) {
-        return str.replace(".", "\\.").replace('?', '.').replace("*", ".*"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        return str.replace(".", "\\."). //$NON-NLS-1$
+                replace("$", "\\$"). //$NON-NLS-1$
+                replace("}", "\\}"). //$NON-NLS-1$
+                replace("{", "\\{"). //$NON-NLS-1$
+                replace('?', '.'). // $NON-NLS-1$
+                replace("*", ".*"); //$NON-NLS-1$
     }
 
     /**

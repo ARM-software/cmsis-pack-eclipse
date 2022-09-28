@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -15,7 +15,9 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.widgets.Composite;
 
+import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
+import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.CpStringsUI;
@@ -29,7 +31,9 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 
     private RteDeviceSelectorWidget fDeviceWidget = null;
     private IRteDeviceItem fDevices = null;
+    private IRteBoardItem fBoards = null;
     private ICpDeviceInfo fDeviceInfo = null;
+    private ICpBoardInfo fBoardInfo = null;
     private boolean fbInitialized = false;
     protected boolean fbShowProcessors = true;
 
@@ -61,9 +65,8 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
         fDeviceWidget = new RteDeviceSelectorWidget(parent, fbShowProcessors);
         fDeviceWidget.addListener(this);
         fDeviceWidget.setDevices(fDevices);
-
+        fDeviceWidget.setBoards(fBoards);
         setControl(fDeviceWidget);
-        updateStatus(CpStringsUI.RteDeviceSelectorPage_SelectDevice);
     }
 
     /**
@@ -87,10 +90,23 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
         }
     }
 
+    /**
+     * Assigns boards tree
+     *
+     * @param boards the boards to set
+     */
+    public void setBoards(IRteBoardItem boards) {
+        fBoards = boards;
+        if (fDeviceWidget != null) {
+            fDeviceWidget.setBoards(fBoards);
+        }
+    }
+
     @Override
     public void setVisible(boolean visible) {
         if (!fbInitialized) {
             fDeviceWidget.setDeviceInfo(fDeviceInfo);
+            fDeviceWidget.setBoardInfo(fBoardInfo);
             fbInitialized = true;
         }
         super.setVisible(visible);
@@ -111,10 +127,15 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
 
     public void updateStatus(String message) {
         setErrorMessage(message);
-        if (fbInitialized) {
-            fDeviceInfo = fDeviceWidget.getDeviceInfo();
-        }
-        setPageComplete(fDeviceInfo != null);
+        if (message == null || message.isEmpty()) {
+            if (fbInitialized) {
+                fDeviceInfo = fDeviceWidget.getDeviceInfo();
+                fBoardInfo = fDeviceWidget.getBoardInfo();
+            }
+            setPageComplete(fDeviceInfo != null);
+        } else
+            setPageComplete(false);
+
     }
 
     /**
@@ -142,6 +163,18 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
     }
 
     /**
+     * Returns selected board info
+     *
+     * @return
+     */
+    public ICpBoardInfo getBoardInfo() {
+        if (fbInitialized) {
+            fBoardInfo = fDeviceWidget.getBoardInfo();
+        }
+        return fBoardInfo;
+    }
+
+    /**
      * Makes initial device selection
      *
      * @param deviceInfo ICpDeviceInfo to make initial selection
@@ -150,6 +183,18 @@ public class RteDeviceSelectorPage extends WizardPage implements IStatusMessageL
         fDeviceInfo = deviceInfo;
         if (fDeviceWidget != null) {
             fDeviceWidget.setDeviceInfo(deviceInfo);
+        }
+    }
+
+    /**
+     * Makes initial board selection
+     *
+     * @param boardInfo ICpBoardInfo to make initial selection
+     */
+    public void setBoardInfo(ICpBoardInfo boardInfo) {
+        fBoardInfo = boardInfo;
+        if (fDeviceWidget != null) {
+            fDeviceWidget.setBoardInfo(boardInfo);
         }
     }
 }

@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 
+import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.project.Messages;
 
@@ -34,12 +35,13 @@ public class RteProjectTemplate implements IPagesAfterTemplateSelectionProvider 
     protected List<IWizardDataPage> fPages = null;
 
     protected static ICpDeviceInfo selectedDeviceInfo = null;
+    protected static ICpBoardInfo selectedBoardInfo = null;
 
     @Override
     public IWizardDataPage[] createAdditionalPages(IWorkbenchWizard wizard, IWorkbench workbench,
             IStructuredSelection selection) {
 
-        fPages = new ArrayList<IWizardDataPage>();
+        fPages = new ArrayList<>();
 
         RteTemplateDeviceSelectorPage devicePage = new RteTemplateDeviceSelectorPage();
 
@@ -66,8 +68,31 @@ public class RteProjectTemplate implements IPagesAfterTemplateSelectionProvider 
         return selectedDeviceInfo;
     }
 
+    /**
+     * Sets device info selected in RteTemplateDeviceSelectorPage
+     *
+     * @param selectedDeviceInfo ICpDeviceInfo to set
+     */
     public static void setSelectedDeviceInfo(ICpDeviceInfo selectedDeviceInfo) {
         RteProjectTemplate.selectedDeviceInfo = selectedDeviceInfo;
+    }
+
+    /**
+     * Returns board info selected in RteTemplateBoardSelectorPage
+     *
+     * @return ICpBoardInfo
+     */
+    public static ICpBoardInfo getSelectedBoardInfo() {
+        return selectedBoardInfo;
+    }
+
+    /**
+     * Sets board info selected in RteTemplateBoardSelectorPage
+     *
+     * @param selectedBoardInfo ICpBoardInfo to set
+     */
+    public static void setSelectedBoardInfo(ICpBoardInfo selectedBoardInfo) {
+        RteProjectTemplate.selectedBoardInfo = selectedBoardInfo;
     }
 
     /**

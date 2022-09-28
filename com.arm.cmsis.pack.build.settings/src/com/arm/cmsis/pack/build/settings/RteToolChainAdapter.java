@@ -728,21 +728,27 @@ public class RteToolChainAdapter extends PlatformObject implements IRteToolChain
      * @return CPU option string
      */
     protected String getDeviceAttribute(int oType, IBuildSettings buildSettings) {
+        String value = null;
         switch (oType) {
         case IBuildSettings.CPU_OPTION:
-            return buildSettings.getDeviceAttribute(CmsisConstants.DCORE);
+            value = buildSettings.getDeviceAttribute(CmsisConstants.DCORE);
+            break;
         case IBuildSettings.FPU_OPTION:
-            return buildSettings.getDeviceAttribute(CmsisConstants.DFPU);
+            value = buildSettings.getDeviceAttribute(CmsisConstants.DFPU);
+            break;
         case IBuildSettings.DSP_OPTION:
-            return buildSettings.getDeviceAttribute(CmsisConstants.DDSP);
+            value = buildSettings.getDeviceAttribute(CmsisConstants.DDSP);
+            break;
         case IBuildSettings.ENDIAN_OPTION:
-            return buildSettings.getDeviceAttribute(CmsisConstants.DENDIAN);
+            value = buildSettings.getDeviceAttribute(CmsisConstants.DENDIAN);
+            break;
         case IBuildSettings.MVE_OPTION:
-            return buildSettings.getDeviceAttribute(CmsisConstants.DMVE);
+            value = buildSettings.getDeviceAttribute(CmsisConstants.DMVE);
+            break;
         default:
             break;
         }
-        return null;
+        return value != null ? value : CmsisConstants.EMPTY_STRING;
     }
 
     /**

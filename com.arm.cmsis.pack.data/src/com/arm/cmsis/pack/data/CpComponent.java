@@ -23,6 +23,7 @@ public class CpComponent extends CpItem implements ICpComponent {
 
     protected int bApi = -1; // not initialized
     protected int deviceDependent = -1; // not initialized
+    protected int boardDependent = -1; // not initialized
     protected int bExclusiveApi = -1; // not initialized
 
     /**
@@ -186,6 +187,18 @@ public class CpComponent extends CpItem implements ICpComponent {
             }
         }
         return deviceDependent > 0;
+    }
+
+    @Override
+    public boolean isBoardDependent() {
+        if (boardDependent < 0) {
+            if (isApi()) {
+                boardDependent = 0;
+            } else {
+                boardDependent = super.isBoardDependent() ? 1 : 0;
+            }
+        }
+        return boardDependent > 0;
     }
 
     @Override

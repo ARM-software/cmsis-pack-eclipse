@@ -164,6 +164,13 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
     boolean isDeviceDependent();
 
     /**
+     * Checks if availability of this item depends on selected board
+     *
+     * @return true if item is board dependent
+     */
+    boolean isBoardDependent();
+
+    /**
      * Merges property to the child list: adds if the property with same ID does not
      * yet exist
      *
@@ -217,6 +224,13 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
      * @return version of this element
      */
     String getVersion();
+
+    /**
+     * Returns revisionn of the element
+     *
+     * @return revision of this element
+     */
+    String getRevision();
 
     /**
      * Returns "Punit" attribute as integer

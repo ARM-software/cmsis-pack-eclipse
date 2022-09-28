@@ -82,6 +82,13 @@ public interface IRteModelController extends IRteController, IRteModel {
     boolean isDeviceModified();
 
     /**
+     * Checks if board has been changed or modified
+     *
+     * @return true if modified
+     */
+    boolean isBoardModified();
+
+    /**
      * Updates configuration info based on current selection
      */
     void updateConfigurationInfo();

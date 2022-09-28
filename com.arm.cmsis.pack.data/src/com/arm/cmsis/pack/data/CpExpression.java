@@ -58,7 +58,7 @@ public class CpExpression extends CpItem implements ICpExpression {
             }
             if (attributes().containsAttribute("C*")) { //$NON-NLS-1$
                 nTypes++;
-                expressionType = 'C';
+                expressionType = COMPONENT_EXPRESSION;
                 if (!attributes().hasAttribute(CmsisConstants.CCLASS)
                         || !attributes().hasAttribute(CmsisConstants.CGROUP)) {
                     bError = true;
@@ -68,6 +68,12 @@ public class CpExpression extends CpItem implements ICpExpression {
                 nTypes++;
                 expressionType = DEVICE_EXPRESSION;
             }
+
+            if (attributes().containsAttribute("B*")) {//$NON-NLS-1$
+                nTypes++;
+                expressionType = BOARD_EXPRESSION;
+            }
+
             if (attributes().containsAttribute("T*")) {//$NON-NLS-1$
                 nTypes++;
                 expressionType = TOOLCHAIN_EXPRESSION;
@@ -124,6 +130,17 @@ public class CpExpression extends CpItem implements ICpExpression {
             return hasAttribute(CmsisConstants.DNAME);
         } else if (domain == REFERENCE_EXPRESSION) {
             return super.isDeviceDependent();
+        }
+        return false;
+    }
+
+    @Override
+    public boolean isBoardDependent() {
+        char domain = getExpressionDomain();
+        if (domain == BOARD_EXPRESSION) {
+            return hasAttribute(CmsisConstants.BNAME);
+        } else if (domain == REFERENCE_EXPRESSION) {
+            return super.isBoardDependent();
         }
         return false;
     }

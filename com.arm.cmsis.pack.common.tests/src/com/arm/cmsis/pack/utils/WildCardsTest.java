@@ -65,6 +65,8 @@ public class WildCardsTest {
         assertFalse(WildCards.match("abcX-1", "abcX-3")); //$NON-NLS-1$ //$NON-NLS-2$
         assertFalse(WildCards.match("abcX-1", "abcY-1")); //$NON-NLS-1$ //$NON-NLS-2$
         assertFalse(WildCards.match("abcX-1", "abcY-2")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("{*}", "{somestring}")); //$NON-NLS-1$ //$NON-NLS-2$
+        assertTrue(WildCards.match("$*", "$somestring")); //$NON-NLS-1$ //$NON-NLS-2$
         assertTrue(WildCards.match("abcX-1", "abc[XY]-[12]")); //$NON-NLS-1$ //$NON-NLS-2$
         assertFalse(WildCards.match("abcZ-1", "abc[XY]-[12]")); //$NON-NLS-1$ //$NON-NLS-2$
         assertTrue(WildCards.match("abcY-2", "abc[XY]-[12]")); //$NON-NLS-1$ //$NON-NLS-2$

@@ -100,6 +100,13 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
                 attributes().removeAttribute(CmsisConstants.DEVICE_DEPENDENT);
                 deviceDependent = 0;
             }
+            if (fComponent.isBoardDependent()) {
+                boardDependent = 1;
+                attributes().setAttribute(CmsisConstants.BOARD_DEPENDENT, true);
+            } else {
+                attributes().removeAttribute(CmsisConstants.BOARD_DEPENDENT);
+                boardDependent = 0;
+            }
 
             if (fInstanceCount > 1) {
                 attributes().setAttribute(CmsisConstants.INSTANCES, fInstanceCount);

@@ -24,7 +24,7 @@ public interface ICpPackInfo extends ICpItemInfo {
     /**
      * Sets actual pack to this info
      *
-     * @param pack actual CMSISA pack
+     * @param pack actual CMSIS pack
      */
     void setPack(ICpPack pack);
 

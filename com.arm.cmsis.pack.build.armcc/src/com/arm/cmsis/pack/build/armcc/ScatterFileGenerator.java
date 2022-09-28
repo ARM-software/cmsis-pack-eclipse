@@ -100,6 +100,8 @@ public class ScatterFileGenerator implements ILinkerScriptGenerator {
             ICpMemory m = e.getValue();
             if (!m.isROM())
                 continue;
+            if (!m.isDefault())
+                continue;
 
             generateAddressLine("LR_", id, " {", m, false); //$NON-NLS-1$//$NON-NLS-2$
             generateAddressLine("  ER_", id, " {  ; load address = execution address", m, false); //$NON-NLS-1$ //$NON-NLS-2$

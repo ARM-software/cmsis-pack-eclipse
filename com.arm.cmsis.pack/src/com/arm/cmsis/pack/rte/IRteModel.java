@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 ARM Ltd and others.
+ * Copyright (c) 2022 ARM Ltd and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpConditionContext;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -22,9 +23,11 @@ import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackFilter;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.IEvaluationResult;
+import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpPackInfo;
+import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.components.IRteComponent;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
@@ -92,6 +95,27 @@ public interface IRteModel extends IEvaluationResult {
      * @param deviceInfo device info to set
      */
     void setDeviceInfo(ICpDeviceInfo deviceInfo);
+
+    /**
+     * Returns actual board item used by the model
+     *
+     * @return ICpBoard or null
+     */
+    ICpBoard getBoard();
+
+    /**
+     * Returns board info used by in this model
+     *
+     * @return ICpBoardInfo or null if no board is used
+     */
+    ICpBoardInfo getBoardInfo();
+
+    /**
+     * Sets board info to be used by the model
+     *
+     * @param boardInfo ICpBoardInfo info to set
+     */
+    void setBoardInfo(ICpBoardInfo boardInfo);
 
     /**
      * Returns toolchain information as generic IcpItem with "Tcompiler" and
@@ -193,6 +217,13 @@ public interface IRteModel extends IEvaluationResult {
      * @return root of device tree as IRteDeviceItem
      */
     IRteDeviceItem getDevices();
+
+    /**
+     * Returns hierarchical collection of boards
+     *
+     * @return root of board tree as IRteBoardItem
+     */
+    IRteBoardItem getBoards();
 
     /**
      * Return collection of used generated packs, an entry can be <code>null</code>

@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
-import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpDebugConfiguration;
 import com.arm.cmsis.pack.data.ICpDebugVars;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
@@ -28,12 +27,10 @@ import com.arm.cmsis.pack.utils.Utils;
 /**
  * Default implementation of ICpDeviceInfo interface
  */
-public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
+public class CpDeviceInfo extends CpItemInfo implements ICpDeviceInfo {
 
     protected ICpDeviceItem fDevice = null;
-    protected ICpPackInfo fPackInfo = null;
     protected String fPname = CmsisConstants.EMPTY_STRING;
-    protected EEvaluationResult fResolveResult = EEvaluationResult.UNDEFINED;
 
     /**
      * Constructs CpDeviceInfo from supplied ICpDeviceItem
@@ -56,11 +53,6 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
         super(parent, CmsisConstants.DEVICE_TAG);
     }
 
-    @Override
-    protected ICpItem createChildItem(String tag) {
-        return CpConfigurationInfo.createChildItem(this, tag);
-    }
-
     /**
      * Constructs CpDeviceInfo from parent and tag
      *
@@ -81,15 +73,7 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
         if (fDevice != null) {
             return fDevice.getPack();
         }
-        if (fPackInfo != null) {
-            return fPackInfo.getPack();
-        }
-        return null;
-    }
-
-    @Override
-    public ICpPackInfo getPackInfo() {
-        return fPackInfo;
+        return super.getPack();
     }
 
     @Override
@@ -121,10 +105,7 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
     @Override
     public void updateInfo() {
         if (fDevice != null) {
-            ICpPack pack = fDevice.getPack();
-            fPackInfo = new CpPackInfo(this, pack);
-            fPackInfo.attributes().setAttribute(CmsisConstants.INFO, pack.getDescription());
-            replaceChild(fPackInfo);
+            updatePackInfo(fDevice.getPack());
             String processorName = getProcessorName();
             if (!attributes().hasAttributes()) {
                 attributes().setAttributes(fDevice.getEffectiveAttributes(null));
@@ -148,22 +129,12 @@ public class CpDeviceInfo extends CpItem implements ICpDeviceInfo {
                 }
             }
         } else {
-            if (fPackInfo != null) {
-                fPackInfo.setPack(null);
-            }
+            updatePackInfo(null);
         }
     }
 
     protected boolean isMergeProcessorAttributes() {
         return true;
-    }
-
-    @Override
-    public void addChild(ICpItem item) {
-        if (item instanceof ICpPackInfo) {
-            fPackInfo = (ICpPackInfo) item;
-        }
-        super.addChild(item);
     }
 
     @Override

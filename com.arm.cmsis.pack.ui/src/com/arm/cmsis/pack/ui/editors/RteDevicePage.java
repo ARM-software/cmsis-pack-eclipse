@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -17,6 +17,8 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 
+import com.arm.cmsis.pack.events.RteEvent;
+import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.rte.IRteModelController;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
@@ -59,8 +61,10 @@ public class RteDevicePage extends RteModelEditorPage {
 
     @Override
     public boolean isModified() {
-        if (getModelController() != null)
-            return getModelController().isDeviceModified();
+        if (getModelController() != null) {
+            if (getModelController().isDeviceModified() || getModelController().isBoardModified())
+                return true;
+        }
         return false;
     }
 
@@ -77,18 +81,40 @@ public class RteDevicePage extends RteModelEditorPage {
         });
     }
 
+    @Override
+    public void handle(RteEvent event) {
+        super.handle(event);
+        switch (event.getTopic()) {
+        case RteEvent.PACKS_UPDATED:
+        case RteEvent.FILTER_MODIFIED:
+            refresh(); // Refresh UI without changing configuration
+            return;
+        default:
+            super.handle(event);
+        }
+    }
+
+    @Override
+    public void updateActions() {
+        super.updateActions();
+    }
+
     protected void changeDevice() {
         IRteModelController model = getModelController();
         if (model != null) {
             RteDeviceSelectorWizard wizard = new RteDeviceSelectorWizard(CpStringsUI.RteDeviceSelectorPage_SelectDevice,
-                    model.getDevices(), model.getDeviceInfo());
+                    model.getDevices(), model.getDeviceInfo(), model.getBoards(), model.getBoardInfo());
             OkWizardDialog dlg = new OkWizardDialog(getFocusWidget().getShell(), wizard);
-            dlg.setPageSize(600, 400); // limit initial size
+            dlg.setPageSize(600, 600); // limit initial size
 
             if (dlg.open() == Window.OK) {
                 ICpDeviceInfo deviceInfo = wizard.getDeviceInfo();
-                // deviceWidget.setDeviceInfo(deviceInfo);
                 model.setDeviceInfo(deviceInfo);
+
+                // Get board info from RteDeviceSelectorWizard
+                ICpBoardInfo boardInfo = wizard.getBoardInfo();
+                // Set board info to model controller (IRteModelController)
+                model.setBoardInfo(boardInfo);
             }
         }
     }

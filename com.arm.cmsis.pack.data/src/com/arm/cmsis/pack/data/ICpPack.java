@@ -20,7 +20,7 @@ import com.arm.cmsis.pack.common.CmsisConstants;
  * Represents CMISIS Pack meta data read from pdsc file Provides access method
  * to underlying structure of the Pack
  */
-public interface ICpPack extends ICpRootItem {
+public interface ICpPack extends ICpRootItem, IAllDeviceNames {
 
     /**
      * Describes Pack state:
@@ -83,14 +83,6 @@ public interface ICpPack extends ICpRootItem {
      * @return generator as ICpGenerator or null if not found in the pack
      */
     ICpGenerator getGenerator(String id);
-
-    /**
-     * Get names of all devices declared in the pack
-     *
-     * @return a set of device names, includes family, sub-family, device and
-     *         variant levels.
-     */
-    Set<String> getAllDeviceNames();
 
     /**
      * Get names of boards described in the pack

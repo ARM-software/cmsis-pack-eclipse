@@ -133,7 +133,7 @@ public class DeviceVendor {
         String name = getOfficialVendorName(vendor);
         String url = KEIL_DD2_URL;
         if (name.startsWith("STMicro")) //$NON-NLS-1$
-            url += "st"; //$NON-NLS-1$
+            url += "stmicroelectronics"; //$NON-NLS-1$
         else if (name.equals("Microchip")) //$NON-NLS-1$
             url += "atmel"; // TODO: a temporary fix until web sites are updated //$NON-NLS-1$
         else
@@ -151,7 +151,7 @@ public class DeviceVendor {
         String name = getOfficialVendorName(vendor);
         String url = KEIL_BOARD2_URL;
         if (name.startsWith("STMicro")) //$NON-NLS-1$
-            url += "st"; //$NON-NLS-1$
+            url += "stmicroelectronics"; //$NON-NLS-1$
         else
             url += adjutsToUrl(name);
         return url;

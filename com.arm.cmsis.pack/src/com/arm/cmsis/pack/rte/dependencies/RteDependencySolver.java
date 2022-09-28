@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 ARM Ltd. and others
+ * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,6 +33,7 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
@@ -40,6 +41,7 @@ import com.arm.cmsis.pack.rte.IRteModel;
 import com.arm.cmsis.pack.rte.components.IRteComponent;
 import com.arm.cmsis.pack.rte.components.IRteComponentGroup;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
+import com.arm.cmsis.pack.rte.components.RteSelectedDeviceClass;
 import com.arm.cmsis.pack.utils.AlnumComparator;
 import com.arm.cmsis.pack.utils.VersionComparator;
 
@@ -234,6 +236,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
         case ICpExpression.REFERENCE_EXPRESSION:
             return evaluate(expression.getCondition());
 
+        case ICpExpression.BOARD_EXPRESSION:
         case ICpExpression.DEVICE_EXPRESSION:
         case ICpExpression.TOOLCHAIN_EXPRESSION:
             return EEvaluationResult.IGNORED;
@@ -324,6 +327,11 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 
         if (rteModel == null) {
             return EEvaluationResult.IGNORED; // nothing to do
+        }
+
+        // Missing board evaluation.
+        if (evaluateBoard() == EEvaluationResult.FAILED) {
+            setEvaluationResult(EEvaluationResult.FAILED);
         }
 
         if (evaluateDevice() == EEvaluationResult.FAILED) {
@@ -542,6 +550,27 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
     }
 
     /**
+     * Checks if board info is available
+     *
+     * @return EEvaluationResult
+     */
+    protected EEvaluationResult evaluateBoard() {
+        IRteComponentItem boardClass = getSelectedBoardClass();
+        ICpBoardInfo boardInfo = rteModel.getBoardInfo();
+        if (boardClass != null && boardInfo != null) {
+            if (boardInfo.getBoard() == null) {
+                EEvaluationResult result = EEvaluationResult.FAILED;
+                IRteDependencyResult depRes = new RteMissingBoardResult(boardClass, boardInfo);
+                getDependencyItemMap().put(boardClass, depRes);
+                cacheConditionResult(boardClass, result);
+                return result;
+            }
+            cacheConditionResult(boardClass, EEvaluationResult.FULFILLED);
+        }
+        return EEvaluationResult.IGNORED;
+    }
+
+    /**
      * Removes all items that are higher than overall result
      */
     protected void purgeResults() {
@@ -556,7 +585,20 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
     }
 
     protected IRteComponentItem getSelectedDeviceClass() {
-        return rteModel.getComponents().getFirstChild(CmsisConstants.EMPTY_STRING); // always first
+        Object[] components = rteModel.getComponents().getChildArray();
+        IRteComponentItem boardClass = null;
+
+        for (Object obj : components) {
+            if (obj instanceof RteSelectedDeviceClass) {
+                boardClass = (IRteComponentItem) obj;
+                break;
+            }
+        }
+        return boardClass;
+    }
+
+    protected IRteComponentItem getSelectedBoardClass() {
+        return rteModel.getComponents().getFirstChild(CmsisConstants.EMPTY_STRING); // Board is first component item.
     }
 
     protected void cacheConditionResult(IRteComponentItem item, EEvaluationResult res) {

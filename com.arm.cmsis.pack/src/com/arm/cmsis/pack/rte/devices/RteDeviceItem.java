@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.rte.devices;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -60,7 +61,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
     @Override
     protected Map<String, IRteDeviceItem> createMap() {
         // create TreeMap with Alpha-Numeric case-insensitive ascending sorting
-        return new TreeMap<String, IRteDeviceItem>(new AlnumComparator(false, false));
+        return new TreeMap<>(new AlnumComparator(false, false));
     }
 
     @Override
@@ -73,7 +74,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
         if (fDevices != null) {
             return fDevices.values();
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
@@ -143,7 +144,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
             boolean deprecated = pack.isDeprecated();
             String packId = pack.getId();
             if (fDevices == null) {
-                fDevices = new TreeMap<String, ICpDeviceItem>(new CpPackIdComparator());
+                fDevices = new TreeMap<>(new CpPackIdComparator());
             }
 
             ICpDeviceItem device = fDevices.get(packId);
@@ -249,7 +250,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
                 Map<String, ICpItem> processors = item.getProcessors();
                 for (Entry<String, ICpItem> e : processors.entrySet()) {
                     String procName = item.getName() + ":" + e.getKey(); //$NON-NLS-1$
-                    removeDeviceItem(item, procName, EDeviceHierarchyLevel.PROCESSOR.ordinal());
+                    removeDeviceItem(item, procName);
                 }
             }
             if (fDevices.size() == 0) {
@@ -277,10 +278,10 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
             return;
         }
 
-        removeDeviceItem(item, item.getName(), level);
+        removeDeviceItem(item, item.getName());
     }
 
-    protected void removeDeviceItem(ICpDeviceItem item, String itemName, int level) {
+    protected void removeDeviceItem(ICpDeviceItem item, String itemName) {
         IRteDeviceItem di = getChild(itemName);
         if (di != null) {
             di.removeDevice(item);
@@ -399,7 +400,7 @@ public class RteDeviceItem extends CmsisMapItem<IRteDeviceItem> implements IRteD
     @Override
     public Set<String> getAllDeviceNames() {
         if (fDeviceNames == null) {
-            fDeviceNames = new HashSet<String>();
+            fDeviceNames = new HashSet<>();
             if (isDevice())
                 addDeviceName(getDevice().getName());
             if (fChildMap != null) {

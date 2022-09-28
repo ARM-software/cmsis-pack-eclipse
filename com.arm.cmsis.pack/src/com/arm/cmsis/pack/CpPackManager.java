@@ -337,7 +337,8 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
     public synchronized Map<String, ICpBoard> getBoards() {
         getPacks(); // ensure fAllPacks are loaded
         if (fAllBoards == null && bPacksLoaded && fAllPacks != null) {
-            collectBoards();
+            fAllBoards = new HashMap<>();
+            collectBoards(fAllBoards, fAllPacks.getPacks());
         }
         return fAllBoards;
     }
@@ -354,11 +355,32 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         return null;
     }
 
-    protected void collectBoards() {
-        fAllBoards = new HashMap<>();
-        Collection<ICpPack> packs = fAllPacks.getPacks();
+    public static void collectBoards(Map<String, ICpBoard> collectedBoards, Collection<ICpPack> packs) {
+        if (collectedBoards == null || packs == null) {
+            return;
+        }
         for (ICpPack pack : packs) {
-            addBoards(pack);
+            collectBoards(collectedBoards, pack);
+        }
+    }
+
+    public static void collectBoards(Map<String, ICpBoard> collectedBoards, ICpPack pack) {
+        if (collectedBoards == null || pack == null) {
+            return;
+        }
+        Collection<? extends ICpItem> boards = pack.getGrandChildren(CmsisConstants.BOARDS_TAG);
+        if (boards != null) {
+            for (ICpItem item : boards) {
+                if (!(item instanceof ICpBoard)) {
+                    continue;
+                }
+                ICpBoard currentBoard = (ICpBoard) item;
+                String id = currentBoard.getId();
+                ICpBoard previousBoard = collectedBoards.get(id);
+                if (previousBoard == null || isToReplaceExistingItem(previousBoard, currentBoard)) {
+                    collectedBoards.put(id, currentBoard);
+                }
+            }
         }
     }
 
@@ -711,7 +733,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         if (fAllRteBoards != null) {
             fAllRteBoards.addBoards(pack);
         }
-        addBoards(pack);
+        collectBoards(fAllBoards, pack);
 
         // Update Examples Collection
         if (fAllExamples != null) {
@@ -783,26 +805,6 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         // the .Download folder
         ICpPack newPack = jobResult.getNewPack();
         processPackAdded(newPack);
-    }
-
-    protected void addBoards(ICpPack pack) {
-        if (pack == null) {
-            return;
-        }
-        Collection<? extends ICpItem> boards = pack.getGrandChildren(CmsisConstants.BOARDS_TAG);
-        if (fAllBoards != null && boards != null) {
-            for (ICpItem item : boards) {
-                if (!(item instanceof ICpBoard)) {
-                    continue;
-                }
-                ICpBoard currentBoard = (ICpBoard) item;
-                String id = currentBoard.getId();
-                ICpBoard previousBoard = fAllBoards.get(id);
-                if (previousBoard == null || isToReplaceExistingItem(previousBoard, currentBoard)) {
-                    fAllBoards.put(id, currentBoard);
-                }
-            }
-        }
     }
 
     /**

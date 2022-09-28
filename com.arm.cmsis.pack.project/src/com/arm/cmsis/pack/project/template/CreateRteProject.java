@@ -26,6 +26,7 @@ import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.build.settings.RteToolChainAdapterInfo;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.configuration.IRteConfiguration;
+import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.project.IRteProject;
 import com.arm.cmsis.pack.project.Messages;
@@ -61,10 +62,12 @@ public class CreateRteProject extends ProcessRunner {
             msg += adapterId;
             throw new ProcessFailureException(getProcessMessage(processId, IStatus.ERROR, msg));
         }
-        // Get device info to create Rte configuration
+        // Get device and board infos to create Rte configuration
         ICpDeviceInfo deviceInfo = RteProjectTemplate.getSelectedDeviceInfo();
+        ICpBoardInfo boardInfo = RteProjectTemplate.getSelectedBoardInfo();
         // Create Rte configuration
-        IRteConfiguration rteConf = ProjectUtils.createRteConfiguration(compiler, output, deviceInfo);
+        IRteConfiguration rteConf = ProjectUtils.createRteConfiguration(compiler, output, deviceInfo, boardInfo);
+
         // Set Rte project's name
         String rteConfigName = projectName + CmsisConstants.DOT_RTECONFIG;
 

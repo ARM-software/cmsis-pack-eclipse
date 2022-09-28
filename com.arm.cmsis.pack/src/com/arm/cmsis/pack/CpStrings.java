@@ -66,6 +66,7 @@ public class CpStrings extends NLS {
     public static String RteDependencyResult_ComponentConficts;
     public static String RteComponentVendorAny;
     public static String RteComponentVersionLatest;
+    public static String RteMissingBoardResult_Board;
     public static String RteMissingComponentResult_APIDefIsMissingNoPack;
     public static String RteMissingComponentResult_IsFoundInPack;
     public static String RteMissingComponentResult_NoComponentFoundMatchingDeviceCompiler;
@@ -77,6 +78,8 @@ public class CpStrings extends NLS {
     public static String PackFilterInInEffectComponentsFiltered;
     public static String SelectedDevice;
     public static String DeviceNotFound;
+    public static String SelectedBoard;
+    public static String BoardNotFound;
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, CpStrings.class);

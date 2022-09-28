@@ -20,6 +20,7 @@ public interface ICpExpression extends ICpItem {
     static final char DENY_EXPRESSION = 'd';
     static final char REQUIRE_EXPRESSION = 'r';
 
+    static final char BOARD_EXPRESSION = 'B';
     static final char DEVICE_EXPRESSION = 'D';
     static final char TOOLCHAIN_EXPRESSION = 'T';
     static final char COMPONENT_EXPRESSION = 'C';

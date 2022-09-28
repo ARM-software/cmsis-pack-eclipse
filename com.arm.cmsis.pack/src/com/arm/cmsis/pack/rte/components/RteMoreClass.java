@@ -32,4 +32,9 @@ public class RteMoreClass extends RteComponentClass {
     public boolean purge() {
         return false;
     }
+
+    @Override
+    public boolean matchKey(String pattern, String key) {
+        return false; // this is an artificial entry, nothing to match
+    }
 }

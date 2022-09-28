@@ -57,4 +57,14 @@ public class CpFile extends CpItem implements ICpFile {
         return false;
     }
 
+    @Override
+    public boolean isBoardDependent() {
+        if (super.isBoardDependent())
+            return true;
+        ICpComponent c = getParentComponent();
+        if (c != null)
+            return c.isBoardDependent();
+        return false;
+    }
+
 }

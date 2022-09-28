@@ -56,9 +56,11 @@ public class RteModelUtils {
             if (cpItem instanceof ICpItemInfo) {
                 ICpItemInfo ci = (ICpItemInfo) cpItem;
                 ICpPackInfo pi = ci.getPackInfo();
-                ICpPack pack = pi.getPack();
-                if (pack == null || !pack.getPackState().isInstalledOrLocal()) {
-                    missingPacks.add(constructEffectivePackId(pi.attributes()));
+                if (pi != null) {
+                    ICpPack pack = pi.getPack();
+                    if (pack == null || !pack.getPackState().isInstalledOrLocal()) {
+                        missingPacks.add(constructEffectivePackId(pi.attributes()));
+                    }
                 }
             }
         }

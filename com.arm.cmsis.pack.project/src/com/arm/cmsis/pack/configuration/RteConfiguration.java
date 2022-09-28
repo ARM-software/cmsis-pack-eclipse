@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 ARM Ltd. and others
+ * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -71,7 +71,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
     protected IMemorySettings fMemorySettings = null;
 
     // source files included in project: project relative path -> absPath
-    protected Map<String, ICpFileInfo> projectFiles = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+    protected Map<String, ICpFileInfo> fProjectFiles = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
 
     // root of the code template hierarchy
     protected ICpCodeTemplate fCodeTemplateRoot = new CpCodeTemplate(null);
@@ -115,7 +115,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
     protected void clear() {
         rteBuildSettings.clear();
-        projectFiles.clear();
+        fProjectFiles.clear();
         libSourcePaths.clear();
 
         rteComponentsH.clear();
@@ -181,18 +181,18 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
     @Override
     public Map<String, ICpFileInfo> getProjectFiles() {
-        return projectFiles;
+        return fProjectFiles;
     }
 
     @Override
     public ICpFileInfo getProjectFileInfo(String fileName) {
-        return projectFiles.get(fileName);
+        return fProjectFiles.get(fileName);
     }
 
     @Override
     public ICpFileInfo[] getProjectFileInfos(String fileName) {
         Collection<ICpFileInfo> fileInfos = new LinkedList<>();
-        for (Entry<String, ICpFileInfo> e : projectFiles.entrySet()) {
+        for (Entry<String, ICpFileInfo> e : fProjectFiles.entrySet()) {
             if (e.getKey().matches(fileName)) {
                 fileInfos.add(e.getValue());
             }
@@ -442,8 +442,11 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
         if (isAddToProject(fi)) {
             String className = ci != null ? ci.getAttribute(CmsisConstants.CCLASS) : CmsisConstants.EMPTY_STRING;
             String deviceName = fConfigInfo.getDeviceInfo().getFullDeviceName();
-            effectivePath = getPathRelativeToProject(fi, name, className, deviceName, index);
-            projectFiles.put(effectivePath, fi);
+            effectivePath = getPathRelativeToProject(fi, absPath, name, className, deviceName, index);
+            if (effectivePath == null) {
+                return;
+            }
+            fProjectFiles.put(effectivePath, fi);
             if (cat.isSource() && ci != null) {
                 IBuildSettings componentSettings = rteBuildSettings.getBuildSettings(ci.getName());
                 if (componentSettings != null) {
@@ -784,21 +787,20 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
      * Returns path relative to project (for component files)
      *
      * @param fi         {@link ICpFileInfo} represents file
+     * @param absPath    source absolute path
      * @param fileName   filename to use, may also contain path segments
      * @param className  class name of the file's component
      * @param deviceName device name used in project
      * @param index      component instance index
      * @return path relative to the project
      */
-    protected String getPathRelativeToProject(ICpFileInfo fi, String fileName, String className, String deviceName,
-            int index) {
+    protected String getPathRelativeToProject(ICpFileInfo fi, String absPath, String fileName, String className,
+            String deviceName, int index) {
         if (fi == null) {
             return null;
         }
 
         if (fi.isGenerated()) {
-            ICpFile f = fi.getFile();
-            String absPath = f.getAbsolutePath(f.getName());
             String baseDir = fConfigInfo.getDir(false);
             if (absPath.startsWith(baseDir)) {
                 // the file is within project
@@ -815,6 +817,25 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
             path += Utils.wildCardsToX(deviceName) + '/';
         }
 
+        String effectivePath = insertFileSuffix(path, fileName, index);
+
+        for (int uniqueIndex = 1; uniqueIndex < 128; uniqueIndex++) {
+            ICpFileInfo addedFi = fProjectFiles.get(effectivePath);
+            if (addedFi == null) {
+                break;
+            }
+            ICpFile f = addedFi.getFile();
+            if (f != null && f.getAbsolutePath(addedFi.getName()).equals(absPath)) {
+                return null; // already inserted
+            }
+
+            String uniquePath = path + uniqueIndex + '/';
+            effectivePath = insertFileSuffix(uniquePath, fileName, index);
+        }
+        return effectivePath;
+    }
+
+    protected static String insertFileSuffix(String path, String fileName, int index) {
         if (index >= 0) {
             int nSegments = Utils.getSegmentCount(fileName);
             String filePath = Utils.extractPath(fileName, false);

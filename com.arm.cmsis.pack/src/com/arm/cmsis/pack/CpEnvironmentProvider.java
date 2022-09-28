@@ -12,6 +12,7 @@ import com.arm.cmsis.pack.data.ICpExample;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.events.IRteEventProxy;
 import com.arm.cmsis.pack.events.RteEvent;
+import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.utils.Utils;
@@ -116,7 +117,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 
     /**
      * Checks if example's load path is supported
-     * 
+     *
      * @param example     ICpExample to check
      * @param environment ICpItem describing particular environment
      * @return true if supported
@@ -193,7 +194,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 
     /**
      * Adjusts build settings according to device info
-     * 
+     *
      * @param buildSettings IBuildSettings to adjust
      * @param deviceInfo    ICpDeviceInfo as information source
      */
@@ -232,7 +233,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 
     /**
      * Converts option tag to option type used by build Settings
-     * 
+     *
      * @param tag String option type
      * @return integer build type
      */
@@ -289,6 +290,9 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
         case "$D": //$NON-NLS-1$
         case "#D": //$NON-NLS-1$
         case "@D": //$NON-NLS-1$
+        case "$B": //$NON-NLS-1$
+        case "#B": //$NON-NLS-1$
+        case "@B": //$NON-NLS-1$
             return expandToAbsolute(key, configInfo);
         case "$P": //$NON-NLS-1$
             return CmsisConstants.PROJECT_ABS_PATH;
@@ -321,7 +325,7 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
 
         if (ch1 == 'D') {
             ICpDeviceInfo di = configInfo.getDeviceInfo();
-            String fullDeviceName = di.getFullDeviceName();
+            String fullDeviceName = di != null ? di.getFullDeviceName() : CmsisConstants.EMPTY_STRING;
             if (ch0 == '$')
                 return Utils.wildCardsToX(fullDeviceName);
 
@@ -336,6 +340,15 @@ public class CpEnvironmentProvider extends PlatformObject implements ICpEnvironm
                 return dName;
             else if (ch0 == '@')
                 return pName;
+            return key;
+        }
+
+        if (ch1 == 'B') {
+            ICpBoardInfo bi = configInfo.getBoardInfo();
+            String boardName = bi != null ? bi.getName() : CmsisConstants.EMPTY_STRING;
+            if (ch0 == '$' || ch0 == '#' || ch0 == '@') {
+                return Utils.wildCardsToX(boardName);
+            }
             return key;
         }
 

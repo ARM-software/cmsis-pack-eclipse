@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -47,8 +47,10 @@ public class RteTemplateDeviceSelectorPage extends RteDeviceSelectorPage impleme
             data = deviceInfo.attributes().getAttributesAsMap();
             RteProjectTemplate.setSelectedDeviceInfo(deviceInfo);
         }
+        RteProjectTemplate.setSelectedBoardInfo(getBoardInfo());
+
         if (data == null) {
-            data = new HashMap<String, String>();
+            data = new HashMap<>();
         }
         return data;
     }
@@ -62,9 +64,14 @@ public class RteTemplateDeviceSelectorPage extends RteDeviceSelectorPage impleme
             return;
         }
 
-        IRteDeviceItem devices = packManager.getInstalledDevices();
+        IRteDeviceItem devices = packManager.getDevices();
         setDevices(devices);
-        // always clear the device info in a new wizard
+        setBoards(packManager.getRteBoards());
+
+        // always clear the device and board info in a new wizard
+        RteProjectTemplate.setSelectedBoardInfo(null);
+        setBoardInfo(RteProjectTemplate.getSelectedBoardInfo());
+
         RteProjectTemplate.setSelectedDeviceInfo(null);
         // this will update status
         setDeviceInfo(RteProjectTemplate.getSelectedDeviceInfo());
@@ -94,4 +101,17 @@ public class RteTemplateDeviceSelectorPage extends RteDeviceSelectorPage impleme
         return super.getNextPage();
     }
 
+    @Override
+    public void handle(String message) {
+        updateStatus(message);
+    }
+
+    @Override
+    public void updateStatus(String message) {
+        setErrorMessage(message);
+        if (message == null || message.isEmpty())
+            setPageComplete(true);
+        else
+            setPageComplete(false);
+    }
 }

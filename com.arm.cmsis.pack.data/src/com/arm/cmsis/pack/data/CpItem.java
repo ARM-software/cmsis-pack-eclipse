@@ -390,6 +390,19 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
     }
 
     @Override
+    public boolean isBoardDependent() {
+        if (attributes().getAttributeAsBoolean(CmsisConstants.BOARD_DEPENDENT, false)) {
+            return true;
+        }
+
+        ICpItem condition = getCondition();
+        if (condition != null) {
+            return condition.isBoardDependent();
+        }
+        return false;
+    }
+
+    @Override
     public EEvaluationResult evaluate(ICpConditionContext context) {
         ICpItem condition = getCondition();
         if (condition != null) {
@@ -508,10 +521,12 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
         String vendor = null;
         if (hasAttribute(CmsisConstants.DVENDOR)) {
             vendor = getAttribute(CmsisConstants.DVENDOR);
-        } else if (hasAttribute(CmsisConstants.VENDOR)) {
-            return getAttribute(CmsisConstants.VENDOR);
+        } else if (hasAttribute(CmsisConstants.BVENDOR)) {
+            return getAttribute(CmsisConstants.BVENDOR);
         } else if (hasAttribute(CmsisConstants.CVENDOR)) {
             return getAttribute(CmsisConstants.CVENDOR);
+        } else if (hasAttribute(CmsisConstants.VENDOR)) {
+            return getAttribute(CmsisConstants.VENDOR);
         }
         if (vendor != null && !vendor.isEmpty()) {
             return vendor;
@@ -533,6 +548,14 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
             return parent.getVersion();
         }
         return null;
+    }
+
+    @Override
+    public String getRevision() {
+        if (hasAttribute(CmsisConstants.BREVISION)) {
+            return getAttribute(CmsisConstants.BREVISION);
+        }
+        return getAttribute(CmsisConstants.REVISION);
     }
 
     @Override

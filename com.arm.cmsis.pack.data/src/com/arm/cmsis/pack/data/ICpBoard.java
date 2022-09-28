@@ -13,6 +13,7 @@ package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
 
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.generic.IAttributes;
 
 /**
@@ -21,23 +22,67 @@ import com.arm.cmsis.pack.generic.IAttributes;
 public interface ICpBoard extends ICpItem {
 
     /**
-     * Checks if this board contains mounted or compatible device matching suppled
-     * device attributes
+     * Checks if this board contains mounted device matching suppled one device
+     * attributes
      *
      * @param deviceAttributes attributes of device to match
-     * @return
+     * @return true if board contains matching mounted device
+     */
+    boolean hasMountedDevice(IAttributes deviceAttributes);
+
+    /**
+     * Checks if this board contains mounted or compatible device matching suppled
+     * one device attributes
+     *
+     * @param deviceAttributes attributes of device to match
+     * @return true if board contains matching device
      */
     boolean hasCompatibleDevice(IAttributes deviceAttributes);
 
     /**
-     * @return mounted Devices on this board. return empty list if no mounted
-     *         devices.
+     * Returns list of mounted devices on this board
+     *
+     * @return collection of ICpItem objects
      */
     Collection<ICpItem> getMountedDevices();
 
     /**
-     * @return compatible Devices on this board. return empty list if no compatible
-     *         devices.
+     * Returns compatible devices on this board
+     *
+     * @return collection of ICpItem objects
      */
     Collection<ICpItem> getCompatibleDevices();
+
+    /**
+     * Helper method to construct board ID
+     *
+     * @param item ICpItem representing ICpBoard or ICpBoardInfo
+     * @return constructed board ID
+     */
+    static String constructBoardId(ICpItem item) {
+        String id = CmsisConstants.EMPTY_STRING;
+        if (item != null) {
+            id = item.getVendor() + CmsisConstants.DOUBLE_COLON + constructBoardDisplayName(item);
+        }
+        return id;
+    }
+
+    /**
+     * Helper method to construct board ID
+     *
+     * @param item ICpItem representing ICpBoard or ICpBoardInfo
+     * @return constructed board display name
+     */
+    static String constructBoardDisplayName(ICpItem item) {
+        String name = CmsisConstants.EMPTY_STRING;
+        if (item != null) {
+            name = item.getName();
+            String rev = item.getRevision();
+            if (!rev.isEmpty()) {
+                name += " (" + rev + ")";
+            }
+        }
+        return name;
+    }
+
 }

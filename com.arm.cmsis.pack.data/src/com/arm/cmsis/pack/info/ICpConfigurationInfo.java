@@ -28,6 +28,20 @@ public interface ICpConfigurationInfo extends ICpRootItem {
     ICpDeviceInfo getDeviceInfo();
 
     /**
+     * Returns board info stored in the configuration
+     *
+     * @return ICpBoardInfo stored in the configuration
+     */
+    ICpBoardInfo getBoardInfo();
+
+    /**
+     * Sets board info to store in the configuration
+     *
+     * @param boardInfo ICpBoardInfo to store in the configuration
+     */
+    void setBoardInfo(ICpBoardInfo boardInfo);
+
+    /**
      * Returns toolchain information as generic IcpItem with "Tcompiler" and
      * "Toutput" attributes
      *

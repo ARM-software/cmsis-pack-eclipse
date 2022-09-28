@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpPackFilter;
+import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpConditionContext;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
@@ -35,11 +36,13 @@ import com.arm.cmsis.pack.events.RteEvent;
 import com.arm.cmsis.pack.events.RteEventProxy;
 import com.arm.cmsis.pack.generic.Attributes;
 import com.arm.cmsis.pack.generic.IAttributes;
+import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpPackFilterInfo;
 import com.arm.cmsis.pack.info.ICpPackInfo;
+import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.components.IRteComponent;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 import com.arm.cmsis.pack.rte.dependencies.IRteDependencyItem;
@@ -62,12 +65,14 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
     protected IRtePackCollection fRtePackCollection = null;
 
     protected IAttributes fSavedDeviceAttributes = null;
+    protected IAttributes fSavedBoardAttributes = null;
     protected Set<String> fSavedComponentKeys = null;
     protected Set<String> fSavedGpdscFiles = null;
 
     protected boolean fbComponentSelectionModified = false;
     protected boolean fbPackFilterModified = false;
     protected boolean fbDeviceModified = false;
+    protected boolean fbBoardModified = false;
     protected boolean fbShowUsedPacksOnly = true;
 
     /**
@@ -93,6 +98,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
         fCurrentPackFilter = null;
         fRtePackCollection = null;
         fSavedDeviceAttributes = null;
+        fSavedBoardAttributes = null;
         fSavedComponentKeys = null;
         fSavedGpdscFiles = null;
     }
@@ -110,6 +116,11 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
     @Override
     public boolean isDeviceModified() {
         return fbDeviceModified;
+    }
+
+    @Override
+    public boolean isBoardModified() {
+        return fbBoardModified;
     }
 
     protected boolean isGpdscFileListModified() {
@@ -134,7 +145,7 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
 
     @Override
     public boolean isModified() {
-        return isDeviceModified() || isPackFilterModified() || isComponentSelectionModified();
+        return isDeviceModified() || isBoardModified() || isPackFilterModified() || isComponentSelectionModified();
     }
 
     protected boolean checkIfComponentsModified() {
@@ -200,8 +211,12 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
         fSavedPackFilter = new CpPackFilter(info.createPackFilter());
         fCurrentPackFilter = new CpPackFilter(fSavedPackFilter);
         fSavedDeviceAttributes = new Attributes(info.getDeviceInfo().attributes());
+        if (info.getBoardInfo() != null) {
+            fSavedBoardAttributes = new Attributes(info.getBoardInfo().attributes());
+        } else {
+            fSavedBoardAttributes = new Attributes();
+        }
         collectPacks();
-
         fRtePackCollection.setPackFilterInfo(info.getPackFilterInfo());
         fModel.setConfigurationInfo(info); // will update used packs
         fRtePackCollection.setUsedPacks(getUsedPackInfos());
@@ -261,11 +276,17 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
         fSavedPackFilter = new CpPackFilter(getPackFilter());
         fCurrentPackFilter = new CpPackFilter(fSavedPackFilter);
         fSavedDeviceAttributes = new Attributes(getDeviceInfo().attributes());
+        if (getBoardInfo() != null) {
+            fSavedBoardAttributes = new Attributes(getBoardInfo().attributes());
+        } else {
+            fSavedBoardAttributes = new Attributes();
+        }
         fSavedComponentKeys = collectComponentKeys();
         fSavedGpdscFiles = collectGpdscFiles();
         fbComponentSelectionModified = false;
         fbPackFilterModified = false;
         fbDeviceModified = false;
+        fbBoardModified = false;
     }
 
     protected void setSavedFlags(Collection<? extends ICpItem> children) {
@@ -437,6 +458,48 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
     }
 
     @Override
+    public ICpBoardInfo getBoardInfo() {
+        return fModel.getBoardInfo();
+    }
+
+    @Override
+    public ICpBoard getBoard() {
+        return fModel.getBoard();
+    }
+
+    @Override
+    public void setBoardInfo(ICpBoardInfo boardInfo) {
+        if (getBoardInfo() == boardInfo) {
+            return;
+        }
+
+        boolean changed = false;
+        int updateFlags = RteConstants.NONE;
+
+        if (getBoardInfo() == null) {
+            changed = true;
+        } else {
+            if (boardInfo == null) // "-No Board-" item is selected.
+                changed = true;
+            else
+                changed = !getBoardInfo().attributes().equals(boardInfo.attributes());
+
+            if (changed)
+                updateFlags = RteConstants.COMPONENT_IGNORE_ALL;
+        }
+
+        if (changed) {
+            if (boardInfo != null)
+                fbBoardModified = !fSavedBoardAttributes.equals(boardInfo.attributes());
+            else
+                fbBoardModified = true;
+
+            fModel.setBoardInfo(boardInfo);
+            update(updateFlags);
+        }
+    }
+
+    @Override
     public ICpItem getToolchainInfo() {
         return fModel.getToolchainInfo();
     }
@@ -546,6 +609,11 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
     @Override
     public IRteDeviceItem getDevices() {
         return fModel.getDevices();
+    }
+
+    @Override
+    public IRteBoardItem getBoards() {
+        return fModel.getBoards();
     }
 
     @Override

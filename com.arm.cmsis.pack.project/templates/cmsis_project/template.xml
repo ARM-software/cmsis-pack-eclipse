@@ -56,6 +56,9 @@ and is available at http://www.eclipse.org/legal/epl-v10.html"
 			<simple name="path" value="RTE/$(Dname)" />
 		</process>
 
+		<process type="com.arm.cmsis.pack.project.InstallDeviceAndBoardPacks">
+			<simple name="projectName" value="$(projectName)" />
+		</process>
 
 		<process type="com.arm.cmsis.pack.project.CreateRteProject">
 			<simple name="projectName" value="$(projectName)" />

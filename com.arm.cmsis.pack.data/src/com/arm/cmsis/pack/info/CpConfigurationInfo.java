@@ -21,7 +21,7 @@ import com.arm.cmsis.pack.data.ICpPackFilter;
 import com.arm.cmsis.pack.utils.Utils;
 
 /**
- * The class inplementing ICpConfigurationInfo interface
+ * The class implementing ICpConfigurationInfo interface
  */
 public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationInfo {
 
@@ -29,7 +29,8 @@ public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationI
         super(NULL_CPITEM, CmsisConstants.CONFIGURATION_TAG);
     }
 
-    public CpConfigurationInfo(ICpDeviceInfo deviceInfo, ICpItem toolchainInfo, boolean createDefaultTags) {
+    public CpConfigurationInfo(ICpDeviceInfo deviceInfo, ICpItem toolchainInfo, ICpBoardInfo boardInfo,
+            boolean createDefaultTags) {
         this();
         if (createDefaultTags) {
             ICpPackFilterInfo filterInfo = new CpPackFilterInfo(this);
@@ -41,6 +42,12 @@ public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationI
         // add toolchain
         toolchainInfo.setParent(this);
         addChild(toolchainInfo);
+
+        if (boardInfo != null) {
+            boardInfo.setParent(this);
+            addChild(boardInfo);
+        }
+
         if (createDefaultTags) {
             getComponentsItem();
         }
@@ -77,6 +84,8 @@ public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationI
         case CmsisConstants.API_TAG:
         case CmsisConstants.COMPONENT_TAG:
             return new CpComponentInfo(parent, tag);
+        case CmsisConstants.BOARD_TAG:
+            return new CpBoardInfo(parent, tag);
         case CmsisConstants.DEVICE_TAG:
             return new CpDeviceInfo(parent, tag);
         case CmsisConstants.PACKAGE_TAG:
@@ -91,6 +100,23 @@ public class CpConfigurationInfo extends CpRootItem implements ICpConfigurationI
             break;
         }
         return new CpItem(parent, tag);
+    }
+
+    @Override
+    public ICpBoardInfo getBoardInfo() {
+        return (ICpBoardInfo) getFirstChild(CmsisConstants.BOARD_TAG);
+    }
+
+    @Override
+    public void setBoardInfo(ICpBoardInfo boardInfo) {
+        if (getBoardInfo() == boardInfo) {
+            return;
+        }
+        if (boardInfo == null) {
+            removeAllChildren(CmsisConstants.BOARD_TAG);
+        } else {
+            replaceChild(boardInfo);
+        }
     }
 
     @Override

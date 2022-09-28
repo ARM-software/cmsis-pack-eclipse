@@ -33,6 +33,7 @@ import com.arm.cmsis.pack.installer.ui.views.BoardsView;
 import com.arm.cmsis.pack.installer.ui.views.DevicesView;
 import com.arm.cmsis.pack.installer.ui.views.PackInstallerView;
 import com.arm.cmsis.pack.item.ICmsisItem;
+import com.arm.cmsis.pack.rte.boards.IRteBoardDeviceItem;
 import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
@@ -44,7 +45,7 @@ import com.arm.cmsis.pack.utils.Utils;
 public class PackInstallerViewFilter extends ViewerFilter {
 
     protected IRteDeviceItem fDeviceItem = null;
-    protected IRteBoardItem fBoardItem = null;
+    protected IRteBoardDeviceItem fBoardItem = null;
 
     protected boolean bAllDevices = false;
     protected boolean bAllBoards = false;
@@ -172,18 +173,19 @@ public class PackInstallerViewFilter extends ViewerFilter {
         } else {
             bAllBoards = false;
         }
-        if (fSelectedItem instanceof IRteDeviceItem)
+        if (fSelectedItem instanceof IRteDeviceItem) {
             return setDeviceItem((IRteDeviceItem) fSelectedItem);
-        return setBoardItem((IRteBoardItem) fSelectedItem);
+        }
+        return setBoardItem((IRteBoardDeviceItem) fSelectedItem);
     }
 
-    protected boolean setBoardItem(IRteBoardItem item) {
+    protected boolean setBoardItem(IRteBoardDeviceItem item) {
         if (fBoardItem == item)
             return false;
         fBoardItem = item;
         fDeviceItem = null;
-        if (fBoardItem != null && !bAllBoards) {
-            fBoardName = fBoardItem.getName();
+        if (!bAllBoards && fBoardItem != null && fBoardItem.getRteBoard() != null) {
+            fBoardName = fBoardItem.getRteBoard().getName();
             fSelectedDeviceNames = fBoardItem.getAllDeviceNames();
         } else {
             fBoardName = null;
@@ -278,7 +280,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
      * @param pack  The pack
      * @return true if pack contains this board, otherwise false
      */
-    private boolean packContainsBoard(IRteBoardItem board, ICpPack pack) {
+    private boolean packContainsBoard(IRteBoardDeviceItem board, ICpPack pack) {
 
         // check if the pack contains a board
         Set<String> boardNames = pack.getBoardNames();
@@ -289,11 +291,8 @@ public class PackInstallerViewFilter extends ViewerFilter {
         if (Utils.checkIfIntersect(fSelectedDeviceNames, devicesContainedInPack)) {
             return true;
         }
-
-        IRteDeviceItem mountedDevices = board.getMountedDevices();
-        IRteDeviceItem compatibleDevices = board.getCompatibleDevices();
-
-        return packContainsRteDevice(mountedDevices, pack) || packContainsRteDevice(compatibleDevices, pack);
+        IRteDeviceItem deviceItem = board != null ? board.getRteDeviceLeaf() : null;
+        return packContainsRteDevice(deviceItem, pack);
     }
 
     /**
@@ -330,7 +329,7 @@ public class PackInstallerViewFilter extends ViewerFilter {
     }
 
     private boolean packContainsRteDevice(IRteDeviceItem deviceItem, ICpPack pack) {
-        if (deviceItem == null) {
+        if (fSelectedDeviceNames.isEmpty()) {
             return false;
         }
 

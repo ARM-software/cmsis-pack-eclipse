@@ -3,3 +3,8 @@
 /.DebugSeqTypeProvider.java._trace
 /.IntType.java._trace
 /.StringType.java._trace
+/BoolType.java
+/DebugSeqType.java
+/DebugSeqTypeProvider.java
+/IntType.java
+/StringType.java

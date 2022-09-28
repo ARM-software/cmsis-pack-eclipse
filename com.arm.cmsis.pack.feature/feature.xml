@@ -2,7 +2,7 @@
 <feature
       id="com.arm.cmsis.pack.feature"
       label="%featureName"
-      version="2.7.0.qualifier"
+      version="2.8.0.qualifier"
       provider-name="%providerName">
 
    <description>

@@ -51,6 +51,13 @@
                name="lastStep">
          </simple>
       </processType>
+      <processType
+            name="InstallDeviceAndBoardPacks"
+            processRunner="com.arm.cmsis.pack.project.template.InstallDeviceAndBoardPacks">
+         <simple
+               name="projectName">
+         </simple>
+      </processType>
    </extension>
    <extension
          point="org.eclipse.ui.decorators">

@@ -63,6 +63,11 @@ public class CpFileInfo extends CpFile implements ICpFileInfo {
             } else {
                 attributes().removeAttribute(CmsisConstants.DEVICE_DEPENDENT);
             }
+            if (fFile.isBoardDependent()) {
+                attributes().setAttribute(CmsisConstants.BOARD_DEPENDENT, true);
+            } else {
+                attributes().removeAttribute(CmsisConstants.BOARD_DEPENDENT);
+            }
         }
     }
 

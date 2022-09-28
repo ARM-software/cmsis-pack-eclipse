@@ -21,6 +21,7 @@ import com.arm.cmsis.pack.enums.EEvaluationResult;
  */
 public class CpCondition extends CpItem implements ICpCondition {
     protected int deviceDependent = -1; // not initialized
+    protected int boardDependent = -1; // not initialized
 
     /**
      * @param parent
@@ -85,4 +86,25 @@ public class CpCondition extends CpItem implements ICpCondition {
         }
         return deviceDependent > 0;
     }
+
+    @Override
+    public boolean isBoardDependent() {
+        if (boardDependent < 0) {
+            boardDependent = 0;
+            Collection<? extends ICpItem> children = getChildren();
+            if (children == null || children.isEmpty()) {
+                return false;
+            }
+            for (ICpItem child : children) {
+                if (!(child instanceof ICpExpression))
+                    continue;
+                if (child.isBoardDependent()) {
+                    boardDependent = 1;
+                    break;
+                }
+            }
+        }
+        return boardDependent > 0;
+    }
+
 }

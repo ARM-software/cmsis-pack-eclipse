@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 ARM Ltd. and others
+ * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -101,6 +101,10 @@ public class CmsisConstants {
     public static final String CUSTOM = "custom"; //$NON-NLS-1$
     public static final String MAX_INSTANCES = "maxInstances"; //$NON-NLS-1$
     public static final String IS_DEFAULT_VARIANT = "isDefaultVariant"; //$NON-NLS-1$
+
+    public static final String BNAME = "Bname"; //$NON-NLS-1$
+    public static final String BVENDOR = "Bvendor"; //$NON-NLS-1$
+    public static final String BREVISION = "Brevision"; //$NON-NLS-1$
 
     public static final String DNAME = "Dname"; //$NON-NLS-1$
     public static final String DFAMILY = "Dfamily"; //$NON-NLS-1$
@@ -242,6 +246,7 @@ public class CmsisConstants {
     public static final String RELEASES_TAG = "releases"; //$NON-NLS-1$
     public static final String DEVICE_TAG = "device"; //$NON-NLS-1$
     public static final String DEVICES_TAG = "devices"; //$NON-NLS-1$
+    public static final String DEVICES = "Devices"; //$NON-NLS-1$
     public static final String FAMILY_TAG = "family"; //$NON-NLS-1$
     public static final String SUBFAMILY_TAG = "subFamily"; //$NON-NLS-1$
     public static final String VARIANT_TAG = "variant"; //$NON-NLS-1$
@@ -405,9 +410,12 @@ public class CmsisConstants {
     // board tags and attributes
     public static final String ALL_BOARDS = "All Boards"; //$NON-NLS-1$
     public static final String ALL_DEVICES = "All Devices"; //$NON-NLS-1$
+    public static final String NO_BOARD = "- No Board -"; //$NON-NLS-1$
 
     public static final String BOARD_TAG = "board"; //$NON-NLS-1$
     public static final String BOARDS_TAG = "boards"; //$NON-NLS-1$
+    public static final String BOARDS = "Boards"; //$NON-NLS-1$
+    public static final String BOARD_ID = "boardId"; //$NON-NLS-1$
     public static final String REVISION = "revision"; //$NON-NLS-1$
     public static final String MOUNTED_DEVICE_TAG = "mountedDevice"; //$NON-NLS-1$
     public static final String COMPATIBLE_DEVICE_TAG = "compatibleDevice"; //$NON-NLS-1$
@@ -417,6 +425,7 @@ public class CmsisConstants {
     // configuration tags and attributes
     public static final String INSTANCES = "instances"; //$NON-NLS-1$
     public static final String DEVICE_DEPENDENT = "deviceDependent";//$NON-NLS-1$
+    public static final String BOARD_DEPENDENT = "boardeDependent";//$NON-NLS-1$
 
     public static final String TOOLCHAIN_TAG = "toolchain"; //$NON-NLS-1$
     public static final String CONFIGURATION_TAG = "configuration"; //$NON-NLS-1$

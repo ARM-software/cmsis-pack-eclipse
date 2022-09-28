@@ -4,6 +4,16 @@ import org.eclipse.osgi.util.NLS;
 
 public class CpStringsUI extends NLS {
     private static final String BUNDLE_NAME = "com.arm.cmsis.pack.ui.CpStringsUI"; //$NON-NLS-1$
+    public static String BoardsViewColumnAdvisor_Boards;
+    public static String BoardsViewLabelProvider_AvailableInPack;
+    public static String DeprecatedBoard;
+    public static String RteDeviceSelectorWidget_tabItemDevices;
+    public static String RteDeviceSelectorWidget_tabItemBoards;
+    public static String RteDeviceSelectorWidget_Description;
+    public static String RteDeviceSelectorWidget_lblBoardPackLabel;
+    public static String RteDeviceSelectorWidget_lblMve_text;
+    public static String RteDeviceSelectorWidget_lblBoardVendorLabel;
+    public static String RteDeviceSelectorWidget_lblBoardLabel_text;
     public static String PreferencesInstallMissingPacks;
     public static String RteEditor_ChangeDialogMsgTitle;
     public static String PreferencesPackRootLabel;
@@ -63,6 +73,11 @@ public class CpStringsUI extends NLS {
     public static String ExpandSelected;
     public static String ExpandAllNodes;
     public static String ExpandSelectedNode;
+    public static String DevicesViewColumnAdvisor_1Device;
+    public static String DevicesViewColumnAdvisor_Devices;
+    public static String DevicesViewColumnAdvisor_Processor;
+    public static String DevicesViewLabelProvider_AvailableInPack;
+    public static String DevicesViewLabelProvider_DeprecatedDevice;
     public static String DeviceTreeView_Name;
     public static String DeviceTreeView_Type;
     public static String DeviceTreeView_Attributes;
@@ -91,6 +106,7 @@ public class CpStringsUI extends NLS {
     public static String RteDeviceSelectorWidget_DoublePrecision;
     public static String RteDeviceSelectorWidget_Endian;
     public static String RteDeviceSelectorWidget_FPULabel;
+    public static String RteDeviceSelectorWidget_NoBoardSelected;
     public static String RteDeviceSelectorWidget_NoDeviceSelected;
     public static String RteDeviceSelectorWidget_none;
     public static String RteDeviceSelectorWidget_SearchLabel;
@@ -164,6 +180,10 @@ public class CpStringsUI extends NLS {
     public static String PathInvalidOrNonAccesible;
     public static String PathErrorCreatingCmsisPackRootDirectory;
     public static String RteDeviceSelectorWidget_lblNewLabel_text;
+    public static String RteDeviceInfoWidget_lblBoardNameLabel_text;
+    public static String RteDeviceInfoWidget_lblBoardVendorLabel_text;
+    public static String RteDeviceInfoWidget_lblBoardPackLabel_text;
+    public static String RteDeviceInfoWidget_MissingBoard;
 
     static {
         // initialize resource bundle

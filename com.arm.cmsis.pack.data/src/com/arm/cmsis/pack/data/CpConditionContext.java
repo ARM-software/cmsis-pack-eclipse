@@ -106,6 +106,7 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
         switch (expression.getExpressionDomain()) {
         case ICpExpression.COMPONENT_EXPRESSION:
             return EEvaluationResult.IGNORED;
+        case ICpExpression.BOARD_EXPRESSION:
         case ICpExpression.DEVICE_EXPRESSION:
         case ICpExpression.TOOLCHAIN_EXPRESSION:
             boolean b = matchCommonAttributes(expression.attributes());

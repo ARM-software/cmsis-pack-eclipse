@@ -12,8 +12,8 @@
 package com.arm.cmsis.pack.rte.devices;
 
 import java.util.Collection;
-import java.util.Set;
 
+import com.arm.cmsis.pack.data.IAllDeviceNames;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.generic.IAttributes;
@@ -24,7 +24,7 @@ import com.arm.cmsis.pack.item.ICmsisMapItem;
  * device, variant, processor This hierarchy is similar to ICpDeviceItem one,
  * but works across Packs
  */
-public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem> {
+public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem>, IAllDeviceNames {
 
     /**
      * Returns hierarchy level of this item: root, vendor family, sub-family,
@@ -138,13 +138,6 @@ public interface IRteDeviceItem extends ICmsisMapItem<IRteDeviceItem> {
      * @return vendor name of this IRteDeviceItem
      */
     String getVendorName();
-
-    /**
-     * Get names of all devices in this item
-     *
-     * @return set of device names
-     */
-    Set<String> getAllDeviceNames();
 
     /**
      * Add device name for this item and all items up in the hierarchy

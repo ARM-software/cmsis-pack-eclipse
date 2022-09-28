@@ -126,7 +126,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 
     /**
      * Returns the RteConsole, creates if not yet initialized
-     * 
+     *
      * @return RteConsole
      */
     @Override
@@ -351,7 +351,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 
     /**
      * Triggers installation of missing packs
-     * 
+     *
      * @param rteModel IRteModel to query for missing packs
      */
     protected void installMissingPacks(IRteModel rteModel) {
@@ -373,10 +373,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 
         rteProject.setInstallMissingPacksOnUpdate(false); // only once
 
-        Collection<String> missingPacks = RteModelUtils.getMissingPacks(rteModel);
-        for (String packId : missingPacks) {
-            packInstaller.installPack(packId);
-        }
+        packInstaller.installPacks(RteModelUtils.getMissingPacks(rteModel));
     }
 
     protected IRteConfiguration loadRteConfiguration(String savedRteConfigName) throws CoreException {
@@ -437,7 +434,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
     /**
      * Removes resources that are no longer belong to project and refreshes
      * remaining ones
-     * 
+     *
      * @throws CoreException
      */
     protected void removeResources() throws CoreException {

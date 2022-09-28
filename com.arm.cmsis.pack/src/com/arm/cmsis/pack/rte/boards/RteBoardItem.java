@@ -12,6 +12,7 @@
 package com.arm.cmsis.pack.rte.boards;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -22,46 +23,38 @@ import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
-import com.arm.cmsis.pack.item.CmsisMapItem;
 import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
-import com.arm.cmsis.pack.rte.devices.RteDeviceItem;
-import com.arm.cmsis.pack.utils.AlnumComparator;
 import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
  * Default implementation of {@link RteBoardItem}
  */
-public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoardItem {
+public class RteBoardItem extends RteBoardDeviceItem implements IRteBoardItem {
 
     protected Map<String, ICpBoard> fBoards = null; // packId -> board
-    protected IRteDeviceItem fMountedDevices = null; // deviceName -> deviceItem
-    protected IRteDeviceItem fCompatibleDevices = null; // deviceName -> deviceItem
-    protected Set<String> fAllDeviceNames = null;
+    protected IRteBoardDeviceItem fMountedDevices = null;
+    protected IRteBoardDeviceItem fCompatibleDevices = null;
     protected boolean fRoot;
 
     public RteBoardItem() {
-        fName = CmsisConstants.ALL_BOARDS;
+        super(null, CmsisConstants.ALL_BOARDS);
         fRoot = true;
     }
 
-    public RteBoardItem(String name, IRteBoardItem parent) {
-        super(parent);
-        fName = name;
+    public RteBoardItem(IRteBoardItem parent, String name) {
+        super(parent, name);
         fRoot = false;
     }
 
     @Override
     public void invalidate() {
-        fMountedDevices = null;
-        fCompatibleDevices = null;
         fAllDeviceNames = null;
-        super.invalidate();
-    }
+        removeChild(fMountedDevices);
+        fMountedDevices = null;
+        removeChild(fCompatibleDevices);
+        fCompatibleDevices = null;
 
-    @Override
-    protected Map<String, IRteBoardItem> createMap() {
-        // create TreeMap with Alpha-Numeric case-insensitive ascending sorting
-        return new TreeMap<String, IRteBoardItem>(new AlnumComparator(false, false));
+        super.invalidate();
     }
 
     /**
@@ -75,6 +68,7 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
         if (packs == null || packs.isEmpty()) {
             return root;
         }
+
         for (ICpPack pack : packs) {
             root.addBoards(pack);
         }
@@ -84,6 +78,11 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
     @Override
     public boolean isRoot() {
         return fRoot;
+    }
+
+    @Override
+    public boolean isBoard() {
+        return true;
     }
 
     @Override
@@ -99,7 +98,7 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
         ICpPack pack = item.getPack();
         String packId = pack.getId();
         if (fBoards == null) {
-            fBoards = new TreeMap<String, ICpBoard>(new VersionComparator());
+            fBoards = new TreeMap<>(new VersionComparator());
         }
 
         ICpBoard board = fBoards.get(packId);
@@ -112,9 +111,9 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
     }
 
     protected void addBoardItem(ICpBoard item, final String itemName) {
-        IRteBoardItem bi = getChild(itemName);
+        IRteBoardItem bi = (IRteBoardItem) getChild(itemName);
         if (bi == null) {
-            bi = new RteBoardItem(itemName, this);
+            bi = new RteBoardItem(this, itemName);
             addChild(bi);
         }
         bi.addBoard(item);
@@ -145,7 +144,7 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
         }
 
         if (fRoot) {
-            IRteBoardItem b = getChild(item.getId());
+            IRteBoardItem b = (IRteBoardItem) getChild(item.getId());
             if (b == null) {
                 return;
             }
@@ -204,11 +203,20 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
         if (fBoards != null) {
             return fBoards.values();
         }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public IRteDeviceItem getRteDeviceLeaf() {
+        if (getMountedDevices() != null) {
+            return getMountedDevices().getRteDeviceLeaf();
+        }
         return null;
     }
 
     @Override
-    public IRteDeviceItem getMountedDevices() {
+    public IRteBoardDeviceItem getMountedDevices() {
+
         if (fMountedDevices == null) {
             fMountedDevices = collectDevices(CmsisConstants.MOUNTED_DEVICES);
         }
@@ -216,15 +224,16 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
     }
 
     @Override
-    public IRteDeviceItem getCompatibleDevices() {
+    public IRteBoardDeviceItem getCompatibleDevices() {
         if (fCompatibleDevices == null) {
             fCompatibleDevices = collectDevices(CmsisConstants.COMPATIBLE_DEVICES);
         }
         return fCompatibleDevices;
     }
 
-    protected IRteDeviceItem collectDevices(String devicesType) {
-        IRteDeviceItem rootDeviceItem = new RteDeviceItem(devicesType, -1, null); // -1 means pseudo root
+    protected IRteBoardDeviceItem collectDevices(String devicesType) {
+        IRteBoardDeviceItem rootDeviceItem = new RteBoardDeviceItem(this, devicesType);
+        addChild(rootDeviceItem);
         ICpBoard board = getBoard();
         if (board == null) {
             return rootDeviceItem;
@@ -253,7 +262,7 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
                 continue;
             }
             if (rootDeviceItem.getChild(rteDeviceItem.getName()) == null) {
-                rootDeviceItem.addChild(rteDeviceItem);
+                rootDeviceItem.addChild(new RteBoardDeviceItem(rootDeviceItem, rteDeviceItem));
             }
         }
         return rootDeviceItem;
@@ -276,7 +285,7 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
     @Override
     public IRteBoardItem findBoard(String boardId) {
         if (fRoot) {
-            return getChild(boardId);
+            return (IRteBoardItem) getChild(boardId);
         } else if (fName.equals(boardId)) {
             return this;
         }
@@ -319,8 +328,8 @@ public class RteBoardItem extends CmsisMapItem<IRteBoardItem> implements IRteBoa
     @Override
     public Set<String> getAllDeviceNames() {
         if (fAllDeviceNames == null) {
-            fAllDeviceNames = new HashSet<String>();
-            IRteDeviceItem di = getMountedDevices();
+            fAllDeviceNames = new HashSet<>();
+            IRteBoardDeviceItem di = getMountedDevices();
             if (di != null) {
                 fAllDeviceNames.addAll(di.getAllDeviceNames());
             }

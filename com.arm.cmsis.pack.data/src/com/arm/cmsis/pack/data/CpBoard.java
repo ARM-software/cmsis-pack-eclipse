@@ -33,18 +33,34 @@ public class CpBoard extends CpItem implements ICpBoard {
 
     @Override
     public String constructId() {
-        String id = DeviceVendor.getOfficialVendorName(getVendor());
+        return ICpBoard.constructBoardId(this);
+    }
 
-        String name = getAttribute(CmsisConstants.NAME);
-        if (name != null && !name.isEmpty()) {
-            id += CmsisConstants.DOUBLE_COLON;
-            id += name;
+    @Override
+    public String constructName() {
+        String name = getAttribute(CmsisConstants.BNAME);
+        if (name == null || name.isEmpty()) {
+            name = getAttribute(CmsisConstants.NAME);
         }
-        return id;
+        return name;
+    }
+
+    @Override
+    public String getVersion() {
+        return getRevision();
+    }
+
+    @Override
+    public boolean hasMountedDevice(IAttributes deviceAttributes) {
+        return containsDevice(deviceAttributes, true);
     }
 
     @Override
     public boolean hasCompatibleDevice(IAttributes deviceAttributes) {
+        return containsDevice(deviceAttributes, false);
+    }
+
+    protected boolean containsDevice(IAttributes deviceAttributes, boolean bOnlyMounted) {
         Collection<? extends ICpItem> children = getChildren();
         if (children == null) {
             return false;
@@ -52,14 +68,18 @@ public class CpBoard extends CpItem implements ICpBoard {
         for (ICpItem item : children) {
             String tag = item.getTag();
             switch (tag) {
-            case CmsisConstants.MOUNTED_DEVICE_TAG:
             case CmsisConstants.COMPATIBLE_DEVICE_TAG:
+                if (bOnlyMounted) {
+                    break;
+                }
+                // fall through
+            case CmsisConstants.MOUNTED_DEVICE_TAG:
                 String dName = item.getAttribute(CmsisConstants.DNAME);
                 if (!dName.isEmpty() && deviceAttributes.containsValue(dName)) { // covers Dvariant
                     return true;
                 }
-                if (!dName.isEmpty() || item.hasAttribute(CmsisConstants.DFAMILY) || item
-                        .hasAttribute(CmsisConstants.DSUBFAMILY)
+                if ((!dName.isEmpty() || item.hasAttribute(CmsisConstants.DFAMILY)
+                        || item.hasAttribute(CmsisConstants.DSUBFAMILY))
                         && (item.attributes().matchAttributes(deviceAttributes, CmsisConstants.D_ATTRIBUTE_PREFIX))) {
                     return true;
                 }

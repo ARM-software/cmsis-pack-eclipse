@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 ARM Ltd. and others
+ * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -51,6 +51,7 @@ import com.arm.cmsis.pack.rte.components.IRteComponentClass;
 import com.arm.cmsis.pack.rte.components.IRteComponentGroup;
 import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 import com.arm.cmsis.pack.rte.components.RteMoreClass;
+import com.arm.cmsis.pack.rte.components.RteSelectedBoardClass;
 import com.arm.cmsis.pack.rte.components.RteSelectedDeviceClass;
 import com.arm.cmsis.pack.ui.ColorConstants;
 import com.arm.cmsis.pack.ui.CpPlugInUI;
@@ -383,7 +384,9 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
                 if (columnIndex == 0) {
                     EEvaluationResult res = getModelController().getEvaluationResult(item);
                     Image baseImage = null;
-                    if (item instanceof RteSelectedDeviceClass) {
+                    if (item instanceof RteSelectedBoardClass) {
+                        baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_BOARD);
+                    } else if (item instanceof RteSelectedDeviceClass) {
                         if (res.isFulfilled()) {
                             baseImage = CpPlugInUI.getImage(CpPlugInUI.ICON_DEVICE);
                         } else {

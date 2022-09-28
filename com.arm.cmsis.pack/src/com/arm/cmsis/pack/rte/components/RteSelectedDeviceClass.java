@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -73,7 +73,8 @@ public class RteSelectedDeviceClass extends RteComponentClass {
 
     @Override
     public String getKey() {
-        return CmsisConstants.EMPTY_STRING;
+        // Artificial empty key to make the item always on top (the second one).
+        return CmsisConstants.ZERO;
     }
 
     @Override

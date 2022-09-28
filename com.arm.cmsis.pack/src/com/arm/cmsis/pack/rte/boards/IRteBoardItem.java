@@ -12,25 +12,15 @@
 package com.arm.cmsis.pack.rte.boards;
 
 import java.util.Collection;
-import java.util.Set;
 
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpPack;
-import com.arm.cmsis.pack.item.ICmsisMapItem;
-import com.arm.cmsis.pack.rte.devices.IRteDeviceItem;
 
 /**
  * Interface base element for BoardDevice elements. This first level are boards,
  * then mounted and compatible devices of this board
  */
-public interface IRteBoardItem extends ICmsisMapItem<IRteBoardItem> {
-
-    /**
-     * Return true if this node is the root
-     *
-     * @return true if this node is the root
-     */
-    boolean isRoot();
+public interface IRteBoardItem extends IRteBoardDeviceItem {
 
     /**
      * Add board
@@ -61,13 +51,6 @@ public interface IRteBoardItem extends ICmsisMapItem<IRteBoardItem> {
     void removeBoards(ICpPack pack);
 
     /**
-     * Get the board of the latest installed pack, or the board from the latest pack
-     *
-     * @return
-     */
-    ICpBoard getBoard();
-
-    /**
      * Return the board with the id
      *
      * @param boardId
@@ -87,20 +70,13 @@ public interface IRteBoardItem extends ICmsisMapItem<IRteBoardItem> {
      *
      * @return a set of mounted devices of this board
      */
-    IRteDeviceItem getMountedDevices();
+    IRteBoardDeviceItem getMountedDevices();
 
     /**
      * Get a set of compatible devices of this board
      *
      * @return a set of compatible devices of this board
      */
-    IRteDeviceItem getCompatibleDevices();
-
-    /**
-     * Get names of all devices in this item
-     *
-     * @return set of device names
-     */
-    Set<String> getAllDeviceNames();
+    IRteBoardDeviceItem getCompatibleDevices();
 
 }
