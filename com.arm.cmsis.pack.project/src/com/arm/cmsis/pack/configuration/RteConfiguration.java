@@ -802,6 +802,10 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
         if (fi.isGenerated()) {
             String baseDir = fConfigInfo.getDir(false);
+            ICpFile f = fi.getFile();
+            if (f != null) {
+                absPath = f.getAbsolutePath(f.getName());
+            }
             if (absPath.startsWith(baseDir)) {
                 // the file is within project
                 return ProjectUtils.makePathRelative(absPath, baseDir);
