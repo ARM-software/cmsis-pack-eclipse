@@ -718,7 +718,7 @@ public class RteModel implements IRteModel {
             }
         }
         if (devicePack != null) {
-            collectApisAndTaxonomy(boardPack);
+            collectApisAndTaxonomy(devicePack);
         }
         if (boardPack != null && boardPack != devicePack) {
             collectApisAndTaxonomy(boardPack);
