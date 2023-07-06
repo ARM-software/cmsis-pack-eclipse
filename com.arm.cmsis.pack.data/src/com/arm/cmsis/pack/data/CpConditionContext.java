@@ -30,13 +30,11 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 
     // temporary variables
     private Set<ICpCondition> tConditionsBeingEvaluated = new HashSet<>(); // to prevent recursion
-    protected boolean tbDeny = false; // flag is set when deny expression is evaluated
 
     @Override
     public void resetResult() {
         fResult = EEvaluationResult.IGNORED;
         fResults = null;
-        tbDeny = false;
         tConditionsBeingEvaluated.clear();
     }
 
@@ -113,10 +111,11 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
             return b ? EEvaluationResult.FULFILLED : EEvaluationResult.FAILED;
         case ICpExpression.REFERENCE_EXPRESSION:
             return evaluate(expression.getCondition());
+        case ICpExpression.HW_EXPRESSION:
         default:
             break;
         }
-        return EEvaluationResult.ERROR;
+        return EEvaluationResult.IGNORED; // ignore unknown expressions
     }
 
     @Override
@@ -133,11 +132,7 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
             if (!(child instanceof ICpExpression))
                 continue;
             ICpExpression expr = (ICpExpression) child;
-            boolean bDeny = tbDeny; // save deny context
-            if (expr.getExpressionType() == ICpExpression.DENY_EXPRESSION)
-                tbDeny = !tbDeny; // invert the deny context
             EEvaluationResult res = evaluate(expr);
-            tbDeny = bDeny; // restore deny context
             if (res == EEvaluationResult.IGNORED || res == EEvaluationResult.UNDEFINED)
                 continue;
             else if (res == EEvaluationResult.ERROR)

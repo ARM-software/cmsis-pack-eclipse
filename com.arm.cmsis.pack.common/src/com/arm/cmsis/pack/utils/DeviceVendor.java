@@ -197,6 +197,8 @@ public class DeviceVendor {
             return false;
         if (v0.isEmpty() || v1.isEmpty())
             return true;
+        if (v0 == v1)
+            return true;
 
         String id0 = getOfficialVendorId(getVendorId(v0));
         String id1 = getOfficialVendorId(getVendorId(v1));

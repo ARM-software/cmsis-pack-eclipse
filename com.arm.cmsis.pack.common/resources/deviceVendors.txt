@@ -2,6 +2,7 @@
 // default device vendor list mapping
 // Format: 
 // ID = name[|alias][|alias]
+0 = NO_VENDOR
 126 = ABOV|ABOV Semiconductor
 20 = Acer Labs
 56 = Actel

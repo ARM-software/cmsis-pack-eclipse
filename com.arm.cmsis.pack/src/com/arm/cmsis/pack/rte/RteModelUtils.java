@@ -91,7 +91,7 @@ public class RteModelUtils {
             }
             String familyId = CpPack.familyFromId(packId);
             Collection<? extends ICpItem> packs = allPacks.getPacksByPackFamilyId(familyId);
-            if (packs == null) {
+            if (packs == null || packs.isEmpty()) {
                 return CmsisConstants.EMPTY_STRING;
             }
             ICpItem latestPack = packs.iterator().next();

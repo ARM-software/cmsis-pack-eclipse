@@ -60,6 +60,23 @@ public class CpBoard extends CpItem implements ICpBoard {
         return containsDevice(deviceAttributes, false);
     }
 
+    @Override
+    public boolean hasMcu() {
+        Collection<? extends ICpItem> children = getChildren();
+        if (children == null) {
+            return false;
+        }
+        for (ICpItem item : children) {
+            if (CmsisConstants.COMPATIBLE_DEVICE_TAG.equals(item.getTag())) {
+                String dname = item.getDeviceName();
+                if (!dname.isEmpty() && CmsisConstants.NO_MCU.equals(dname)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     protected boolean containsDevice(IAttributes deviceAttributes, boolean bOnlyMounted) {
         Collection<? extends ICpItem> children = getChildren();
         if (children == null) {

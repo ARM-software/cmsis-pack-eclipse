@@ -26,8 +26,13 @@ import org.osgi.framework.BundleContext;
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.ICpPackInstaller;
+import com.arm.cmsis.pack.ICpPackManager;
+import com.arm.cmsis.pack.ICpPackManager.LoadMode;
 import com.arm.cmsis.pack.installer.ui.perspectives.PackManagerPerspective;
+import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
+import com.arm.cmsis.pack.ui.CpPlugInUI;
 import com.arm.cmsis.pack.ui.console.RteConsole;
+import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -70,6 +75,26 @@ public class CpInstallerPlugInUI extends AbstractUIPlugin implements IWorkbenchL
             if (wb.getActiveWorkbenchWindow() != null) {
                 wb.getActiveWorkbenchWindow().addPerspectiveListener(this);
             }
+        }
+        // load all packs if needed
+        ICpPackManager pm = CpPlugIn.getPackManager();
+        if (pm == null) {
+            return;
+        }
+        boolean bReload = pm.getLoadMode() != LoadMode.ALL;
+        pm.setLoadMode(LoadMode.ALL);
+        boolean bCheckForUpdates = pm.initPackRoot();
+        if (!bCheckForUpdates) {
+            String now = Utils.getCurrentDate();
+            bCheckForUpdates = CpPreferenceInitializer.getAutoUpdateFlag()
+                    && !now.equals(CpPreferenceInitializer.getLastUpdateTime());
+        }
+        if (bCheckForUpdates) {
+            pm.setCheckForUpdates(bCheckForUpdates);
+        }
+        CpPlugInUI.scheduleCheckForPackUpdates();
+        if (bReload) {
+            pm.reload();
         }
     }
 

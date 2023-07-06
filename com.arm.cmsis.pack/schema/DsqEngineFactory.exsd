@@ -123,7 +123,7 @@
          <meta.section type="implementation"/>
       </appinfo>
       <documentation>
-         A reference implementation of this extension point is supplied by &lt;samp&gt;com.arm.cmsis.pack.dsq.engine&lt;/samp&gt; plug-in
+         A reference implementation of this extension point is no longer supplied
       </documentation>
    </annotation>
 

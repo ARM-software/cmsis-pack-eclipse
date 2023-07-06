@@ -87,10 +87,10 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
     protected Map<String, ICpPack> fGeneratedPacks = null;
 
-    protected ICpPack.PackState packState = PackState.UNKNOWN;
-
     protected PackIdxWatcher fPackIdxWatcher = null;
     protected GpdscWatcher fGpdscWatcher = new GpdscWatcher();
+
+    protected LoadMode fLoadMode = LoadMode.NONE;
 
     class PackIdxWatcher extends FileChangeWatcher {
 
@@ -185,6 +185,16 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         // default constructor does nothing
     }
 
+    @Override
+    public synchronized void setLoadMode(LoadMode loadMode) {
+        fLoadMode = loadMode;
+    }
+
+    @Override
+    public synchronized LoadMode getLoadMode() {
+        return fLoadMode;
+    }
+
     public String getPackIdxFile() {
         String idxFile = getCmsisPackRootDirectory();
         if (idxFile != null && !idxFile.isEmpty()) {
@@ -234,6 +244,9 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
     @Override
     public void reload() {
+        if (getLoadMode() == LoadMode.NONE) {
+            return;
+        }
         if (isReloading()) {
             return;
         }
@@ -248,6 +261,14 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
         setReloadPending(false);
         setReloading(false);
+    }
+
+    @Override
+    public void ensureAllPacksLoaded() {
+        if (getLoadMode() != LoadMode.ALL) {
+            setLoadMode(LoadMode.ALL);
+            reload();
+        }
     }
 
     protected synchronized boolean isReloading() {
@@ -288,7 +309,10 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
     @Override
     public synchronized ICpPackCollection getInstalledPacks() {
-        if (fAllPacks == null) {
+        if (fAllInstalledPacks == null) {
+            if (getLoadMode() == LoadMode.NONE) {
+                setLoadMode(LoadMode.INSTALLED);
+            }
             bPacksLoaded = loadPacks(fCmsisPackRootDirectory);
         }
         return fAllInstalledPacks;
@@ -326,7 +350,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
     @Override
     public synchronized IRteDeviceItem getInstalledDevices() {
-        getPacks(); // ensure fAllPacks are loaded
+        getInstalledPacks(); // ensure installed packs are loaded
         if (fAllInstalledDevices == null && bPacksLoaded && fAllInstalledPacks != null) {
             fAllInstalledDevices = RteDeviceRoot.createTree(fAllInstalledPacks.getLatestInstalledPacks());
         }
@@ -428,42 +452,44 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
             return false;
         }
 
-        packState = PackState.AVAILABLE;
-        File webFile = new File(getCmsisPackWebDir());
-        Collection<String> availableFileNames = Utils.findPdscFiles(webFile, null, 0);
-        loadPacks(availableFileNames);
+        switch (getLoadMode()) {
+        case ALL:
+            File webFile = new File(getCmsisPackWebDir());
+            Collection<String> availableFileNames = Utils.findPdscFiles(webFile, null, 0);
+            loadPacks(availableFileNames, PackState.AVAILABLE);
 
-        File localFile = new File(getCmsisPackLocalDir());
-        Collection<String> localFileNames = Utils.findPdscFiles(localFile, null, 0);
-        loadPacks(localFileNames);
+            File localFile = new File(getCmsisPackLocalDir());
+            Collection<String> localFileNames = Utils.findPdscFiles(localFile, null, 0);
+            loadPacks(localFileNames, PackState.AVAILABLE);
 
-        packState = PackState.DOWNLOADED;
-        File downloadFile = new File(getCmsisPackDownloadDir());
-        Collection<String> downloadedFileNames = Utils.findPdscFiles(downloadFile, null, 0);
-        loadPacks(downloadedFileNames);
-
-        packState = PackState.LOCAL;
-        Collection<String> localRepoistoryFileNames = CpPidxParser.getLocalRepositoryFileNames(getCmsisPackLocalDir());
-        loadPacks(localRepoistoryFileNames);
-
-        packState = PackState.INSTALLED;
-        Collection<String> installedFileNames = Utils.findPdscFiles(root, null, 3);
-        loadPacks(installedFileNames);
-
-        packState = PackState.UNKNOWN;
-
+            File downloadFile = new File(getCmsisPackDownloadDir());
+            Collection<String> downloadedFileNames = Utils.findPdscFiles(downloadFile, null, 0);
+            loadPacks(downloadedFileNames, PackState.DOWNLOADED);
+            // fall through
+        case INSTALLED:
+            Collection<String> localRepoistoryFileNames = CpPidxParser
+                    .getLocalRepositoryFileNames(getCmsisPackLocalDir());
+            loadPacks(localRepoistoryFileNames, PackState.LOCAL);
+            Collection<String> installedFileNames = Utils.findPdscFiles(root, null, 3);
+            loadPacks(installedFileNames, PackState.INSTALLED);
+            break;
+        case INDIVIDUAL:
+        case NONE:
+        default:
+            return false;
+        }
         return true;
     }
 
     @Override
-    public boolean loadPacks(final Collection<String> fileNames) {
+    public boolean loadPacks(final Collection<String> fileNames, PackState packState) {
         if (fileNames == null || fileNames.isEmpty()) {
             return true; // nothing to load => success
         }
 
         boolean success = true;
         for (String f : fileNames) {
-            if (loadPack(f) == null) {
+            if (loadPack(f, packState) == null) {
                 success = false;
             }
         }
@@ -485,7 +511,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
             if (errors != null && !errors.isEmpty()) {
                 for (String msg : errors) {
                     if (msg != null && !msg.isEmpty()) {
-                        getRteEventProxy().emitRteEvent(RteEvent.PRINT_ERROR, msg);
+                        emitRteEvent(RteEvent.PRINT_ERROR, msg);
                     }
                 }
             }
@@ -494,7 +520,15 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         return null;
     }
 
-    protected ICpPack loadPack(String file) {
+    @Override
+    public ICpPack loadPack(String file) {
+        ICpPack pack = loadPack(file, PackState.INSTALLED);
+        processPackAdded(pack);
+        bPacksLoaded = true;
+        return pack;
+    }
+
+    protected ICpPack loadPack(String file, PackState packState) {
         if (fAllPacks == null) {
             fAllPacks = new CpPackCollection();
         }
@@ -605,12 +639,11 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         }
     }
 
-    /**
-     * Initialize pack root
-     *
-     * @returns true if update is scheuled
-     */
-    protected boolean initPackRoot() {
+    @Override
+    public boolean initPackRoot() {
+        if (getLoadMode() != LoadMode.ALL) {
+            return false;
+        }
         ICpPackRootProvider packRootProvider = CpPreferenceInitializer.getCmsisRootProvider();
         if (packRootProvider == null)
             return false;
@@ -624,9 +657,8 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         if (pidx.toFile().exists())
             return false; // nothing to do
         try {
-            packRootProvider.initPackRoot(getCmsisPackRootDirectory(), new NullProgressMonitor()); // progress monitor
-                                                                                                   // is reserved for
-                                                                                                   // future
+            // progress monitor is reserved for future
+            packRootProvider.initPackRoot(getCmsisPackRootDirectory(), new NullProgressMonitor());
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -709,7 +741,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         // fix for GitHub Issue #44: NPE in CpPackManager.processPackAdded() when
         // installing first Pack into empty CMSIS root folder
         if (getPacks() == null) { // ensure pack collections exist
-            return; // should not happen sinse default implementation of getPacks() allocates
+            return; // should not happen since default implementation of getPacks() allocates
                     // fAllPacks if not null
         }
 
@@ -725,7 +757,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         if (fAllDevices != null) {
             fAllDevices.addDevices(pack);
         }
-        if (fAllInstalledDevices != null) {
+        if (fAllInstalledDevices != null && pack.getPackState().isInstalledOrLocal()) {
             fAllInstalledDevices.addDevices(pack);
         }
 
@@ -852,7 +884,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         } else {
             doLoadGpdsc(file);
         }
-        getRteEventProxy().emitRteEvent(RteEvent.GPDSC_CHANGED, file);
+        emitRteEvent(RteEvent.GPDSC_CHANGED, file);
     }
 
     protected synchronized ICpPack doLoadGpdsc(String file) {

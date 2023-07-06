@@ -56,12 +56,6 @@ public class RteDependencyItem extends CmsisItem implements IRteDependencyItem {
     }
 
     @Override
-    public boolean isDeny() {
-        // Default returns false
-        return false;
-    }
-
-    @Override
     public EEvaluationResult getEvaluationResult() {
         return fResult;
     }
@@ -95,8 +89,8 @@ public class RteDependencyItem extends CmsisItem implements IRteDependencyItem {
         ICpItem cpItem = getCpItem();
         if (cpItem != null)
             return cpItem.getName();
-        if (fComponentItem != null)
-            return fComponentItem.getName();
+        if (getComponentItem() != null)
+            return getComponentItem().getName();
         return super.getName();
     }
 

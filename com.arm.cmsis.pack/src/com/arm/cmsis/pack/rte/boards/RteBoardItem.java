@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 ARM Ltd. and others
+ * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,10 +11,13 @@
 
 package com.arm.cmsis.pack.rte.boards;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -83,6 +86,11 @@ public class RteBoardItem extends RteBoardDeviceItem implements IRteBoardItem {
     @Override
     public boolean isBoard() {
         return true;
+    }
+
+    @Override
+    public IRteBoardItem getRteBoard() {
+        return this;
     }
 
     @Override
@@ -290,6 +298,19 @@ public class RteBoardItem extends RteBoardDeviceItem implements IRteBoardItem {
             return this;
         }
         return null;
+    }
+
+    @Override
+    public Collection<IRteBoardItem> findBoards(String partialBoardId) {
+        List<IRteBoardItem> boards = new ArrayList<>();
+        if (partialBoardId != null) {
+            for (Entry<String, IRteBoardDeviceItem> entry : childMap().entrySet()) {
+                if (entry.getKey().contains(partialBoardId) && entry.getValue() instanceof IRteBoardItem) {
+                    boards.add((IRteBoardItem) entry.getValue());
+                }
+            }
+        }
+        return boards;
     }
 
     @Override

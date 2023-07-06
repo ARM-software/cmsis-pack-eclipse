@@ -40,6 +40,13 @@ public interface ICpBoard extends ICpItem {
     boolean hasCompatibleDevice(IAttributes deviceAttributes);
 
     /**
+     * Check if board has a mounted device with MCU
+     *
+     * @return true if board has device
+     */
+    boolean hasMcu();
+
+    /**
      * Returns list of mounted devices on this board
      *
      * @return collection of ICpItem objects

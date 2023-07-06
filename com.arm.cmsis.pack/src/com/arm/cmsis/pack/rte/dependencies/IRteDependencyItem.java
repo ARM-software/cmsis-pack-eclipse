@@ -48,15 +48,6 @@ public interface IRteDependencyItem extends ICmsisItem, IEvaluationResult {
      */
     boolean isMaster();
 
-    /**
-     * Checks if this item is evaluated in negative context: it denies the matching
-     * components
-     *
-     * @return if the dependency is a deny one
-     */
-    boolean isDeny();
-
     @Override
     Collection<? extends IRteDependencyItem> getChildren();
-
 }

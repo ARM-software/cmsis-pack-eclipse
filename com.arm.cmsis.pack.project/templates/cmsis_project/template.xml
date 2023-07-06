@@ -70,17 +70,4 @@ and is available at http://www.eclipse.org/legal/epl-v10.html"
 
 	</if>
 
-	<if condition="$(Tmain)==1">
-		<process type="org.eclipse.cdt.core.AddFile">
-			<simple name="projectName" value="$(projectName)" />
-			<complex name="file">
-				<simple name="source" value="main.c" />
-				<simple name="target" value="main.c" />
-				<simple name="replaceable" value="true" />
-			</complex>
-		</process>
-	</if>
-
-
-
 </template>

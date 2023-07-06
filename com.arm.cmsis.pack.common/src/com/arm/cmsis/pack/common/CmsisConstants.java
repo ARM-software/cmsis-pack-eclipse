@@ -123,6 +123,9 @@ public class CmsisConstants {
     public static final String DMVE = "Dmve"; //$NON-NLS-1$
     public static final String DCDECP = "Dcdecp"; //$NON-NLS-1$
 
+    public static final String NO_VENDOR = "NO_VENDOR:0"; //$NON-NLS-1$
+    public static final String NO_MCU = "NO_MCU"; //$NON-NLS-1$
+
     public static final String MVE = "MVE"; //$NON-NLS-1$
     public static final String NO_MVE = "NO_MVE"; //$NON-NLS-1$
     public static final String FP_MVE = "FP_MVE"; //$NON-NLS-1$

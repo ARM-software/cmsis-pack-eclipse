@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 ARM Ltd. and others
+ * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -413,19 +413,21 @@ public class PackInstallerViewFilter extends ViewerFilter {
     private boolean exampleContainsBoard(ICpExample example, ICpBoard board) {
         if (example == null || board == null)
             return false;
-        String boardId = example.getBoardId();
+        String exampleBoardId = example.getBoardId();
+        if (exampleBoardId == null || exampleBoardId.isEmpty())
+            return false;
+        String boardId = board.getId();
         if (boardId == null || boardId.isEmpty())
             return false;
-
-        return boardId.equals(board.getId());
+        return boardId.contains(exampleBoardId);
     }
 
     private boolean boardContainsDevice(String boardId) {
-        if (boardId == null) {
-            return false;
+        Collection<IRteBoardItem> boards = CpPlugIn.getPackManager().getRteBoards().findBoards(boardId);
+        for (IRteBoardItem board : boards) {
+            if (Utils.checkIfIntersect(board.getAllDeviceNames(), fSelectedDeviceNames))
+                return true;
         }
-
-        IRteBoardItem board = CpPlugIn.getPackManager().getRteBoards().findBoard(boardId);
-        return (board != null && Utils.checkIfIntersect(board.getAllDeviceNames(), fSelectedDeviceNames));
+        return false;
     }
 }

@@ -94,6 +94,11 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
     }
 
     @Override
+    public boolean isDependencyContext() {
+        return true;
+    }
+
+    @Override
     public void resetResult() {
         super.resetResult();
         fDependencies = null;
@@ -175,6 +180,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
             EEvaluationResult overallResult) {
         // first check require and deny expressions
         Collection<ICpExpression> children = condition.getChildrenOfType(ICpExpression.class);
+        IRteDependencyResult acceptRes = new RteDependencyResult(depRes.getComponentItem());
         for (ICpExpression expr : children) {
             EEvaluationResult res = getEvaluationResult(expr);
             if (res.isFulfilled() || res.isUndefined()) {
@@ -182,27 +188,49 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
             }
 
             if (expr.getExpressionType() == ICpExpression.ACCEPT_EXPRESSION) {
-                if (res.ordinal() < overallResult.ordinal()) {
-                    continue; // ignored
+                if (res.ordinal() >= overallResult.ordinal()) {
+                    collectExpressionDependencies(expr, acceptRes, overallResult);
                 }
+            } else if (res.ordinal() <= overallResult.ordinal()) {
+                collectExpressionDependencies(expr, depRes, overallResult);
+            }
+        }
+
+        // check if accept result has multiple choice
+        Collection<IRteDependency> acceptDeps = acceptRes.getDependencies();
+        if (acceptDeps.isEmpty()) {
+            return;
+        }
+        int totalSize = 0;
+        for (IRteDependency dep : acceptDeps) {
+            if (depRes.getDependencies().contains(dep)) { // already exists
+                continue;
+            }
+            totalSize += dep.getComponents().size();
+        }
+        // insert dependencies into the componenet's collection
+        for (IRteDependency dep : acceptDeps) {
+            if (depRes.getDependencies().contains(dep)) { // already exists as require or deny
+                continue;
+            }
+            if (totalSize > 1) {
+                depRes.addDependency(new RteDependencyWrapper(dep));
             } else {
-                if (res.ordinal() > overallResult.ordinal()) {
-                    continue;
-                }
+                depRes.addDependency(dep);
             }
-            boolean bDeny = tbDeny; // save deny context
-            if (expr.getExpressionType() == ICpExpression.DENY_EXPRESSION) {
-                tbDeny = !tbDeny; // invert the deny context
+        }
+
+    }
+
+    protected void collectExpressionDependencies(ICpExpression expr, IRteDependencyResult depRes,
+            EEvaluationResult overallResult) {
+        if (expr.getExpressionDomain() == ICpExpression.REFERENCE_EXPRESSION) {
+            collectDependencies(depRes, expr.getCondition(), overallResult);
+        } else if (expr.getExpressionDomain() == ICpExpression.COMPONENT_EXPRESSION) {
+            IRteDependency dep = getDependency(expr);
+            if (dep != null) {
+                depRes.addDependency(dep);
             }
-            if (expr.getExpressionDomain() == ICpExpression.REFERENCE_EXPRESSION) {
-                collectDependencies(depRes, expr.getCondition(), overallResult);
-            } else if (expr.getExpressionDomain() == ICpExpression.COMPONENT_EXPRESSION) {
-                IRteDependency dep = getDependency(expr);
-                if (dep != null) {
-                    depRes.addDependency(dep);
-                }
-            }
-            tbDeny = bDeny; // restore deny context
         }
     }
 
@@ -238,23 +266,22 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
 
         case ICpExpression.BOARD_EXPRESSION:
         case ICpExpression.DEVICE_EXPRESSION:
+        case ICpExpression.HW_EXPRESSION:
         case ICpExpression.TOOLCHAIN_EXPRESSION:
-            return EEvaluationResult.IGNORED;
         default:
             break;
         }
-        return EEvaluationResult.ERROR;
+        return EEvaluationResult.IGNORED;
     }
 
     protected EEvaluationResult evaluateDependency(ICpExpression expression) {
         if (rteModel == null) {
             return EEvaluationResult.IGNORED; // nothing to do
         }
-
         IRteDependency dep = getDependency(expression);
         if (dep == null) {
-            dep = new RteDependency(expression, tbDeny);
-            if (tbDeny) {
+            dep = new RteDependency(expression);
+            if (expression.getExpressionType() == ICpExpression.DENY_EXPRESSION) {
                 EEvaluationResult res = evaluateDenyDependency(dep);
                 dep.setEvaluationResult(res);
             } else {
@@ -291,29 +318,17 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
     }
 
     protected IRteDependency getDependency(ICpExpression expression) {
-        if (tbDeny) { // cache deny results separately
-            if (fDenyDependencies != null) {
-                return fDenyDependencies.get(expression);
-            }
-        } else if (fDependencies != null) {
+        if (fDependencies != null) {
             return fDependencies.get(expression);
         }
         return null;
     }
 
     protected void putDependency(ICpExpression expression, IRteDependency dep) {
-        if (tbDeny) { // cache deny results separately
-            if (fDenyDependencies == null) {
-                fDenyDependencies = new HashMap<>();
-            }
-            fDenyDependencies.put(expression, dep);
-
-        } else {
-            if (fDependencies == null) {
-                fDependencies = new HashMap<>();
-            }
-            fDependencies.put(expression, dep);
+        if (fDependencies == null) {
+            fDependencies = new HashMap<>();
         }
+        fDependencies.put(expression, dep);
     }
 
     @Override
@@ -456,7 +471,7 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
         if (api != null && api.isExclusive()) {
             IRteDependency d = getApiConflicts().get(g);
             if (d == null) {
-                d = new RteDependency(api, true);
+                d = new RteDependency(api);
                 getApiConflicts().put(g, d);
             }
             d.addComponent(component, r);

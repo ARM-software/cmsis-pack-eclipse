@@ -2,7 +2,7 @@
 <feature
       id="com.arm.cmsis.pack.feature"
       label="%featureName"
-      version="2.8.0.qualifier"
+      version="2.9.0.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -42,16 +42,7 @@
       <import plugin="org.eclipse.ui.navigator"/>
       <import plugin="org.eclipse.ltk.core.refactoring"/>
       <import plugin="org.eclipse.ui.cheatsheets"/>
-      <import plugin="org.eclipse.xtext"/>
-      <import plugin="org.eclipse.xtext.xbase"/>
-      <import plugin="org.eclipse.equinox.common" version="3.5.0" match="greaterOrEqual"/>
-      <import plugin="org.eclipse.emf.ecore"/>
-      <import plugin="org.eclipse.xtext.xbase.lib"/>
-      <import plugin="org.eclipse.xtext.util"/>
-      <import plugin="org.eclipse.xtend.lib"/>
-      <import plugin="org.eclipse.emf.common"/>
-      <import plugin="org.antlr.runtime" version="3.2.0" match="greaterOrEqual"/>
-      <import plugin="org.apache.log4j"/>
+      <import plugin="org.eclipse.debug.core"/>
    </requires>
 
    <plugin
@@ -140,13 +131,6 @@
 
    <plugin
          id="com.arm.cmsis.pack.data"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="com.arm.cmsis.pack.dsq.engine"
          download-size="0"
          install-size="0"
          version="0.0.0"

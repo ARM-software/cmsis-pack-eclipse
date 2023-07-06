@@ -52,7 +52,6 @@ import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.ICpPackRootProvider;
 import com.arm.cmsis.pack.preferences.CpPreferenceInitializer;
-import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -236,14 +235,6 @@ public class CpPlugInUI extends AbstractUIPlugin {
                     }
                 }
             });
-            String now = Utils.getCurrentDate();
-            boolean bCheckForUpdates = CpPreferenceInitializer.getAutoUpdateFlag()
-                    && !now.equals(CpPreferenceInitializer.getLastUpdateTime());
-            ICpPackManager pm = CpPlugIn.getPackManager();
-            if (bCheckForUpdates && pm != null) {
-                pm.setCheckForUpdates(bCheckForUpdates);
-            }
-            scheduleCheckForPackUpdates();
         }
     }
 
@@ -263,7 +254,7 @@ public class CpPlugInUI extends AbstractUIPlugin {
     /**
      * Schedules check-for-pack-updates if needed
      */
-    private static void scheduleCheckForPackUpdates() {
+    public static void scheduleCheckForPackUpdates() {
         ICpPackManager pm = CpPlugIn.getPackManager();
         if (pm == null)
             return;
@@ -273,6 +264,9 @@ public class CpPlugInUI extends AbstractUIPlugin {
         }
     }
 
+    /**
+     * Runs check for updates
+     */
     public static void startCheckForUpdates() {
         if (!PlatformUI.isWorkbenchRunning())
             return;

@@ -65,6 +65,10 @@ public class RteTemplateDeviceSelectorPage extends RteDeviceSelectorPage impleme
         }
 
         IRteDeviceItem devices = packManager.getDevices();
+        if (devices == null) {
+            // load at least installed packs
+            devices = packManager.getInstalledDevices();
+        }
         setDevices(devices);
         setBoards(packManager.getRteBoards());
 
@@ -114,4 +118,13 @@ public class RteTemplateDeviceSelectorPage extends RteDeviceSelectorPage impleme
         else
             setPageComplete(false);
     }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible) {
+            RteProjectTemplate.updateToolChainAdapter();
+        }
+    }
+
 }

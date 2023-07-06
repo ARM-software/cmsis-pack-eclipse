@@ -36,7 +36,8 @@ public class CpAttributes extends Attributes {
 
     @Override
     public boolean matchAttribute(String key, String value, String pattern) {
-        if (CmsisConstants.DVENDOR.equals(key)) {
+        if (CmsisConstants.DVENDOR.equals(key) || CmsisConstants.BVENDOR.equals(key)
+                || CmsisConstants.VENDOR.equals(key)) {
             return DeviceVendor.match(value, pattern);
         }
         if (CmsisConstants.DCDECP.equals(key)) { // CDE support

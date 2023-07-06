@@ -19,12 +19,12 @@ import com.arm.cmsis.pack.enums.EEvaluationResult;
  */
 public class CpExpression extends CpItem implements ICpExpression {
 
-    protected char expressionType = 0; // 'D' Device),
-                                       // 'C' Component),
-                                       // 'T' Toolchain),
-                                       // 'R' Reference to condition
-                                       // 'E' Error (mixed attribute types or missing attributes)
-                                       // 'U' Unknown
+    protected char fExpressionDomain = 0; // 'D' Device),
+                                          // 'C' Component),
+                                          // 'T' Toolchain),
+                                          // 'R' Reference to condition
+                                          // 'E' Error (mixed attribute types or missing attributes)
+                                          // 'U' Unknown
 
     /**
      * Hierarchical constructor
@@ -48,17 +48,17 @@ public class CpExpression extends CpItem implements ICpExpression {
 
     @Override
     public char getExpressionDomain() {
-        if (expressionType == 0) {
+        if (fExpressionDomain == 0) {
             int nTypes = 0;
             boolean bError = false;
 
             if (hasCondition()) {
                 nTypes++;
-                expressionType = REFERENCE_EXPRESSION;
+                fExpressionDomain = REFERENCE_EXPRESSION;
             }
             if (attributes().containsAttribute("C*")) { //$NON-NLS-1$
                 nTypes++;
-                expressionType = COMPONENT_EXPRESSION;
+                fExpressionDomain = COMPONENT_EXPRESSION;
                 if (!attributes().hasAttribute(CmsisConstants.CCLASS)
                         || !attributes().hasAttribute(CmsisConstants.CGROUP)) {
                     bError = true;
@@ -66,26 +66,31 @@ public class CpExpression extends CpItem implements ICpExpression {
             }
             if (attributes().containsAttribute("D*") || attributes().hasAttribute(CmsisConstants.PNAME)) { //$NON-NLS-1$
                 nTypes++;
-                expressionType = DEVICE_EXPRESSION;
+                fExpressionDomain = DEVICE_EXPRESSION;
             }
 
             if (attributes().containsAttribute("B*")) {//$NON-NLS-1$
                 nTypes++;
-                expressionType = BOARD_EXPRESSION;
+                fExpressionDomain = BOARD_EXPRESSION;
             }
 
             if (attributes().containsAttribute("T*")) {//$NON-NLS-1$
                 nTypes++;
-                expressionType = TOOLCHAIN_EXPRESSION;
+                fExpressionDomain = TOOLCHAIN_EXPRESSION;
+            }
+
+            if (attributes().containsAttribute("H*")) {//$NON-NLS-1$
+                nTypes++;
+                fExpressionDomain = HW_EXPRESSION;
             }
 
             if (bError || nTypes > 1) {
-                expressionType = ERROR_EXPRESSION;
-            } else if (expressionType == 0) {
-                expressionType = UNKNOWN_EXPRESSION;
+                fExpressionDomain = ERROR_EXPRESSION;
+            } else if (fExpressionDomain == 0) {
+                fExpressionDomain = UNKNOWN_EXPRESSION;
             }
         }
-        return expressionType;
+        return fExpressionDomain;
     }
 
     @Override

@@ -29,38 +29,56 @@ public class CpDenyExpresion extends CpExpression {
     @Override
     public EEvaluationResult evaluate(ICpConditionContext context) {
         EEvaluationResult result = super.evaluate(context);
-        switch (result) {
-        case FULFILLED:
-            if (getExpressionDomain() != ICpExpression.COMPONENT_EXPRESSION)
-                return EEvaluationResult.INCOMPATIBLE;
-            return result;
-        case UNDEFINED:
-        case ERROR:
-        case IGNORED:
-        case INCOMPATIBLE:
-            return result;
-        case CONFLICT:
-        case FAILED:
-        case INACTIVE:
-        case INCOMPATIBLE_API:
-        case INCOMPATIBLE_BUNDLE:
-        case INCOMPATIBLE_VARIANT:
-        case INCOMPATIBLE_VENDOR:
-        case INCOMPATIBLE_VERSION:
-        case INSTALLED:
-        case MISSING:
-        case MISSING_API:
-        case MISSING_BUNDLE:
-        case MISSING_GPDSC:
-        case MISSING_VARIANT:
-        case MISSING_VENDOR:
-        case MISSING_VERSION:
-        case SELECTABLE:
-        case UNAVAILABLE:
-        case UNAVAILABLE_PACK:
-        default:
-            break;
+        if (getExpressionDomain() == ICpExpression.COMPONENT_EXPRESSION) {
+            return result; // already denied
         }
-        return EEvaluationResult.FULFILLED;
+
+        if (context.isDependencyContext()) {
+            switch (result) {
+            case UNDEFINED:
+            case ERROR:
+                return result;
+            case FULFILLED:
+                return EEvaluationResult.INCOMPATIBLE;
+            case INCOMPATIBLE:
+            case CONFLICT:
+            case INACTIVE:
+            case INCOMPATIBLE_API:
+            case INCOMPATIBLE_BUNDLE:
+            case INCOMPATIBLE_VARIANT:
+            case INCOMPATIBLE_VENDOR:
+            case INCOMPATIBLE_VERSION:
+            case INSTALLED:
+            case MISSING:
+            case MISSING_API:
+            case MISSING_BUNDLE:
+            case MISSING_GPDSC:
+            case MISSING_VARIANT:
+            case MISSING_VENDOR:
+            case MISSING_VERSION:
+            case SELECTABLE:
+            case UNAVAILABLE:
+            case UNAVAILABLE_PACK:
+                return EEvaluationResult.FULFILLED;
+
+            case IGNORED:
+            case FAILED:
+            default:
+                return EEvaluationResult.IGNORED;
+            }
+        } else {
+            switch (result) {
+            case FULFILLED:
+                return EEvaluationResult.FAILED;
+            case FAILED:
+                return EEvaluationResult.FULFILLED;
+            case ERROR:
+            case UNDEFINED:
+                return result;
+            case IGNORED:
+            default:
+                return EEvaluationResult.IGNORED;
+            }
+        }
     }
 }

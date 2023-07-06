@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Tests
 Bundle-SymbolicName: com.arm.cmsis.config.tests
 Automatic-Module-Name: com.arm.cmsis.config.tests
-Bundle-Version: 2.8.0.qualifier
+Bundle-Version: 2.9.0.qualifier
 Bundle-Vendor: Arm Limited
 Fragment-Host: com.arm.cmsis.config
 Bundle-RequiredExecutionEnvironment: JavaSE-11

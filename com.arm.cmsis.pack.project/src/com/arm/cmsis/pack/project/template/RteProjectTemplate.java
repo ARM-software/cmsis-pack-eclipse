@@ -12,8 +12,12 @@
 package com.arm.cmsis.pack.project.template;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.cdt.managedbuilder.buildproperties.IBuildPropertyValue;
+import org.eclipse.cdt.managedbuilder.core.IConfiguration;
+import org.eclipse.cdt.managedbuilder.core.IProjectType;
 import org.eclipse.cdt.managedbuilder.core.IToolChain;
 import org.eclipse.cdt.managedbuilder.ui.wizards.MBSCustomPageManager;
 import org.eclipse.cdt.ui.templateengine.IPagesAfterTemplateSelectionProvider;
@@ -22,9 +26,13 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchWizard;
 
+import com.arm.cmsis.pack.build.settings.RteToolChainAdapterFactory;
+import com.arm.cmsis.pack.build.settings.RteToolChainAdapterInfo;
+import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.project.Messages;
+import com.arm.cmsis.pack.project.utils.CDTUtils;
 
 /**
  * This class provides extra pages for new Project wizard and static functions
@@ -36,18 +44,24 @@ public class RteProjectTemplate implements IPagesAfterTemplateSelectionProvider 
 
     protected static ICpDeviceInfo selectedDeviceInfo = null;
     protected static ICpBoardInfo selectedBoardInfo = null;
+    protected static IToolChain selectedToolchain = null;
+
+    protected static String Tcompiler = CmsisConstants.EMPTY_STRING;
+    protected static String Toutput = CmsisConstants.EMPTY_STRING;
+
+    protected static String adapterId = CmsisConstants.EMPTY_STRING;
 
     @Override
     public IWizardDataPage[] createAdditionalPages(IWorkbenchWizard wizard, IWorkbench workbench,
             IStructuredSelection selection) {
 
+        updateToolChainAdapter();
         fPages = new ArrayList<>();
 
         RteTemplateDeviceSelectorPage devicePage = new RteTemplateDeviceSelectorPage();
 
         RteTemplateCmsisProjectPage toolChainAdapterPage = new RteTemplateCmsisProjectPage(
-                Messages.RteProjectTemplate_CMSIS_RTE_Project, Messages.RteProjectTemplate_CMSIS_RTE_Project, null,
-                true); // always hide select main as it no longer corresponds to RTOS2 API
+                Messages.RteProjectTemplate_CMSIS_RTE_Project, Messages.RteProjectTemplate_CMSIS_RTE_Project, null);
 
         fPages.add(devicePage);
         fPages.add(toolChainAdapterPage);
@@ -113,6 +127,60 @@ public class RteProjectTemplate implements IPagesAfterTemplateSelectionProvider 
             }
         }
         return null;
+    }
+
+    public static void updateToolChainAdapter() {
+        IToolChain tc = getSelectedToolChain();
+        if (tc == null || selectedToolchain == tc)
+            return;
+        selectedToolchain = tc;
+
+        IConfiguration cfg = tc.getParent();
+        if (cfg != null) {
+            IProjectType pt = cfg.getProjectType();
+            if (pt != null) {
+                IBuildPropertyValue artefact = pt.getBuildArtefactType();
+                if (artefact != null) {
+                    String aId = artefact.getId();
+                    if (CDTUtils.BUILD_ARTEFACT_TYPE_LIB.equals(aId)) {
+                        Toutput = CmsisConstants.TOUTPUT_LIB;
+                    } else if (CDTUtils.BUILD_ARTEFACT_TYPE_EXE.equals(aId)) {
+                        Toutput = CmsisConstants.TOUTPUT_EXE;
+                    }
+                }
+            }
+        }
+
+        RteToolChainAdapterFactory factory = RteToolChainAdapterFactory.getInstance();
+        Collection<RteToolChainAdapterInfo> adapters = factory.getAdapterInfos(tc);
+        if (adapters.size() == 1) {
+            RteToolChainAdapterInfo info = adapters.iterator().next();
+            Tcompiler = info.getFamily();
+            adapterId = info.getId();
+        } else {
+            Tcompiler = CmsisConstants.EMPTY_STRING;
+            adapterId = CmsisConstants.EMPTY_STRING;
+        }
+    }
+
+    public static String getTcompiler() {
+        return Tcompiler;
+    }
+
+    public static void setTcompiler(String tcompiler) {
+        Tcompiler = tcompiler;
+    }
+
+    public static String getToutput() {
+        return Toutput;
+    }
+
+    public static String getAdapterId() {
+        return adapterId;
+    }
+
+    public static void setAdapterId(String adapterId) {
+        RteProjectTemplate.adapterId = adapterId;
     }
 
 }

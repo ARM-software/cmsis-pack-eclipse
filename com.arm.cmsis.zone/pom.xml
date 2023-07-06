@@ -5,8 +5,8 @@
   <packaging>eclipse-plugin</packaging>
   <parent>
   	<groupId>com.arm.cmsis</groupId>
-  	<artifactId>com.arm.cmsis.parent.sign</artifactId>
-  	<version>2.8.0-SNAPSHOT</version>
-  	<relativePath>../com.arm.cmsis.parent.sign</relativePath>
+  	<artifactId>com.arm.cmsis.parent</artifactId>
+  	<version>2.9.0-SNAPSHOT</version>
+  	<relativePath>../com.arm.cmsis.parent</relativePath>
   </parent>
 </project>

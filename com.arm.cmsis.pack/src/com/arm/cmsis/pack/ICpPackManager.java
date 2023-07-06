@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Path;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpPack;
+import com.arm.cmsis.pack.data.ICpPack.PackState;
 import com.arm.cmsis.pack.data.ICpPackCollection;
 import com.arm.cmsis.pack.data.ICpPackFamily;
 import com.arm.cmsis.pack.events.IRteEventListener;
@@ -37,6 +38,33 @@ import com.arm.cmsis.pack.rte.examples.IRteExampleItem;
  * Interface to a Pack manager responsible for loading CMSIS-Packs
  */
 public interface ICpPackManager extends IRteEventListener {
+
+    /**
+     * Describes mode to load PACKS:
+     * <dl>
+     * <dd>NONE no pack loading
+     * <dd>INDIVIDUAL explicitly selected packs only via LoadPack() method
+     * <dd>INSTALLED only installed and local packs
+     * <dd>ALL all available, downloaded, installed and local packs
+     * </dl>
+     */
+    enum LoadMode {
+        NONE, INDIVIDUAL, INSTALLED, ALL
+    }
+
+    /**
+     * Sets load mode
+     *
+     * @param loadMode LoadMode to set
+     */
+    void setLoadMode(LoadMode loadMode);
+
+    /**
+     * Gets load mode
+     *
+     * @return current loadMode
+     */
+    LoadMode getLoadMode();
 
     /**
      * Sets ICpPackInstaller to be used by this manger to install packs
@@ -185,9 +213,19 @@ public interface ICpPackManager extends IRteEventListener {
      * Loads specified pdsc files
      *
      * @param fileNames collection of pdsc files to load
+     * @param packState PackState to assign to pack
      * @return true if all packs loaded successfully
      */
-    boolean loadPacks(Collection<String> fileNames);
+    boolean loadPacks(Collection<String> fileNames, PackState packState);
+
+    /**
+     * Loads a single installed or local pdsc file and adds its content to the
+     * collections
+     *
+     * @param absolute file pdsc file to load
+     * @return {@link ICpPack} is successful, null otherwise
+     */
+    ICpPack loadPack(String file);
 
     /**
      * Parses a single pdsc file
@@ -288,6 +326,13 @@ public interface ICpPackManager extends IRteEventListener {
     void setCmsisPackRootDirectory(String packRootDirectory);
 
     /**
+     * Initialize pack root
+     *
+     * @returns true if update is scheduled
+     */
+    boolean initPackRoot();
+
+    /**
      * Checks is packs are already loaded
      *
      * @return true if packs are already loaded
@@ -298,6 +343,11 @@ public interface ICpPackManager extends IRteEventListener {
      * Triggers reload of the pack descriptions
      */
     void reload();
+
+    /**
+     * Triggers reload of the pack descriptions
+     */
+    void ensureAllPacksLoaded();
 
     /**
      * Check if all packs required by supplied pack are installed

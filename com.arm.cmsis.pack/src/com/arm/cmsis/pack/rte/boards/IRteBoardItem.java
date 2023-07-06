@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -57,6 +57,14 @@ public interface IRteBoardItem extends IRteBoardDeviceItem {
      * @return board with the id, or null
      */
     IRteBoardItem findBoard(String boardId);
+
+    /**
+     * Find boards matching partialBoardId
+     *
+     * @param partialBoardId partial boardId
+     * @return collection of boards matching partialBoardId
+     */
+    Collection<IRteBoardItem> findBoards(String partialBoardId);
 
     /**
      * Get boards from all the packs

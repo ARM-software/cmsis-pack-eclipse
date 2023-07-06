@@ -25,6 +25,7 @@ public interface ICpPack extends ICpRootItem, IAllDeviceNames {
     /**
      * Describes Pack state:
      * <dl>
+     * <dd>LOCAL pack is loaded from a local repository
      * <dd>INSTALLED pack is locally installed
      * <dd>DOWNLOADED pack is download, but not installed
      * <dd>AVAILABLE pack is available for download

@@ -21,6 +21,14 @@ import com.arm.cmsis.pack.rte.components.IRteComponentItem;
 /**
  * Interface for dependency evaluation and resolving
  */
+/**
+ * @author edriouk
+ *
+ */
+/**
+ * @author edriouk
+ *
+ */
 public interface IRteDependency extends IRteDependencyItem {
 
     /**

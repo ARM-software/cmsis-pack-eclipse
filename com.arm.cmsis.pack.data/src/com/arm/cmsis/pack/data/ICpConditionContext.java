@@ -29,6 +29,16 @@ import com.arm.cmsis.pack.generic.IAttributes;
  * @see EEvaluationResult
  */
 public interface ICpConditionContext extends IAttributes, IEvaluationResult {
+
+    /**
+     * Checks if this context is a dependency context
+     *
+     * @return true if dependency context, default false
+     */
+    default boolean isDependencyContext() {
+        return false;
+    }
+
     /**
      * Resets cached results to UNDEFINED
      */
@@ -74,5 +84,4 @@ public interface ICpConditionContext extends IAttributes, IEvaluationResult {
      * @return filtered collection
      */
     Collection<ICpItem> filterItems(Collection<? extends ICpItem> sourceCollection);
-
 }

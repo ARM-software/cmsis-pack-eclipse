@@ -1,5 +1,5 @@
 /*******************************************************************************
-* Copyright (c) 2021 ARM Ltd. and others
+* Copyright (c) 2023 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
 * are made available under the terms of the Eclipse Public License v1.0
 * which accompanies this distribution, and is available at
@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.app.IApplicationContext;
 import org.eclipse.osgi.service.datalocation.Location;
+import org.eclipse.osgi.util.NLS;
 
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpPackManager;
@@ -42,6 +43,9 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
         INIT, IMPORT, UPDATE, BUILD, CLEANUP
     };
 
+    private static final String cmsisAppId = "com.arm.cmsis.pack.project.headlessbuild"; //$NON-NLS-1$
+    private static final String importArgDefault = "{[uri:/]/path/to/project/}"; //$NON-NLS-1$
+
     /** Error return status */
     public static final Integer EXIT_ERROR = 1; // important work is not done, processing is aborted
     public static final Integer EXIT_WARNING = 2; // work is only partially done, some of the tasks did not succeed
@@ -56,7 +60,7 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
     protected String[] fArgs = null;
     protected static final String[] helpArgs = new String[] { helpArg };
     protected static final String[] emptyArgs = new String[0];
-    protected boolean fbHelpRequested = false;
+    protected boolean fbShowUsage = false;
     protected boolean fbPacksLoaded = false;
 
     /**
@@ -92,7 +96,7 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
                 runStage(Stage.CLEANUP, context); // ensure cleanup stage is run
             }
         }
-        return fbHelpRequested ? EXIT_OK : totalResult;
+        return fbShowUsage ? EXIT_OK : totalResult;
     }
 
     /**
@@ -136,8 +140,12 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
         // Turn off workspace auto-build
         bSavedAutoBuildFlag = setAutoBuild(false);
         String[] args = (String[]) context.getArguments().get(IApplicationContext.APPLICATION_ARGS);
-        if (!getArguments(args))
-            return EXIT_ERROR;
+        if (!getArguments(args)) {
+            if (fbShowUsage) {
+                printUsage(context);
+                return EXIT_ERROR;
+            }
+        }
 
         // disable indexer before all operations
         if (super.start(context) != OK) {
@@ -236,8 +244,7 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
             for (int i = 0; i < args.length; i++) {
                 String a = args[i];
                 if (helpArg.equals(a)) {
-                    fbHelpRequested = true;
-                    printUsage();
+                    fbShowUsage = true;
                     return false;
                 }
                 if (cmsisRootArg.equals(a)) {
@@ -267,10 +274,10 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
             remainingArgs.add("-no-indexer"); //$NON-NLS-1$
             result = super.getArguments(remainingArgs.toArray(new String[remainingArgs.size()]));
             if (!result) {
-                printAdditionalArguments(); // add our own arguments to the list
+                fbShowUsage = true;
             }
         } catch (Exception e) {
-            printUsage();
+            fbShowUsage = true;
             return false;
         }
         return result;
@@ -281,12 +288,11 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
      *
      * @param args arguments passed to the application
      */
-    protected void printUsage() {
-        if (fbHelpRequested) {
-            super.getArguments(helpArgs); // will cause 'Error: Help requested' + usage
-        } else {
-            super.getArguments(emptyArgs); // will cause 'no arguments' + usage
-        }
+    protected void printUsage(IApplicationContext context) {
+        String binaryName = System.getProperty("eclipse.launcher", "PROGRAM"); //$NON-NLS-1$ //$NON-NLS-2$
+        String[] bindings = new String[] { binaryName, getAppId(), getImportArgumentHelpString() };
+
+        System.out.println(NLS.bind(Messages.CommandLineUsage, bindings));
         printAdditionalArguments();
     }
 
@@ -294,8 +300,15 @@ public class CmsisHeadlessBuilder extends HeadlessBuilder {
      * Prints additional arguments
      */
     protected void printAdditionalArguments() {
-        System.err.println(Messages.CmsisHeadlessBuilder_cmsisPackRootUsage);
-        System.err.println(Messages.CmsisHeadlessBuilder_HelpUsage);
+        // default does nothing
+    }
+
+    protected String getImportArgumentHelpString() {
+        return importArgDefault;
+    }
+
+    protected String getAppId() {
+        return cmsisAppId;
     }
 
     /**

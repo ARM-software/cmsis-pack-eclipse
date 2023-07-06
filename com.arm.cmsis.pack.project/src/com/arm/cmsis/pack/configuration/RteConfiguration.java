@@ -440,9 +440,12 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
         EFileRole role = fi.getRole();
         if (isAddToProject(fi)) {
+
             String className = ci != null ? ci.getAttribute(CmsisConstants.CCLASS) : CmsisConstants.EMPTY_STRING;
+            boolean bDeviceDependent = ci != null ? ci.isDeviceDependent() : false;
             String deviceName = fConfigInfo.getDeviceInfo().getFullDeviceName();
-            effectivePath = getPathRelativeToProject(fi, absPath, name, className, deviceName, index);
+
+            effectivePath = getPathRelativeToProject(fi, absPath, name, className, deviceName, index, bDeviceDependent);
             if (effectivePath == null) {
                 return;
             }
@@ -786,16 +789,18 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
     /**
      * Returns path relative to project (for component files)
      *
-     * @param fi         {@link ICpFileInfo} represents file
-     * @param absPath    source absolute path
-     * @param fileName   filename to use, may also contain path segments
-     * @param className  class name of the file's component
-     * @param deviceName device name used in project
-     * @param index      component instance index
+     * @param fi               {@link ICpFileInfo} represents file
+     * @param absPath          source absolute path
+     * @param fileName         filename to use, may also contain path segments
+     * @param className        class name of the file's component
+     * @param deviceName       device name used in project
+     * @param index            component instance index
+     * @param bDeviceDependent flag indicating if device name should be inserted in
+     *                         the resulting path
      * @return path relative to the project
      */
     protected String getPathRelativeToProject(ICpFileInfo fi, String absPath, String fileName, String className,
-            String deviceName, int index) {
+            String deviceName, int index, boolean bDeviceDependent) {
         if (fi == null) {
             return null;
         }
@@ -817,7 +822,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
         if (className != null && !className.isEmpty()) {
             path += Utils.wildCardsToX(className) + '/'; // escape spaces with underscores
         }
-        if (deviceName != null && !deviceName.isEmpty() && CmsisConstants.Device.contentEquals(className)) {
+        if (deviceName != null && !deviceName.isEmpty() && bDeviceDependent) {
             path += Utils.wildCardsToX(deviceName) + '/';
         }
 

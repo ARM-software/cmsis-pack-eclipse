@@ -22,6 +22,7 @@ public interface ICpExpression extends ICpItem {
 
     static final char BOARD_EXPRESSION = 'B';
     static final char DEVICE_EXPRESSION = 'D';
+    static final char HW_EXPRESSION = 'H';
     static final char TOOLCHAIN_EXPRESSION = 'T';
     static final char COMPONENT_EXPRESSION = 'C';
     static final char REFERENCE_EXPRESSION = 'R';

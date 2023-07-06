@@ -111,10 +111,34 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
     }
 
     @Override
+    protected List<String> cleanStringList(List<String> value, int oType) {
+        switch (oType) {
+        case IBuildSettings.RTE_DEFINES:
+            value = removeRtePathEntries(value);
+            break;
+        default:
+            value = super.cleanStringList(value, oType);
+            break;
+        }
+        return value;
+    }
+
+    @Override
     protected Collection<String> getStringListValue(IBuildSettings buildSettings, int type) {
         if (type == IBuildSettings.RTE_LIBRARIES || type == IBuildSettings.RTE_LIBRARY_PATHS) {
             return null; // we add libraries as objects => ignore libs and lib
                          // paths
+        } else if (type == IBuildSettings.RTE_DEFINES) {
+            // escape defines by adding "${cmsis_rte}" prefix
+            Collection<String> defines = buildSettings.getStringListValue(IBuildSettings.RTE_DEFINES);
+            List<String> value = new LinkedList<String>();
+            if (defines != null && !defines.isEmpty()) {
+                for (String s : defines) {
+                    value.add(CmsisConstants.CMSIS_RTE_VAR + s);
+                }
+            }
+            return value;
+
         } else if (type == IBuildSettings.RTE_OBJECTS) {
             Collection<String> objs = buildSettings.getStringListValue(IBuildSettings.RTE_OBJECTS);
             List<String> value = new LinkedList<String>();

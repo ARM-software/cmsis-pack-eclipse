@@ -770,7 +770,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
                 printInConsole(e.getMessage(), ConsoleType.ERROR);
                 return false;
             } catch (IOException e) {
-                printInConsole(NLS.bind(Messages.CpPackInstaller_ErrorWhileRefreshingIgnored, e.getMessage()),
+                printInConsole(NLS.bind(Messages.CpPackInstaller_ErrorWhileRefreshingIgnored, pdscUrl, e.getMessage()),
                         ConsoleType.WARNING);
                 return false;
             }

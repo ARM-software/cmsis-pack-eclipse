@@ -35,15 +35,12 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
     // list of component items that stop the search
     protected Map<IRteComponentItem, IRteDependencyItem> fStopItems = null;
 
-    boolean fbDeny = false;
-
-    public RteDependency(ICpItem item, boolean bDeny) {
+    public RteDependency(ICpItem item) {
         fCpItem = item;
-        fbDeny = bDeny;
     }
 
     public RteDependency(ICpItem item, int flags) {
-        this(item, false);
+        this(item);
         fFlags = flags;
     }
 
@@ -58,11 +55,6 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
     }
 
     @Override
-    public boolean isDeny() {
-        return fbDeny;
-    }
-
-    @Override
     public boolean isResolved() {
         if (fResult == EEvaluationResult.IGNORED)
             return true;
@@ -70,7 +62,7 @@ public class RteDependency extends RteDependencyItem implements IRteDependency {
             return true;
         if (fResult == EEvaluationResult.INCOMPATIBLE)
             return false;
-        return isDeny();
+        return false;
     }
 
     @Override

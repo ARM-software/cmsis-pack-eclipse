@@ -33,6 +33,7 @@ import org.eclipse.ui.PlatformUI;
 import com.arm.cmsis.pack.CpPlugIn;
 import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.ICpPackInstaller;
+import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.build.IBuildSettings;
 import com.arm.cmsis.pack.build.IMemorySettings;
 import com.arm.cmsis.pack.build.settings.ILinkerScriptGenerator;
@@ -367,12 +368,13 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
         }
         if (rteModel == null)
             return;
-        ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+        ICpPackManager pm = CpPlugIn.getPackManager();
+        ICpPackInstaller packInstaller = pm.getPackInstaller();
         if (packInstaller == null)
             return;
 
         rteProject.setInstallMissingPacksOnUpdate(false); // only once
-
+        pm.ensureAllPacksLoaded();
         packInstaller.installPacks(RteModelUtils.getMissingPacks(rteModel));
     }
 

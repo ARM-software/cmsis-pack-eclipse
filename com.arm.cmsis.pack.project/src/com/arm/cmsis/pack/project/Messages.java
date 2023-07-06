@@ -19,6 +19,7 @@ import org.eclipse.osgi.util.NLS;
  */
 public class Messages extends NLS {
     private static final String BUNDLE_NAME = "com.arm.cmsis.pack.project.messages"; //$NON-NLS-1$
+    public static String CommandLineUsage;
     public static String CmsisCodeTemplate_Browse;
     public static String CmsisCodeTemplate_Component;
     public static String CmsisCodeTemplate_ContainerNotExist;
@@ -49,8 +50,6 @@ public class Messages extends NLS {
     public static String CmsisCodeTemplateNewWizardPage_ProjectMustExist;
     public static String CmsisCodeTemplate_NoTemplates;
     public static String CmsisHeadlessBuilder_CmsisPackManagerNotAvailable;
-    public static String CmsisHeadlessBuilder_cmsisPackRootUsage;
-    public static String CmsisHeadlessBuilder_HelpUsage;
     public static String CmsisHeadlessBuilder_NoCmsisPackRoot;
     public static String CmsisHeadlessBuilder_NoInstalledPacks;
     public static String CreateRteProject_EclipseProjectNotExists;
