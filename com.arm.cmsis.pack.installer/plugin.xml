@@ -11,4 +11,17 @@
             name="Default CMSIS-Pack installer ">
       </PackInstaller>
    </extension>
+   <extension
+         id="com.arm.cmsis.pack.installer"
+         name="CMSIS-Pack command line installer"
+         point="org.eclipse.core.runtime.applications">
+      <application
+            cardinality="singleton-global"
+            thread="main"
+            visible="true">
+         <run
+               class="com.arm.cmsis.pack.installer.ClPackInstaller">
+         </run>
+      </application>
+   </extension>
 </plugin>
