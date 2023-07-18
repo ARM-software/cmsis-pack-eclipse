@@ -7,6 +7,7 @@
 *
 * Contributors:
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
+* Analog Devices, Inc - Extension and implementation
 *******************************************************************************/
 
 package com.arm.cmsis.pack.installer;
@@ -96,6 +97,11 @@ public class Messages extends NLS {
     public static String LicenseDialog_LicenseDialogTitle;
 
     public static String PackInstallerUtils_PleaseAgreeLicenseAgreement;
+
+    public static String ClPackInstaller_FailToDeletePack;
+    public static String ClPackInstaller_InvalidArg;
+    public static String ClPackInstaller_RetrievingPacks;
+    public static String ClPackInstaller_Usage;
 
     static {
         // initialize resource bundle
