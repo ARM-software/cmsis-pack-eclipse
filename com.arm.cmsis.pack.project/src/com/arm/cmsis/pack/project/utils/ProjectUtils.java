@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -942,7 +942,7 @@ public class ProjectUtils {
      * @return collection of IToolChain object satisfying thr prefix
      */
     public static Collection<IToolChain> getToolChainsByIdPrefix(String prefix) {
-        List<IToolChain> toolchains = new LinkedList<>();
+        List<IToolChain> toolchains = new ArrayList<>();
         IToolChain[] toolchainList = ManagedBuildManager.getRealToolChains();
         for (IToolChain t : toolchainList) {
             if (t == null || !t.isSupported())

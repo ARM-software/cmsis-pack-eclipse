@@ -12,7 +12,7 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +31,7 @@ public interface ICpItem extends IAttributedItem, ICpItemFactory, ICmsisTreeItem
 
     public static final ICpItem NULL_CPITEM = null; // to resolve ambiguity in constructors
     public static final ICpItem[] EMPTY_CPITEM_ARRAY = new ICpItem[0];
-    public static final List<ICpItem> EMPTY_CPITEM_LIST = new LinkedList<ICpItem>();
+    public static final List<ICpItem> EMPTY_CPITEM_LIST = new ArrayList<ICpItem>();
 
     /**
      * Returns root item containing this item as ICpRootItem

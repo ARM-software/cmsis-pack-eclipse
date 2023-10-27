@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,7 +42,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
     protected String fURL = null;
     protected String fId = null;
 
-    public static final Collection<ICpItem> EMPTY_LIST = new LinkedList<>();
+    public static final Collection<ICpItem> EMPTY_LIST = new ArrayList<>();
 
     /**
      * Default hierarchy constructor
@@ -230,7 +230,7 @@ public class CpItem extends CmsisTreeItem<ICpItem> implements ICpItem {
 
     @Override
     public Collection<ICpItem> getChildren(String tag) {
-        List<ICpItem> tagChildren = new LinkedList<>();
+        List<ICpItem> tagChildren = new ArrayList<>();
         Collection<? extends ICpItem> children = getChildren();
         if (children != null) {
             for (ICpItem item : children) {

@@ -11,9 +11,9 @@
 
 package com.arm.cmsis.pack.item;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -109,7 +109,7 @@ public class CmsisMapItem<T extends ICmsisMapItem<T>> extends CmsisTreeItem<T> i
 
     @Override
     public List<String> getKeyPath() {
-        List<String> keyPath = new LinkedList<>();
+        List<String> keyPath = new ArrayList<>();
         T child = getThisItem();
         for (T parent = getParent(); parent != null; parent = parent.getParent()) {
             String key = parent.getItemKey(child);

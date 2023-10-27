@@ -14,7 +14,7 @@ package com.arm.cmsis.pack.installer.jobs;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -104,7 +104,7 @@ public class CpPackImportFolderJob extends CpPackJob {
                 }
             }
         }
-        List<String> files = new LinkedList<String>();
+        List<String> files = new ArrayList<String>();
         Utils.findPdscFiles(parentFolder, files, 0);
         if (files.isEmpty()) { // this is a normal folder
             return true;

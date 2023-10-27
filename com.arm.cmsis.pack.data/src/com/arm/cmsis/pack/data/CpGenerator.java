@@ -13,7 +13,7 @@ package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -85,7 +85,7 @@ public class CpGenerator extends CpItem implements ICpGenerator {
 
     @Override
     public Collection<ICpItem> getArguments(String type) {
-        List<ICpItem> arguments = new LinkedList<>();
+        List<ICpItem> arguments = new ArrayList<>();
         if (type == null || type.isEmpty()) {
             return arguments;
         }

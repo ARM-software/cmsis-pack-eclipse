@@ -3,10 +3,10 @@ package com.arm.cmsis.pack.project;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -527,7 +527,8 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
         boolean generated = f.isGenerated();
         ICpConfigurationInfo cpConf = rteConf.getConfigurationInfo();
         String base = cpConf.getDir(true);
-        boolean local = srcFile.startsWith(base);
+        String relPath = ProjectUtils.makePathRelative(srcFile, base);
+        boolean local = !relPath.startsWith("..") && srcFile.startsWith(base); //$NON-NLS-1$
         EFileRole role = fi.getRole();
         if (generated || local) {
             role = EFileRole.NONE; // prevent generated files from copy
@@ -618,7 +619,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
         if (rteConf == null) {
             return;
         }
-        List<String> content = new LinkedList<>();
+        List<String> content = new ArrayList<>();
         // prepend #define CMSIS_device_header
         String deviceHeader = rteConf.getDeviceHeader();
         if (deviceHeader != null && !deviceHeader.isEmpty()) {

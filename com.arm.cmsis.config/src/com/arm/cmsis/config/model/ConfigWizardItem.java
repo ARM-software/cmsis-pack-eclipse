@@ -11,8 +11,9 @@
 
 package com.arm.cmsis.config.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -47,7 +48,7 @@ public class ConfigWizardItem implements IConfigWizardItem {
     private boolean fInvertValue;
     private Map<Long, String> fItems;
     private Map<String, String> fStrItems;
-    private LinkedList<IConfigWizardItem> fChildren;
+    private List<IConfigWizardItem> fChildren;
     private String fSelStr;
 
     /**
@@ -69,7 +70,7 @@ public class ConfigWizardItem implements IConfigWizardItem {
         fSpinStep = 0;
         fItems = new TreeMap<>();
         fStrItems = new TreeMap<>();
-        fChildren = new LinkedList<>();
+        fChildren = new ArrayList<>();
     }
 
     @Override
@@ -312,10 +313,10 @@ public class ConfigWizardItem implements IConfigWizardItem {
 
     @Override
     public IConfigWizardItem getLastChild() {
-        if (fChildren == null || fChildren.size() == 0) {
+        if (fChildren == null || fChildren.isEmpty()) {
             return null;
         }
-        return fChildren.getLast();
+        return fChildren.get(fChildren.size() - 1);
     }
 
     @Override

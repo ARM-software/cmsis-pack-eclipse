@@ -11,6 +11,8 @@
 
 package com.arm.cmsis.pack.rte;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -208,7 +210,6 @@ public class RteModel implements IRteModel {
         if (children == null)
             return;
         ICpPackManager pm = CpPlugIn.getPackManager();
-        ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
         for (ICpItem item : children) {
             if (!item.hasAttribute(CmsisConstants.GENERATOR))
                 continue;
@@ -217,10 +218,9 @@ public class RteModel implements IRteModel {
             ICpComponentInfo ci = (ICpComponentInfo) item;
             if (ci.isGenerated())
                 continue; // consider only bootstrap
-            String gpdsc = ci.getGpdsc();
+            String gpdsc = getExpandedGpdsc(ci);
             if (gpdsc == null || gpdsc.isEmpty())
                 continue;
-            gpdsc = ep.expandString(gpdsc, fConfigurationInfo, true);
             if (fGeneratedPacks.containsKey(gpdsc)) {
                 ICpPack pack = fGeneratedPacks.get(gpdsc);
                 if (pack != null || !ci.isSaved())
@@ -229,6 +229,69 @@ public class RteModel implements IRteModel {
             ICpPack pack = pm.loadGpdsc(gpdsc);
             fGeneratedPacks.put(gpdsc, pack);
         }
+    }
+
+    /**
+     * Returns absolute gpdsc filename associated with component
+     *
+     * @param component {@link IRteComponent}
+     * @return associated gpdsc file or null if none
+     */
+    protected String getGpdsc(IRteComponent component) {
+        if (component == null)
+            return null;
+        return getGpdsc(component.getActiveCpComponent());
+    }
+
+    /**
+     * Returns absolute gpdsc filename associated with component
+     *
+     * @param c {@link ICpComponent}
+     * @return associated gpdsc file or null if none
+     */
+    protected String getGpdsc(ICpComponent c) {
+        if (c == null)
+            return null;
+        if (c.isGenerated()) {
+            ICpPack pack = c.getPack();
+            if (pack == null)
+                return null; // should not happen
+            return pack.getFileName();
+        }
+        ICpGenerator gen = c.getGenerator();
+        if (gen != null) {
+            return getExpandedGpdsc(gen.getGpdsc(), gen.getWorkingDir());
+        }
+        return null;
+    }
+
+    /**
+     * Returns absolute gpdsc filename from its name and working directory
+     *
+     * @param c {@link ICpComponent}
+     * @return associated gpdsc file or null if none
+     */
+    @Override
+    public String getExpandedGpdsc(String gpdsc, String workingDir) {
+        if (gpdsc == null || gpdsc.isEmpty()) {
+            return null;
+        }
+        ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
+        String expandedGpdsc = ep.expandString(gpdsc, getConfigurationInfo(), true);
+        File gpdscFile = new File(expandedGpdsc);
+        if (gpdscFile.isAbsolute()) {
+            try {
+                expandedGpdsc = gpdscFile.getCanonicalPath();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return null;
+            }
+        } else if (workingDir != null && !workingDir.isEmpty()) {
+            String wd = ep.expandString(workingDir, getConfigurationInfo(), true);
+            expandedGpdsc = Utils.addTrailingSlash(wd) + expandedGpdsc;
+        }
+
+        return expandedGpdsc.replace('\\', '/');
     }
 
     protected void filterPacks() {
@@ -401,6 +464,7 @@ public class RteModel implements IRteModel {
                         ICpItem gpdscItem = new CpItem(ci, CmsisConstants.GPDSC_TAG);
                         ci.addChild(gpdscItem);
                         gpdscItem.attributes().setAttribute(CmsisConstants.NAME, gen.getGpdsc());
+                        gpdscItem.attributes().setAttribute(CmsisConstants.WORKING_DIR_TAG, gen.getWorkingDir());
                     }
                 } else {
                     ci.setComponent(c);
@@ -481,10 +545,16 @@ public class RteModel implements IRteModel {
         if (ci.isGenerated() || !ci.isSaved()) {
             return;
         }
-
-        ICpGenerator gen = c.getGenerator();
-        if (gen == null)
+        // get generator from gpdsc
+        ICpPack generatedPack = getGeneratedPack(getGpdsc(c));
+        if (generatedPack == null) {
             return;
+        }
+        ICpItem gen = generatedPack.getGenerator(c.getGeneratorId());
+        if (gen == null) {
+            return;
+        }
+
         createFileInfos(ci, gen.getGrandChildren(CmsisConstants.PROJECT_FILES_TAG), true);
     }
 

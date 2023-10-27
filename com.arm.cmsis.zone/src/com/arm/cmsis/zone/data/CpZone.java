@@ -12,7 +12,7 @@
 package com.arm.cmsis.zone.data;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -76,7 +76,7 @@ public class CpZone extends CpZoneItem implements ICpZone {
     @Override
     public Collection<ICpMemoryBlock> getAssignedMemoryBlocks() {
 
-        Collection<ICpMemoryBlock> memoryBlocks = new LinkedList<>();
+        Collection<ICpMemoryBlock> memoryBlocks = new ArrayList<>();
         Collection<ICpZoneAssignment> assignments = getZoneAssignments();
         if (assignments == null || assignments.isEmpty())
             return memoryBlocks;

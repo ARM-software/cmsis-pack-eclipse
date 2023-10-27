@@ -86,7 +86,7 @@ public interface ICpBoard extends ICpItem {
             name = item.getName();
             String rev = item.getRevision();
             if (!rev.isEmpty()) {
-                name += " (" + rev + ")";
+                name += " (" + rev + ")"; //$NON-NLS-1$//$NON-NLS-2$
             }
         }
         return name;

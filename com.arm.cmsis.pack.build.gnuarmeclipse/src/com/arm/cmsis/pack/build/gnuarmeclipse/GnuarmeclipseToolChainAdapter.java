@@ -12,8 +12,8 @@
 
 package com.arm.cmsis.pack.build.gnuarmeclipse;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.cdt.managedbuilder.core.IOption;
@@ -131,7 +131,7 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
         } else if (type == IBuildSettings.RTE_DEFINES) {
             // escape defines by adding "${cmsis_rte}" prefix
             Collection<String> defines = buildSettings.getStringListValue(IBuildSettings.RTE_DEFINES);
-            List<String> value = new LinkedList<String>();
+            List<String> value = new ArrayList<String>();
             if (defines != null && !defines.isEmpty()) {
                 for (String s : defines) {
                     value.add(CmsisConstants.CMSIS_RTE_VAR + s);
@@ -141,7 +141,7 @@ public class GnuarmeclipseToolChainAdapter extends RteToolChainAdapter {
 
         } else if (type == IBuildSettings.RTE_OBJECTS) {
             Collection<String> objs = buildSettings.getStringListValue(IBuildSettings.RTE_OBJECTS);
-            List<String> value = new LinkedList<String>();
+            List<String> value = new ArrayList<String>();
             if (objs != null && !objs.isEmpty())
                 value.addAll(objs);
             // add libraries as objects (gcc does not allow to specify libs with

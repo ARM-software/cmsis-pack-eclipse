@@ -11,8 +11,8 @@
 
 package com.arm.cmsis.pack.rte.components;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -561,7 +561,7 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
     @Override
     public Collection<IRteComponent> getSelectedComponents(Collection<IRteComponent> components) {
         if (components == null) {
-            components = new LinkedList<IRteComponent>();
+            components = new ArrayList<IRteComponent>();
         }
 
         IRteComponentItem activeChild = getActiveChild();
@@ -580,7 +580,7 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
     @Override
     public Collection<IRteComponent> getUsedComponents(Collection<IRteComponent> components) {
         if (components == null) {
-            components = new LinkedList<IRteComponent>();
+            components = new ArrayList<IRteComponent>();
         }
 
         IRteComponentItem activeChild = getActiveChild();
@@ -599,7 +599,7 @@ public class RteComponentItem extends CmsisMapItem<IRteComponentItem> implements
     @Override
     public Collection<IRteComponent> getGeneratorComponents(String generatorId, Collection<IRteComponent> components) {
         if (components == null) {
-            components = new LinkedList<IRteComponent>();
+            components = new ArrayList<IRteComponent>();
         }
 
         IRteComponentItem activeChild = getActiveChild();

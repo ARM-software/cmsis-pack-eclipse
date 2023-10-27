@@ -67,4 +67,10 @@ public interface ICpComponentInfo extends ICpComponent, ICpItemInfo, IEvaluation
      */
     String getGpdsc();
 
+    /**
+     * Returns working directory for gpdsc
+     *
+     * @return working directory attribute or null
+     */
+    String getWorkingDir();
 }

@@ -24,6 +24,7 @@ import com.arm.cmsis.pack.data.ICpPackFilter;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.enums.IEvaluationResult;
 import com.arm.cmsis.pack.info.ICpBoardInfo;
+import com.arm.cmsis.pack.info.ICpComponentInfo;
 import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpPackInfo;
@@ -263,6 +264,27 @@ public interface IRteModel extends IEvaluationResult {
      * @return true if given gpdsc file is needed
      */
     boolean isGeneratedPackUsed(String gpdsc);
+
+    /**
+     * Returns absolute gpdsc filename from its name and working directory
+     *
+     * @param gpdsc      gpdsc file name
+     * @param workingDir working directory defined by generator
+     * @return extended gpdsc file or null if none
+     */
+    default String getExpandedGpdsc(String gpdsc, String workingDir) {
+        return gpdsc; // just for compatibility with test environments that (mis)use mocking
+    }
+
+    /**
+     * Returns absolute gpdsc filename from its name and working directory
+     *
+     * @param ci component info to get gpdsc from
+     * @return extended gpdsc file or null if none
+     */
+    default String getExpandedGpdsc(ICpComponentInfo ci) {
+        return ci != null ? getExpandedGpdsc(ci.getGpdsc(), ci.getWorkingDir()) : null;
+    }
 
     /**
      * Returns filter context used by the model

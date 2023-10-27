@@ -10,7 +10,7 @@
  *******************************************************************************/
 package com.arm.cmsis.zone.widgets;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -57,7 +57,7 @@ public class CmsisZoneContentProvider extends TreeObjectContentProvider {
         if (item instanceof ICpRootZone) {
             ICpRootZone root = (ICpRootZone) item;
 
-            List<ICpItem> rootChildren = new LinkedList<>();
+            List<ICpItem> rootChildren = new ArrayList<>();
             ICpDeviceUnit du = root.getDeviceUnit();
             if (du != null)
                 rootChildren.add(du);

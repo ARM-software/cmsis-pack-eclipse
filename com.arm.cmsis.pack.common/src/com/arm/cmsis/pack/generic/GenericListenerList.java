@@ -11,10 +11,10 @@
 
 package com.arm.cmsis.pack.generic;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -49,7 +49,7 @@ public class GenericListenerList<L extends IGenericListener<E>, E> implements IG
     @Override
     public synchronized void notifyListeners(E event) {
         // make a copy to avoid add/remove conflicts
-        List<L> workingList = new LinkedList<>(listeners);
+        List<L> workingList = new ArrayList<>(listeners);
         for (Iterator<? extends L> iterator = workingList.iterator(); iterator.hasNext();) {
             if (listeners.isEmpty())
                 return;

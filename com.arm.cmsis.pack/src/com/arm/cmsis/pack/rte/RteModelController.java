@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Set;
 
 import com.arm.cmsis.pack.CpPlugIn;
-import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.ICpPackManager;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpPackFilter;
@@ -25,7 +24,6 @@ import com.arm.cmsis.pack.data.ICpBoard;
 import com.arm.cmsis.pack.data.ICpComponent;
 import com.arm.cmsis.pack.data.ICpConditionContext;
 import com.arm.cmsis.pack.data.ICpDeviceItem;
-import com.arm.cmsis.pack.data.ICpGenerator;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.data.ICpPackCollection;
@@ -304,34 +302,6 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
     @Override
     public IRtePackCollection getRtePackCollection() {
         return fRtePackCollection;
-    }
-
-    /**
-     * Returns absolute gpdsc filename associated with component
-     *
-     * @param component {@link IRteComponent}
-     * @return associated gpdsc file or null if none
-     */
-    protected String getGpdsc(IRteComponent component) {
-        if (component == null)
-            return null;
-        ICpComponent c = component.getActiveCpComponent();
-        if (c == null)
-            return null;
-
-        if (c.isGenerated()) {
-            ICpPack pack = c.getPack();
-            if (pack == null)
-                return null; // should not happen
-            return pack.getFileName();
-        }
-        ICpGenerator gen = c.getGenerator();
-        if (gen != null) {
-            ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
-            return ep.expandString(gen.getGpdsc(), getConfigurationInfo(), true);
-        }
-
-        return null;
     }
 
     @Override
@@ -629,6 +599,11 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
     @Override
     public boolean isGeneratedPackUsed(String gpdsc) {
         return fModel.isGeneratedPackUsed(gpdsc);
+    }
+
+    @Override
+    public String getExpandedGpdsc(String gpdsc, String workingDir) {
+        return fModel.getExpandedGpdsc(gpdsc, workingDir);
     }
 
     @Override

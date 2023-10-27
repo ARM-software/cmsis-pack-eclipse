@@ -21,8 +21,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import com.arm.cmsis.pack.CpPlugIn;
-import com.arm.cmsis.pack.ICpEnvironmentProvider;
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.CpConditionContext;
 import com.arm.cmsis.pack.data.ICpComponent;
@@ -35,7 +33,6 @@ import com.arm.cmsis.pack.enums.EEvaluationResult;
 import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.info.ICpBoardInfo;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
-import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.rte.IRteModel;
 import com.arm.cmsis.pack.rte.components.IRteComponent;
@@ -495,9 +492,6 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
      * Evaluates used components and reports missing components and gpdsc files
      */
     protected void evaluateUsedComponents() {
-        ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
-        ICpConfigurationInfo configInfo = rteModel.getConfigurationInfo();
-
         Collection<IRteComponent> usedComponents = getUsedComponents();
         for (IRteComponent component : usedComponents) {
             if (!component.isSelected()) {
@@ -513,12 +507,10 @@ public class RteDependencySolver extends CpConditionContext implements IRteDepen
                 if (ci.isGenerated() || !ci.isSaved()) {
                     continue;
                 }
-                String gpdsc = ci.getGpdsc();
+                String gpdsc = rteModel.getExpandedGpdsc(ci);
                 if (gpdsc == null || gpdsc.isEmpty()) {
                     continue;
                 }
-                gpdsc = ep.expandString(gpdsc, configInfo, true);
-
                 ICpPack pack = rteModel.getGeneratedPack(gpdsc);
                 if (pack != null) {
                     continue;

@@ -14,7 +14,7 @@ package com.arm.cmsis.pack.installer.ui.views;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
@@ -95,7 +95,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
     protected StackLayout fStackLayout = null;
     protected Link fLink = null;
     protected Listener fLinkListener;
-    protected List<String> fSelectionPath = new LinkedList<>();
+    protected List<String> fSelectionPath = new ArrayList<>();
 
     protected ViewerFilter[] fViewFilters = null;
     PatternFilter fPatternFilter = null;
@@ -211,7 +211,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
     }
 
     public static List<String> createSelectionPath(ISelection selection) {
-        List<String> selectionPath = new LinkedList<>();
+        List<String> selectionPath = new ArrayList<>();
         if (!(selection instanceof ITreeSelection))
             return selectionPath;
         ITreeSelection treeSelection = (ITreeSelection) selection;
@@ -692,7 +692,7 @@ public abstract class PackInstallerView extends ViewPart implements IRteEventLis
             return null;
         ITreeContentProvider cp = (ITreeContentProvider) fViewer.getContentProvider();
         Object[] elements = cp.getElements(fViewer.getInput());
-        List<ICmsisItem> path = new LinkedList<>();
+        List<ICmsisItem> path = new ArrayList<>();
         ICmsisItem selectedItem = null;
         for (String name : selectionPath) {
             ICmsisItem cmsisItem = getCmsisItem(elements, name);

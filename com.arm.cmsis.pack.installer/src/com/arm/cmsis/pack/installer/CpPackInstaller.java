@@ -29,7 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -296,7 +296,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
 
     @Override
     public void importFolderPacks(String rootPath) {
-        List<String> files = new LinkedList<>();
+        List<String> files = new ArrayList<>();
         Utils.findPdscFiles(new File(rootPath), files, 256);
         String jobId = files.stream().map(filename -> CpPlugIn.getPackManager().readPack(filename))
                 .filter(pack -> pack != null).map(pack -> pack.getId()).collect(Collectors.joining(",")); //$NON-NLS-1$
@@ -573,7 +573,7 @@ public class CpPackInstaller extends PlatformObject implements ICpPackInstaller 
         if (indexUrl == null || indexUrl.isEmpty()) {
             indexUrl = CmsisConstants.REPO_KEIL_INDEX_URL;
         }
-        List<String[]> indexList = new LinkedList<>();
+        List<String[]> indexList = new ArrayList<>();
 
         try {
             boolean needsUpdate = false;

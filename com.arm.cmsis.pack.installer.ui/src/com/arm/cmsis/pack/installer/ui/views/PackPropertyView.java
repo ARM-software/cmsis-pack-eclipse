@@ -12,7 +12,7 @@
 package com.arm.cmsis.pack.installer.ui.views;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 import org.eclipse.jface.action.Action;
@@ -124,7 +124,7 @@ public class PackPropertyView extends PackInstallerView {
                 return ITreeObject.EMPTY_OBJECT_ARRAY;
             }
 
-            Collection<ICpItem> result = new LinkedList<>();
+            Collection<ICpItem> result = new ArrayList<>();
             for (ICpItem child : pack.getChildren()) {
                 if (CmsisConstants.DEVICES_TAG.equals(child.getTag())
                         || CmsisConstants.BOARDS_TAG.equals(child.getTag())
@@ -172,7 +172,7 @@ public class PackPropertyView extends PackInstallerView {
                 return ITreeObject.EMPTY_OBJECT_ARRAY;
             }
 
-            Collection<ICpExample> result = new LinkedList<>();
+            Collection<ICpExample> result = new ArrayList<>();
             ICpEnvironmentProvider envProvider = CpPlugIn.getEnvironmentProvider();
             for (ICpItem item : examples.getChildren()) {
                 if (!(item instanceof ICpExample)) {
@@ -192,7 +192,7 @@ public class PackPropertyView extends PackInstallerView {
                 // Only show the board item under the example item
                 ICpBoard board = example.getFirstChildOfType(ICpBoard.class);
                 if (board != null) {
-                    Collection<ICpItem> result = new LinkedList<>();
+                    Collection<ICpItem> result = new ArrayList<>();
                     result.add(board);
                     return result.toArray();
                 }

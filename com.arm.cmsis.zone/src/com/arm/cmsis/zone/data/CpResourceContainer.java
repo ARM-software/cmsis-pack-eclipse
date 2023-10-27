@@ -14,7 +14,7 @@ package com.arm.cmsis.zone.data;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -123,7 +123,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 
     @Override
     public Collection<ICpMemoryBlock> getAllMemoryRegions() {
-        List<ICpMemoryBlock> regions = new LinkedList<>();
+        List<ICpMemoryBlock> regions = new ArrayList<>();
         for (ICpMemoryBlock block : getMemoryBlocksAsMap().values()) {
             if (block instanceof ICpMemoryBlock && !block.isPeripheral()) {
                 regions.add(block);
@@ -135,7 +135,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 
     @Override
     public Collection<ICpMemoryBlock> getStarupMemoryRegions() {
-        Collection<ICpMemoryBlock> regions = new LinkedList<>();
+        Collection<ICpMemoryBlock> regions = new ArrayList<>();
         for (ICpMemoryBlock block : getMemoryBlocksAsMap().values()) {
             if (block instanceof ICpMemoryBlock && block.isStartup()) {
                 regions.add(block);
@@ -146,7 +146,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 
     @Override
     public Collection<ICpPeripheral> getAllPeripherals() {
-        Collection<ICpPeripheral> peripherals = new LinkedList<>();
+        Collection<ICpPeripheral> peripherals = new ArrayList<>();
         for (ICpMemoryBlock block : getMemoryBlocksAsMap().values()) {
             if (block instanceof ICpPeripheral) {
                 peripherals.add((ICpPeripheral) block);
@@ -157,7 +157,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
 
     @Override
     public Collection<ICpPeripheralItem> getAllPeripheralItems() {
-        Collection<ICpPeripheralItem> peripheralItems = new LinkedList<>();
+        Collection<ICpPeripheralItem> peripheralItems = new ArrayList<>();
         for (ICpMemoryBlock block : getMemoryBlocksAsMap().values()) {
             if (block instanceof ICpPeripheralItem) {
                 peripheralItems.add((ICpPeripheralItem) block);
@@ -328,7 +328,7 @@ public class CpResourceContainer extends CpResourceGroup implements ICpResourceC
         fMpcRegions = new TreeMap<>();
         ICpResourceGroup memory = getMemoryGroup();
         if (memory != null) {
-            List<ICpMpc> mpcItems = new LinkedList<>(memory.getChildrenOfType(ICpMpc.class));
+            List<ICpMpc> mpcItems = new ArrayList<>(memory.getChildrenOfType(ICpMpc.class));
             Collections.sort(mpcItems, new MemoryStartComparator());
             MpcRegion region = null;
             for (ICpMpc mpc : mpcItems) {

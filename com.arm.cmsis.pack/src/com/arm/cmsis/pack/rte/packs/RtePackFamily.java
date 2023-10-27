@@ -11,10 +11,10 @@
 
 package com.arm.cmsis.pack.rte.packs;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -273,7 +273,7 @@ public class RtePackFamily extends RtePackItem implements IRtePackFamily {
 
     @Override
     public Collection<IRtePack> getSelectedPacks() {
-        Collection<IRtePack> packs = new LinkedList<IRtePack>();
+        Collection<IRtePack> packs = new ArrayList<IRtePack>();
         for (IRtePack pack : fPacks.values()) {
             if (pack.isSelected())
                 packs.add(pack);

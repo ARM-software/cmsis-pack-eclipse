@@ -11,9 +11,9 @@
 
 package com.arm.cmsis.pack.build;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -149,7 +149,7 @@ public class BuildSettings extends Attributes implements IBuildSettings {
         case ASMINCPATHS_OPTION:
             return new TreeSet<>(new AlnumComparator(false, true));
         default:
-            return new LinkedList<>();
+            return new ArrayList<>();
         }
     }
 

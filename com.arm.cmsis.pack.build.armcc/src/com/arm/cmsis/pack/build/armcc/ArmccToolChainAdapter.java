@@ -11,9 +11,9 @@
 
 package com.arm.cmsis.pack.build.armcc;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.cdt.managedbuilder.core.BuildException;
@@ -338,7 +338,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
             return null;
         case ARMCC5_ASMDEFINES_OPTION:
         case IBuildSettings.ADEFINES_OPTION: {
-            List<String> asmDefines = new LinkedList<String>();
+            List<String> asmDefines = new ArrayList<String>();
             if (oType == ARMCC5_ASMDEFINES_OPTION)
                 oType = IBuildSettings.RTE_DEFINES; // change to key used in buildSettings
             Collection<String> defines = buildSettings.getStringListValue(oType);
@@ -368,7 +368,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
         Collection<String> value = super.getStringListValue(buildSettings, oType);
         if (rteValue != null && !rteValue.isEmpty()) {
             if (value == null) {
-                value = new LinkedList<>();
+                value = new ArrayList<>();
             }
             for (String s : rteValue) {
                 value.add(CmsisConstants.CMSIS_RTE_VAR + s);
@@ -382,7 +382,7 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
         switch (oType) {
         case IBuildSettings.ADEFINES_OPTION:
         case ARMCC5_ASMDEFINES_OPTION: {
-            List<String> asmDefines = new LinkedList<String>();
+            List<String> asmDefines = new ArrayList<String>();
             if (oType == ARMCC5_ASMDEFINES_OPTION)
                 oType = IBuildSettings.RTE_DEFINES; // change to key used in buildSettings
             Collection<String> defines = buildSettings.getStringListValue(oType);

@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import org.junit.Test;
 
@@ -88,7 +88,7 @@ public class CpMpuSetupTest {
         ICpMpuSetup mpuSetup = new CpMpuSetup(null);
         mpuSetup.setAttribute(CmsisConstants.TYPE, CmsisConstants.V7M);
 
-        Collection<ICpMemoryBlock> memoryBlocks = new LinkedList<>();
+        Collection<ICpMemoryBlock> memoryBlocks = new ArrayList<>();
         memoryBlocks.add(createMemoryBlock("Mem96", 0x00280000, 96, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
 
         Collection<ICpMpuRegion> regions = mpuSetup.constructMpuRegions(memoryBlocks);
@@ -109,7 +109,7 @@ public class CpMpuSetupTest {
         ICpMpuSetup mpuSetup = new CpMpuSetup(null);
         mpuSetup.setAttribute(CmsisConstants.TYPE, CmsisConstants.V7M);
 
-        Collection<ICpMemoryBlock> memoryBlocks = new LinkedList<>();
+        Collection<ICpMemoryBlock> memoryBlocks = new ArrayList<>();
         memoryBlocks.add(createMemoryBlock("Mem32", 0x00280060, 32, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
         memoryBlocks.add(createMemoryBlock("Mem96", 0x00280080, 96, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -132,7 +132,7 @@ public class CpMpuSetupTest {
         ICpMpuSetup mpuSetup = new CpMpuSetup(null);
         mpuSetup.setAttribute(CmsisConstants.TYPE, CmsisConstants.V7M);
 
-        Collection<ICpMemoryBlock> memoryBlocks = new LinkedList<>();
+        Collection<ICpMemoryBlock> memoryBlocks = new ArrayList<>();
         memoryBlocks.add(createMemoryBlock("Mem521K", 0x00200000, 0x80000, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
         memoryBlocks.add(createMemoryBlock("Mem96", 0x00280000, 96, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
         memoryBlocks.add(createMemoryBlock("Mem32", 0x00280060, 32, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
@@ -156,7 +156,7 @@ public class CpMpuSetupTest {
         ICpMpuSetup mpuSetup = new CpMpuSetup(null);
         mpuSetup.setAttribute(CmsisConstants.TYPE, CmsisConstants.V7M);
 
-        Collection<ICpMemoryBlock> memoryBlocks = new LinkedList<>();
+        Collection<ICpMemoryBlock> memoryBlocks = new ArrayList<>();
         memoryBlocks.add(createMemoryBlock("Mem521K-32", 0x00200000, 0x7FFE0, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
         memoryBlocks.add(createMemoryBlock("Mem32", 0x0027FFE0, 32, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -179,7 +179,7 @@ public class CpMpuSetupTest {
         ICpMpuSetup mpuSetup = new CpMpuSetup(null);
         mpuSetup.setAttribute(CmsisConstants.TYPE, CmsisConstants.V7M);
 
-        Collection<ICpMemoryBlock> memoryBlocks = new LinkedList<>();
+        Collection<ICpMemoryBlock> memoryBlocks = new ArrayList<>();
         ICpMemoryBlock mb = createMemoryBlock("Mem521K-32", 0x00200000, 0x7FFE0, "rwx"); //$NON-NLS-1$ //$NON-NLS-2$
         memoryBlocks.add(mb);
 
@@ -216,7 +216,7 @@ public class CpMpuSetupTest {
      * @return collection of
      */
     private Collection<ICpMemoryBlock> createMemoryBlocks2() {
-        Collection<ICpMemoryBlock> memoryBlocks = new LinkedList<>();
+        Collection<ICpMemoryBlock> memoryBlocks = new ArrayList<>();
         memoryBlocks.add(createMemoryBlock("Mem2", 8192, 4096, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
         memoryBlocks.add(createMemoryBlock("Mem1", 0x0L, 4096, "rwx")); //$NON-NLS-1$ //$NON-NLS-2$
         return memoryBlocks;

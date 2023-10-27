@@ -18,7 +18,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -205,7 +205,7 @@ public class CpPackUnpackJob extends CpPackJob {
      */
     protected ICpPack parsePdscFile(File tempFolder) {
         // get pdsc file from temporary folder
-        Collection<String> pdscFiles = new LinkedList<>();
+        Collection<String> pdscFiles = new ArrayList<>();
         Utils.findPdscFiles(tempFolder, pdscFiles, 1);
         if (pdscFiles.isEmpty()) {
             fResult.setErrorString(Messages.CpPackUnpackJob_PdscFileNotFoundInPack + fDownloadedPackPath.toOSString());

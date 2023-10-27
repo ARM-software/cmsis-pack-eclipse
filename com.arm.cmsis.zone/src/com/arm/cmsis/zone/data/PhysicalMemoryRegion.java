@@ -14,7 +14,7 @@ package com.arm.cmsis.zone.data;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -152,7 +152,7 @@ public class PhysicalMemoryRegion {
             fMpcRegion.invalidatePermissions(fMpcRegionOffset, getSize());
         }
 
-        List<ICpMemoryBlock> sortedBlocks = new LinkedList<>();
+        List<ICpMemoryBlock> sortedBlocks = new ArrayList<>();
         // collect all child blocks and sort them
         for (ICpMemoryBlock region : fLogicalRegions) {
 

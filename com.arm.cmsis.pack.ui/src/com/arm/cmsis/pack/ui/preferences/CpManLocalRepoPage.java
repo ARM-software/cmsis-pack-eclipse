@@ -2,7 +2,7 @@ package com.arm.cmsis.pack.ui.preferences;
 
 import java.net.URI;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -151,7 +151,7 @@ public class CpManLocalRepoPage extends PreferencePage implements IWorkbenchPref
         btnRemove.setLayoutData(new GridData(SWT.FILL, SWT.TOP, false, false, 1, 1));
         btnRemove.setText(CpStringsUI.CpManLocalRepoPage_Remove);
 
-        List<String[]> list = new LinkedList<>();
+        List<String[]> list = new ArrayList<>();
         for (Map.Entry<String, String> item : itemFromFile.entrySet()) {
             String[] str = new String[2];
             str[0] = item.getKey();

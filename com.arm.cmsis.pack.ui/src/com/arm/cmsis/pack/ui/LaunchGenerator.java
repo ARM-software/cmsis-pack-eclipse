@@ -17,8 +17,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.MalformedParametersException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.core.runtime.Platform;
@@ -136,12 +136,12 @@ public class LaunchGenerator {
             command = commandItem.getAbsolutePath(command);
         }
 
-        List<String> args = new LinkedList<>();
+        List<String> args = new ArrayList<>();
         args.add(command);
 
         for (ICpItem argItem : argItems) {
-            args.add(argItem.getAttribute(CmsisConstants.SWITCH));
-            String arg = ep.expandString(argItem.getText(), fConfigInfo, true);
+            String arg = argItem.getAttribute(CmsisConstants.SWITCH)
+                    + ep.expandString(argItem.getText(), fConfigInfo, true);
             args.add(arg);
         }
         ProcessBuilder pb = new ProcessBuilder(args);
@@ -198,7 +198,7 @@ public class LaunchGenerator {
             throw new ClassNotFoundException(NLS.bind(CpStringsUI.LaunchGenerator_ClassNotFound, className));
         }
 
-        Collection<Class<String>> paraTypes = new LinkedList<Class<String>>();
+        Collection<Class<String>> paraTypes = new ArrayList<Class<String>>();
         for (int i = 0; i < argItems.size(); i++) {
             paraTypes.add(String.class);
         }
@@ -219,7 +219,7 @@ public class LaunchGenerator {
         }
 
         ICpEnvironmentProvider ep = CpPlugIn.getEnvironmentProvider();
-        Collection<String> params = new LinkedList<String>();
+        Collection<String> params = new ArrayList<String>();
         for (ICpItem argItem : argItems) {
             params.add(ep.expandString(argItem.getText(), fConfigInfo, true));
         }

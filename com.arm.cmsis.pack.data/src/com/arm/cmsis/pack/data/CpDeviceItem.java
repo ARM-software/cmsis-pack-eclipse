@@ -13,7 +13,7 @@ package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -65,7 +65,7 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
         cachedChildArray = null; // invalidate
         if (item instanceof ICpDeviceItem) {
             if (deviceItems == null) {
-                deviceItems = new LinkedList<>();
+                deviceItems = new ArrayList<>();
             }
             deviceItems.add((ICpDeviceItem) item);
         } else { // property
@@ -268,7 +268,7 @@ public class CpDeviceItem extends CpDeviceItemContainer implements ICpDeviceItem
     @Override
     public Collection<? extends ICpItem> getEffectiveChildren() {
         // combination of direct properties and device children
-        List<ICpItem> effectiveChildren = new LinkedList<>();
+        List<ICpItem> effectiveChildren = new ArrayList<>();
         if (hasChildren()) {
             effectiveChildren.addAll(getChildren());
         }

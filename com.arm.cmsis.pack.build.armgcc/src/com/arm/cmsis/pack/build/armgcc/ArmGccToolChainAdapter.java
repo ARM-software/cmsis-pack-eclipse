@@ -11,8 +11,8 @@
 
 package com.arm.cmsis.pack.build.armgcc;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.eclipse.cdt.managedbuilder.core.BuildException;
@@ -158,7 +158,7 @@ public class ArmGccToolChainAdapter extends RteToolChainAdapter {
             return null; // we add libraries as objects => ignore libs and lib paths
         } else if (type == IBuildSettings.RTE_OBJECTS) {
             Collection<String> objs = buildSettings.getStringListValue(IBuildSettings.RTE_OBJECTS);
-            List<String> value = new LinkedList<String>();
+            List<String> value = new ArrayList<String>();
             if (objs != null && !objs.isEmpty())
                 value.addAll(objs);
             Collection<String> libs = buildSettings.getStringListValue(IBuildSettings.RTE_LIBRARIES);

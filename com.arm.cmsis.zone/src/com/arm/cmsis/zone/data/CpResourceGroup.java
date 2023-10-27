@@ -13,7 +13,7 @@ package com.arm.cmsis.zone.data;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -107,7 +107,7 @@ public class CpResourceGroup extends CpResourceItem implements ICpResourceGroup 
             boolean bShowPeripheral = rootZone.getZoneOption(CmsisConstants.PERIPHERAL, CmsisConstants.SHOW);
             boolean bShowROM = rootZone.getZoneOption(CmsisConstants.ROM, CmsisConstants.SHOW);
             boolean bShowRAM = rootZone.getZoneOption(CmsisConstants.RAM, CmsisConstants.SHOW);
-            List<ICpMemoryBlock> blocks = new LinkedList<>();
+            List<ICpMemoryBlock> blocks = new ArrayList<>();
             for (ICpMemoryBlock block : getMemoryBlocksAsMap().values()) {
                 if (isShowBlock(block, bShowRAM, bShowROM, bShowPeripheral)) {
                     blocks.add(block);

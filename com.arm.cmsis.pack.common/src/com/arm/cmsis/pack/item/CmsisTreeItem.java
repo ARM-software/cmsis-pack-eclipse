@@ -11,10 +11,10 @@
 
 package com.arm.cmsis.pack.item;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.utils.WildCards;
@@ -169,7 +169,7 @@ public class CmsisTreeItem<T extends ICmsisTreeItem<T>> extends CmsisItem implem
      */
     protected Collection<T> createCollection() {
         // default creates linkedList
-        return new LinkedList<>();
+        return new ArrayList<>();
     }
 
     @Override

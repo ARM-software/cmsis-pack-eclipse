@@ -12,9 +12,9 @@
 
 package com.arm.cmsis.parser;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -69,7 +69,7 @@ public class ConfigWizardScanner extends RuleBasedScanner {
 
     public ConfigWizardScanner(boolean isAsmFile) {
         isAsm = isAsmFile;
-        Collection<IRule> rules = new LinkedList<>();
+        Collection<IRule> rules = new ArrayList<>();
 
         // Comment rules
         rules.add(new CommentRule("//", new Token(CONFIG_COMMENT))); //$NON-NLS-1$

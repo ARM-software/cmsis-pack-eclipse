@@ -18,8 +18,8 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -246,7 +246,7 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
     }
 
     public static List<String> getCpRepositories() {
-        List<String> repos = new LinkedList<>();
+        List<String> repos = new ArrayList<>();
         IEclipsePreferences prefs = ConfigurationScope.INSTANCE.getNode(CpPlugIn.PLUGIN_ID);
         int i = 0;
         String key = CMSIS_PACK_REPOSITORY_PREFERENCE + '.' + i;

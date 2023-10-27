@@ -11,9 +11,9 @@
 
 package com.arm.cmsis.pack.rte.packs;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -330,7 +330,7 @@ public class RtePackCollection extends RtePackItem implements IRtePackCollection
     @Override
     public Collection<IRtePackFamily> getUsedRtePackFamilies() {
 
-        List<IRtePackFamily> usedFamilies = new LinkedList<>();
+        List<IRtePackFamily> usedFamilies = new ArrayList<>();
         for (IRtePackFamily f : fPackFamilies.values()) {
             if (f.isUsed()) {
                 usedFamilies.add(f);

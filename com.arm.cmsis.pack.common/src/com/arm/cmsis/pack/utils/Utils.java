@@ -26,9 +26,9 @@ import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.Set;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -63,7 +63,7 @@ public class Utils {
      */
     public static Collection<String> findFiles(File dir, String ext, Collection<String> files, int depth) {
         if (files == null) {
-            files = new LinkedList<>();
+            files = new ArrayList<>();
         }
 
         File[] list = dir.listFiles();

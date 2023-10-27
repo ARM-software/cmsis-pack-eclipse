@@ -57,7 +57,7 @@ public class RteMissingBoardResult extends RteDependencyResult {
             }
             reason += ": " + packId; //$NON-NLS-1$
         }
-        return CpStrings.RteMissingBoardResult_Board + " " + state + ". " + reason; //$NON-NLS-2$ //$NON-NLS-3$
+        return CpStrings.RteMissingBoardResult_Board + " " + state + ". " + reason; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
     @Override

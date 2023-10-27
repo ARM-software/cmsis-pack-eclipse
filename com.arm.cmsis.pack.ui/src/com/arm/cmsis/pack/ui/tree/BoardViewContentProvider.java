@@ -12,7 +12,7 @@
 package com.arm.cmsis.pack.ui.tree;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import com.arm.cmsis.pack.rte.boards.IRteBoardDeviceItem;
 import com.arm.cmsis.pack.rte.boards.IRteBoardItem;
@@ -57,7 +57,7 @@ public class BoardViewContentProvider extends TreeObjectContentProvider {
                 return rteBoardItem.getChildArray();
             }
             // Normal board
-            Collection<IRteBoardDeviceItem> children = new LinkedList<>();
+            Collection<IRteBoardDeviceItem> children = new ArrayList<>();
 
             // Get mounted devices
             IRteBoardDeviceItem mountedDevices = rteBoardItem.getMountedDevices();

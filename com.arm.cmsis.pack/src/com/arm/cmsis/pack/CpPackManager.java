@@ -16,9 +16,9 @@ package com.arm.cmsis.pack;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -419,7 +419,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
 
     @Override
     public Collection<ICpBoard> getCompatibleBoards(IAttributes deviceAttributes) {
-        List<ICpBoard> boards = new LinkedList<>();
+        List<ICpBoard> boards = new ArrayList<>();
         getBoards();
         if (fAllBoards == null || fAllBoards.isEmpty()) {
             return boards;
@@ -787,7 +787,7 @@ public class CpPackManager extends RteEventListener implements ICpPackManager {
         }
 
         // Collect the pack collections from which the pack should be removed
-        Collection<ICpPackCollection> packCollections = new LinkedList<>();
+        Collection<ICpPackCollection> packCollections = new ArrayList<>();
         packCollections.add(fAllInstalledPacks);
         packCollections.add(fAllPacks);
         if (RteEvent.PACK_DELETE_JOB_FINISHED.equals(topic)) {

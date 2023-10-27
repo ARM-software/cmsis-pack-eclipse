@@ -11,10 +11,10 @@
 
 package com.arm.cmsis.pack.error;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -65,7 +65,7 @@ public class CmsisErrorCollection extends CmsisConsoleStrategy implements ICmsis
         if (e == null)
             return;
         if (fErrors == null)
-            fErrors = new LinkedList<>();
+            fErrors = new ArrayList<>();
         fErrors.add(e);
         ICmsisConsole console = getCmsisConsole();
         if (console != null) {
@@ -99,7 +99,7 @@ public class CmsisErrorCollection extends CmsisConsoleStrategy implements ICmsis
 
     @Override
     public Collection<String> getErrorStrings() {
-        List<String> errorStrings = new LinkedList<>();
+        List<String> errorStrings = new ArrayList<>();
         for (ICmsisError e : getErrors()) {
             errorStrings.add(e.toString());
         }

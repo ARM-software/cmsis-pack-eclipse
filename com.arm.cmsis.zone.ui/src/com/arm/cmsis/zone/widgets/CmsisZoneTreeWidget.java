@@ -11,7 +11,7 @@
 package com.arm.cmsis.zone.widgets;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.action.Action;
@@ -339,7 +339,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
     }
 
     public Collection<ICpItem> getSelectedItems() {
-        List<ICpItem> selectedItems = new LinkedList<>();
+        List<ICpItem> selectedItems = new ArrayList<>();
         if (getViewer() != null) {
             IStructuredSelection sel = getViewer().getStructuredSelection();
             if (sel != null) {
@@ -353,7 +353,7 @@ public abstract class CmsisZoneTreeWidget extends RteTreeWidget<CmsisZoneControl
     }
 
     public <T> Collection<T> getSelectedItemsOfType(Class<T> type) {
-        List<T> selectedItems = new LinkedList<>();
+        List<T> selectedItems = new ArrayList<>();
         if (getViewer() != null) {
             IStructuredSelection sel = (IStructuredSelection) getViewer().getSelection();
             if (sel != null) {

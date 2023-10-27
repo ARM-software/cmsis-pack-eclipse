@@ -14,7 +14,7 @@ package com.arm.cmsis.pack.data;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Set;
 
@@ -159,7 +159,7 @@ public class CpConditionContext extends CpAttributes implements ICpConditionCont
 
     @Override
     public Collection<ICpItem> filterItems(Collection<? extends ICpItem> sourceCollection) {
-        Collection<ICpItem> filtered = new LinkedList<ICpItem>();
+        Collection<ICpItem> filtered = new ArrayList<ICpItem>();
         if (sourceCollection != null && !sourceCollection.isEmpty()) {
             for (ICpItem item : sourceCollection) {
                 EEvaluationResult res = item.evaluate(this);

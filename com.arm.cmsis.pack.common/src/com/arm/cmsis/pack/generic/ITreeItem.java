@@ -14,7 +14,6 @@ package com.arm.cmsis.pack.generic;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 
 /**
  * Generic template-based interface for tree like structures
@@ -124,7 +123,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
         if (!hasChildren())
             return Collections.emptyList();
 
-        LinkedList<C> typedChildren = new LinkedList<>();
+        ArrayList<C> typedChildren = new ArrayList<>();
         for (T child : getChildren()) {
             if (type.isInstance(child)) {
                 typedChildren.add(type.cast(child));
@@ -141,7 +140,7 @@ public interface ITreeItem<T extends ITreeItem<T>> extends ITreeObject {
      */
     default <C> Collection<C> getAllChildrenOfType(Collection<C> allChildren, Class<C> type) {
         if (allChildren == null)
-            allChildren = new LinkedList<>();
+            allChildren = new ArrayList<>();
         if (hasChildren()) {
             allChildren.addAll(getChildrenOfType(type)); // add own
             for (T c : getChildren()) {

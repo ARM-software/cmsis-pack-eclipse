@@ -13,7 +13,7 @@ package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -135,7 +135,7 @@ public class CpDebugConfiguration extends CpItem implements ICpDebugConfiguratio
 
     @Override
     public Collection<ICpAlgorithm> getDefaultAlgorithms() {
-        List<ICpAlgorithm> defaultAlgos = new LinkedList<ICpAlgorithm>();
+        List<ICpAlgorithm> defaultAlgos = new ArrayList<ICpAlgorithm>();
         for (ICpAlgorithm a : algorithms.values()) {
             if (a.isDefault())
                 defaultAlgos.add(a);

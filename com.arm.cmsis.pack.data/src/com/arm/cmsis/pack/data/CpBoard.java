@@ -12,7 +12,7 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.generic.IAttributes;
@@ -131,7 +131,7 @@ public class CpBoard extends CpItem implements ICpBoard {
     }
 
     protected Collection<ICpItem> getDevices(final String requiredTag) {
-        Collection<ICpItem> devices = new LinkedList<>();
+        Collection<ICpItem> devices = new ArrayList<>();
         Collection<? extends ICpItem> children = getChildren();
         if (children == null) {
             return devices;

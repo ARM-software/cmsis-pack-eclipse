@@ -11,10 +11,10 @@
 
 package com.arm.cmsis.pack.configuration;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -191,7 +191,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
 
     @Override
     public ICpFileInfo[] getProjectFileInfos(String fileName) {
-        Collection<ICpFileInfo> fileInfos = new LinkedList<>();
+        Collection<ICpFileInfo> fileInfos = new ArrayList<>();
         for (Entry<String, ICpFileInfo> e : fProjectFiles.entrySet()) {
             if (e.getKey().matches(fileName)) {
                 fileInfos.add(e.getValue());
@@ -813,7 +813,10 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
             }
             if (absPath.startsWith(baseDir)) {
                 // the file is within project
-                return ProjectUtils.makePathRelative(absPath, baseDir);
+                String relPath = ProjectUtils.makePathRelative(absPath, baseDir);
+                if (!relPath.startsWith("..")) { //$NON-NLS-1$
+                    return relPath;
+                }
             }
         }
 

@@ -12,7 +12,7 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.info.ICpComponentInfo;
@@ -24,7 +24,7 @@ import com.arm.cmsis.pack.info.ICpItemInfo;
  */
 public class CpCodeTemplate extends CpItem implements ICpCodeTemplate {
 
-    Collection<String> fCodeTemplates = new LinkedList<>();
+    Collection<String> fCodeTemplates = new ArrayList<>();
     ICpItemInfo fInfo;
 
     /**

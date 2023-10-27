@@ -11,8 +11,8 @@
 
 package com.arm.cmsis.pack.rte.components;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpComponent;
@@ -308,7 +308,7 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
         // is we are here => component is active
         if (isSelected()) {
             if (components == null) {
-                components = new LinkedList<IRteComponent>();
+                components = new ArrayList<IRteComponent>();
             }
             components.add(this);
         }
@@ -321,7 +321,7 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
         ICpComponentInfo ci = getActiveCpComponentInfo();
         if (ci != null) {
             if (components == null) {
-                components = new LinkedList<IRteComponent>();
+                components = new ArrayList<IRteComponent>();
             }
             components.add(this);
         }
@@ -332,7 +332,7 @@ public class RteComponent extends RteComponentItem implements IRteComponent {
     public Collection<IRteComponent> getGeneratorComponents(String generatorId, Collection<IRteComponent> components) {
         // is we are here => component is active
         if (components == null) {
-            components = new LinkedList<IRteComponent>();
+            components = new ArrayList<IRteComponent>();
         }
         if (!isGenerated() && !isBootStrap())
             return components;

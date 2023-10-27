@@ -11,7 +11,7 @@
 
 package com.arm.cmsis.zone.widgets;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -80,7 +80,7 @@ public class CmsisZoneKeyAdapter extends KeyAdapter {
     }
 
     public List<ICpMemoryBlock> getSelectedBlocks(boolean bDeletable) {
-        List<ICpMemoryBlock> selectedBlocks = new LinkedList<>();
+        List<ICpMemoryBlock> selectedBlocks = new ArrayList<>();
         TreeItem[] selection = fTree.getSelection();
         for (TreeItem item : selection) {
             Object obj = item.getData();
@@ -98,7 +98,7 @@ public class CmsisZoneKeyAdapter extends KeyAdapter {
         ICpZone zone = fAdvisor.getZone(columntIndex);
         if (zone == null)
             return;
-        List<ICpMemoryBlock> selectedBlocks = new LinkedList<>();
+        List<ICpMemoryBlock> selectedBlocks = new ArrayList<>();
         TreeItem[] selection = fTree.getSelection();
         int nChecked = 0;
         for (TreeItem item : selection) {

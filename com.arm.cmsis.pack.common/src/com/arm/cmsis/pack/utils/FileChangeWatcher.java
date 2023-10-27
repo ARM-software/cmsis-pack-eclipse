@@ -23,9 +23,9 @@ import java.nio.file.WatchEvent.Kind;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
 import java.nio.file.attribute.FileTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -167,16 +167,20 @@ public abstract class FileChangeWatcher {
             containsWildcards = true;
 
         File f = new File(file);
+        File parentDir = f.getParentFile();
+        if (parentDir == null) {
+            return; // do not monitor current directory implicitly
+        }
+
+        if (!parentDir.exists()) {
+            parentDir.mkdirs();
+        }
+
         long modified = 0;
         if (f.exists()) {
             modified = f.lastModified();
         }
-
         filesToWatch.put(file, modified);
-        File parentDir = f.getParentFile();
-        if (!parentDir.exists()) {
-            parentDir.mkdirs();
-        }
         registerDir(Paths.get(parentDir.getAbsolutePath()));
     }
 
@@ -248,7 +252,7 @@ public abstract class FileChangeWatcher {
     }
 
     protected WatchEvent.Kind<?>[] getEventKinds() {
-        List<WatchEvent.Kind<Path>> eventList = new LinkedList<>();
+        List<WatchEvent.Kind<Path>> eventList = new ArrayList<>();
         if ((watchFlags & CREATE) == CREATE) {
             eventList.add(StandardWatchEventKinds.ENTRY_CREATE);
         }

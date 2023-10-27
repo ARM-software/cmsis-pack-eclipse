@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -171,7 +171,7 @@ public class CpPidxParser {
      * @return a list of pdsc files (locating in local repositories)
      */
     public static Collection<String> getLocalRepositoryFileNames(String localDir) {
-        Collection<String> fileNames = new LinkedList<>();
+        Collection<String> fileNames = new ArrayList<>();
         localDir += '/' + CmsisConstants.LOCAL_REPOSITORY_PIDX;
         Map<String, String> map = parsePidx(localDir);
 

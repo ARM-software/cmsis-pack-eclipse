@@ -12,7 +12,7 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -220,7 +220,7 @@ public class CpPackFamily extends CpItem implements ICpPackFamily {
     @Override
     protected Object[] createChildArray() {
         fPreviousReleases = null;
-        Collection<ICpItem> children = new LinkedList<>();
+        Collection<ICpItem> children = new ArrayList<>();
         children.addAll(getPacks());
         ICpItem previousReleases = getPreviousReleases(); // refresh previous release info
         if (previousReleases != null) {

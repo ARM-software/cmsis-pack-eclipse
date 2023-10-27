@@ -14,7 +14,7 @@ package com.arm.cmsis.zone.ui.editors;
 import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -219,7 +219,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
         boolean bSelPeripheral = fRootZone.getZoneOption(CmsisConstants.PERIPHERAL, CmsisConstants.SELECT);
         boolean bSelROM = fRootZone.getZoneOption(CmsisConstants.ROM, CmsisConstants.SELECT);
         boolean bSelRAM = fRootZone.getZoneOption(CmsisConstants.RAM, CmsisConstants.SELECT);
-        List<ICpMemoryBlock> blocks = new LinkedList<>();
+        List<ICpMemoryBlock> blocks = new ArrayList<>();
         for (ICpMemoryBlock block : fRootZone.getMemoryBlocksAsMap().values()) {
             if (block instanceof ICpPeripheralGroup)
                 continue;
@@ -237,7 +237,7 @@ public class CmsisZoneController extends RteEventProxy implements IRteController
     }
 
     public Collection<ICpMemoryBlock> getAssignedBlocks(ICpZone zone) {
-        List<ICpMemoryBlock> assignedBlocks = new LinkedList<>();
+        List<ICpMemoryBlock> assignedBlocks = new ArrayList<>();
         if (fRootZone == null) {
             return assignedBlocks;
         }

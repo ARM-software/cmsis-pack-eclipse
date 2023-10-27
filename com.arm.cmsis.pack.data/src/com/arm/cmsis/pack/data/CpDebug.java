@@ -12,7 +12,7 @@
 package com.arm.cmsis.pack.data;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
@@ -44,7 +44,7 @@ public class CpDebug extends CpDeviceProperty implements ICpDebug {
 
     @Override
     public Collection<ICpDataPatch> getDataPacthes() {
-        List<ICpDataPatch> patches = new LinkedList<ICpDataPatch>();
+        List<ICpDataPatch> patches = new ArrayList<ICpDataPatch>();
         Collection<? extends ICpItem> children = getChildren();
         if (children != null) {
             for (ICpItem item : children) {

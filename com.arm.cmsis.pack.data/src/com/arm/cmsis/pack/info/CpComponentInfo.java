@@ -225,4 +225,13 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
             return null;
         return gpdscItem.getName();
     }
+
+    @Override
+    public String getWorkingDir() {
+        ICpItem gpdscItem = getFirstChild(CmsisConstants.GPDSC_TAG);
+        if (gpdscItem == null)
+            return null;
+        return gpdscItem.getAttribute(CmsisConstants.WORKING_DIR_TAG);
+    }
+
 }

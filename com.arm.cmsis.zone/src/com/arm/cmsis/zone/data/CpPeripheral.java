@@ -12,7 +12,7 @@
 package com.arm.cmsis.zone.data;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
 import com.arm.cmsis.pack.data.ICpItem;
@@ -117,7 +117,7 @@ public class CpPeripheral extends CpPeripheralItem implements ICpPeripheral {
 
     @Override
     public Collection<ICpSlot> getModifiedSlots() {
-        Collection<ICpSlot> modifiedSlots = new LinkedList<>();
+        Collection<ICpSlot> modifiedSlots = new ArrayList<>();
         Collection<ICpSlot> slots = getSlots();
         if (slots != null && !slots.isEmpty()) {
             for (ICpSlot s : slots) {
