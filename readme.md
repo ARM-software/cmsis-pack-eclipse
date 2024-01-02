@@ -4,17 +4,10 @@ The **CMSIS-Pack Management for Eclipse** is created by ARM to provide a open-so
 
 ARM is commited to maintain this **CMSIS-Pack Management for Eclipse** to ensure consistency with future extensions and modifications to the [CMSIS-Pack Specification].
 
-This release 2.8.0 provides the following functionality:
-* CMSIS Zone plug-ins to support [CMSIS-Zone](https://arm-software.github.io/CMSIS_5/Zone/html/index.html) functionality
-* CMSIS Pack manager to install, remove, delete Packs as well as to import examples
-* creation and management of an CDT-based C/C++ projects for a selected device and board
-* an editor for configuration files that use [Configuration Wizard Annotations]
-* version tracking of configuration files with merge functionality
-* integrated help based on Eclipse help framework
-* extensible interfaces to integrate the plug-ins into development environments
-* support for [gpdsc] files to connect to configuration utilities
-* the plug-ins support Maven-based build
-
+Releases can be found on the [releases page](https://github.com/ARM-software/cmsis-pack-eclipse/releases) of this repository containing:
+* Release Notes
+* Eclipse Plug-In Binaries
+* Source Code archives
 
 For evaluation you need CMSIS-Pack compliant Software Packs that are available for download from the [CMSIS Pack Repository].
 
