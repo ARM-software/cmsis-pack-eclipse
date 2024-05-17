@@ -1,10 +1,12 @@
 /*******************************************************************************
 * Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
+* are made available under the terms of the Eclipse Public License 2.0
 * which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
 * Contributors:
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
@@ -20,6 +22,8 @@ import com.arm.cmsis.pack.data.ICpFile;
 import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpPack;
 import com.arm.cmsis.pack.enums.EEvaluationResult;
+import com.arm.cmsis.pack.enums.EVersionMatchMode;
+import com.arm.cmsis.pack.utils.Utils;
 
 /**
  * Default implementation of ICpComponentInfo interface
@@ -234,4 +238,46 @@ public class CpComponentInfo extends CpComponent implements ICpComponentInfo {
         return gpdscItem.getAttribute(CmsisConstants.WORKING_DIR_TAG);
     }
 
+    @Override
+    public void setAttributesFromComponentId(String componentId) {
+        String cVersion = Utils.getSuffix(componentId, CmsisConstants.AT);
+        String cVendor = Utils.getPrefix(componentId, CmsisConstants.DOUBLE_COLON);
+
+        String componentName = componentId;
+        if (cVersion != null) {
+            setAttribute(CmsisConstants.CVERSION, cVersion);
+            setVersionMatchMode(EVersionMatchMode.FIXED);
+            componentName = Utils.getPrefix(componentName, CmsisConstants.AT);
+        }
+        if (cVendor != null) {
+            setAttribute(CmsisConstants.CVENDOR, cVendor);
+            componentName = Utils.getSuffix(componentName, CmsisConstants.DOUBLE_COLON);
+        }
+        String[] componentSplitted = componentName.split(CmsisConstants.COLON);
+
+        for (String component : componentSplitted) {
+            if (getAttribute(CmsisConstants.CCLASS).isEmpty()) {
+                if (component.contains(CmsisConstants.AND)) {
+                    setAttribute(CmsisConstants.CCLASS, Utils.getPrefix(component, CmsisConstants.AND));
+                    setAttribute(CmsisConstants.CBUNDLE, Utils.getSuffix(component, CmsisConstants.AND));
+                } else {
+                    setAttribute(CmsisConstants.CCLASS, component);
+                }
+            } else if (getAttribute(CmsisConstants.CGROUP).isEmpty()) {
+                if (component.contains(CmsisConstants.AND)) {
+                    setAttribute(CmsisConstants.CGROUP, Utils.getPrefix(component, CmsisConstants.AND));
+                    setAttribute(CmsisConstants.CVARIANT, Utils.getSuffix(component, CmsisConstants.AND));
+                } else {
+                    setAttribute(CmsisConstants.CGROUP, component);
+                }
+            } else if (getAttribute(CmsisConstants.CSUB).isEmpty()) {
+                if (component.contains(CmsisConstants.AND)) {
+                    setAttribute(CmsisConstants.CSUB, Utils.getPrefix(component, CmsisConstants.AND));
+                    setAttribute(CmsisConstants.CVARIANT, Utils.getSuffix(component, CmsisConstants.AND));
+                } else {
+                    setAttribute(CmsisConstants.CSUB, component);
+                }
+            }
+        }
+    }
 }

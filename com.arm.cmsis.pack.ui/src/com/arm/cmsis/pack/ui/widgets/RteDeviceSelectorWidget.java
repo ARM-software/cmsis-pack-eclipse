@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -258,6 +260,9 @@ public class RteDeviceSelectorWidget extends Composite {
                 }
                 int index = comboMve.getSelectionIndex();
                 fSelectedMve = mveIndexToString(index);
+                if (fSelectedMve.equals(CmsisConstants.FP_MVE) && !fSelectedFpu.equals(CmsisConstants.DP_FPU)) {
+                    updateFpu();
+                }
             }
         });
 
@@ -766,8 +771,8 @@ public class RteDeviceSelectorWidget extends Composite {
             lblMemory.setText(mem);
 
             updateSecurity();
-            updateFpu();
             updateMve();
+            updateFpu();
             updateEndian();
         } else {
             message = CpStringsUI.RteDeviceSelectorWidget_NoDeviceSelected;
@@ -905,6 +910,10 @@ public class RteDeviceSelectorWidget extends Composite {
             fpu = fDeviceInfo.getAttribute(CmsisConstants.DFPU);
             if (fSelectedFpu.isEmpty())
                 fSelectedFpu = fpu;
+        }
+
+        if (fSelectedMve.equals(CmsisConstants.FP_MVE)) {
+            fSelectedFpu = CmsisConstants.DP_FPU;
         }
 
         String[] fpuStrings = getFpuStrings(fpu);
@@ -1130,6 +1139,9 @@ public class RteDeviceSelectorWidget extends Composite {
             if (index >= 0) {
                 String mve = mveIndexToString(index);
                 fDeviceInfo.setAttribute(CmsisConstants.DMVE, mve);
+                if (fSelectedMve.equals(CmsisConstants.FP_MVE)) {
+                    fDeviceInfo.setAttribute(CmsisConstants.DFPU, CmsisConstants.FP_MVE);
+                }
             } else {
                 fDeviceInfo.removeAttribute(CmsisConstants.DMVE);
             }
@@ -1141,10 +1153,15 @@ public class RteDeviceSelectorWidget extends Composite {
     public void setDeviceInfo(ICpDeviceInfo deviceInfo) {
         fDeviceInfo = deviceInfo;
         if (fDeviceInfo != null) {
-            fSelectedFpu = fDeviceInfo.getAttribute(CmsisConstants.DFPU);
             fSelectedEndian = fDeviceInfo.getAttribute(CmsisConstants.DENDIAN);
             fSelectedSecurity = fDeviceInfo.getAttribute(CmsisConstants.DSECURE);
             fSelectedMve = fDeviceInfo.getAttribute(CmsisConstants.DMVE);
+            if (fSelectedMve.equals(CmsisConstants.FP_MVE)) {
+                fSelectedFpu = CmsisConstants.DP_FPU;
+            } else {
+                fSelectedFpu = fDeviceInfo.getAttribute(CmsisConstants.DFPU);
+            }
+
             // set initial selection
             IRteDeviceItem item = fDevices.findItem(fDeviceInfo.attributes());
             if (item != null) {

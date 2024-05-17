@@ -1,0 +1,11 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tests
+Bundle-SymbolicName: com.arm.cmsis.pack.data.tests
+Bundle-Version: 2.10.0.qualifier
+Require-Bundle: com.arm.cmsis.pack.common;bundle-version="2.10.0",
+ com.arm.cmsis.pack.data,
+ org.junit;bundle-version="4.12.0"
+Bundle-Vendor: ARM
+Automatic-Module-Name: com.arm.cmsis.pack.data.tests
+Bundle-RequiredExecutionEnvironment: JavaSE-11

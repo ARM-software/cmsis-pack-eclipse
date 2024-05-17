@@ -2,7 +2,7 @@
 <feature
       id="com.arm.cmsis.pack.feature"
       label="%featureName"
-      version="2.9.0.qualifier"
+      version="2.10.0.qualifier"
       provider-name="%providerName">
 
    <description>
@@ -141,5 +141,12 @@
          download-size="0"
          install-size="0"
          version="0.0.0"/>
+
+   <plugin
+         id="com.arm.cmsis.pack.parser.yml"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
 
 </feature>

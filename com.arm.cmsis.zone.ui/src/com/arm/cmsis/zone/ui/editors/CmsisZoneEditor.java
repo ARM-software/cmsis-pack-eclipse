@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * Eclipse Project - generation from template
@@ -202,7 +204,7 @@ public class CmsisZoneEditor extends RteEditor<CmsisZoneController> {
     }
 
     @Override
-    protected void loadData(String absFileName) {
+    protected void loadData(String absFileName, boolean bReadOnly) {
 
         if (absFileName == null) {
             return;
@@ -230,7 +232,7 @@ public class CmsisZoneEditor extends RteEditor<CmsisZoneController> {
         }
 
         // Load azone file's data
-        super.loadData(azoneFileName);
+        super.loadData(azoneFileName, bReadOnly);
     }
 
 }

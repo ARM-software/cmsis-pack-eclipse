@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -17,8 +19,8 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.ArrayList;
+import java.util.Collection;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -181,7 +183,7 @@ public class CpPackUnpackJob extends CpPackJob {
 
             // convert pack to installed
             pack.setPackState(PackState.INSTALLED);
-            pdscFile = fDestPath.append(Utils.extractBaseFileName(pdscFile)).toString();
+            pdscFile = fDestPath.append(Utils.extractFileName(pdscFile)).toString();
             pack.setFileName(pdscFile);
             // set successful result
             fResult.setPack(pack);

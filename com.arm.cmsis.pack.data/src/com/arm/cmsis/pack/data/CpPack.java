@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -20,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.arm.cmsis.pack.common.CmsisConstants;
+import com.arm.cmsis.pack.generic.IAttributes;
 import com.arm.cmsis.pack.utils.VersionComparator;
 
 /**
@@ -252,6 +255,20 @@ public class CpPack extends CpRootItem implements ICpPack {
             }
         }
         return CmsisConstants.EMPTY_STRING;
+    }
+
+    /**
+     * Create pack attributes from id string
+     *
+     * @param id Pack ID string
+     * @return IAttributes object
+     */
+    public static IAttributes attributesFromId(final String id) {
+        CpAttributes packAttributes = new CpAttributes();
+        packAttributes.setAttribute(CmsisConstants.NAME, nameFromId(id));
+        packAttributes.setAttribute(CmsisConstants.VENDOR, vendorFromId(id));
+        packAttributes.setAttribute(CmsisConstants.VERSION, versionFromId(id));
+        return packAttributes;
     }
 
     /**

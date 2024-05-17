@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -155,6 +157,22 @@ public class Messages extends NLS {
     public static String RteProjectImporter_Import_Completed;
     public static String RteProjectImporter_Importing_Example;
     public static String RteProjectImporter_Importing_File;
+
+    public static String CsolutionProjectImporter_Window;
+    public static String CsolutionProjectImporter_ProjectTitle;
+    public static String CsolutionProjectImporter_SelectFile;
+    public static String CsolutionProjectImporter_Description;
+    public static String CsolutionProjectImport_CbuildName;
+    public static String CsolutionProjectImport_CbuildDetails;
+    public static String CsolutionProjectImport_ErrorFileFieldEmpty;
+    public static String CsolutionProjectImport_ErrorFileTypeIncorrect;
+    public static String CsolutionProjectImport_ErrorWorkspacePathNotAllowed;
+    public static String CsolutionProjectImport_ErrorDeviceNotFound;
+    public static String CsolutionProjectImport_ErrorCbuildNotBuilt;
+    public static String CsolutionProjectImport_ErrorOutputFileNotPresent;
+    public static String CsolutionProjectImport_ErrorNotCsolutionFile;
+    public static String CsolutionProjectImport_ErrorCsolutionNotExist;
+    public static String CsolutionProjectImport_ErrorNoCbuildSetAndCbuildIndex;
 
     static {
         // initialize resource bundle

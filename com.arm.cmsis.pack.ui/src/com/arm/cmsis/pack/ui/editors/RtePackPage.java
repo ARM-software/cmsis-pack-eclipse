@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -138,8 +140,10 @@ public class RtePackPage extends RteModelEditorPage {
 
     void updateUseAllLatest() {
         boolean bUse = true;
+        boolean bEnabled = true;
         if (fModelController != null) {
             bUse = fModelController.isUseAllLatestPacks();
+            bEnabled = !fModelController.isReadOnly();
         }
         useLatestAction.setChecked(bUse);
         if (bUse) {
@@ -147,13 +151,16 @@ public class RtePackPage extends RteModelEditorPage {
         } else {
             useLatestAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_UNCHECKED));
         }
+        useLatestAction.setEnabled(bEnabled);
     }
 
     // Used packs
     void updateUsedPacks() {
         boolean bUse = true;
+        boolean bEnabled = true;
         if (fModelController != null) {
             bUse = fModelController.isShowUsedPacksOnly();
+            bEnabled = !fModelController.isReadOnly();
         }
         usedPacksAction.setChecked(bUse);
         if (bUse) {
@@ -161,6 +168,7 @@ public class RtePackPage extends RteModelEditorPage {
         } else {
             usedPacksAction.setImageDescriptor(CpPlugInUI.getImageDescriptor(CpPlugInUI.ICON_UNCHECKED));
         }
+        usedPacksAction.setEnabled(bEnabled);
     }
     //
 
@@ -182,7 +190,7 @@ public class RtePackPage extends RteModelEditorPage {
     public void updateActions() {
         if (getModelController() != null) {
             Collection<String> missingPacks = RteModelUtils.getMissingPacks(getModelController());
-            resolveMissingPacksAction.setEnabled(!missingPacks.isEmpty());
+            resolveMissingPacksAction.setEnabled(!getModelController().isReadOnly() && !missingPacks.isEmpty());
         }
         updateUseAllLatest();
         updateUsedPacks();

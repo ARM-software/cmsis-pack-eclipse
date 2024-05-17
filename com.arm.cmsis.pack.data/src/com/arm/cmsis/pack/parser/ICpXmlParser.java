@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -15,27 +17,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.arm.cmsis.pack.data.CpItem;
 import com.arm.cmsis.pack.data.ICpItem;
-import com.arm.cmsis.pack.data.ICpItemFactory;
-import com.arm.cmsis.pack.error.ICmsisErrorCollection;
 
 /**
  * Interface to CMSIS-Pack description file (*.pdsc) parser
  */
-public interface ICpXmlParser extends ICpItemFactory, ICmsisErrorCollection {
-
-    /**
-     * Initializes the parser
-     *
-     * @return true if successful
-     */
-    boolean init();
-
-    /**
-     * Clears internal data, error strings and resets builder
-     */
-    void clear();
+public interface ICpXmlParser extends ICpParser {
 
     /**
      * Sets schema file to use by the parser
@@ -87,24 +74,6 @@ public interface ICpXmlParser extends ICpItemFactory, ICmsisErrorCollection {
      * @return adjusted attribute value
      */
     String adjustAttributeValue(String key, String value);
-
-    /**
-     * Factory method to create ICpItem-derived root instance
-     *
-     * @param tag XML tag for the item
-     * @return created ICpItem
-     */
-    default ICpItem createRootItem(String tag) {
-        return new CpItem(null, tag);
-    }
-
-    /**
-     * Parses supplied XML file
-     *
-     * @param file XML file to parse
-     * @return root ICpItem object
-     */
-    ICpItem parseFile(String file);
 
     /**
      * Parses supplied string in XML format

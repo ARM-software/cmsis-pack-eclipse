@@ -1,10 +1,12 @@
 /*******************************************************************************
 * Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
+* are made available under the terms of the Eclipse Public License 2.0
 * which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
 * Contributors:
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
@@ -68,7 +70,7 @@ public class RteDeviceInfoWidget extends Composite {
 
     ICpDeviceInfo fDeviceInfo = null;
     String url = CmsisConstants.EMPTY_STRING;
-    private Button btnSelect;
+    private Button btnSelect = null;
     private Label lblDescription;
     private Label lblFamilyLabel;
     private Label lblSubfamilyLabel;
@@ -376,8 +378,10 @@ public class RteDeviceInfoWidget extends Composite {
     }
 
     protected void updateControls() {
-        if (isDisposed())
+        if (isDisposed()) {
             return;
+        }
+
         String description = CmsisConstants.EMPTY_STRING;
         String vendorName = CmsisConstants.EMPTY_STRING;
         String deviceName = CmsisConstants.EMPTY_STRING;
@@ -455,7 +459,7 @@ public class RteDeviceInfoWidget extends Composite {
             if (board != null) {
                 boardBooks = board.getBooks();
             } else {
-                boardName += " (" + CpStringsUI.RteDeviceInfoWidget_MissingBoard + ")"; //$NON-NLS-1$ //$NON-NLS-3$
+                boardName += " (" + CpStringsUI.RteDeviceInfoWidget_MissingBoard + ")"; //$NON-NLS-1$ //$NON-NLS-2$
             }
             treeBoardBooks.setInput(boardBooks);
 
@@ -535,11 +539,15 @@ public class RteDeviceInfoWidget extends Composite {
     }
 
     public void setModelController(IRteModelController modelController) {
-        if (fBoardColumnAdvisor != null)
+        if (fBoardColumnAdvisor != null) {
             fBoardColumnAdvisor.setModelController(modelController);
-        if (fBookColumnAdvisor != null)
+        }
+        if (fBookColumnAdvisor != null) {
             fBookColumnAdvisor.setModelController(modelController);
-
+        }
+        if (btnSelect != null) {
+            btnSelect.setEnabled(modelController != null && !modelController.isReadOnly());
+        }
     }
 
 }

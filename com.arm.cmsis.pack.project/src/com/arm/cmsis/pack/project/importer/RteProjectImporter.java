@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -111,15 +113,7 @@ public abstract class RteProjectImporter extends RteConsoleStrategy implements I
                     installRequiredPacks(monitor);
                     doImportProject(monitor);
                 } catch (OperationCanceledException | InterruptedException e) {
-                    ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
-                    if (packInstaller != null) {
-                        packInstaller.reset(); // cancel all pending install jobs
-                    }
-
-                    String msgCancel = e.getMessage();
-                    status = new Status(IStatus.CANCEL, CpProjectPlugIn.PLUGIN_ID, msgCancel, e);
-                    getCmsisConsole().outputInfo(msgCancel);
-
+                    status = handlePackInstallerException(e);
                 } catch (CoreException e) {
                     e.printStackTrace();
                     status = new Status(e.getStatus().getSeverity(), CpProjectPlugIn.PLUGIN_ID, e.getMessage(), e);
@@ -199,19 +193,21 @@ public abstract class RteProjectImporter extends RteConsoleStrategy implements I
     abstract protected void doImportProject(IProgressMonitor monitor) throws OperationCanceledException, CoreException;
 
     /**
-     * Creates CDT project with RTE nature
+     * Creates a project with RTE nature
      *
      * @param destinationProjectName
      * @param destinationURI
      * @param toolchainID
      * @param projectType
      * @param monitor
+     * @param createCDT              TODO
      * @return created project
      * @throws OperationCanceledException
      * @throws CoreException
      */
     protected IProject createProject(String destinationProjectName, URI destinationURI, String toolchainID,
-            String projectType, IProgressMonitor monitor) throws OperationCanceledException, CoreException {
+            String projectType, IProgressMonitor monitor, boolean createCDT)
+            throws OperationCanceledException, CoreException {
         // Create project in workspace
         IProject project = CDTUtils.createProject(destinationProjectName, destinationURI, monitor);
         if (project == null) {
@@ -226,11 +222,12 @@ public abstract class RteProjectImporter extends RteConsoleStrategy implements I
         }
 
         progress(1, monitor);
-
-        // Create CDT project
-        project = CDTUtils.createCDTProject(project, toolchainID, projectType, monitor);
-        if (project == null) {
-            throw createErrorException(Messages.RteProjectImporter_ErrorCDTProjectCreation);
+        if (createCDT) {
+            // Create CDT project
+            project = CDTUtils.createCDTProject(project, toolchainID, projectType, monitor);
+            if (project == null) {
+                throw createErrorException(Messages.RteProjectImporter_ErrorCDTProjectCreation);
+            }
         }
         return project;
     }
@@ -396,6 +393,22 @@ public abstract class RteProjectImporter extends RteConsoleStrategy implements I
                 }
             }
         }
+    }
+
+    /**
+     * Handle the exception thrown by the pack installer
+     *
+     * @param exception
+     */
+    protected IStatus handlePackInstallerException(Exception exception) {
+        ICpPackInstaller packInstaller = CpPlugIn.getPackManager().getPackInstaller();
+        if (packInstaller != null) {
+            packInstaller.reset(); // cancel all pending install jobs
+        }
+
+        String msgCancel = exception.getMessage();
+        getCmsisConsole().outputInfo(msgCancel);
+        return new Status(IStatus.CANCEL, CpProjectPlugIn.PLUGIN_ID, msgCancel, exception);
     }
 
     @Override

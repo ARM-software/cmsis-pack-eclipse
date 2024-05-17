@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS-Zone UI
 Bundle-SymbolicName: com.arm.cmsis.zone.ui;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.zone.ui
-Bundle-Version: 1.2.2.qualifier
+Bundle-Version: 1.2.3.qualifier
 Bundle-Activator: com.arm.cmsis.zone.ui.CpZonePluginUI
 Bundle-Vendor: Arm Limited
 Require-Bundle: org.eclipse.ui,
@@ -14,11 +14,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.editors,
  org.eclipse.ui.ide,
  org.eclipse.ui.navigator,
- com.arm.cmsis.pack.common;bundle-version="2.9.0",
- com.arm.cmsis.pack.data;bundle-version="2.9.0",
- com.arm.cmsis.pack;bundle-version="2.9.0",
- com.arm.cmsis.pack.ui;bundle-version="2.9.0",
- com.arm.cmsis.pack.project;bundle-version="2.9.0",
+ com.arm.cmsis.pack.common;bundle-version="2.10.0",
+ com.arm.cmsis.pack.data;bundle-version="2.10.0",
+ com.arm.cmsis.pack;bundle-version="2.10.0",
+ com.arm.cmsis.pack.ui;bundle-version="2.10.0",
+ com.arm.cmsis.pack.project;bundle-version="2.10.0",
  com.arm.cmsis.zone,
  com.arm.tpip.freemarker;bundle-version="2.3.29"
 Bundle-RequiredExecutionEnvironment: JavaSE-11

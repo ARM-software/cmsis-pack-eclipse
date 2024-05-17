@@ -1,10 +1,12 @@
 /*******************************************************************************
 * Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
+* are made available under the terms of the Eclipse Public License 2.0
 * which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
 * Contributors:
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
@@ -72,6 +74,8 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
     protected boolean fbDeviceModified = false;
     protected boolean fbBoardModified = false;
     protected boolean fbShowUsedPacksOnly = true;
+
+    protected boolean fbReadOnly = false;
 
     /**
      * Default constructor
@@ -142,6 +146,16 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
     }
 
     @Override
+    public boolean isReadOnly() {
+        return fbReadOnly;
+    }
+
+    @Override
+    public void setReadOnly(boolean bReadOnly) {
+        fbReadOnly = bReadOnly;
+    }
+
+    @Override
     public boolean isModified() {
         return isDeviceModified() || isBoardModified() || isPackFilterModified() || isComponentSelectionModified();
     }
@@ -204,6 +218,9 @@ public abstract class RteModelController extends RteEventProxy implements IRteMo
         if (info == null) {
             clear();
             return;
+        }
+        if (info.hasAttribute(CmsisConstants.CBUILD_YML)) {
+            setReadOnly(true);
         }
 
         fSavedPackFilter = new CpPackFilter(info.createPackFilter());

@@ -1,10 +1,12 @@
 /*******************************************************************************
 * Copyright (c) 2022 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
+* are made available under the terms of the Eclipse Public License 2.0
 * which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
 * Contributors:
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
@@ -774,10 +776,13 @@ public class ArmccToolChainAdapter extends RteToolChainAdapter {
      * @return resulting FPU string
      */
     public String getFpuSuffix(String cpu, String fpu, String dsp, String mve) {
+
+        if (CmsisConstants.FP_MVE.equals(mve)) {
+            // float MVE required FPU
+            return "FP16.FP32.FP64"; //$NON-NLS-1$
+        }
+
         if (fpu == null || fpu.equals(CmsisConstants.NO_FPU) || !coreHasFpu(cpu)) {
-            if (CmsisConstants.FP_MVE.equals(mve)) {
-                return "FP16.FP32"; //$NON-NLS-1$
-            }
             if ("Cortex-M33".equals(cpu) || "Star-MC1".equals(cpu)) { //$NON-NLS-1$
                 if (!CmsisConstants.DSP.equals(dsp)) {
                     return NoDSP_NoFPU;

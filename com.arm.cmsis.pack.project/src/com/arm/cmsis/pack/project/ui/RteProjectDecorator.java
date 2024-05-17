@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  *     IBM Corporation - initial API and implementation
@@ -60,27 +62,33 @@ public class RteProjectDecorator implements ILightweightLabelDecorator {
         if (rteProject == null) {
             return;
         }
+        IRteConfiguration rteConf = rteProject.getRteConfiguration();
+        boolean bValidConfiguration = rteConf != null && rteConf.isValid();
 
-        String ext = resource.getFileExtension();
-        if (type == IResource.FOLDER || (ext != null && ext.equals(CmsisConstants.RTECONFIG))) {
+        if (type == IResource.FOLDER) {
             if (path.segmentCount() == 1) { // RTE folder itself
-                IRteConfiguration rteConf = rteProject.getRteConfiguration();
-                if (rteConf == null || !rteConf.isValid()) {
+                if (!bValidConfiguration) {
                     addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
-                } else if (type == IResource.FOLDER) {
+                } else {
                     addOverlay(decoration, CpPlugInUI.ICON_RTE_OVR);
                 }
-            } else if (type == IResource.FOLDER) {
+            } else {
                 int overlayType = getOverlayType(rteProject, path);
                 if (overlayType == -1) {
                     addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
                 } else if (overlayType == 0) {
                     addOverlay(decoration, CpPlugInUI.ICON_RTE_WARNING_OVR);
+                } else {
+                    addOverlay(decoration, CpPlugInUI.ICON_RTE_OVR);
                 }
             }
         }
 
         if (type == IResource.FILE) {
+            if (!bValidConfiguration && CmsisConstants.RTECONFIG.equals(resource.getFileExtension())) {
+                addOverlay(decoration, CpPlugInUI.ICON_RTE_ERROR_OVR);
+            }
+
             ICpFileInfo fi = rteProject.getProjectFileInfo(path.toString());
             if (fi == null)
                 return;

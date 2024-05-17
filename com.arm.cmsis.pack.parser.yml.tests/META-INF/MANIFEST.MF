@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tests
+Bundle-SymbolicName: com.arm.cmsis.pack.parser.yml.tests
+Bundle-Version: 2.10.0.qualifier
+Require-Bundle: org.junit,
+ com.arm.cmsis.pack.common,
+ com.arm.cmsis.pack.data,
+ com.arm.cmsis.pack.parser.yml
+Bundle-Vendor: ARM
+Automatic-Module-Name: com.arm.cmsis.pack.parser.yml.tests
+Bundle-RequiredExecutionEnvironment: JavaSE-11

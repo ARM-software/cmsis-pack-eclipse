@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -220,9 +222,15 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
         @Override
         public boolean isEnabled(Object obj, int columnIndex) {
             IRteComponentItem item = getComponentItem(obj);
-            if (columnIndex == COLSEL || columnIndex == COLSWCOMP || columnIndex == COLDESCR) {
+            if (columnIndex == COLSWCOMP || columnIndex == COLDESCR) {
                 return true;
             }
+
+            if (columnIndex == COLSEL || columnIndex == COLVARIANT || columnIndex == COLVENDOR
+                    || columnIndex == COLVERSION) {
+                return !getModelController().isReadOnly();
+            }
+
             if (item instanceof IRteComponent) {
                 IRteComponent rteComponent = (IRteComponent) item;
                 if (rteComponent.isBootStrap()) {
@@ -830,6 +838,7 @@ public class RteComponentSelectorWidget extends RteModelTreeWidget {
         if (fTreeViewer == null || getModelController() == null) {
             return;
         }
+
         if (selItemKeyPath == null || selItemKeyPath.isEmpty()) {
             return;
         }

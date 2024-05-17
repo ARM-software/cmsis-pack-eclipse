@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS-Pack Project
 Bundle-SymbolicName: com.arm.cmsis.pack.project;singleton:=true
 Automatic-Module-Name: com.arm.cmsis.pack.project
-Bundle-Version: 2.9.0.qualifier
+Bundle-Version: 2.10.0.qualifier
 Bundle-Activator: com.arm.cmsis.pack.project.CpProjectPlugIn
 Bundle-Vendor: Arm Limited
 Require-Bundle: org.eclipse.core.runtime,
@@ -27,14 +27,18 @@ Require-Bundle: org.eclipse.core.runtime,
  com.arm.cmsis.pack,
  com.arm.cmsis.pack.ui,
  com.arm.cmsis.pack.build.settings,
- org.eclipse.debug.core
+ org.eclipse.debug.core,
+ com.arm.cmsis.pack.parser.yml,
+ org.eclipse.swt
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Export-Package: com.arm.cmsis.pack.configuration,
  com.arm.cmsis.pack.project,
+ com.arm.cmsis.pack.project.csolution,
  com.arm.cmsis.pack.project.importer,
  com.arm.cmsis.pack.project.template,
  com.arm.cmsis.pack.project.ui,
  com.arm.cmsis.pack.project.ui.handlers,
  com.arm.cmsis.pack.project.utils,
  com.arm.cmsis.pack.project.wizards
+Import-Package: com.arm.cmsis.pack.parser.yml

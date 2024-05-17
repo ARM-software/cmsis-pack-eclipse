@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -76,6 +78,8 @@ public class CmsisConstants {
     public static final String DOC = "doc"; //$NON-NLS-1$
     public static final String DESCRIPTION = "description"; //$NON-NLS-1$
     public static final String FILE_NAME = "filename"; //$NON-NLS-1$
+    public static final String AT = "@"; //$NON-NLS-1$
+    public static final String AND = "&"; //$NON-NLS-1$
 
     // condition expressions
     public static final String ACCEPT = "accept"; //$NON-NLS-1$
@@ -203,6 +207,16 @@ public class CmsisConstants {
     public static final String DEPRECATED = "deprecated"; //$NON-NLS-1$
     public static final String REPLACEMENT = "replacement"; //$NON-NLS-1$
 
+    public static final String CBUILD = "cbuild"; //$NON-NLS-1$
+    public static final String CBUILDS = "cbuilds"; //$NON-NLS-1$
+    public static final String COMPILER = "compiler"; //$NON-NLS-1$
+    public static final String CONTEXT = "context"; //$NON-NLS-1$
+    public static final String CONTEXTS = "contexts"; //$NON-NLS-1$
+    public static final String YML = "yml"; //$NON-NLS-1$
+    public static final String ELF = "elf"; //$NON-NLS-1$
+
+    public static final String IS_SELECTED = "is-selected"; //$NON-NLS-1$
+
     // attribute values
     public static final String DATE = "date"; //$NON-NLS-1$
 
@@ -262,6 +276,16 @@ public class CmsisConstants {
     public static final String EXAMPLE_TAG = "example"; //$NON-NLS-1$
     public static final String EXAMPLES_TAG = "examples"; //$NON-NLS-1$
     public static final String REQUIREMENTS_TAG = "requirements"; //$NON-NLS-1$
+    public static final String BUILD_IDX_TAG = "build-idx"; //$NON-NLS-1$
+    public static final String BUILD_TAG = "build"; //$NON-NLS-1$
+    public static final String CBUILD_SET_TAG = "cbuild-set"; //$NON-NLS-1$
+    public static final String CONSTRUCTED_FILES = "constructed-files"; //$NON-NLS-1$
+    public static final String GROUPS_TAG = "groups"; //$NON-NLS-1$
+    public static final String OUTPUT_TAG = "output"; //$NON-NLS-1$
+    public static final String OUTPUT_DIRS_TAG = "output-dirs"; //$NON-NLS-1$
+    public static final String OUTDIR_TAG = "outdir"; //$NON-NLS-1$
+    public static final String PACKS_TAG = "packs"; //$NON-NLS-1$
+    public static final String FROM_PACK_TAG = "from-pack"; //$NON-NLS-1$
 
     public static final String TEXT = "text"; //$NON-NLS-1$
 
@@ -443,6 +467,7 @@ public class CmsisConstants {
     public static final String DEVICE_TITLE = "Device"; //$NON-NLS-1$
     public static final String BOARD_TITLE = "Board"; //$NON-NLS-1$
     public static final String SUMMARY_TITLE = "Summary"; //$NON-NLS-1$
+    public static final String IMPORT_TITLE = "Import"; //$NON-NLS-1$
 
     public static final long DEFAULT_DEBUG_CLOCK = 10000000L;
     public static final long DEFAULT_DATAPATCH_MASK = 0xFFFFFFFFFFFFFFFFL;
@@ -455,6 +480,12 @@ public class CmsisConstants {
     public static final String EXT_CPROJECT = ".cproject"; //$NON-NLS-1$
     public static final String EXT_SCT = ".sct"; //$NON-NLS-1$
     public static final String EXT_SCVD = ".scvd"; //$NON-NLS-1$
+    public static final String EXT_CBUILD_IDX = ".cbuild-idx.yml"; //$NON-NLS-1$
+    public static final String EXT_CBUILD_SET = ".cbuild-set.yml"; //$NON-NLS-1$
+    public static final String EXT_CBUILD_YML = ".cbuild.yml"; //$NON-NLS-1$
+    public static final String EXT_CSOLUTION_YML = ".csolution.yml"; //$NON-NLS-1$
+
+    public static final String CBUILD_YML = "cbuild_yml"; //$NON-NLS-1$
 
     // repository constants
     public static final String REPO_PACK_TYPE = "CMSIS-Pack"; //$NON-NLS-1$

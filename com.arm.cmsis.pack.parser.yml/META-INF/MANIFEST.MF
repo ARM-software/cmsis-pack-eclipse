@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Yml
+Bundle-SymbolicName: com.arm.cmsis.pack.parser.yml;singleton:=true
+Bundle-Version: 2.10.0.qualifier
+Require-Bundle: com.arm.cmsis.pack.common;bundle-version="2.10.0",
+ com.arm.cmsis.pack.data;bundle-version="2.10.0"
+Bundle-Vendor: ARM
+Automatic-Module-Name: com.arm.cmsis.pack.parser.yml
+Bundle-ClassPath: .,
+ lib/eo-yaml-7.0.9.jar
+Bundle-RequiredExecutionEnvironment: JavaSE-11
+Export-Package: com.amihaiemil.eoyaml,
+ com.amihaiemil.eoyaml.exceptions,
+ com.amihaiemil.eoyaml.extensions,
+ com.arm.cmsis.pack.parser.yml

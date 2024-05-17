@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -55,20 +57,17 @@ import com.arm.cmsis.pack.data.ICpItem;
 import com.arm.cmsis.pack.data.ICpRootItem;
 import com.arm.cmsis.pack.enums.ESeverity;
 import com.arm.cmsis.pack.error.CmsisError;
-import com.arm.cmsis.pack.error.CmsisErrorCollection;
 
 /**
  * Base class to parse CMSIS-Pack-related files
  */
-public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, ErrorHandler {
+public class CpXmlParser extends CpParser implements ICpXmlParser, ErrorHandler {
 
     public static final String SCHEMAVERSION = "schemaVersion"; //$NON-NLS-1$
     public static final String SCHEMAINSTANCE = "http://www.w3.org/2001/XMLSchema-instance"; //$NON-NLS-1$
     public static final String SCHEMALOCATION = "xs:noNamespaceSchemaLocation"; //$NON-NLS-1$
     public static final String DATETIMEFORMAT = "yyyy-MM-dd'T'HH:mm:ss"; //$NON-NLS-1$
 
-    protected ICpItem rootItem = null; // represents top-level item being constructed
-    protected String xmlFile = null; // current XML file
     protected String xmlString = null; // current XML string
 
     protected String xsdFile = null; // schema file with absolute path
@@ -90,7 +89,7 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
     public void clear() {
         if (!bExplicitRoot)
             rootItem = null;
-        xmlFile = null;
+        file = null;
         xmlString = null;
         clearErrors();
         if (docBuilder != null) {
@@ -117,7 +116,7 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
      * @return the xmlFile
      */
     public String getXmlFile() {
-        return xmlFile;
+        return file;
     }
 
     @Override
@@ -159,17 +158,6 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
         return isTagIgnored(item.getTag());
     }
 
-    @Override
-    public ICpItem createItem(ICpItem parent, String tag) {
-        if (parent != null) {
-            return parent.createItem(parent, tag);
-        }
-        if (rootItem == null) {
-            rootItem = createRootItem(tag);
-        }
-        return rootItem;
-    }
-
     // from ErrorHandler
     @Override
     public void error(SAXParseException arg0) throws SAXException {
@@ -189,7 +177,7 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
     }
 
     protected void addError(SAXParseException e, String id, ESeverity severity) {
-        CmsisError err = new CpXmlParserError(xmlFile, id, severity, null, e);
+        CmsisError err = new CpXmlParserError(file, id, severity, null, e);
         addError(err);
     }
 
@@ -245,7 +233,7 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
             InputSource is = new InputSource(sr);
             domDoc = docBuilder.parse(is);
         } catch (SAXException | IOException e) {
-            CmsisError err = new CpXmlParserError(xmlFile, CpXmlParserError.X402, ESeverity.Error, "Error parsing file", //$NON-NLS-1$
+            CmsisError err = new CpXmlParserError(file, CpXmlParserError.X402, ESeverity.Error, "Error parsing file", //$NON-NLS-1$
                     e);
             addError(err);
         }
@@ -269,17 +257,17 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
     @Override
     public ICpItem parseFile(String file) {
         clear();
-        this.xmlFile = file;
+        this.file = file;
         if (!init()) {
             return null;
         }
 
         Document domDoc = null;
 
-        try (InputStream sr = new FileInputStream(xmlFile);) {
+        try (InputStream sr = new FileInputStream(file);) {
             domDoc = docBuilder.parse(sr);
         } catch (SAXException | IOException e) {
-            CmsisError err = new CpXmlParserError(xmlFile, CpXmlParserError.X402, ESeverity.Error, "Error parsing file", //$NON-NLS-1$
+            CmsisError err = new CpXmlParserError(file, CpXmlParserError.X402, ESeverity.Error, "Error parsing file", //$NON-NLS-1$
                     e);
             addError(err);
         }
@@ -457,7 +445,7 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
         if (xml == null) {
             return false;
         }
-        this.xmlFile = file;
+        this.file = file;
         File outputFile = new File(file);
 
         try (FileWriter fw = new FileWriter(outputFile);) {
@@ -480,7 +468,7 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
     public String writeToXmlString(ICpItem root) {
         String xml = null;
         clear();
-        this.xmlFile = null;
+        this.file = null;
         if (!init()) {
             return xml;
         }
@@ -597,6 +585,21 @@ public class CpXmlParser extends CmsisErrorCollection implements ICpXmlParser, E
             return false;
         }
         return true;
+    }
+
+    @Override
+    public ICpItem parseString(String input) {
+        return this.parseXmlString(input);
+    }
+
+    @Override
+    public boolean writeToFile(ICpItem root, String filePath) {
+        return this.writeToXmlFile(root, filePath);
+    }
+
+    @Override
+    public String writeToString(ICpItem root) {
+        return this.writeToXmlString(root);
     }
 
 }

@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: CMSIS data types
 Bundle-SymbolicName: com.arm.cmsis.pack.data
 Automatic-Module-Name: com.arm.cmsis.pack.data
-Bundle-Version: 2.9.0.qualifier
+Bundle-Version: 2.10.0.qualifier
 Bundle-Vendor: Arm Limited
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: com.arm.cmsis.pack.build,

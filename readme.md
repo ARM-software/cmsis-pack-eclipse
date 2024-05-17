@@ -11,10 +11,15 @@ Releases can be found on the [releases page](https://github.com/ARM-software/cms
 
 For evaluation you need CMSIS-Pack compliant Software Packs that are available for download from the [CMSIS Pack Repository].
 
-**License:** The software is provided under the [Eclipse Public License] Version 1.0. Contributions to this project are under the same license and there is no additional Contributor License Agreement (CLA) required.
+## License
+The software is provided under the [Eclipse Public License] Version 2.0. Contributions to this project are under the same license and there is no additional Contributor License Agreement (CLA) required.
+
 The [Apache FreeMarker 2.3.29](https://freemarker.apache.org/) is delivered under the Apache License 2.0: https://freemarker.apache.org/docs/app_license.html
 
-**Platform:** This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse and 4.6.3 (Neon), 2019-03, 2019-06 and 2019-9.
+The [eo-yaml 7.0.9](https://github.com/decorators-squad/eo-yaml) is delivered under BSD 3-Clause "New" or "Revised" License (BSD-3-Clause) :  https://github.com/decorators-squad/eo-yaml/blob/master/LICENSE
+
+## Platform
+This release of the **CMSIS-Pack Management for Eclipse** has been tested on Eclipse 2023-06 and 2023-12.
 
 ## Source Code
 This repository contains the source code of the **CMSIS-Pack Management for Eclipse** that consists of the following plug-ins:
@@ -31,6 +36,7 @@ This repository contains the source code of the **CMSIS-Pack Management for Ecli
 * **com.arm.cmsis.pack.build.setting.armcc** - adapter for  ARMCC 5.x toolchain (DS-MDK built-in)
 * **com.arm.cmsis.pack.build.setting.armgcc** - adapter for  ARM GCC toolchain (DS-5 built-in)
 * **com.arm.cmsis.pack.build.setting.gnuarmeclipse** - adapter for Cross ARM GNU toolchain: http://gnuarmeclipse.github.io/
+* **com.arm.cmsis.pack.parser.yml** - DOM-like wrapper over eo-yaml YAML parser
 * **com.arm.cmsis.config** - Configuration Wizard editor
 * **com.arm.cmsis.help** - integrated help
 * **com.arm.cmsis.pack.refclient** - a reference example for engineers integrating CMSIS-Pack plug-in into their development environments (not included in binary build)
@@ -108,7 +114,7 @@ You may change the component selection and use the **Resolve** toolbar button.
 
 - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-_Copyright (c) 2014-2022, ARM Limited and Contributors. All rights reserved._
+_Copyright (c) 2014-2024, ARM Limited and Contributors. All rights reserved._
 
 
 [Eclipse Public License]:   ./license.md "Eclipse Public License for CMSIS-Pack Management for Eclipse"

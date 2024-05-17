@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * Eclipse Project - generation from template
@@ -107,17 +109,19 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
     @Override
     protected void setInput(IEditorInput input) {
         super.setInput(input);
-
+        boolean bReadOnly = false;
         String absFileName = CmsisConstants.EMPTY_STRING;
         if (input instanceof IURIEditorInput) {
             IURIEditorInput uriInput = (IURIEditorInput) input;
             File f = new File(uriInput.getURI());
             absFileName = f.getAbsolutePath();
+            bReadOnly = !f.canWrite();
         } else {
             IFile file = ResourceUtil.getFile(input);
             if (file != null) {
                 absFileName = file.getLocation().toPortableString();
             }
+            bReadOnly = file.isReadOnly();
         }
 
         if (absFileName.isEmpty())
@@ -140,7 +144,7 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
                 return;
             }
         }
-        loadData(absFileName);
+        loadData(absFileName, bReadOnly);
     }
 
     protected ICpXmlParser getParser() {
@@ -150,7 +154,7 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
         return fParser;
     }
 
-    protected void loadData(String absFileName) {
+    protected void loadData(String absFileName, boolean bReadOnly) {
         if (absFileName == null || absFileName.isEmpty()) {
             fAbsFileName = CmsisConstants.EMPTY_STRING;
             return;
@@ -163,6 +167,7 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
             fModelController = createController();
             fModelController.addListener(this);
         }
+        fModelController.setReadOnly(bReadOnly);
         // fAbsFileName = absFileName;
         String title = Utils.extractFileName(absFileName);
         setPartName(title);
@@ -239,8 +244,13 @@ public abstract class RteEditor<TController extends IRteController> extends Mult
 
     @Override
     public void doSave(IProgressMonitor monitor) {
-        if (isSaving())
+        if (getModelController() == null || getModelController().isReadOnly()) {
             return;
+        }
+
+        if (isSaving()) {
+            return;
+        }
         setSaving(true);
         fModelController.commit();
         try {

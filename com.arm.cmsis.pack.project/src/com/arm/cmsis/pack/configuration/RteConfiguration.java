@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2022 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -102,6 +104,8 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
     protected ICpComponentInfo deviceStartupComponent = null;
     protected ICpComponentInfo cmsisCoreComponent = null;
     protected ICpComponentInfo cmsisRtosComponent = null;
+    protected Map<String, ICpComponentInfo> components = new HashMap<>();
+
     // device header name without path
     protected String deviceHeader = null;
 
@@ -128,6 +132,7 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
         deviceStartupComponent = null;
         cmsisCoreComponent = null;
         cmsisRtosComponent = null;
+        components.clear();
         valid = true;
 
         fMissingPacks.clear();
@@ -371,6 +376,9 @@ public class RteConfiguration extends PlatformObject implements IRteConfiguratio
             cmsisRtosComponent = ci;
             rteBuildSettings.setAttribute(CmsisConstants.CMSIS_RTOS, true);
         }
+        String name = ICpComponent.constructComponentName(ci);
+        components.put(name, ci);
+
         ICpComponent c = ci.getComponent();
         int count = ci.getInstanceCount();
         if (c != null) {

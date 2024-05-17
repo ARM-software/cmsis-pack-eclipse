@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<mytests>
+  <test id="t1">
+    <name>XmlTest</name>
+    <authors>
+	  <author>Foo</author>
+      <author>Bar</author>
+	</authors>
+    <lastRun>Today</lastRun>
+   </test>
+
+  <test id="t2">
+    <name>YmlTest</name>
+  </test>
+
+  <compilers>
+   	 <compiler name="AC6" version="6.20.0"/>
+  </compilers>
+
+</mytests>

@@ -177,18 +177,23 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
             if (bLoadConfigs) {
                 res = loadConfigFile();
             }
-            addResources();
-            removeResources();
 
-            updateGeneratedHeaders();
+            IRteConfiguration rteConf = rteProject.getRteConfiguration();
+            ICpConfigurationInfo configInfo = rteConf != null ? rteConf.getConfigurationInfo() : null;
+            if (configInfo != null && !configInfo.hasAttribute(CmsisConstants.CBUILD_YML)) {
+                addResources();
+                removeResources();
 
-            updateBuildSettings(bForceUpdateToolchain);
+                updateGeneratedHeaders();
 
-            if (bSaveProject) {
-                rteProject.save();
+                updateBuildSettings(bForceUpdateToolchain);
+
+                if (bSaveProject) {
+                    rteProject.save();
+                }
+                project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
+                updateIndex();
             }
-            project.refreshLocal(IResource.DEPTH_INFINITE, monitor);
-            updateIndex();
 
         } catch (CoreException e) {
             status = new Status(e.getStatus().getSeverity(), CpPlugInUI.PLUGIN_ID,
@@ -287,11 +292,10 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 
     protected void collectErrors(Collection<? extends IRteDependencyItem> errors) throws CoreException {
         IFile rteFile = rteProject.getProject().getFile(rteProject.getName() + CmsisConstants.DOT_RTECONFIG);
-        rteFile.deleteMarkers(RTE_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE);
         if (!rteFile.exists()) {
             return;
         }
-
+        rteFile.deleteMarkers(RTE_PROBLEM_MARKER, true, IResource.DEPTH_INFINITE);
         if (errors == null || errors.isEmpty()) {
             return;
         }
@@ -388,22 +392,19 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
 
         String rteConfigName = project.getName() + CmsisConstants.DOT_RTECONFIG;
         // moving project can still left the old file
-        IFile iFile = project.getFile(rteConfigName);
-        if (!iFile.exists() || iFile.getLocation() == null) {
-            // ensure file has the project name (e.g. after rename)
-            if (!rteConfigName.equalsIgnoreCase(savedRteConfigName)) {
-                iFile = project.getFile(savedRteConfigName);
-                if (!iFile.exists() || iFile.getLocation() == null) {
-                    String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + savedRteConfigName + "' " + //$NON-NLS-1$//$NON-NLS-2$
-                            Messages.RteProjectUpdater_ErrorConfigFileNotExist;
-                    Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, msg);
-                    throw new CoreException(status);
-                }
-                rteConfigName = savedRteConfigName;
-            }
+        if (!rteConfigName.equalsIgnoreCase(savedRteConfigName)) {
+            rteConfigName = savedRteConfigName;
         }
 
-        File file = iFile.getLocation().toFile();
+        IFile iFile = project.getFile(rteConfigName);
+        File file = (iFile.exists() && iFile.getLocation() != null) ? iFile.getLocation().toFile() : null;
+        if (file == null || !file.exists()) {
+            String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + rteConfigName + "' " + //$NON-NLS-1$//$NON-NLS-2$
+                    Messages.RteProjectUpdater_ErrorConfigFileNotExist;
+            Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, msg);
+            throw new CoreException(status);
+        }
+
         CpConfigParser confParser = new CpConfigParser();
         ICpItem root = confParser.parseFile(file.getAbsolutePath());
         IRteConfiguration rteConf = null;
@@ -426,6 +427,7 @@ public class RteProjectUpdater extends WorkspaceJob implements ICmsisConsoleStra
         } else {
             String msg = Messages.RteProjectUpdater_ErrorLoadinConfigFile + " '" + rteConfigName + "' " + //$NON-NLS-1$//$NON-NLS-2$
                     Messages.RteProjectUpdater_ErrorParsingFailed;
+
             Status status = new Status(IStatus.ERROR, CpPlugInUI.PLUGIN_ID, msg);
             throw new CoreException(status);
         }

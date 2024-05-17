@@ -1,10 +1,12 @@
 /*******************************************************************************
 * Copyright (c) 2021 ARM Ltd. and others
 * All rights reserved. This program and the accompanying materials
-* are made available under the terms of the Eclipse Public License v1.0
+* are made available under the terms of the Eclipse Public License 2.0
 * which accompanies this distribution, and is available at
-* http://www.eclipse.org/legal/epl-v10.html
-*
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
 * Contributors:
 * ARM Ltd and ARM Germany GmbH - Initial API and implementation
 *******************************************************************************/
@@ -75,29 +77,7 @@ public class CpComponent extends CpItem implements ICpComponent {
 
     @Override
     protected String constructName() {
-        String name = CmsisConstants.EMPTY_STRING;
-        if (!isApi()) {
-            name = getVendor();
-        }
-        if (hasAttribute(CmsisConstants.CBUNDLE)) {
-            name += "."; //$NON-NLS-1$
-            name += getAttribute(CmsisConstants.CBUNDLE);
-        }
-        name += CmsisConstants.DOUBLE_COLON;
-
-        name += getAttribute(CmsisConstants.CCLASS);
-        name += "."; //$NON-NLS-1$
-
-        name += getAttribute(CmsisConstants.CGROUP);
-        if (hasAttribute(CmsisConstants.CSUB)) {
-            name += "."; //$NON-NLS-1$
-            name += getAttribute(CmsisConstants.CSUB);
-        }
-        if (hasAttribute(CmsisConstants.CVARIANT)) {
-            name += "."; //$NON-NLS-1$
-            name += getAttribute(CmsisConstants.CVARIANT);
-        }
-        return name;
+        return ICpComponent.constructComponentName(this);
     }
 
     @Override

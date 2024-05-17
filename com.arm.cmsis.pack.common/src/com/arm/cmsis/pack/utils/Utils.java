@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -801,5 +803,50 @@ public class Utils {
     public static String getCurrentTimeStamp() {
         long startTime = System.currentTimeMillis();
         return new SimpleDateFormat("HH:mm:ss").format(new Date(startTime)); //$NON-NLS-1$
+    }
+
+    /**
+     * Returns suffix of string with given delimiter
+     *
+     * @param string    s
+     * @param delimiter determines how to split string
+     * @return suffix or null if no delimiter is found
+     */
+    public static String getSuffix(String s, String delimiter) {
+        int index = s.indexOf(delimiter);
+        if (index == -1) {
+            return null;
+        }
+        return s.substring(index + delimiter.length());
+    }
+
+    /**
+     * Returns prefix of string with given delimiter
+     *
+     * @param string    s
+     * @param delimiter determines how to split string
+     * @return prefix or null if no delimiter is found
+     */
+    public static String getPrefix(String s, String delimiter) {
+        int index = s.indexOf(delimiter);
+        if (index == -1) {
+            return null;
+        }
+        return s.substring(0, index);
+    }
+
+    /**
+     * Strips prefix if present
+     *
+     * @param string    s
+     * @param delimiter
+     * @return suffix or same string if delimiter not found
+     */
+    public static String stripPrefix(String s, String delimiter) {
+        String suffix = getSuffix(s, delimiter);
+        if (suffix == null) {
+            return s;
+        }
+        return suffix;
     }
 }

@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -288,7 +290,6 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
     public static boolean getAutoUpdateFlag() {
         if (autoUpdateFlag == null) { // not defined yet
             readUpdateFile();
-
         }
         return autoUpdateFlag;
     }
@@ -310,7 +311,7 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
 
     /**
      * Read the update.cfg file in .Web folder. If the file does not exist, set
-     * autoUpdateFlag to false and the lastUpdateTime to current time.
+     * autoUpdateFlag to true and the lastUpdateTime to current time.
      */
     private static void readUpdateFile() {
         try (Stream<String> stream = Files
@@ -331,6 +332,10 @@ public class CpPreferenceInitializer extends AbstractPreferenceInitializer {
     }
 
     private static void writeUpdateFile() {
+        if (autoUpdateFlag == null) { // not defined yet
+            readUpdateFile();
+        }
+
         List<String> lines = Arrays.asList("Date=" + lastUpdateTime, "Auto=" + autoUpdateFlag.toString()); //$NON-NLS-1$ //$NON-NLS-2$
         Path file = Paths.get(CpPlugIn.getPackManager().getCmsisPackWebDir(), UPDATE_CFG);
         try {

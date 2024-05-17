@@ -1,9 +1,11 @@
 /*******************************************************************************
  * Copyright (c) 2021 ARM Ltd. and others
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
  * ARM Ltd and ARM Germany GmbH - Initial API and implementation
@@ -17,9 +19,9 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -73,6 +75,7 @@ import com.arm.cmsis.pack.info.ICpConfigurationInfo;
 import com.arm.cmsis.pack.info.ICpDeviceInfo;
 import com.arm.cmsis.pack.info.ICpFileInfo;
 import com.arm.cmsis.pack.parser.CpConfigParser;
+import com.arm.cmsis.pack.parser.yml.CpYmlParser;
 import com.arm.cmsis.pack.project.CpProjectPlugIn;
 import com.arm.cmsis.pack.project.IRteProject;
 import com.arm.cmsis.pack.project.Messages;
@@ -84,6 +87,11 @@ import com.arm.cmsis.pack.utils.AlnumComparator;
  * Helper class with useful static methods
  */
 public class ProjectUtils {
+
+    public static ICpItem parseYmlFile(String fileName) {
+        CpYmlParser parser = new CpYmlParser();
+        return parser.parseFile(fileName);
+    }
 
     /**
      * Returns ICpProject for given IProject if such exists
@@ -333,16 +341,32 @@ public class ProjectUtils {
      */
     public static void createLink(IProject project, String srcFile, String dstFile, IProgressMonitor monitor)
             throws CoreException {
+        createLink(project, srcFile, dstFile, true, monitor);
+    }
 
+    /**
+     * Create a link in a local or virtual folder if folder has to be created.
+     *
+     * @param srcFile source file which is to be linked, may not be relative.
+     * @param project parent IProject
+     * @param dstFile destination file in a virtual project folder. Folder(s) are
+     *                created if not existing.
+     * @param isLocal a flag to create local folder
+     * @param monitor IProgressMonitor
+     * @throws CoreException
+     */
+    public static void createLink(IProject project, String srcFile, String dstFile, boolean isLocal,
+            IProgressMonitor monitor) throws CoreException {
         // create folder if not existing
         String folder = removeLastPathSegment(dstFile); // retrieve only folder name
-        createProjectFolder(project, folder, monitor);
+        createProjectFolder(project, folder, isLocal, monitor);
 
         // create link
         IFile file = project.getFile(dstFile);
 
         IPath path = new Path(srcFile);
         file.createLink(path, IResource.REPLACE, monitor);
+
     }
 
     /**
@@ -372,7 +396,11 @@ public class ProjectUtils {
      */
     public static void createProjectFolder(IProject project, String projectFolder, IProgressMonitor monitor)
             throws CoreException {
+        createProjectFolder(project, projectFolder, true, monitor);
+    }
 
+    public static void createProjectFolder(IProject project, String projectFolder, boolean isLocal,
+            IProgressMonitor monitor) throws CoreException {
         if (projectFolder.isEmpty()) {
             return;
         }
@@ -389,7 +417,7 @@ public class ProjectUtils {
         for (int i = 1; i <= path.segmentCount(); i++) {
             IFolder subfolder = project.getFolder(path.uptoSegment(i));
             if (!subfolder.exists()) {
-                subfolder.create(true, true, monitor);
+                subfolder.create(true, isLocal, monitor);
             }
         }
     }
@@ -549,28 +577,17 @@ public class ProjectUtils {
         if (r == null) {
             return null;
         }
-
-        IProject project = r.getProject();
-        if (!RteProjectNature.hasRteNature(project)) {
-            return null;
-        }
         if (r.getType() == IResource.PROJECT) {
-            return r;
+            return RteProjectNature.hasRteNature(r.getProject()) ? r : null;
         }
         IPath path = r.getProjectRelativePath();
         if (path == null || path.isEmpty()) {
             return null;
         }
-        if (r.getType() == IResource.FILE && path.segmentCount() == 1) {
-            if (CmsisConstants.RTECONFIG.equals(r.getFileExtension())) {
-                return r;
-            }
+        if (path.segment(0).startsWith(CmsisConstants.RTE) || CmsisConstants.RTECONFIG.equals(r.getFileExtension())) {
+            return r;
         }
-        if (!path.segment(0).startsWith(CmsisConstants.RTE)) {
-            return null;
-        }
-
-        return r;
+        return null;
     }
 
     /**
