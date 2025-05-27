@@ -16,5 +16,15 @@
                id="com.arm.toolchain.v6.base">
          </toolChain>
       </toolChainAdapter>
+      <toolChainAdapter
+            Description="Adapter for Arm C/C++ Arm Toolchain for Embedded"
+            class="com.arm.cmsis.pack.build.armcc.ArmToolchainForEmbeddedAdapter"
+            id="com.arm.cmsis.pack.build.armcc.ArmToolchainForEmbeddedAdapter"
+            name="Adapter for Arm C/C++ Arm Toolchain for Embedded"
+            toolChainFamily="ATfE">
+         <toolChain
+               id="com.arm.toolchain.atfe.base">
+         </toolChain>
+      </toolChainAdapter>
    </extension>
 </plugin>

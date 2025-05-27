@@ -184,6 +184,7 @@
      <xs:restriction base="xs:token">
        <xs:enumeration value="GCC"/>
        <xs:enumeration value="ARMCC"/>
+       <xs:enumeration value="ATfE"/>
        <xs:enumeration value="IAR"/>
        <xs:enumeration value="Tasking"/>
        <xs:enumeration value="GHS"/>

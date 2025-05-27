@@ -113,6 +113,8 @@ If not specified, the user should select the family in new project wizard.
                <restriction base="string">
                   <enumeration value="ARMCC">
                   </enumeration>
+                  <enumeration value="ATfE">
+                  </enumeration>
                   <enumeration value="GCC">
                   </enumeration>
                   <enumeration value="G++">

@@ -46,7 +46,8 @@ public class RteToolChainAdapterSelector extends Group {
 
     private StatusMessageListerenList listeners = new StatusMessageListerenList();
 
-    private static final String[] families = new String[] { "ARMCC", "GCC", "G++", "IAR", "GHS", "Tasking", "Cosmic" }; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+    private static final String[] families = new String[] { "ARMCC", "ATfE", "GCC", "G++", "IAR", "GHS", "Tasking", //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$ //$NON-NLS-5$ //$NON-NLS-6$ //$NON-NLS-7$
+            "Cosmic" };
     private Label lblToolchainName;
 
     /**
